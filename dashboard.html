@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Holiday Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dashboard-container {
+      max-width: 600px;
+      margin: 3em auto;
+      padding: 2em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .dashboard-info {
+      margin-bottom: 2em;
+    }
+    .dashboard-buttons button {
+      background-color: #228B22;
+      color: white;
+      border: none;
+      padding: 0.7em 1.5em;
+      margin: 0.5em;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .dashboard-buttons button:hover {
+      background-color: #006400;
+    }
+    .logout {
+      margin-top: 2em;
+      display: inline-block;
+      color: #228B22;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .logout:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="Holiday_Lawn_Garden_Logo_Resized.png" alt="Holiday Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <p>Customer Dashboard</p>
+  </header>
+
+  <main>
+    <div class="dashboard-container fade-in">
+      <h2>Welcome, John Doe!</h2>
+
+      <div class="dashboard-info">
+        <p><strong>Last Payment:</strong> Paid <strong>$120</strong> on <strong>April 20, 2025</strong>.</p>
+        <p><strong>Next Service:</strong> Scheduled for <strong>May 5, 2025</strong>.</p>
+      </div>
+
+      <div class="dashboard-buttons">
+        <button onclick="alert('Service request form coming soon!')">Request New Service</button>
+        <button onclick="location.href='pay-your-bill.html'">Pay Another Invoice</button>
+      </div>
+
+      <a href="login.html" class="logout">Logout</a>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Holiday Lawn & Garden. All rights reserved.
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>
+
