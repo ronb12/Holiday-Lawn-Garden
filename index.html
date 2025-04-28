@@ -46,34 +46,12 @@
       </ul>
     </section>
 
-    <section class="pay-now fade-in">
-      <h2>Pay Your Bill</h2>
-      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
-        <input type="hidden" name="cmd" value="_xclick">
-        <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Change this to your real PayPal email -->
-        <input type="hidden" name="currency_code" value="USD">
-
-        <label for="invoice">Invoice Number:</label><br>
-        <input type="text" id="invoice" name="item_name" required placeholder="Enter Invoice #"><br><br>
-
-        <label for="amount">Amount ($):</label><br>
-        <input type="number" id="amount" name="amount" required min="1" step="0.01" placeholder="Enter Amount"><br><br>
-
-        <button type="submit">Pay with PayPal</button>
-      </form>
-    </section>
-
     <section class="alt-payments fade-in">
-      <h2>Other Ways to Pay</h2>
-      <p><strong>CashApp:</strong> Coming Soon</p>
-      <p><strong>Venmo:</strong> Coming Soon</p>
-      <p><strong>Zelle:</strong> Coming Soon</p>
+      <h2>Payment Options</h2>
+      <p>We offer simple and secure payment methods for your convenience.</p>
+      <p><a href="pay-your-bill.html"><strong>Click here to Pay Your Bill</strong></a> through our secure online portal.</p>
+      <p>Other options (Coming Soon): CashApp, Venmo, Zelle.</p>
     </section>
-
-    <div id="thank-you" style="display: none; margin-top: 2em;">
-      <h2 style="color: green;">Thank you for your payment!</h2>
-      <p>We appreciate your business and look forward to serving you again!</p>
-    </div>
   </main>
 
   <footer>
@@ -93,10 +71,6 @@
     document.querySelectorAll('.fade-in').forEach(section => {
       observer.observe(section);
     });
-
-    function showThankYou() {
-      document.getElementById('thank-you').style.display = 'block';
-    }
   </script>
 
 </body>
