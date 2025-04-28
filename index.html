@@ -5,143 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Fade-in Animation + Hamburger Mobile Nav Style -->
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f9f4;
-    }
-    header {
-      background-color: #228B22;
-      color: white;
-      text-align: center;
-      padding: 1em 0;
-      position: relative;
-    }
-    header img {
-      max-height: 80px;
-      margin-top: 10px;
-    }
-    .nav-links {
-      margin-top: 10px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 15px;
-    }
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 1em;
-    }
-    .nav-links a:hover {
-      text-decoration: underline;
-    }
-    .hamburger {
-      display: none;
-      font-size: 2em;
-      cursor: pointer;
-      position: absolute;
-      top: 20px;
-      right: 20px;
-    }
-    @media (max-width: 600px) {
-      .nav-links {
-        display: none;
-        flex-direction: column;
-        background-color: #228B22;
-        width: 100%;
-        margin-top: 10px;
-      }
-      .nav-links.active {
-        display: flex;
-      }
-      .hamburger {
-        display: block;
-      }
-    }
-    .fade-in {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-    }
-    .fade-in.visible {
-      opacity: 1;
-      transform: none;
-    }
-    footer {
-      background-color: #eee;
-      text-align: center;
-      padding: 1em 0;
-      font-size: 0.9em;
-      color: #555;
-    }
-  </style>
 </head>
 <body>
 
-  <header>
-    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
-    <div class="hamburger" onclick="toggleMenu()">☰</div>
-    <nav class="nav-links" id="navLinks">
-      <a href="index.html">Home</a>
-      <a href="services.html">Services</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="pay-your-bill.html">Pay Your Bill</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="login.html">Login</a>
-      <a href="profile.html">Profile</a>
-    </nav>
-    <p style="margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
-  </header>
+<header>
+  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+  <nav class="nav-links" id="navLinks">
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="pay-your-bill.html">Pay Your Bill</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="login.html">Login</a>
+    <a href="profile.html">Profile</a>
+    <a href="admin.html">Admin</a>
+  </nav>
+  <p style="margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
+</header>
 
-  <main>
-    <section class="services fade-in">
-      <h2>Our Services</h2>
-      <ul style="list-style-type: none; padding: 0;">
-        <li>Mowing & Trimming</li>
-        <li>Landscape Design</li>
-        <li>Leaf Removal</li>
-        <li>Fertilization & Seeding</li>
-        <li>Seasonal Cleanup</li>
-      </ul>
-    </section>
+<main>
+  <section class="services fade-in">
+    <h2>Welcome to Holliday's Lawn & Garden</h2>
+    <p>Reliable lawn care, landscaping, pressure washing, and more — serving your community with pride!</p>
+  </section>
+</main>
 
-    <section class="alt-payments fade-in">
-      <h2>Payment Options</h2>
-      <p>We offer simple and secure payment methods for your convenience.</p>
-      <p><a href="pay-your-bill.html"><strong>Click here to Pay Your Bill</strong></a> through our secure online portal.</p>
-      <p>Other options (Coming Soon): CashApp, Venmo, Zelle.</p>
-    </section>
-  </main>
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-  </footer>
+<script>
+  function toggleMenu() {
+    const nav = document.getElementById('navLinks');
+    nav.classList.toggle('active');
+  }
 
-  <!-- Fade-in + Hamburger Script -->
-  <script>
-    function toggleMenu() {
-      const nav = document.getElementById('navLinks');
-      nav.classList.toggle('active');
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.fade-in').forEach(section => {
-      observer.observe(section);
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
     });
-  </script>
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(section => {
+    observer.observe(section);
+  });
+</script>
 
 </body>
 </html>
