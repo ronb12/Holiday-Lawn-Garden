@@ -88,6 +88,7 @@
 
 <main>
   <div class="admin-container fade-in">
+
     <h2>Service Requests</h2>
     <table id="requestsTable">
       <thead>
@@ -123,6 +124,7 @@
           <th>Amount</th>
           <th>Due Date</th>
           <th>Status</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -130,6 +132,7 @@
 
     <a onclick="logout()" class="logout">Logout</a>
     <div id="loadingSpinner">Logging out...</div>
+
   </div>
 </main>
 
@@ -142,7 +145,7 @@
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      const adminEmails = ["youradminemail@example.com"]; // ✅ Replace with your admin email
+      const adminEmails = ["ronellbradley@bradleyvs.com"]; // ✅ Set real admin email
       if (!adminEmails.includes(user.email)) {
         alert("Access Denied. Redirecting...");
         window.location.href = "index.html";
@@ -181,17 +184,19 @@
       tbody.innerHTML = "";
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (!data.paid) {
-          const row = `<tr>
-            <td>${data.customerEmail.split('@')[0]}</td>
-            <td>${data.customerEmail}</td>
-            <td>${data.invoiceNumber}</td>
-            <td>$${data.amountDue.toFixed(2)}</td>
-            <td>${data.dueDate}</td>
-            <td>${data.paid ? "Paid" : "Unpaid"}</td>
-          </tr>`;
-          tbody.innerHTML += row;
-        }
+        const row = `<tr>
+          <td>${data.customerEmail.split('@')[0]}</td>
+          <td>${data.customerEmail}</td>
+          <td>${data.invoiceNumber}</td>
+          <td>$${data.amountDue.toFixed(2)}</td>
+          <td>${data.dueDate}</td>
+          <td>${data.paid ? "Paid" : "Unpaid"}</td>
+          <td>
+            ${data.paid ? "" : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
+            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
       });
     });
   }
@@ -229,9 +234,35 @@
         loadServiceRequests();
       })
       .catch(error => {
-        console.error("Error removing request:", error);
+        console.error("Error removing request: ", error);
         alert("❌ Error updating request.");
       });
+  }
+
+  function markPaid(invoiceId) {
+    db.collection("invoices").doc(invoiceId).update({ paid: true })
+      .then(() => {
+        alert("✅ Invoice marked as paid!");
+        loadInvoices();
+      })
+      .catch(error => {
+        console.error("Error updating invoice: ", error);
+        alert("❌ Error updating invoice.");
+      });
+  }
+
+  function deleteInvoice(invoiceId) {
+    if (confirm("Are you sure you want to delete this invoice?")) {
+      db.collection("invoices").doc(invoiceId).delete()
+        .then(() => {
+          alert("✅ Invoice deleted!");
+          loadInvoices();
+        })
+        .catch(error => {
+          console.error("Error deleting invoice: ", error);
+          alert("❌ Error deleting invoice.");
+        });
+    }
   }
 
   function logout() {
