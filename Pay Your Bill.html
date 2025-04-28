@@ -3,64 +3,113 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pay Your Bill - Holiday Lawn & Garden</title>
+  <title>Pay Your Bill - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
+  <style>
+    .pay-container {
+      max-width: 450px;
+      margin: 3em auto;
+      padding: 2em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input[type="text"], input[type="email"], input[type="number"] {
+      width: 90%;
+      padding: 0.7em;
+      margin: 1em 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #228B22;
+      color: white;
+      padding: 0.7em 2em;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #006400;
+    }
+    #thank-you {
+      display: none;
+      margin-top: 2em;
+      color: green;
+    }
+  </style>
 </head>
 <body>
 
   <header>
-    <h1>Holiday Lawn & Garden</h1>
-    <nav>
+    <h1>Holliday's Lawn & Garden</h1>
+    <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
-      <a href="pay-your-bill.html">Pay Your Bill</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
     </nav>
+    <p>Pay Your Bill</p>
   </header>
 
   <main>
-    <h2>Pay Your Bill</h2>
-    <p>Use the secure form below to pay your Holiday Lawn & Garden invoice quickly and easily.</p>
+    <div class="pay-container fade-in">
+      <h2>Pay Your Bill</h2>
+      <p>Securely pay your Holliday's Lawn & Garden invoice below.</p>
 
-    <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
-      <input type="hidden" name="cmd" value="_xclick">
-      <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Change to your PayPal email -->
-      <input type="hidden" name="currency_code" value="USD">
+      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
+        <input type="hidden" name="cmd" value="_xclick">
+        <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Replace with your real PayPal email -->
+        <input type="hidden" name="currency_code" value="USD">
 
-      <label for="invoice">Invoice Number:</label><br>
-      <input type="text" id="invoice" name="item_name" required placeholder="Enter Invoice #"><br><br>
+        <input type="email" id="payerEmail" name="payer_email" placeholder="Email Address" required><br>
+        <input type="text" id="invoice" name="item_name" placeholder="Invoice Number" required><br>
+        <input type="number" id="amount" name="amount" placeholder="Amount ($)" min="1" step="0.01" required><br>
 
-      <label for="amount">Amount ($):</label><br>
-      <input type="number" id="amount" name="amount" required min="1" step="0.01" placeholder="Enter Amount"><br><br>
+        <button type="submit">Pay with PayPal</button>
+      </form>
 
-      <button type="submit">Pay with PayPal</button>
-    </form>
+      <div id="thank-you">
+        <h3>✅ Thank you for your payment!</h3>
+        <p>We appreciate your business and look forward to serving you again!</p>
+      </div>
 
-    <div id="thank-you" style="display: none; margin-top: 2em;">
-      <h2 style="color: green;">Thank you for your payment!</h2>
-      <p>We appreciate your business and look forward to serving you again!</p>
+      <div style="margin-top: 3em;">
+        <h3>Other Ways to Pay (Coming Soon):</h3>
+        <p><strong>CashApp:</strong> Coming Soon</p>
+        <p><strong>Venmo:</strong> Coming Soon</p>
+        <p><strong>Zelle:</strong> Coming Soon</p>
+      </div>
+
     </div>
-
-    <div style="margin-top: 3em;">
-      <h3>Other Ways to Pay (Coming Soon):</h3>
-      <p><strong>CashApp:</strong> Coming Soon</p>
-      <p><strong>Venmo:</strong> Coming Soon</p>
-      <p><strong>Zelle:</strong> Coming Soon</p>
-    </div>
-
   </main>
 
   <footer>
-    &copy; 2025 Holiday Lawn & Garden. All rights reserved.
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
 
   <script>
     function showThankYou() {
       document.getElementById('thank-you').style.display = 'block';
     }
+
+    // Auto-fill the Email field with Firebase logged-in user's email
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('payerEmail').value = user.email;
+      }
+    });
   </script>
 
 </body>
 </html>
-
