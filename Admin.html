@@ -58,6 +58,11 @@
     .logout:hover {
       text-decoration: underline;
     }
+    input {
+      padding: 0.5em;
+      margin: 0.5em;
+      width: 250px;
+    }
     #loadingSpinner {
       display: none;
       margin-top: 20px;
@@ -99,30 +104,25 @@
       <tbody></tbody>
     </table>
 
-    <h2>Invoices Paid</h2>
-    <table id="invoicesPaidTable">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Invoice #</th>
-          <th>Amount</th>
-          <th>Date Paid</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+    <h2>Create Invoice</h2>
+    <form id="invoiceForm" onsubmit="createInvoice(event)">
+      <input type="text" id="invoiceEmail" placeholder="Customer Email" required><br>
+      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
+      <input type="number" id="invoiceAmount" placeholder="Amount Due ($)" min="1" step="0.01" required><br>
+      <input type="date" id="invoiceDueDate" required><br>
+      <button type="submit">Create Invoice</button>
+    </form>
 
     <h2>Invoices Due</h2>
     <table id="invoicesDueTable">
       <thead>
         <tr>
-          <th>Name</th>
+          <th>Customer</th>
           <th>Email</th>
           <th>Invoice #</th>
           <th>Amount</th>
           <th>Due Date</th>
-          <th>Actions</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -142,7 +142,7 @@
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      const adminEmails = ["youradminemail@example.com"]; // ✅ Replace this with your actual admin email
+      const adminEmails = ["youradminemail@example.com"]; // ✅ Replace with your admin email
       if (!adminEmails.includes(user.email)) {
         alert("Access Denied. Redirecting...");
         window.location.href = "index.html";
@@ -176,7 +176,50 @@
   }
 
   function loadInvoices() {
-    // Placeholder - if you want invoice tracking here later
+    db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
+      const tbody = document.querySelector("#invoicesDueTable tbody");
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (!data.paid) {
+          const row = `<tr>
+            <td>${data.customerEmail.split('@')[0]}</td>
+            <td>${data.customerEmail}</td>
+            <td>${data.invoiceNumber}</td>
+            <td>$${data.amountDue.toFixed(2)}</td>
+            <td>${data.dueDate}</td>
+            <td>${data.paid ? "Paid" : "Unpaid"}</td>
+          </tr>`;
+          tbody.innerHTML += row;
+        }
+      });
+    });
+  }
+
+  function createInvoice(event) {
+    event.preventDefault();
+    const email = document.getElementById('invoiceEmail').value;
+    const number = document.getElementById('invoiceNumber').value;
+    const amount = parseFloat(document.getElementById('invoiceAmount').value);
+    const dueDate = document.getElementById('invoiceDueDate').value;
+
+    db.collection("invoices").add({
+      customerEmail: email,
+      invoiceNumber: number,
+      amountDue: amount,
+      dueDate: dueDate,
+      paid: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      alert("✅ Invoice Created!");
+      document.getElementById('invoiceForm').reset();
+      loadInvoices();
+    })
+    .catch(error => {
+      console.error("Error creating invoice:", error);
+      alert("❌ Error creating invoice.");
+    });
   }
 
   function markCompleted(docId) {
@@ -186,7 +229,7 @@
         loadServiceRequests();
       })
       .catch(error => {
-        console.error("Error removing request: ", error);
+        console.error("Error removing request:", error);
         alert("❌ Error updating request.");
       });
   }
