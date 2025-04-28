@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holiday Lawn & Garden</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #228B22;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+    }
+    main {
+      padding: 2em;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+    }
+    .services, .pay-now, .alt-payments {
+      margin: 2em 0;
+    }
+    .services h2, .pay-now h2, .alt-payments h2 {
+      color: #228B22;
+    }
+    label {
+      display: block;
+      margin: 1em 0 0.5em;
+      font-weight: bold;
+      color: #228B22;
+    }
+    input[type="text"], input[type="number"] {
+      padding: 0.5em;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1em;
+    }
+    button {
+      margin-top: 1em;
+      background-color: #228B22;
+      color: white;
+      padding: 1em 2em;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #006400;
+    }
+    .alt-payments p {
+      margin: 0.5em 0;
+      font-size: 1.1em;
+      color: #444;
+    }
+    footer {
+      background: #eee;
+      text-align: center;
+      padding: 1em 0;
+      font-size: 0.9em;
+      color: #555;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Holiday Lawn & Garden</h1>
+    <p>Professional Lawn Care & Landscaping Services</p>
+  </header>
+
+  <main>
+    <section class="services">
+      <h2>Our Services</h2>
+      <ul style="list-style-type: none; padding: 0;">
+        <li>Mowing & Trimming</li>
+        <li>Landscape Design</li>
+        <li>Leaf Removal</li>
+        <li>Fertilization & Seeding</li>
+        <li>Seasonal Cleanup</li>
+      </ul>
+    </section>
+
+    <section class="pay-now">
+      <h2>Pay Your Bill</h2>
+      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return showThankYou();">
+        <input type="hidden" name="cmd" value="_xclick">
+        <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Change to your PayPal email -->
+        <input type="hidden" name="currency_code" value="USD">
+
+        <label for="invoice">Invoice Number:</label>
+        <input type="text" id="invoice" name="item_name" required placeholder="Enter Invoice #">
+
+        <label for="amount">Amount ($):</label>
+        <input type="number" id="amount" name="amount" required min="1" step="0.01" placeholder="Enter Amount">
+
+        <button type="submit">Pay with PayPal</button>
+      </form>
+    </section>
+
+    <section class="alt-payments">
+      <h2>Other Ways to Pay</h2>
+      <p><strong>CashApp:</strong> $HolidayLawnCare</p>
+      <p><strong>Venmo:</strong> @HolidayLawnCare</p>
+      <p><strong>Zelle:</strong> holidaylawncare@example.com</p>
+    </section>
+
+    <div id="thank-you" style="display:none; margin-top:2em;">
+      <h2 style="color:green;">Thank you for your payment!</h2>
+      <p>We appreciate your business and look forward to serving you again!</p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Holiday Lawn & Garden. All rights reserved.
+  </footer>
+
+  <script>
+    function showThankYou() {
+      document.getElementById('thank-you').style.display = 'block';
+      return true; // Allow PayPal form to continue
+    }
+  </script>
+
+</body>
+</html>
