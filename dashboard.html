@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
+  <title>Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
 
   <!-- Firebase SDK -->
@@ -11,9 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-
-  <!-- jsPDF for PDF generation -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     .dashboard-container {
@@ -25,32 +22,28 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
     }
-    .invoice-box {
-      margin-top: 2em;
-      text-align: left;
-      background: #f9f9f9;
-      padding: 1.5em;
-      border-radius: 8px;
-    }
-    .invoice-box h3 {
-      margin-bottom: 1em;
-    }
-    .invoice-item {
-      margin-bottom: 1em;
-      font-size: 1.1em;
+    .dashboard-info, .service-request-form, .notifications {
+      margin-bottom: 2em;
     }
     .dashboard-buttons button {
       background-color: #228B22;
       color: white;
-      padding: 0.7em 1.5em;
       border: none;
+      padding: 0.7em 1.5em;
+      margin: 0.5em;
       border-radius: 5px;
-      margin-top: 1em;
       font-size: 1em;
       cursor: pointer;
     }
     .dashboard-buttons button:hover {
       background-color: #006400;
+    }
+    input, select, textarea {
+      width: 90%;
+      padding: 0.7em;
+      margin: 0.5em 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
     .logout {
       margin-top: 2em;
@@ -63,9 +56,16 @@
     .logout:hover {
       text-decoration: underline;
     }
+    .notification-item {
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1em;
+      margin: 0.5em 0;
+      text-align: left;
+    }
   </style>
 </head>
-
 <body>
 
 <header>
@@ -75,7 +75,6 @@
     <a href="services.html">Services</a>
     <a href="about.html">About</a>
     <a href="contact.html">Contact</a>
-    <a href="pay-your-bill.html">Pay Your Bill</a>
     <a href="gallery.html">Gallery</a>
     <a href="login.html">Logout</a>
   </nav>
@@ -86,10 +85,45 @@
   <div class="dashboard-container fade-in">
     <h2 id="welcome">Welcome!</h2>
 
-    <div id="invoiceSection" class="invoice-box" style="display:none;">
-      <h3>Your Latest Invoice</h3>
-      <div id="invoiceDetails"></div>
-      <button onclick="downloadInvoice()">Download Invoice (PDF)</button>
+    <!-- 🔔 Notifications Section -->
+    <div class="notifications">
+      <h3>🔔 Notifications</h3>
+      <div id="notificationsList">
+        <p>Loading your notifications...</p>
+      </div>
+    </div>
+
+    <div class="dashboard-info">
+      <p><strong>Last Payment:</strong> Paid <strong>$120</strong> on <strong>April 20, 2025</strong>.</p>
+      <p><strong>Next Service:</strong> Scheduled for <strong>May 5, 2025</strong>.</p>
+    </div>
+
+    <div class="dashboard-buttons">
+      <button onclick="toggleServiceForm()">Request New Service</button>
+      <button onclick="location.href='pay-your-bill.html'">Pay Another Invoice</button>
+    </div>
+
+    <!-- Request New Service Form -->
+    <div id="serviceForm" class="service-request-form" style="display: none;">
+      <h3>Request New Service</h3>
+      <form id="newServiceForm" onsubmit="submitServiceRequest(event)">
+        <input type="text" id="fullName" placeholder="Full Name" required><br>
+        <input type="email" id="email" placeholder="Email Address" required><br>
+        <select id="serviceType" required>
+          <option value="">Select a Service</option>
+          <option value="Mowing & Trimming">Mowing & Trimming</option>
+          <option value="Landscape Design">Landscape Design</option>
+          <option value="Leaf Removal">Leaf Removal</option>
+          <option value="Fertilization & Seeding">Fertilization & Seeding</option>
+          <option value="Seasonal Cleanup">Seasonal Cleanup</option>
+          <option value="Mulching & Edging">Mulching & Edging</option>
+          <option value="Pressure Washing">Pressure Washing</option>
+          <option value="Commercial Lawn Care">Commercial Lawn Care</option>
+        </select><br>
+        <input type="date" id="preferredDate" required><br>
+        <textarea id="notes" placeholder="Additional notes..." rows="4"></textarea><br>
+        <button type="submit">Submit Request</button>
+      </form>
     </div>
 
     <a onclick="logout()" class="logout">Logout</a>
@@ -102,70 +136,76 @@
 
 <script>
   const db = firebase.firestore();
-  let currentInvoiceData = null; // For use in PDF
+
+  function toggleServiceForm() {
+    const form = document.getElementById('serviceForm');
+    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+  }
+
+  function submitServiceRequest(event) {
+    event.preventDefault();
+
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const serviceType = document.getElementById('serviceType').value;
+    const preferredDate = document.getElementById('preferredDate').value;
+    const notes = document.getElementById('notes').value;
+
+    db.collection("service_requests").add({
+      fullName,
+      email,
+      serviceType,
+      preferredDate,
+      notes,
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(() => {
+      alert("✅ Your service request has been submitted successfully!");
+      document.getElementById('newServiceForm').reset();
+      document.getElementById('serviceForm').style.display = 'none';
+      loadNotifications();
+    })
+    .catch((error) => {
+      console.error("Error adding document: ", error);
+      alert("❌ Error submitting service request. Please try again.");
+    });
+  }
+
+  function loadNotifications() {
+    const notificationsList = document.getElementById('notificationsList');
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+
+    db.collection("notifications")
+      .where("email", "==", user.email)
+      .orderBy("createdAt", "desc")
+      .limit(10)
+      .get()
+      .then(snapshot => {
+        notificationsList.innerHTML = "";
+        if (snapshot.empty) {
+          notificationsList.innerHTML = "<p>No new notifications.</p>";
+          return;
+        }
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const div = document.createElement("div");
+          div.className = "notification-item";
+          div.innerText = data.message;
+          notificationsList.appendChild(div);
+        });
+      });
+  }
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       document.getElementById('welcome').innerText = `Welcome, ${user.email}!`;
-
-      // Load user's latest invoice
-      db.collection("invoices")
-        .where("customerEmail", "==", user.email)
-        .orderBy("dueDate", "desc")
-        .limit(1)
-        .get()
-        .then(snapshot => {
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            currentInvoiceData = doc.data();
-            displayInvoice(currentInvoiceData);
-          }
-        });
-
+      document.getElementById('email').value = user.email;
+      loadNotifications();
     } else {
-      window.location.href = 'login.html';
+      window.location.href = 'login.html'; // redirect if not logged in
     }
   });
-
-  function displayInvoice(data) {
-    const invoiceDetails = document.getElementById('invoiceDetails');
-    invoiceDetails.innerHTML = `
-      <div class="invoice-item"><strong>Invoice #:</strong> ${data.invoiceNumber}</div>
-      <div class="invoice-item"><strong>Amount Due:</strong> $${data.amountDue.toFixed(2)}</div>
-      <div class="invoice-item"><strong>Due Date:</strong> ${data.dueDate}</div>
-    `;
-    document.getElementById('invoiceSection').style.display = 'block';
-  }
-
-  async function downloadInvoice() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    if (!currentInvoiceData) {
-      alert("No invoice found.");
-      return;
-    }
-
-    doc.setFontSize(18);
-    doc.text("Holliday's Lawn & Garden", 20, 20);
-    doc.setFontSize(12);
-    doc.text("Professional Lawn Care & Landscaping", 20, 28);
-
-    doc.setLineWidth(0.5);
-    doc.line(20, 32, 190, 32);
-
-    doc.text(`Invoice #: ${currentInvoiceData.invoiceNumber}`, 20, 50);
-    doc.text(`Customer Email: ${currentInvoiceData.customerEmail}`, 20, 60);
-    doc.text(`Amount Due: $${currentInvoiceData.amountDue.toFixed(2)}`, 20, 70);
-    doc.text(`Due Date: ${currentInvoiceData.dueDate}`, 20, 80);
-
-    doc.setLineWidth(0.5);
-    doc.line(20, 90, 190, 90);
-
-    doc.text("Thank you for your business!", 20, 100);
-
-    doc.save(`Invoice-${currentInvoiceData.invoiceNumber}.pdf`);
-  }
 
   function logout() {
     firebase.auth().signOut().then(() => {
@@ -173,7 +213,6 @@
     });
   }
 
-  // Fade in animation
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -181,6 +220,7 @@
       }
     });
   }, { threshold: 0.1 });
+
   document.querySelectorAll('.fade-in').forEach(section => {
     observer.observe(section);
   });
