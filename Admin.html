@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Holliday's Lawn & Garden</title>
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
 
   <!-- Firebase SDK -->
@@ -13,8 +13,8 @@
   <script src="firebase-init.js"></script>
 
   <style>
-    .dashboard-container {
-      max-width: 600px;
+    .admin-container {
+      max-width: 1200px;
       margin: 3em auto;
       padding: 2em;
       background: white;
@@ -22,28 +22,30 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
     }
-    .dashboard-info, .service-request-form {
-      margin-bottom: 2em;
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
     }
-    .dashboard-buttons button {
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: #228B22;
+      color: white;
+    }
+    button {
       background-color: #228B22;
       color: white;
       border: none;
-      padding: 0.7em 1.5em;
-      margin: 0.5em;
+      padding: 0.5em 1em;
+      margin: 5px;
       border-radius: 5px;
-      font-size: 1em;
       cursor: pointer;
     }
-    .dashboard-buttons button:hover {
+    button:hover {
       background-color: #006400;
-    }
-    input, select, textarea {
-      width: 90%;
-      padding: 0.7em;
-      margin: 0.5em 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
     }
     .logout {
       margin-top: 2em;
@@ -76,45 +78,55 @@
     <a href="gallery.html">Gallery</a>
     <a href="login.html">Login</a>
   </nav>
-  <p>Customer Dashboard</p>
+  <p>Admin Dashboard</p>
 </header>
 
 <main>
-  <div class="dashboard-container fade-in">
-    <h2 id="welcome">Welcome!</h2>
+  <div class="admin-container fade-in">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead>
+        <tr>
+          <th>Customer Name</th>
+          <th>Email</th>
+          <th>Service Requested</th>
+          <th>Preferred Date</th>
+          <th>Notes</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-    <div class="dashboard-info">
-      <p><strong>Last Payment:</strong> Paid <strong>$120</strong> on <strong>April 20, 2025</strong>.</p>
-      <p><strong>Next Service:</strong> Scheduled for <strong>May 5, 2025</strong>.</p>
-    </div>
+    <h2>Invoices Paid</h2>
+    <table id="invoicesPaidTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Invoice #</th>
+          <th>Amount</th>
+          <th>Date Paid</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-    <div class="dashboard-buttons">
-      <button onclick="toggleServiceForm()">Request New Service</button>
-      <button onclick="location.href='pay-your-bill.html'">Pay Another Invoice</button>
-    </div>
-
-    <!-- Request New Service Form -->
-    <div id="serviceForm" class="service-request-form" style="display: none;">
-      <h3>Request New Service</h3>
-      <form id="newServiceForm" onsubmit="submitServiceRequest(event)">
-        <input type="text" id="fullName" placeholder="Full Name" required><br>
-        <input type="email" id="email" placeholder="Email Address" required><br>
-        <select id="serviceType" required>
-          <option value="">Select a Service</option>
-          <option value="Mowing & Trimming">Mowing & Trimming</option>
-          <option value="Landscape Design">Landscape Design</option>
-          <option value="Leaf Removal">Leaf Removal</option>
-          <option value="Fertilization & Seeding">Fertilization & Seeding</option>
-          <option value="Seasonal Cleanup">Seasonal Cleanup</option>
-          <option value="Mulching & Edging">Mulching & Edging</option>
-          <option value="Pressure Washing">Pressure Washing</option>
-          <option value="Commercial Lawn Care">Commercial Lawn Care</option>
-        </select><br>
-        <input type="date" id="preferredDate" required><br>
-        <textarea id="notes" placeholder="Additional notes..." rows="4"></textarea><br>
-        <button type="submit">Submit Request</button>
-      </form>
-    </div>
+    <h2>Invoices Due</h2>
+    <table id="invoicesDueTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Invoice #</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
     <a onclick="logout()" class="logout">Logout</a>
     <div id="loadingSpinner">Logging out...</div>
@@ -128,47 +140,56 @@
 <script>
   const db = firebase.firestore();
 
-  function toggleServiceForm() {
-    const form = document.getElementById('serviceForm');
-    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
-  }
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const adminEmails = ["youradminemail@example.com"]; // ✅ Replace this with your actual admin email
+      if (!adminEmails.includes(user.email)) {
+        alert("Access Denied. Redirecting...");
+        window.location.href = "index.html";
+      } else {
+        loadServiceRequests();
+        loadInvoices();
+      }
+    } else {
+      window.location.href = "login.html";
+    }
+  });
 
-  function submitServiceRequest(event) {
-    event.preventDefault();
-
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const serviceType = document.getElementById('serviceType').value;
-    const preferredDate = document.getElementById('preferredDate').value;
-    const notes = document.getElementById('notes').value;
-
-    db.collection("service_requests").add({
-      fullName,
-      email,
-      serviceType,
-      preferredDate,
-      notes,
-      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("✅ Your service request has been submitted successfully!");
-      document.getElementById('newServiceForm').reset();
-      document.getElementById('serviceForm').style.display = 'none';
-    })
-    .catch((error) => {
-      console.error("Error adding document: ", error);
-      alert("❌ Error submitting service request. Please try again.");
+  function loadServiceRequests() {
+    db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+      const tbody = document.querySelector("#requestsTable tbody");
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = `<tr>
+          <td>${data.fullName}</td>
+          <td>${data.email}</td>
+          <td>${data.serviceType}</td>
+          <td>${data.preferredDate}</td>
+          <td>${data.notes}</td>
+          <td>Pending</td>
+          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
     });
   }
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById('welcome').innerText = `Welcome, ${user.email}!`;
-      document.getElementById('email').value = user.email;
-    } else {
-      window.location.href = 'login.html'; // Redirect if not logged in
-    }
-  });
+  function loadInvoices() {
+    // Placeholder - if you want invoice tracking here later
+  }
+
+  function markCompleted(docId) {
+    db.collection("service_requests").doc(docId).delete()
+      .then(() => {
+        alert("✅ Service request marked completed!");
+        loadServiceRequests();
+      })
+      .catch(error => {
+        console.error("Error removing request: ", error);
+        alert("❌ Error updating request.");
+      });
+  }
 
   function logout() {
     document.getElementById('loadingSpinner').style.display = 'block';
@@ -176,7 +197,7 @@
       setTimeout(() => {
         alert("✅ You have been logged out successfully!");
         window.location.href = "login.html";
-      }, 1000); // Small delay for smoothness
+      }, 1000);
     }).catch((error) => {
       console.error("Logout error:", error);
       alert("❌ Error logging out. Please try again.");
