@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="admin-script.js"></script>
+</head>
+<body>
+<header><h1>Holliday's Lawn & Garden - Admin Dashboard</h1></header>
+<main><div class="admin-container fade-in">
+  <h2>Service Requests</h2><table id="requestsTable"><thead><tr><th>Customer Name</th><th>Email</th><th>Service Requested</th><th>Preferred Date</th><th>Notes</th><th>Status</th><th>Assigned Worker</th><th>Actions</th></tr></thead><tbody></tbody></table>
+  <h2>Quotes Management</h2><button onclick="openNewQuoteModal()">➕ New Quote</button>
+  <div id="newQuoteModal" style="display:none;"><form id="newQuoteForm"><input id="newCustomerName" placeholder="Name"><input id="newCustomerEmail" placeholder="Email"><input id="newServiceType" placeholder="Service"><input id="newQuoteAmount" placeholder="Amount"><button type="submit">Submit</button><button type="button" onclick="closeNewQuoteModal()">Cancel</button></form></div>
+  <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table>
+  <h2>Invoices Paid</h2><table id="invoicesPaidTable"><thead><tr><th>Name</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Date</th></tr></thead><tbody></tbody></table>
+  <h2>Invoices Due</h2><table id="invoicesDueTable"><thead><tr><th>Name</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Actions</th></tr></thead><tbody></tbody></table>
+  <a onclick="logout()" class="logout">Logout</a>
+</div></main>
+<footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+</body></html>
