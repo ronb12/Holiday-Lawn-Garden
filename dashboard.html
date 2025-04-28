@@ -9,6 +9,7 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
   <style>
@@ -21,7 +22,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
     }
-    .dashboard-info {
+    .dashboard-info, .service-request-form {
       margin-bottom: 2em;
     }
     .dashboard-buttons button {
@@ -37,13 +38,19 @@
     .dashboard-buttons button:hover {
       background-color: #006400;
     }
+    input, select, textarea {
+      width: 90%;
+      padding: 0.7em;
+      margin: 0.5em 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
     .logout {
       margin-top: 2em;
       display: inline-block;
       color: #228B22;
       text-decoration: none;
       font-weight: bold;
-      cursor: pointer;
     }
     .logout:hover {
       text-decoration: underline;
@@ -75,8 +82,31 @@
       </div>
 
       <div class="dashboard-buttons">
-        <button onclick="alert('Service request form coming soon!')">Request New Service</button>
+        <button onclick="toggleServiceForm()">Request New Service</button>
         <button onclick="location.href='pay-your-bill.html'">Pay Another Invoice</button>
+      </div>
+
+      <!-- Request New Service Form -->
+      <div id="serviceForm" class="service-request-form" style="display: none;">
+        <h3>Request New Service</h3>
+        <form id="newServiceForm" onsubmit="submitServiceRequest(event)">
+          <input type="text" id="fullName" placeholder="Full Name" required><br>
+          <input type="email" id="email" placeholder="Email Address" required><br>
+          <select id="serviceType" required>
+            <option value="">Select a Service</option>
+            <option value="Mowing & Trimming">Mowing & Trimming</option>
+            <option value="Landscape Design">Landscape Design</option>
+            <option value="Leaf Removal">Leaf Removal</option>
+            <option value="Fertilization & Seeding">Fertilization & Seeding</option>
+            <option value="Seasonal Cleanup">Seasonal Cleanup</option>
+            <option value="Mulching & Edging">Mulching & Edging</option>
+            <option value="Pressure Washing">Pressure Washing</option>
+            <option value="Commercial Lawn Care">Commercial Lawn Care</option>
+          </select><br>
+          <input type="date" id="preferredDate" required><br>
+          <textarea id="notes" placeholder="Additional notes..." rows="4"></textarea><br>
+          <button type="submit">Submit Request</button>
+        </form>
       </div>
 
       <a onclick="logout()" class="logout">Logout</a>
@@ -88,28 +118,56 @@
   </footer>
 
   <script>
-    // Firebase observer for auth state
+    const db = firebase.firestore();
+
+    function toggleServiceForm() {
+      const form = document.getElementById('serviceForm');
+      form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+    }
+
+    function submitServiceRequest(event) {
+      event.preventDefault();
+
+      const fullName = document.getElementById('fullName').value;
+      const email = document.getElementById('email').value;
+      const serviceType = document.getElementById('serviceType').value;
+      const preferredDate = document.getElementById('preferredDate').value;
+      const notes = document.getElementById('notes').value;
+
+      db.collection("service_requests").add({
+        fullName,
+        email,
+        serviceType,
+        preferredDate,
+        notes,
+        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+      })
+      .then(() => {
+        alert("✅ Your service request has been submitted successfully!");
+        document.getElementById('newServiceForm').reset();
+        document.getElementById('serviceForm').style.display = 'none';
+      })
+      .catch((error) => {
+        console.error("Error adding document: ", error);
+        alert("❌ Error submitting service request. Please try again.");
+      });
+    }
+
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
-        const email = user.email;
-        document.getElementById('welcome').innerText = `Welcome, ${email}!`;
+        document.getElementById('welcome').innerText = `Welcome, ${user.email}!`;
+        document.getElementById('email').value = user.email;
       } else {
-        // Not logged in, redirect to login page
-        window.location.href = "login.html";
+        window.location.href = 'login.html'; // Redirect if not logged in
       }
     });
 
     function logout() {
-      firebase.auth().signOut()
-        .then(() => {
-          window.location.href = "login.html";
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
     }
 
-    // Fade-in animation
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
