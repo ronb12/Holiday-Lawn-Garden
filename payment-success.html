@@ -75,7 +75,6 @@
 <script>
   const db = firebase.firestore();
 
-  // Auto update Firestore after payment success
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       const urlParams = new URLSearchParams(window.location.search);
@@ -89,11 +88,12 @@
           .get()
           .then(snapshot => {
             if (!snapshot.empty) {
-              const docId = snapshot.docs[0].id;
-              db.collection("invoices").doc(docId).update({
+              const docRef = snapshot.docs[0].ref;
+              docRef.update({
                 paid: true
               }).then(() => {
                 console.log("✅ Invoice marked as Paid!");
+                sendPaymentConfirmation(user.email, invoiceNumber);
               }).catch(error => {
                 console.error("❌ Error updating invoice:", error);
               });
@@ -105,6 +105,27 @@
       }
     }
   });
+
+  function sendPaymentConfirmation(email, invoiceNumber) {
+    fetch('https://your-server.com/send-confirmation-email', {  // <--- You'll update this URL
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: "Payment Confirmation - Holliday's Lawn & Garden",
+        message: `Thank you for your payment for Invoice #${invoiceNumber}. Your service is confirmed!`
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("✅ Payment confirmation email sent!", data);
+    })
+    .catch(error => {
+      console.error("❌ Error sending confirmation email:", error);
+    });
+  }
 
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
