@@ -6,6 +6,12 @@
   <title>Payment Successful - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
   <style>
     .success-container {
       max-width: 600px;
@@ -57,7 +63,7 @@
 <main>
   <div class="success-container fade-in">
     <h1>✅ Payment Successful!</h1>
-    <p>Thank you for your payment.<br> We have received your invoice payment and your service is scheduled as promised.</p>
+    <p>Thank you for your payment.<br> We have updated your invoice and your service is scheduled as promised!</p>
     <a href="dashboard.html" class="btn">Return to Dashboard</a>
   </div>
 </main>
@@ -67,6 +73,39 @@
 </footer>
 
 <script>
+  const db = firebase.firestore();
+
+  // Auto update Firestore after payment success
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const invoiceNumber = urlParams.get('invoice');
+
+      if (invoiceNumber) {
+        db.collection("invoices")
+          .where("invoiceNumber", "==", invoiceNumber)
+          .where("customerEmail", "==", user.email)
+          .limit(1)
+          .get()
+          .then(snapshot => {
+            if (!snapshot.empty) {
+              const docId = snapshot.docs[0].id;
+              db.collection("invoices").doc(docId).update({
+                paid: true
+              }).then(() => {
+                console.log("✅ Invoice marked as Paid!");
+              }).catch(error => {
+                console.error("❌ Error updating invoice:", error);
+              });
+            }
+          })
+          .catch(error => {
+            console.error("❌ Error fetching invoice:", error);
+          });
+      }
+    }
+  });
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
