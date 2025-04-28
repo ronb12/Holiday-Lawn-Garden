@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hoilday Lawn & Garden</title>
+  <title>Holiday Lawn & Garden</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -61,6 +61,11 @@
       font-size: 1.1em;
       color: #444;
     }
+    #thank-you {
+      display: none;
+      margin-top: 2em;
+      color: green;
+    }
     footer {
       background: #eee;
       text-align: center;
@@ -76,7 +81,7 @@
 <body>
 
   <header>
-    <h1>Hoilday Lawn & Garden</h1>
+    <h1>Holiday Lawn & Garden</h1>
     <p>Professional Lawn Care & Landscaping Services</p>
   </header>
 
@@ -94,7 +99,7 @@
 
     <section class="pay-now">
       <h2>Pay Your Bill</h2>
-      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="return showThankYou();">
+      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
         <input type="hidden" name="cmd" value="_xclick">
         <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Change to your PayPal email -->
         <input type="hidden" name="currency_code" value="USD">
@@ -111,13 +116,13 @@
 
     <section class="alt-payments">
       <h2>Other Ways to Pay</h2>
-      <p><strong>CashApp:</strong> $HolidayLawnCare</p>
-      <p><strong>Venmo:</strong> @HolidayLawnCare</p>
-      <p><strong>Zelle:</strong> holidaylawncare@example.com</p>
+      <p><strong>CashApp:</strong> Coming Soon</p>
+      <p><strong>Venmo:</strong> Coming Soon</p>
+      <p><strong>Zelle:</strong> Coming Soon</p>
     </section>
 
-    <div id="thank-you" style="display:none; margin-top:2em;">
-      <h2 style="color:green;">Thank you for your payment!</h2>
+    <div id="thank-you">
+      <h2>Thank you for your payment!</h2>
       <p>We appreciate your business and look forward to serving you again!</p>
     </div>
   </main>
@@ -129,7 +134,6 @@
   <script>
     function showThankYou() {
       document.getElementById('thank-you').style.display = 'block';
-      return true; // Allow PayPal form to continue
     }
   </script>
 
