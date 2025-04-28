@@ -6,8 +6,63 @@
   <title>Holiday Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Fade-in Animation Style -->
+  <!-- Fade-in Animation + Hamburger Mobile Nav Style -->
   <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+    }
+    header {
+      background-color: #228B22;
+      color: white;
+      text-align: center;
+      padding: 1em 0;
+      position: relative;
+    }
+    header img {
+      max-height: 80px;
+      margin-top: 10px;
+    }
+    .nav-links {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1em;
+    }
+    .nav-links a:hover {
+      text-decoration: underline;
+    }
+    .hamburger {
+      display: none;
+      font-size: 2em;
+      cursor: pointer;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+    @media (max-width: 600px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        background-color: #228B22;
+        width: 100%;
+        margin-top: 10px;
+      }
+      .nav-links.active {
+        display: flex;
+      }
+      .hamburger {
+        display: block;
+      }
+    }
     .fade-in {
       opacity: 0;
       transform: translateY(20px);
@@ -17,29 +72,21 @@
       opacity: 1;
       transform: none;
     }
-    header img {
-      max-height: 80px;
-      margin-top: 10px;
-    }
-    nav {
-      margin-top: 10px;
-    }
-    nav a {
-      margin: 0 10px;
-      text-decoration: none;
-      color: white;
-      font-weight: bold;
-    }
-    nav a:hover {
-      text-decoration: underline;
+    footer {
+      background-color: #eee;
+      text-align: center;
+      padding: 1em 0;
+      font-size: 0.9em;
+      color: #555;
     }
   </style>
 </head>
 <body>
 
-  <header style="background-color: #228B22; color: white; text-align: center; padding: 1em 0;">
+  <header>
     <img src="Holiday_Lawn_Garden_Logo_Resized.png" alt="Holiday Lawn & Garden Logo">
-    <nav>
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <nav class="nav-links" id="navLinks">
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
       <a href="about.html">About</a>
@@ -70,12 +117,17 @@
     </section>
   </main>
 
-  <footer style="background-color: #eee; text-align: center; padding: 1em 0; font-size: 0.9em; color: #555;">
+  <footer>
     &copy; 2025 Holiday Lawn & Garden. All rights reserved.
   </footer>
 
-  <!-- Fade-in Animation Script -->
+  <!-- Fade-in + Hamburger Script -->
   <script>
+    function toggleMenu() {
+      const nav = document.getElementById('navLinks');
+      nav.classList.toggle('active');
+    }
+
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
