@@ -35,6 +35,9 @@
       background-color: #228B22;
       color: white;
     }
+    td.overdue {
+      background-color: #ffcccc;
+    }
     button {
       background-color: #228B22;
       color: white;
@@ -88,7 +91,6 @@
 
 <main>
   <div class="admin-container fade-in">
-
     <h2>Service Requests</h2>
     <table id="requestsTable">
       <thead>
@@ -130,9 +132,23 @@
       <tbody></tbody>
     </table>
 
+    <h2>Paid Invoices</h2>
+    <table id="invoicesPaidTable">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Invoice #</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
     <a onclick="logout()" class="logout">Logout</a>
     <div id="loadingSpinner">Logging out...</div>
-
   </div>
 </main>
 
@@ -145,7 +161,7 @@
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
-      const adminEmails = ["ronellbradley@bradleyvs.com"]; // ✅ Set real admin email
+      const adminEmails = ["ronellbradley@bradleyvs.com"]; // ✅ Your admin email here
       if (!adminEmails.includes(user.email)) {
         alert("Access Denied. Redirecting...");
         window.location.href = "index.html";
@@ -179,24 +195,42 @@
   }
 
   function loadInvoices() {
+    const dueTbody = document.querySelector("#invoicesDueTable tbody");
+    const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+    dueTbody.innerHTML = "";
+    paidTbody.innerHTML = "";
+
     db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-      const tbody = document.querySelector("#invoicesDueTable tbody");
-      tbody.innerHTML = "";
       snapshot.forEach(doc => {
         const data = doc.data();
-        const row = `<tr>
-          <td>${data.customerEmail.split('@')[0]}</td>
-          <td>${data.customerEmail}</td>
-          <td>${data.invoiceNumber}</td>
-          <td>$${data.amountDue.toFixed(2)}</td>
-          <td>${data.dueDate}</td>
-          <td>${data.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${data.paid ? "" : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-          </td>
-        </tr>`;
-        tbody.innerHTML += row;
+        const dueDate = new Date(data.dueDate);
+        const today = new Date();
+        const isOverdue = dueDate < today;
+        const trClass = isOverdue ? 'overdue' : '';
+
+        if (!data.paid) {
+          dueTbody.innerHTML += `<tr class="${trClass}">
+            <td>${data.customerEmail.split('@')[0]}</td>
+            <td>${data.customerEmail}</td>
+            <td>${data.invoiceNumber}</td>
+            <td>$${data.amountDue.toFixed(2)}</td>
+            <td>${data.dueDate}</td>
+            <td>Unpaid</td>
+            <td>
+              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
+              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+            </td>
+          </tr>`;
+        } else {
+          paidTbody.innerHTML += `<tr>
+            <td>${data.customerEmail.split('@')[0]}</td>
+            <td>${data.customerEmail}</td>
+            <td>${data.invoiceNumber}</td>
+            <td>$${data.amountDue.toFixed(2)}</td>
+            <td>${data.dueDate}</td>
+            <td>Paid</td>
+          </tr>`;
+        }
       });
     });
   }
@@ -239,27 +273,27 @@
       });
   }
 
-  function markPaid(invoiceId) {
-    db.collection("invoices").doc(invoiceId).update({ paid: true })
+  function markPaid(docId) {
+    db.collection("invoices").doc(docId).update({ paid: true })
       .then(() => {
         alert("✅ Invoice marked as paid!");
         loadInvoices();
       })
       .catch(error => {
-        console.error("Error updating invoice: ", error);
+        console.error("Error marking paid:", error);
         alert("❌ Error updating invoice.");
       });
   }
 
-  function deleteInvoice(invoiceId) {
+  function deleteInvoice(docId) {
     if (confirm("Are you sure you want to delete this invoice?")) {
-      db.collection("invoices").doc(invoiceId).delete()
+      db.collection("invoices").doc(docId).delete()
         .then(() => {
           alert("✅ Invoice deleted!");
           loadInvoices();
         })
         .catch(error => {
-          console.error("Error deleting invoice: ", error);
+          console.error("Error deleting invoice:", error);
           alert("❌ Error deleting invoice.");
         });
     }
