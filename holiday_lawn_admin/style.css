@@ -1,6 +1,0 @@
-body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 0; }
-header { background: #228B22; color: white; padding: 1em; text-align: center; }
-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
-button { background: #228B22; color: white; border: none; padding: 8px 16px; cursor: pointer; }
-button:hover { background: #006400; }
