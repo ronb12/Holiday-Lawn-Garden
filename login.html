@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Holiday Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
+
+  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
   <style>
     .login-container {
       max-width: 400px;
@@ -64,6 +69,7 @@
       <a href="contact.html">Contact</a>
       <a href="pay-your-bill.html">Pay Your Bill</a>
       <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
     </nav>
     <p>Professional Lawn Care & Landscaping Services</p>
   </header>
@@ -77,12 +83,19 @@
       <input type="password" id="loginPassword" placeholder="Password" required><br>
       <button onclick="emailPasswordLogin()">Login</button>
 
-      <hr style="margin: 2em 0;">
-
-      <!-- Google Login -->
-      <button onclick="googleLogin()">Sign in with Google</button>
+      <!-- Google Sign In -->
+      <div class="g_id_signin"
+           data-type="standard"
+           data-shape="rectangular"
+           data-theme="outline"
+           data-text="sign_in_with"
+           data-size="large"
+           data-logo_alignment="left"
+           data-width="250">
+      </div>
 
       <div class="login-links">
+        <p><a href="forgot-password.html">Forgot Password?</a></p>
         <p>Don't have an account? <a href="create-account.html">Create one here</a>.</p>
       </div>
     </div>
@@ -93,32 +106,21 @@
   </footer>
 
   <script>
+    // Firebase Email/Password Login
     function emailPasswordLogin() {
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
 
       firebase.auth().signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
-          // Login success
-          window.location.href = "dashboard.html";
+          window.location.href = "dashboard.html"; // Redirect on success
         })
         .catch((error) => {
           alert(error.message);
         });
     }
 
-    function googleLogin() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase.auth().signInWithPopup(provider)
-        .then((result) => {
-          window.location.href = "dashboard.html";
-        })
-        .catch((error) => {
-          alert(error.message);
-        });
-    }
-
-    // Fade-in animation
+    // Optional: Google login if you want to handle it custom later
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
