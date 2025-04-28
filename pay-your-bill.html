@@ -11,9 +11,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Stripe SDK -->
-  <script src="https://js.stripe.com/v3/"></script>
-
   <style>
     .pay-container {
       max-width: 450px;
@@ -48,11 +45,6 @@
       margin-top: 2em;
       color: green;
     }
-    .divider {
-      margin: 2em 0;
-      font-weight: bold;
-      color: #555;
-    }
   </style>
 </head>
 <body>
@@ -75,25 +67,16 @@
     <h2>Pay Your Bill</h2>
     <p>Securely pay your Holliday's Lawn & Garden invoice below.</p>
 
-    <input type="email" id="payerEmail" placeholder="Email Address" required><br>
-    <input type="text" id="invoice" placeholder="Invoice Number" required><br>
-    <input type="number" id="amount" placeholder="Amount ($)" min="1" step="0.01" required><br>
-
-    <!-- Stripe Pay Button -->
-    <button id="payWithStripe">💳 Pay Securely with Card</button>
-
-    <div class="divider">OR</div>
-
-    <!-- PayPal Form -->
     <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
       <input type="hidden" name="cmd" value="_xclick">
-      <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Replace with real PayPal email -->
+      <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Replace this email -->
       <input type="hidden" name="currency_code" value="USD">
-      <input type="hidden" id="paypalInvoice" name="item_name">
-      <input type="hidden" id="paypalAmount" name="amount">
-      <input type="hidden" id="paypalEmail" name="payer_email">
 
-      <button type="submit">🅿️ Pay with PayPal</button>
+      <input type="email" id="payerEmail" name="payer_email" placeholder="Email Address" required><br>
+      <input type="text" id="invoice" name="item_name" placeholder="Invoice Number" required><br>
+      <input type="number" id="amount" name="amount" placeholder="Amount ($)" min="1" step="0.01" required><br>
+
+      <button type="submit">Pay with PayPal</button>
     </form>
 
     <div id="thank-you">
@@ -116,52 +99,15 @@
 </footer>
 
 <script>
-  const stripe = Stripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX'); // 🔥 Replace with your real Stripe Publishable Key
-
-  document.getElementById('payWithStripe').addEventListener('click', async () => {
-    const email = document.getElementById('payerEmail').value;
-    const invoice = document.getElementById('invoice').value;
-    const amount = parseFloat(document.getElementById('amount').value);
-
-    if (!email || !invoice || !amount) {
-      alert("❗ Please fill in all fields before proceeding.");
-      return;
-    }
-
-    const session = await fetch('/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        invoice,
-        amount
-      })
-    }).then(res => res.json());
-
-    const result = await stripe.redirectToCheckout({
-      sessionId: session.id
-    });
-
-    if (result.error) {
-      alert(result.error.message);
-    }
-  });
-
   function showThankYou() {
     document.getElementById('thank-you').style.display = 'block';
   }
 
+  // Auto-fill the Email field if user is logged in
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       document.getElementById('payerEmail').value = user.email;
     }
-  });
-
-  // Auto-fill PayPal hidden fields before submit
-  document.getElementById('paypal-form').addEventListener('submit', () => {
-    document.getElementById('paypalInvoice').value = document.getElementById('invoice').value;
-    document.getElementById('paypalAmount').value = document.getElementById('amount').value;
-    document.getElementById('paypalEmail').value = document.getElementById('payerEmail').value;
   });
 </script>
 
