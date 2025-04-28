@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Holiday Lawn & Garden</title>
+  <title>Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
   <style>
     .dashboard-container {
       max-width: 600px;
@@ -37,6 +43,7 @@
       color: #228B22;
       text-decoration: none;
       font-weight: bold;
+      cursor: pointer;
     }
     .logout:hover {
       text-decoration: underline;
@@ -46,7 +53,7 @@
 <body>
 
   <header>
-   <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
     <nav class="nav-links">
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
@@ -60,7 +67,7 @@
 
   <main>
     <div class="dashboard-container fade-in">
-      <h2>Welcome, John Doe!</h2>
+      <h2 id="welcome">Welcome!</h2>
 
       <div class="dashboard-info">
         <p><strong>Last Payment:</strong> Paid <strong>$120</strong> on <strong>April 20, 2025</strong>.</p>
@@ -72,15 +79,37 @@
         <button onclick="location.href='pay-your-bill.html'">Pay Another Invoice</button>
       </div>
 
-      <a href="login.html" class="logout">Logout</a>
+      <a onclick="logout()" class="logout">Logout</a>
     </div>
   </main>
 
   <footer>
-    &copy; 2025 Holiday Lawn & Garden. All rights reserved.
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
 
   <script>
+    // Firebase observer for auth state
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        const email = user.email;
+        document.getElementById('welcome').innerText = `Welcome, ${email}!`;
+      } else {
+        // Not logged in, redirect to login page
+        window.location.href = "login.html";
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut()
+        .then(() => {
+          window.location.href = "login.html";
+        })
+        .catch((error) => {
+          alert(error.message);
+        });
+    }
+
+    // Fade-in animation
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -88,6 +117,7 @@
         }
       });
     }, { threshold: 0.1 });
+
     document.querySelectorAll('.fade-in').forEach(section => {
       observer.observe(section);
     });
@@ -95,4 +125,3 @@
 
 </body>
 </html>
-
