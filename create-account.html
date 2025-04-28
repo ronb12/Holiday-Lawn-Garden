@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - Holiday Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .create-container {
+      max-width: 400px;
+      margin: 3em auto;
+      padding: 2em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 90%;
+      padding: 0.7em;
+      margin: 1em 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #228B22;
+      color: white;
+      padding: 0.7em 2em;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #006400;
+    }
+    .login-links {
+      margin-top: 1em;
+      font-size: 0.9em;
+    }
+    .login-links a {
+      color: #228B22;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="Holiday_Lawn_Garden_Logo_Resized.png" alt="Holiday Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
+    </nav>
+    <p>Create Your Account</p>
+  </header>
+
+  <main>
+    <div class="create-container fade-in">
+      <h2>Create Account</h2>
+      <form action="dashboard.html" method="GET"> <!-- In real site, this saves to database -->
+        <input type="text" name="name" placeholder="Full Name" required><br>
+        <input type="email" name="email" placeholder="Email Address" required><br>
+        <input type="password" name="password" placeholder="Password" required><br>
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
+        <button type="submit">Create Account</button>
+      </form>
+      <div class="login-links">
+        <p>Already have an account? <a href="login.html">Login here</a>.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Holiday Lawn & Garden. All rights reserved.
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(section => {
+      observer.observe(section);
+    });
+  </script>
+
+</body>
+</html>
 
