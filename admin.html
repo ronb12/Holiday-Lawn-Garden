@@ -10,14 +10,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
     header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
     .admin-container { max-width: 1200px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin: 1em 0; }
     th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
     th { background: #228B22; color: white; }
     .overdue { background: #ffe5e5; }
-    input, textarea, button { padding: 0.5em; margin: 0.5em 0; border-radius: 5px; width: 100%; }
+    input, button { padding: 0.5em; margin: 0.5em 0; border-radius: 5px; }
     button { background: #228B22; color: white; border: none; cursor: pointer; }
     button:hover { background: #006400; }
     .logout { display: inline-block; margin-top: 1em; color: #228B22; cursor: pointer; text-decoration: underline; }
@@ -39,10 +39,11 @@
 
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-    <textarea id="invoiceItems" placeholder="Service Descriptions & Amounts (e.g. Lawn:$50, Hedges:$30)" required></textarea>
-    <input type="date" id="invoiceDueDate" required />
+    <input type="email" id="invoiceEmail" placeholder="Customer Email" required /><br />
+    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required /><br />
+    <textarea id="invoiceDescriptions" placeholder="One line per service description" required rows="4" style="width:100%"></textarea><br />
+    <textarea id="invoiceAmounts" placeholder="One line per matching amount" required rows="4" style="width:100%"></textarea><br />
+    <input type="date" id="invoiceDueDate" required /><br />
     <button type="submit">Create Invoice</button>
   </form>
 
@@ -57,7 +58,7 @@
   <h2>Paid Invoices</h2>
   <table id="invoicesPaidTable">
     <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -68,160 +69,159 @@
 <footer id="footer"></footer>
 
 <script>
-const db = firebase.firestore();
+  const db = firebase.firestore();
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    const adminEmails = ["ronellbradley@bradleyvs.com"];
-    if (!adminEmails.includes(user.email)) {
-      alert("Access Denied.");
-      window.location.href = "index.html";
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const adminEmails = ["ronellbradley@bradleyvs.com"];
+      if (!adminEmails.includes(user.email)) {
+        alert("Access Denied.");
+        window.location.href = "index.html";
+      } else {
+        loadServiceRequests();
+        loadInvoices();
+      }
     } else {
-      loadServiceRequests();
-      loadInvoices();
+      window.location.href = "login.html";
     }
-  } else {
-    window.location.href = "login.html";
-  }
-});
-
-function loadServiceRequests() {
-  db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
-    const tbody = document.querySelector("#requestsTable tbody");
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `<tr>
-        <td>${d.fullName || "N/A"}</td>
-        <td>${d.email}</td>
-        <td>${d.serviceType}</td>
-        <td>${new Date(d.preferredDate).toLocaleDateString()}</td>
-        <td>${d.notes || "-"}</td>
-        <td>Pending</td>
-        <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-      </tr>`;
-    });
   });
-}
 
-function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-  dueTbody.innerHTML = "";
-  paidTbody.innerHTML = "";
+  function logout() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    firebase.auth().signOut().then(() => {
+      setTimeout(() => {
+        alert("✅ Logged out!");
+        window.location.href = "login.html";
+      }, 1000);
+    });
+  }
 
-  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const dueDate = new Date(data.dueDate);
-      const today = new Date();
-      const isOverdue = dueDate < today && !data.paid;
-      const trClass = isOverdue ? 'overdue' : '';
-      const encodedItems = btoa(JSON.stringify(data.items || []));
+  function loadServiceRequests() {
+    db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+      const tbody = document.querySelector("#requestsTable tbody");
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        tbody.innerHTML += `<tr>
+          <td>${d.fullName || "N/A"}</td>
+          <td>${d.email || "N/A"}</td>
+          <td>${d.serviceType || "N/A"}</td>
+          <td>${d.preferredDate ? new Date(d.preferredDate).toLocaleDateString() : "N/A"}</td>
+          <td>${d.notes || "N/A"}</td>
+          <td>Pending</td>
+          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
+        </tr>`;
+      });
+    });
+  }
 
-      const rowHTML = `
-        <tr class="${trClass}">
-          <td>${data.customerEmail.split('@')[0]}</td>
+  function createInvoice(e) {
+    e.preventDefault();
+    const email = document.getElementById("invoiceEmail").value;
+    const number = document.getElementById("invoiceNumber").value;
+    const descriptions = document.getElementById("invoiceDescriptions").value.trim().split("\n");
+    const amounts = document.getElementById("invoiceAmounts").value.trim().split("\n").map(a => parseFloat(a));
+    const dueDate = document.getElementById("invoiceDueDate").value;
+
+    if (descriptions.length !== amounts.length) {
+      alert("Descriptions and amounts must match in number.");
+      return;
+    }
+
+    const total = amounts.reduce((sum, a) => sum + a, 0);
+
+    db.collection("invoices").add({
+      customerEmail: email,
+      invoiceNumber: number,
+      services: descriptions,
+      amounts: amounts,
+      dueDate: dueDate,
+      paid: false,
+      amountDue: total,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      alert("✅ Invoice Created!");
+      document.getElementById("invoiceForm").reset();
+      loadInvoices();
+    });
+  }
+
+  function loadInvoices() {
+    const dueTbody = document.querySelector("#invoicesDueTable tbody");
+    const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+    dueTbody.innerHTML = "";
+    paidTbody.innerHTML = "";
+
+    db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const due = new Date(data.dueDate);
+        const overdue = due < new Date() && !data.paid;
+        const rowClass = overdue ? 'overdue' : '';
+        const actions = `<button onclick="markPaid('${doc.id}')">Mark Paid</button>
+                         <button onclick="viewInvoice(${JSON.stringify(data)})">View</button>
+                         <button onclick="deleteInvoice('${doc.id}')">Delete</button>`;
+
+        const row = `<tr class="${rowClass}">
+          <td>${data.customerEmail.split("@")[0]}</td>
           <td>${data.customerEmail}</td>
           <td>${data.invoiceNumber}</td>
-          <td>$${(data.items || []).reduce((sum, i) => sum + i.amount, 0).toFixed(2)}</td>
-          <td>${dueDate.toLocaleDateString()}</td>
-          <td>${data.paid ? 'Paid' : 'Unpaid'}</td>
-          <td>
-            ${!data.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ''}
-            <button onclick="viewInvoice('${data.invoiceNumber}', '${data.customerEmail}', '${data.dueDate}', '${encodedItems}')">View</button>
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-          </td>
+          <td>$${data.amountDue.toFixed(2)}</td>
+          <td>${due.toLocaleDateString()}</td>
+          <td>${data.paid ? "Paid" : "Unpaid"}</td>
+          <td>${actions}</td>
         </tr>`;
-      data.paid ? paidTbody.innerHTML += rowHTML : dueTbody.innerHTML += rowHTML;
+
+        if (data.paid) paidTbody.innerHTML += row;
+        else dueTbody.innerHTML += row;
+      });
     });
-  });
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById('invoiceEmail').value;
-  const number = document.getElementById('invoiceNumber').value;
-  const due = document.getElementById('invoiceDueDate').value;
-  const rawItems = document.getElementById('invoiceItems').value;
-
-  const items = rawItems.split(',').map(s => {
-    const [desc, amt] = s.split(':');
-    return { desc: desc.trim(), amount: parseFloat(amt.trim()) };
-  });
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    dueDate: due,
-    paid: false,
-    items,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Invoice created!");
-    document.getElementById("invoiceForm").reset();
-    loadInvoices();
-  });
-}
-
-function markCompleted(id) {
-  db.collection("service_requests").doc(id).delete().then(loadServiceRequests);
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete().then(loadInvoices);
   }
-}
 
-function viewInvoice(number, email, dueDate, encodedItems) {
-  const items = JSON.parse(atob(encodedItems));
-  const total = items.reduce((a, b) => a + b.amount, 0);
-  const rows = items.map(i => `
-    <tr>
-      <td style="padding:8px;border:1px solid #ccc;">${i.desc}</td>
-      <td style="padding:8px;border:1px solid #ccc;text-align:right;">$${i.amount.toFixed(2)}</td>
-    </tr>`).join('');
+  function markCompleted(id) {
+    db.collection("service_requests").doc(id).delete().then(loadServiceRequests);
+  }
 
-  const win = window.open('', '_blank');
-  win.document.write(`
-    <html><head><title>Invoice ${number}</title>
-      <style>
-        body { font-family: Arial; padding: 2em; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-        th, td { border: 1px solid #ccc; padding: 8px; }
-        th { background: #f4f4f4; text-align: left; }
-        .right { text-align: right; }
-      </style>
-    </head><body>
-      <img src="Hollidays_Lawn_Garden_Logo.png" style="max-height:80px;"><br><br>
-      <h2>Holliday's Lawn & Garden</h2>
-      <p><strong>Owner:</strong> Karl Holliday<br>
-         <strong>Phone:</strong> 504-717-1887<br>
-         <strong>Email:</strong> 7holliday@gmail.com</p>
-      <hr>
-      <h3>Invoice #: ${number}</h3>
-      <p><strong>Customer:</strong> ${email}<br>
-         <strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
-      <table>
-        <tr><th>Description</th><th class="right">Amount</th></tr>
-        ${rows}
-        <tr><td><strong>Total</strong></td><td class="right"><strong>$${total.toFixed(2)}</strong></td></tr>
-      </table>
-      <p style="margin-top:2em;">Thank you for your business!</p>
-      <button onclick="window.print()">🖨️ Print</button>
-    </body></html>
-  `);
-}
+  function markPaid(id) {
+    db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+  }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const year = new Date().getFullYear();
-  document.getElementById("footer").innerHTML = `&copy; ${year} Holliday's Lawn & Garden. All rights reserved.`;
-});
+  function deleteInvoice(id) {
+    if (confirm("Delete this invoice?")) {
+      db.collection("invoices").doc(id).delete().then(loadInvoices);
+    }
+  }
+
+  function viewInvoice(data) {
+    const win = window.open('', '_blank');
+    let serviceRows = data.services.map((desc, i) =>
+      `<tr><td>${desc}</td><td style="text-align:right">$${data.amounts[i].toFixed(2)}</td></tr>`).join("");
+    win.document.write(`
+      <html><head><title>Invoice ${data.invoiceNumber}</title></head>
+      <body style="font-family:Arial;padding:2em;">
+        <img src="Hollidays_Lawn_Garden_Logo.png" style="max-height:70px;">
+        <h2>Holliday's Lawn & Garden</h2>
+        <p><strong>Owner:</strong> Karl Holliday<br>
+        <strong>Phone:</strong> 504-717-1887<br>
+        <strong>Email:</strong> 7holliday@gmail.com</p><hr>
+        <h3>Invoice #: ${data.invoiceNumber}</h3>
+        <p><strong>Customer:</strong> ${data.customerEmail}</p>
+        <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style="text-align:left;">Description</th><th style="text-align:right;">Amount</th></tr></thead>
+          <tbody>${serviceRows}</tbody>
+          <tfoot><tr><td><strong>Total</strong></td><td style="text-align:right;"><strong>$${data.amountDue.toFixed(2)}</strong></td></tr></tfoot>
+        </table><br>
+        <p>Thank you for your business!</p>
+        <button onclick="window.print()">🖨️ Print</button>
+      </body></html>
+    `);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const year = new Date().getFullYear();
+    document.getElementById("footer").innerHTML = `&copy; ${year} Holliday's Lawn & Garden. All rights reserved.`;
+  });
 </script>
 </body>
 </html>
