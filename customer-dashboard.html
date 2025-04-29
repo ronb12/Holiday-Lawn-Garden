@@ -2,55 +2,134 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Dashboard - Holiday Lawn & Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { background: #f4f9f4; font-family: Arial, sans-serif; margin: 0; }
-    header { background-color: #228B22; padding: 1em; color: white; text-align: center; }
-    main { max-width: 800px; margin: 3em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
-    button {
-      background-color: #228B22;
-      color: white;
-      padding: 0.7em 2em;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-      margin-top: 2em;
-    }
-    button:hover { background-color: #006400; }
+    body { font-family: Arial, sans-serif; background: #f1f9f1; margin: 0; }
+    header { background: #228B22; padding: 1em; color: white; text-align: center; font-size: 1.5em; }
+    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { padding: 10px; border: 1px solid #ccc; }
+    th { background: #228B22; color: white; }
+    h2, h3 { color: #228B22; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; margin-top: 1em; }
+    button:hover { background: #006400; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
+    footer { text-align: center; margin-top: 2em; padding: 1em; background: #eee; font-size: 0.9em; }
   </style>
 </head>
 <body>
 
-<header>
-  <h1>Welcome to Your Dashboard</h1>
-</header>
+<header>Welcome to Your Dashboard</header>
 
-<main>
-  <h2>Hello, Customer!</h2>
-  <p>Thank you for choosing Holiday Lawn & Garden.</p>
-  <p>Our team will be in contact with you shortly regarding your service requests.</p>
+<div class="container">
+  <h2 id="greeting">Hello, Customer!</h2>
+  <p>Thank you for choosing Holiday Lawn & Garden.<br>Our team will be in contact with you shortly regarding your service requests.</p>
+
+  <h3>Your Service Requests</h3>
+  <table id="requestsTable">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Preferred Date</th>
+        <th>Notes</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+  </table>
+
+  <h3>Submit New Request</h3>
+  <form id="requestForm" onsubmit="submitRequest(event)">
+    <label>Service Type:</label>
+    <select id="serviceType" required>
+      <option value="">Select...</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Trimming">Trimming</option>
+      <option value="Leaf Cleanup">Leaf Cleanup</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label>Preferred Date:</label>
+    <input type="date" id="preferredDate" required>
+
+    <label>Notes:</label>
+    <textarea id="notes" rows="3" placeholder="Any special instructions..."></textarea>
+
+    <button type="submit">Send Request</button>
+  </form>
 
   <button onclick="logout()">Logout</button>
-</main>
+</div>
 
-<footer>
-  <p style="text-align: center; margin-top: 2em;">&copy; 2025 Holiday Lawn & Garden</p>
-</footer>
+<footer>&copy; 2025 Holiday Lawn & Garden</footer>
 
 <script>
-function logout() {
-  firebase.auth().signOut().then(() => {
-    window.location.href = "login.html";
-  }).catch((error) => {
-    console.error("Logout error:", error);
+  const db = firebase.firestore();
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) return location.href = "login.html";
+
+    document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
+    loadUserRequests(user.email);
   });
-}
+
+  function loadUserRequests(email) {
+    const tbody = document.querySelector("#requestsTable tbody");
+    db.collection("service_requests").where("email", "==", email).orderBy("submittedAt", "desc").get()
+      .then(snapshot => {
+        tbody.innerHTML = "";
+        if (snapshot.empty) {
+          tbody.innerHTML = "<tr><td colspan='4'>No service requests found.</td></tr>";
+          return;
+        }
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const row = `
+            <tr>
+              <td>${d.serviceType || "N/A"}</td>
+              <td>${d.preferredDate ? new Date(d.preferredDate).toLocaleDateString() : "N/A"}</td>
+              <td>${d.notes || "N/A"}</td>
+              <td>${d.status || "Pending"}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      });
+  }
+
+  function submitRequest(event) {
+    event.preventDefault();
+    const serviceType = document.getElementById("serviceType").value;
+    const preferredDate = document.getElementById("preferredDate").value;
+    const notes = document.getElementById("notes").value;
+
+    const user = firebase.auth().currentUser;
+    if (!user) return alert("Please log in first.");
+
+    db.collection("service_requests").add({
+      fullName: user.email.split("@")[0],
+      email: user.email,
+      serviceType,
+      preferredDate,
+      notes,
+      status: "Pending",
+      submittedAt: new Date().toISOString()
+    }).then(() => {
+      alert("✅ Request submitted successfully!");
+      document.getElementById("requestForm").reset();
+      loadUserRequests(user.email);
+    });
+  }
+
+  function logout() {
+    firebase.auth().signOut().then(() => location.href = "login.html");
+  }
 </script>
 
 </body>
