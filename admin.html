@@ -101,7 +101,7 @@
           <th>Action</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody><tr><td colspan="7">Loading service requests...</td></tr></tbody>
     </table>
 
     <h2>Create New Invoice</h2>
@@ -127,7 +127,7 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody><tr><td colspan="7">Loading invoices...</td></tr></tbody>
     </table>
 
     <h2>Paid Invoices</h2>
@@ -142,7 +142,7 @@
           <th>Status</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody><tr><td colspan="6">Loading paid invoices...</td></tr></tbody>
     </table>
 
     <a onclick="logout()" class="logout">Logout</a>
@@ -175,20 +175,29 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadServiceRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+  db.collection("service_requests").orderBy("submittedAt", "desc").get()
+  .then(snapshot => {
     tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `<tr>
-        <td>${d.fullName}</td>
-        <td>${d.email}</td>
-        <td>${d.serviceType}</td>
-        <td>${d.preferredDate}</td>
-        <td>${d.notes}</td>
-        <td>Pending</td>
-        <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-      </tr>`;
-    });
+    if (snapshot.empty) {
+      tbody.innerHTML = `<tr><td colspan="7">No service requests yet.</td></tr>`;
+    } else {
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        tbody.innerHTML += `<tr>
+          <td>${d.fullName}</td>
+          <td>${d.email}</td>
+          <td>${d.serviceType}</td>
+          <td>${d.preferredDate}</td>
+          <td>${d.notes}</td>
+          <td>Pending</td>
+          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
+        </tr>`;
+      });
+    }
+  })
+  .catch(error => {
+    console.error("Error loading service requests:", error);
+    tbody.innerHTML = `<tr><td colspan="7">⚠️ Error loading service requests</td></tr>`;
   });
 }
 
@@ -198,27 +207,42 @@ function loadInvoices() {
   dueBody.innerHTML = "";
   paidBody.innerHTML = "";
 
-  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const row = `<tr>
-        <td>${d.customerEmail.split('@')[0]}</td>
-        <td>${d.customerEmail}</td>
-        <td>${d.invoiceNumber}</td>
-        <td>$${d.grandTotal ? d.grandTotal.toFixed(2) : d.amountDue.toFixed(2)}</td>
-        <td>${d.dueDate}</td>
-        <td>${d.paid ? "Paid" : "Unpaid"}</td>
-        <td>
-          ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
-          <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-        </td>
-      </tr>`;
-      if (d.paid) {
-        paidBody.innerHTML += row;
-      } else {
-        dueBody.innerHTML += row;
-      }
-    });
+  db.collection("invoices").orderBy("dueDate", "asc").get()
+  .then(snapshot => {
+    if (snapshot.empty) {
+      dueBody.innerHTML = `<tr><td colspan="7">No invoices due.</td></tr>`;
+      paidBody.innerHTML = `<tr><td colspan="6">No paid invoices yet.</td></tr>`;
+    } else {
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const today = new Date();
+        const dueDateObj = new Date(d.dueDate);
+        const overdueClass = (!d.paid && dueDateObj < today) ? 'overdue' : '';
+
+        const row = `<tr class="${overdueClass}">
+          <td>${d.customerEmail.split('@')[0]}</td>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.grandTotal ? d.grandTotal.toFixed(2) : d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td>
+            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
+            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+          </td>
+        </tr>`;
+        if (d.paid) {
+          paidBody.innerHTML += row;
+        } else {
+          dueBody.innerHTML += row;
+        }
+      });
+    }
+  })
+  .catch(error => {
+    console.error("Error loading invoices:", error);
+    dueBody.innerHTML = `<tr><td colspan="7">⚠️ Error loading invoices</td></tr>`;
+    paidBody.innerHTML = `<tr><td colspan="6">⚠️ Error loading invoices</td></tr>`;
   });
 }
 
