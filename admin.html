@@ -170,14 +170,13 @@ function logout() {
 }
 
 function downloadInvoicePDF(id, email, number, amount, dueDate) {
-  const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  
+  const logoImg = "data:image/png;base64,..." // (your real base64 logo here)
 
-  const logo = "data:image/png;base64,..."; // Insert full base64 logo here
-
-  doc.addImage(logo, 'PNG', 80, 10, 50, 20);
+  // Add logo and header
+  doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
   let y = 35;
-
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -190,54 +189,65 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, y, { align: 'center' });
   y += 10;
 
-  doc.setDrawColor(34, 139, 34); doc.line(20, y, 190, y); y += 10;
+  doc.setDrawColor(34, 139, 34);
+  doc.line(20, y, 190, y);
+  y += 10;
 
-  doc.setFontSize(20); doc.setTextColor(34, 139, 34); doc.setFont('helvetica', 'bold');
-  doc.text("INVOICE", 20, y); y += 10;
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(34, 139, 34);
+  doc.text("INVOICE", 20, y);
+  y += 10;
 
-  doc.setFontSize(12); doc.setTextColor(0, 0, 0); doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
   doc.text(`Invoice #: ${number}`, 20, y); y += 7;
   doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, y); y += 7;
   doc.text(`Due Date: ${dueDate}`, 20, y);
 
-  doc.setFont('helvetica', 'bold'); doc.text("Bill To:", 140, 55);
-  doc.setFont('helvetica', 'normal'); doc.text(email, 140, 65);
+  doc.setFont('helvetica', 'bold');
+  doc.text("Bill To:", 140, 55);
+  doc.setFont('helvetica', 'normal');
+  doc.text(email, 140, 65);
 
-  doc.setDrawColor(34, 139, 34); doc.line(20, 90, 190, 90);
-  doc.setFont('helvetica', 'bold'); doc.setTextColor(34, 139, 34);
+  doc.setDrawColor(34, 139, 34);
+  doc.line(20, 90, 190, 90);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(34, 139, 34);
   doc.text("Service Description", 20, 100);
   doc.text("Amount", 160, 100);
 
-  let yPos = 110; let total = 0;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
+  doc.text("Lawn and Garden Services", 20, 110);
+  doc.text(`$${amount.toFixed(2)}`, 160, 110);
 
-  db.collection("invoices").doc(id).get().then(snap => {
-    const data = snap.data();
-    if (!data.services) return alert("No services found");
+  doc.setDrawColor(34, 139, 34);
+  doc.line(20, 120, 190, 120);
 
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(0, 0, 0);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(34, 139, 34);
+  doc.text("Total Due:", 140, 130);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
 
-    data.services.forEach(s => {
-      doc.text(s.description, 20, yPos);
-      doc.text(`$${parseFloat(s.amount).toFixed(2)}`, 160, yPos);
-      total += parseFloat(s.amount);
-      yPos += 7;
-    });
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
+  doc.text("Thank you for your business!", 105, 280, { align: 'center' });
 
-    doc.setDrawColor(34, 139, 34); doc.line(20, yPos, 190, yPos); yPos += 10;
+  try {
+    doc.save(`Invoice-${number}.pdf`); // Try direct download
+  } catch (e) {
+    console.error("Download failed, opening PDF in new window...", e);
 
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(14);
-    doc.setTextColor(34, 139, 34);
-    doc.text("Total Due:", 140, yPos);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`$${total.toFixed(2)}`, 180, yPos, { align: 'right' });
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(100, 100, 100);
-    doc.text("Thank you for your business!", 105, 280, { align: 'center' });
-
-    doc.save(`Invoice-${number}.pdf`);
+    // Fallback: Open in new tab for print
+    const string = doc.output('bloburl');
+    window.open(string, '_blank');
+  }
   });
 }
 </script>
