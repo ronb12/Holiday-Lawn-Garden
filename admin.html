@@ -1,4 +1,3 @@
-<!-- ✅ HEAD (no changes needed here since you already have Firebase + jsPDF correctly set up) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.min.js"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial, sans-serif; margin: 0; }
     header { background-color: #228B22; padding: 1em; color: white; text-align: center; }
@@ -25,157 +24,26 @@
   </style>
 </head>
 <body>
+
 <header><h1>Admin Dashboard</h1></header>
 
 <main class="admin-container">
-  <h2>Service Requests</h2>
-  <table id="requestsTable"><thead>
-    <tr><th>Name</th><th>Email</th><th>Service</th><th>Date</th><th>Notes</th><th>Status</th><th>Action</th></tr>
-  </thead><tbody><tr><td colspan="7">Loading...</td></tr></tbody></table>
-
-  <h2>Create Invoice</h2>
-  <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required><br>
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
-    <input type="text" id="serviceDescription" placeholder="Service Description" required><br>
-    <input type="number" id="serviceAmount" placeholder="Amount ($)" required><br>
-    <input type="date" id="invoiceDueDate" required><br>
-    <button type="submit">Create Invoice</button>
-  </form>
-
   <h2>Invoices Due</h2>
-  <table id="invoicesDueTable"><thead>
-    <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
-  </thead><tbody><tr><td colspan="7">Loading...</td></tr></tbody></table>
-
-  <h2>Paid Invoices</h2>
-  <table id="invoicesPaidTable"><thead>
-    <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
-  </thead><tbody><tr><td colspan="6">Loading...</td></tr></tbody></table>
-
-  <a onclick="logout()" class="logout">Logout</a>
+  <button onclick="downloadInvoicePDF('123', 'test@example.com', 'INV-001', 150.00, '2025-05-15')">Download Test PDF</button>
 </main>
 
 <footer style="text-align:center; margin-top: 2em;">&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- ✅ SCRIPT BLOCK -->
 <script>
 const db = firebase.firestore();
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user && ["ronellbradley@bradleyvs.com"].includes(user.email)) {
-    loadServiceRequests(); loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
-});
-
-function loadServiceRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) {
-      tbody.innerHTML = `<tr><td colspan="7">No requests found</td></tr>`;
-      return;
-    }
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.fullName || "N/A"}</td>
-          <td>${d.email || "N/A"}</td>
-          <td>${d.serviceType || "N/A"}</td>
-          <td>${d.preferredDate || "N/A"}</td>
-          <td>${d.notes || "N/A"}</td>
-          <td>Pending</td>
-          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-        </tr>
-      `;
-    });
-  });
-}
-
-function loadInvoices() {
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  dueBody.innerHTML = ""; paidBody.innerHTML = "";
-
-  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const overdue = !d.paid && new Date(d.dueDate) < new Date();
-      const row = `
-        <tr class="${overdue ? 'overdue' : ''}">
-          <td>${d.customerEmail?.split('@')[0] || "N/A"}</td>
-          <td>${d.customerEmail || "N/A"}</td>
-          <td>${d.invoiceNumber || "N/A"}</td>
-          <td>$${(d.amountDue || 0).toFixed(2)}</td>
-          <td>${d.dueDate || "N/A"}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${!d.paid ? `
-              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
-              <button onclick="downloadInvoicePDF(${JSON.stringify(doc.id)}, ${JSON.stringify(d.customerEmail)}, ${JSON.stringify(d.invoiceNumber)}, ${d.amountDue}, ${JSON.stringify(d.dueDate)})">PDF</button>
-            ` : ""}
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-          </td>
-        </tr>
-      `;
-      d.paid ? paidBody.innerHTML += row : dueBody.innerHTML += row;
-    });
-  });
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById('invoiceEmail').value;
-  const number = document.getElementById('invoiceNumber').value;
-  const desc = document.getElementById('serviceDescription').value;
-  const amt = parseFloat(document.getElementById('serviceAmount').value);
-  const due = document.getElementById('invoiceDueDate').value;
-
-  if (isNaN(amt)) return alert("Invalid amount");
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services: [{ description: desc, amount: amt }],
-    amountDue: amt,
-    dueDate: due,
-    paid: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Invoice Created");
-    document.getElementById('invoiceForm').reset();
-    loadInvoices();
-  });
-}
-
-function markCompleted(id) {
-  db.collection("service_requests").doc(id).delete().then(loadServiceRequests);
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete().then(loadInvoices);
-  }
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
-}
-
 function downloadInvoicePDF(id, email, number, amount, dueDate) {
   const doc = new jsPDF();
-  
-  const logoImg = "data:image/png;base64,..." // (your real base64 logo here)
 
-  // Add logo and header
+  const logoImg = "data:image/png;base64,...."; // <-- your real base64 logo here
+
   doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
+
   let y = 35;
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
@@ -194,8 +62,8 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   y += 10;
 
   doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 139, 34);
+  doc.setFont('helvetica', 'bold');
   doc.text("INVOICE", 20, y);
   y += 10;
 
@@ -239,17 +107,12 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.setTextColor(100, 100, 100);
   doc.text("Thank you for your business!", 105, 280, { align: 'center' });
 
-  try {
-    doc.save(`Invoice-${number}.pdf`); // Try direct download
-  } catch (e) {
-    console.error("Download failed, opening PDF in new window...", e);
-
-    // Fallback: Open in new tab for print
-    const string = doc.output('bloburl');
-    window.open(string, '_blank');
-  }
-  });
+  // ✅ New safer way
+  const pdfBlobUrl = doc.output('bloburl');
+  window.open(pdfBlobUrl, '_blank'); // Always pop out to new tab for download or print
 }
+
 </script>
+
 </body>
 </html>
