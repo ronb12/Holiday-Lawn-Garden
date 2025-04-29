@@ -70,6 +70,7 @@
 <header>
   <h1>Admin Dashboard</h1>
 </header>
+
 <main class="admin-container">
   <h2>Service Requests</h2>
   <table id="requestsTable">
@@ -80,6 +81,7 @@
     </thead>
     <tbody><tr><td colspan="7">Loading...</td></tr></tbody>
   </table>
+
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required><br>
@@ -89,6 +91,7 @@
     <input type="date" id="invoiceDueDate" required><br>
     <button type="submit">Create Invoice</button>
   </form>
+
   <h2>Invoices Due</h2>
   <table id="invoicesDueTable">
     <thead>
@@ -98,6 +101,7 @@
     </thead>
     <tbody><tr><td colspan="7">Loading...</td></tr></tbody>
   </table>
+
   <h2>Paid Invoices</h2>
   <table id="invoicesPaidTable">
     <thead>
@@ -107,11 +111,13 @@
     </thead>
     <tbody><tr><td colspan="6">Loading...</td></tr></tbody>
   </table>
+
   <a onclick="logout()" class="logout">Logout</a>
 </main>
+
 <footer style="text-align:center; margin-top: 2em;">&copy; 2025 Holliday's Lawn & Garden</footer>
-<script>// Firebase logic will be handled here</script>
-  <script>
+
+<script>
 const db = firebase.firestore();
 
 firebase.auth().onAuthStateChanged(user => {
@@ -131,7 +137,7 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadServiceRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").get() // <- TEMP: no orderBy
+  db.collection("service_requests").get()
     .then(snapshot => {
       tbody.innerHTML = "";
       if (snapshot.empty) {
@@ -179,7 +185,10 @@ function loadInvoices() {
             <td>${d.dueDate || "N/A"}</td>
             <td>${d.paid ? "Paid" : "Unpaid"}</td>
             <td>
-              ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
+              ${!d.paid ? `
+                <button onclick="markPaid('${doc.id}')">Mark Paid</button>
+                <button onclick="downloadInvoicePDF('${doc.id}', '${d.customerEmail}', '${d.invoiceNumber}', ${d.amountDue}, '${d.dueDate}')">PDF</button>
+              ` : ""}
               <button onclick="deleteInvoice('${doc.id}')">Delete</button>
             </td>
           </tr>
@@ -235,6 +244,24 @@ function logout() {
   firebase.auth().signOut().then(() => {
     window.location.href = "login.html";
   });
+}
+
+function downloadInvoicePDF(id, email, number, amount, dueDate) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  doc.setFontSize(18);
+  doc.text("Invoice", 14, 20);
+
+  doc.setFontSize(12);
+  doc.text(`Invoice #: ${number}`, 14, 40);
+  doc.text(`Customer: ${email}`, 14, 50);
+  doc.text(`Amount Due: $${amount.toFixed(2)}`, 14, 60);
+  doc.text(`Due Date: ${dueDate}`, 14, 70);
+  doc.text(`Status: Unpaid`, 14, 80);
+  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 90);
+
+  doc.save(`Invoice-${number}.pdf`);
 }
 </script>
 </body>
