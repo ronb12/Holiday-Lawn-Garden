@@ -22,7 +22,7 @@
     <h2>Contact Us</h2>
     <p>Have a question, need a quote, or ready to schedule your service? We're here to help! Send us a message below and we’ll get back to you as soon as possible.</p>
 
-    <form action="mailto:your-email@example.com" method="post" enctype="text/plain">
+    <form id="contactForm">
       <label for="name">Name:</label><br>
       <input type="text" id="name" name="name" required><br><br>
 
@@ -37,7 +37,7 @@
 
       <button type="submit">Send Message</button>
     </form>
-    
+
     <div style="margin-top: 2em;">
       <h3>Other Ways to Reach Us:</h3>
       <p><strong>Email:</strong> holidaylawncare@example.com</p>
@@ -50,6 +50,41 @@
     &copy; 2025 Holiday Lawn & Garden. All rights reserved.
   </footer>
 
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
+  <!-- Contact Form Submit Script -->
+  <script>
+    const db = firebase.firestore();
+
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const fullName = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const notes = document.getElementById('message').value;
+
+      try {
+        await db.collection('service_requests').add({
+          fullName,
+          email,
+          phone,
+          notes,
+          serviceType: "Contact Form",
+          preferredDate: new Date().toISOString(),
+          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        alert("✅ Message sent successfully! We’ll be in touch.");
+        document.getElementById('contactForm').reset();
+      } catch (error) {
+        console.error("❌ Error sending message:", error);
+        alert("An error occurred. Please try again.");
+      }
+    });
+  </script>
+
 </body>
 </html>
-
