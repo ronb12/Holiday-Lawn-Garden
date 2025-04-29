@@ -250,63 +250,89 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // --- Header ---
-  doc.setFontSize(22);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Holliday's Lawn & Garden", 105, 20, { align: 'center' });
+  // Load logo image (example, you can replace with your real base64)
+  const logoImg = "https://your-logo-url.com/logo.png"; // <-- UPDATE THIS!
 
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text("1234 Garden Lane, Greenville, SC 29601", 105, 28, { align: 'center' });
-  doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, 35, { align: 'center' });
+  // Add Logo
+  doc.addImage(logoImg, 'PNG', 80, 10, 50, 20); // (x, y, width, height)
 
-  // --- Divider ---
-  doc.line(20, 42, 190, 42); // horizontal line
+  // Move text down
+  let y = 35;
 
-  // --- Invoice Section ---
+  // --- Business Info ---
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text("INVOICE", 20, 55);
+  doc.text("Holliday's Lawn & Garden", 105, y, { align: 'center' });
+  y += 8;
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text("1234 Garden Lane, Greenville, SC 29601", 105, y, { align: 'center' });
+  y += 5;
+  doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, y, { align: 'center' });
+  y += 10;
+
+  // --- Divider ---
+  doc.setDrawColor(34, 139, 34); // #228B22 green
+  doc.line(20, y, 190, y);
+  y += 10;
+
+  // --- Invoice Header ---
+  doc.setFontSize(20);
+  doc.setTextColor(34, 139, 34);
+  doc.text("INVOICE", 20, y);
+  y += 10;
 
   doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Invoice #: ${number}`, 20, 65);
-  doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, 73);
-  doc.text(`Due Date: ${dueDate}`, 20, 81);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Invoice #: ${number}`, 20, y);
+  y += 7;
+  doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, y);
+  y += 7;
+  doc.text(`Due Date: ${dueDate}`, 20, y);
 
-  // --- Customer Section ---
+  // Customer info
+  y = 65;
   doc.setFont('helvetica', 'bold');
   doc.text("Bill To:", 140, 55);
 
   doc.setFont('helvetica', 'normal');
-  doc.text(`${email}`, 140, 65);
+  doc.text(email, 140, 65);
 
   // --- Divider ---
+  doc.setDrawColor(34, 139, 34);
   doc.line(20, 90, 190, 90);
 
-  // --- Service Details ---
+  // --- Services Section ---
   doc.setFont('helvetica', 'bold');
+  doc.setTextColor(34, 139, 34);
   doc.text("Service Description", 20, 100);
   doc.text("Amount", 160, 100);
 
   doc.setFont('helvetica', 'normal');
+  doc.setTextColor(0, 0, 0);
   doc.text("Lawn and Garden Services", 20, 110);
   doc.text(`$${amount.toFixed(2)}`, 160, 110);
 
   // --- Divider ---
+  doc.setDrawColor(34, 139, 34);
   doc.line(20, 120, 190, 120);
 
-  // --- Total Section ---
+  // --- Total Due Section ---
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(34, 139, 34);
   doc.text("Total Due:", 140, 130);
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
   doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
 
   // --- Footer ---
   doc.setFontSize(10);
   doc.setFont('helvetica', 'italic');
+  doc.setTextColor(100, 100, 100);
   doc.text("Thank you for your business!", 105, 280, { align: 'center' });
 
-  // --- Save PDF ---
   doc.save(`Invoice-${number}.pdf`);
 }
 </script>
