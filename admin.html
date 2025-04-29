@@ -181,13 +181,13 @@
       snapshot.forEach(doc => {
         const data = doc.data();
         const row = `<tr>
-          <td>${data.fullName}</td>
-          <td>${data.email}</td>
-          <td>${data.serviceType}</td>
-          <td>${data.preferredDate}</td>
-          <td>${data.notes}</td>
-          <td>Pending</td>
-          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
+         <td>${d.fullName || "N/A"}</td>
+<td>${d.email || "N/A"}</td>
+<td>${d.serviceType || "N/A"}</td>
+<td>${d.preferredDate ? new Date(d.preferredDate).toLocaleDateString() : "N/A"}</td>
+<td>${d.notes || "N/A"}</td>
+<td>Pending</td>
+<td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
         </tr>`;
         tbody.innerHTML += row;
       });
