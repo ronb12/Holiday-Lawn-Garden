@@ -12,72 +12,24 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- jsPDF for PDF invoice generation -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-    .admin-container {
-      max-width: 1200px;
-      margin: 3em auto;
-      padding: 2em;
-      background: white;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background-color: #228B22;
-      color: white;
-    }
-    td.overdue {
-      background-color: #ffcccc;
-    }
-    button {
-      background-color: #228B22;
-      color: white;
-      border: none;
-      padding: 0.5em 1em;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #006400;
-    }
-    .logout {
-      margin-top: 2em;
-      display: inline-block;
-      color: #228B22;
-      text-decoration: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .logout:hover {
-      text-decoration: underline;
-    }
-    input {
-      padding: 0.5em;
-      margin: 0.5em;
-      width: 250px;
-    }
-    #loadingSpinner {
-      display: none;
-      margin-top: 20px;
-      font-size: 1.2em;
-      color: #228B22;
-    }
+    /* Admin styles (keep same) */
+    .admin-container { max-width: 1200px; margin: 3em auto; padding: 2em; background: white; border-radius: 8px; text-align: center; }
+    table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+    th, td { padding: 10px; border: 1px solid #ddd; }
+    th { background-color: #228B22; color: white; }
+    td.overdue { background-color: #ffcccc; }
+    button { background-color: #228B22; color: white; border: none; padding: 0.5em 1em; margin: 5px; border-radius: 5px; cursor: pointer; }
+    button:hover { background-color: #006400; }
+    .logout { margin-top: 2em; display: inline-block; color: #228B22; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .logout:hover { text-decoration: underline; }
+    input { padding: 0.5em; margin: 0.5em; width: 250px; }
+    #loadingSpinner { display: none; margin-top: 20px; font-size: 1.2em; color: #228B22; }
   </style>
 </head>
-
 <body>
 
 <header>
@@ -95,57 +47,31 @@
 
 <main>
   <div class="admin-container fade-in">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead>
-        <tr>
-          <th>Customer Name</th>
-          <th>Email</th>
-          <th>Service Requested</th>
-          <th>Preferred Date</th>
-          <th>Notes</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
     <h2>Create Invoice</h2>
     <form id="invoiceForm" onsubmit="createInvoice(event)">
       <input type="text" id="invoiceEmail" placeholder="Customer Email" required><br>
       <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
-      <input type="number" id="invoiceAmount" placeholder="Amount Due ($)" min="1" step="0.01" required><br>
       <input type="date" id="invoiceDueDate" required><br>
+      <input type="number" id="taxRate" placeholder="Tax Rate (%) - Optional"><br>
+
+      <h3>Add Services</h3>
+      <div id="servicesList"></div>
+      <button type="button" onclick="addService()">➕ Add Service</button><br><br>
+
       <button type="submit">Create Invoice</button>
     </form>
 
-    <h2>Invoices Due</h2>
-    <table id="invoicesDueTable">
+    <h2>Invoices</h2>
+    <table id="invoicesTable">
       <thead>
         <tr>
           <th>Customer</th>
           <th>Email</th>
           <th>Invoice #</th>
-          <th>Amount</th>
+          <th>Amount Due</th>
           <th>Due Date</th>
           <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>Paid Invoices</h2>
-    <table id="invoicesPaidTable">
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>Email</th>
-          <th>Invoice #</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Status</th>
+          <th>PDF</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -161,186 +87,144 @@
 </footer>
 
 <script>
-  const db = firebase.firestore();
+const db = firebase.firestore();
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      const adminEmails = ["ronellbradley@bradleyvs.com"];
-      if (!adminEmails.includes(user.email)) {
-        alert("Access Denied. Redirecting...");
-        window.location.href = "index.html";
-      } else {
-        loadServiceRequests();
-        loadInvoices();
-      }
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const adminEmails = ["ronellbradley@bradleyvs.com"];
+    if (!adminEmails.includes(user.email)) {
+      alert("Access Denied. Redirecting...");
+      window.location.href = "index.html";
     } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  function loadServiceRequests() {
-    db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
-      const tbody = document.querySelector("#requestsTable tbody");
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const row = `<tr>
-          <td>${data.fullName}</td>
-          <td>${data.email}</td>
-          <td>${data.serviceType}</td>
-          <td>${data.preferredDate}</td>
-          <td>${data.notes}</td>
-          <td>Pending</td>
-          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    });
-  }
-
-  function loadInvoices() {
-    const dueTbody = document.querySelector("#invoicesDueTable tbody");
-    const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
-
-    db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const dueDate = new Date(data.dueDate);
-        const today = new Date();
-        const isOverdue = dueDate < today;
-        const trClass = isOverdue ? 'overdue' : '';
-
-        if (!data.paid) {
-          dueTbody.innerHTML += `<tr class="${trClass}">
-            <td>${data.customerEmail.split('@')[0]}</td>
-            <td>${data.customerEmail}</td>
-            <td>${data.invoiceNumber}</td>
-            <td>$${data.amountDue.toFixed(2)}</td>
-            <td>${data.dueDate}</td>
-            <td>Unpaid</td>
-            <td>
-              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
-              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-              <button onclick="generatePDF('${data.customerEmail}', '${data.invoiceNumber}', ${data.amountDue}, '${data.dueDate}')">Download PDF</button>
-            </td>
-          </tr>`;
-        } else {
-          paidTbody.innerHTML += `<tr>
-            <td>${data.customerEmail.split('@')[0]}</td>
-            <td>${data.customerEmail}</td>
-            <td>${data.invoiceNumber}</td>
-            <td>$${data.amountDue.toFixed(2)}</td>
-            <td>${data.dueDate}</td>
-            <td>Paid</td>
-          </tr>`;
-        }
-      });
-    });
-  }
-
-  function createInvoice(event) {
-    event.preventDefault();
-    const email = document.getElementById('invoiceEmail').value;
-    const number = document.getElementById('invoiceNumber').value;
-    const amount = parseFloat(document.getElementById('invoiceAmount').value);
-    const dueDate = document.getElementById('invoiceDueDate').value;
-
-    db.collection("invoices").add({
-      customerEmail: email,
-      invoiceNumber: number,
-      amountDue: amount,
-      dueDate: dueDate,
-      paid: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("✅ Invoice Created!");
-      document.getElementById('invoiceForm').reset();
       loadInvoices();
-    })
-    .catch(error => {
-      console.error("Error creating invoice:", error);
-      alert("❌ Error creating invoice.");
-    });
-  }
-
-  function markCompleted(docId) {
-    db.collection("service_requests").doc(docId).delete()
-      .then(() => {
-        alert("✅ Service request marked completed!");
-        loadServiceRequests();
-      })
-      .catch(error => {
-        console.error("Error removing request:", error);
-        alert("❌ Error updating request.");
-      });
-  }
-
-  function markPaid(docId) {
-    db.collection("invoices").doc(docId).update({ paid: true })
-      .then(() => {
-        alert("✅ Invoice marked as paid!");
-        loadInvoices();
-      })
-      .catch(error => {
-        console.error("Error marking paid:", error);
-        alert("❌ Error updating invoice.");
-      });
-  }
-
-  function deleteInvoice(docId) {
-    if (confirm("Are you sure you want to delete this invoice?")) {
-      db.collection("invoices").doc(docId).delete()
-        .then(() => {
-          alert("✅ Invoice deleted!");
-          loadInvoices();
-        })
-        .catch(error => {
-          console.error("Error deleting invoice:", error);
-          alert("❌ Error deleting invoice.");
-        });
     }
+  } else {
+    window.location.href = "login.html";
   }
+});
 
-  function logout() {
-    document.getElementById('loadingSpinner').style.display = 'block';
-    firebase.auth().signOut().then(() => {
-      setTimeout(() => {
-        alert("✅ You have been logged out successfully!");
-        window.location.href = "login.html";
-      }, 1000);
-    }).catch((error) => {
-      console.error("Logout error:", error);
-      alert("❌ Error logging out. Please try again.");
-    });
-  }
+function addService() {
+  const div = document.createElement('div');
+  div.innerHTML = `
+    <input type="text" placeholder="Service Description" class="serviceDesc" required>
+    <input type="number" placeholder="Service Amount" class="serviceAmount" required><br>
+  `;
+  document.getElementById('servicesList').appendChild(div);
+}
 
-  function generatePDF(email, invoiceNumber, amountDue, dueDate) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Invoice", 90, 20);
-    doc.setFontSize(12);
-    doc.text(`Customer: ${email}`, 20, 40);
-    doc.text(`Invoice Number: ${invoiceNumber}`, 20, 50);
-    doc.text(`Amount Due: $${amountDue.toFixed(2)}`, 20, 60);
-    doc.text(`Due Date: ${dueDate}`, 20, 70);
-    doc.save(`Invoice-${invoiceNumber}.pdf`);
-  }
+function createInvoice(event) {
+  event.preventDefault();
+  const email = document.getElementById('invoiceEmail').value;
+  const number = document.getElementById('invoiceNumber').value;
+  const dueDate = document.getElementById('invoiceDueDate').value;
+  const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
+  const serviceDescs = Array.from(document.getElementsByClassName('serviceDesc')).map(input => input.value);
+  const serviceAmounts = Array.from(document.getElementsByClassName('serviceAmount')).map(input => parseFloat(input.value));
+  
+  const services = serviceDescs.map((desc, idx) => ({
+    description: desc,
+    amount: serviceAmounts[idx]
+  }));
 
-  document.querySelectorAll('.fade-in').forEach(section => {
-    observer.observe(section);
+  const subtotal = serviceAmounts.reduce((sum, amt) => sum + amt, 0);
+  const tax = subtotal * (taxRate / 100);
+  const grandTotal = subtotal + tax;
+
+  db.collection("invoices").add({
+    customerEmail: email,
+    invoiceNumber: number,
+    dueDate: dueDate,
+    services: services,
+    taxRate: taxRate,
+    subtotal: subtotal,
+    tax: tax,
+    grandTotal: grandTotal,
+    paid: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  })
+  .then(() => {
+    alert("✅ Invoice Created!");
+    document.getElementById('invoiceForm').reset();
+    document.getElementById('servicesList').innerHTML = '';
+    loadInvoices();
+  })
+  .catch(error => {
+    console.error("Error creating invoice:", error);
+    alert("❌ Error creating invoice.");
   });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  tbody.innerHTML = "";
+
+  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const row = `<tr>
+        <td>${data.customerEmail.split('@')[0]}</td>
+        <td>${data.customerEmail}</td>
+        <td>${data.invoiceNumber}</td>
+        <td>$${data.grandTotal.toFixed(2)}</td>
+        <td>${data.dueDate}</td>
+        <td>${data.paid ? "Paid" : "Unpaid"}</td>
+        <td><button onclick="downloadPDF('${doc.id}')">📄 Download</button></td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  });
+}
+
+async function downloadPDF(invoiceId) {
+  const docRef = await db.collection("invoices").doc(invoiceId).get();
+  const data = docRef.data();
+  
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  pdf.addImage("Hollidays_Lawn_Garden_Logo.png", "PNG", 10, 10, 40, 20);
+  pdf.setFontSize(18);
+  pdf.text("INVOICE", 105, 40, { align: "center" });
+
+  pdf.setFontSize(12);
+  pdf.text(`Customer: ${data.customerEmail}`, 20, 60);
+  pdf.text(`Invoice #: ${data.invoiceNumber}`, 20, 70);
+  pdf.text(`Due Date: ${data.dueDate}`, 20, 80);
+
+  let y = 100;
+  pdf.text("Services:", 20, y);
+  y += 10;
+
+  data.services.forEach(service => {
+    pdf.text(`${service.description}`, 25, y);
+    pdf.text(`$${service.amount.toFixed(2)}`, 160, y, { align: "right" });
+    y += 10;
+  });
+
+  pdf.line(20, y, 190, y);
+  y += 10;
+  pdf.text(`Subtotal: $${data.subtotal.toFixed(2)}`, 160, y, { align: "right" });
+  y += 10;
+  pdf.text(`Tax: $${data.tax.toFixed(2)}`, 160, y, { align: "right" });
+  y += 10;
+  pdf.text(`Grand Total: $${data.grandTotal.toFixed(2)}`, 160, y, { align: "right" });
+
+  pdf.save(`Invoice_${data.invoiceNumber}.pdf`);
+}
+
+function logout() {
+  document.getElementById('loadingSpinner').style.display = 'block';
+  firebase.auth().signOut().then(() => {
+    setTimeout(() => {
+      alert("✅ Logged out successfully!");
+      window.location.href = "login.html";
+    }, 1000);
+  }).catch(error => {
+    console.error("Logout error:", error);
+    alert("❌ Error logging out. Please try again.");
+  });
+}
 </script>
 
 </body>
