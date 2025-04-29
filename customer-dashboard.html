@@ -1,135 +1,136 @@
+<!-- Full Enhanced Customer Dashboard with Features 2-5 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard - Holiday Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f1f9f1; margin: 0; }
-    header { background: #228B22; padding: 1em; color: white; text-align: center; font-size: 1.5em; }
-    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { padding: 10px; border: 1px solid #ccc; }
+    body { background: #f4f9f4; font-family: Arial; margin: 0; }
+    header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
+    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    h2, h3 { color: #228B22; }
-    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; margin-top: 1em; }
+    select, input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; }
-    footer { text-align: center; margin-top: 2em; padding: 1em; background: #eee; font-size: 0.9em; }
+    .status-approved { color: green; }
+    .status-inprogress { color: orange; }
+    .status-completed { color: blue; }
   </style>
 </head>
 <body>
 
-<header>Welcome to Your Dashboard</header>
+<header><h1>Welcome to Your Dashboard</h1></header>
 
 <div class="container">
   <h2 id="greeting">Hello, Customer!</h2>
-  <p>Thank you for choosing Holliday's Lawn & Garden.<br>Our team will be in contact with you shortly regarding your service requests.</p>
+  <p>Thank you for choosing Holiday Lawn & Garden.<br>Your service requests are shown below.</p>
 
   <h3>Your Service Requests</h3>
   <table id="requestsTable">
     <thead>
-      <tr>
-        <th>Service</th>
-        <th>Preferred Date</th>
-        <th>Notes</th>
-        <th>Status</th>
-      </tr>
+      <tr><th>Service</th><th>Preferred Date</th><th>Notes</th><th>Status</th><th>Actions</th></tr>
     </thead>
-    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
   <h3>Submit New Request</h3>
-  <form id="requestForm" onsubmit="submitRequest(event)">
+  <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
-    <select id="serviceType" required>
+    <select id="serviceType">
       <option value="">Select...</option>
       <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Trimming">Trimming</option>
+      <option value="Hedge Trimming">Hedge Trimming</option>
       <option value="Leaf Cleanup">Leaf Cleanup</option>
-      <option value="Other">Other</option>
-    </select>
-
+    </select><br><br>
     <label>Preferred Date:</label>
-    <input type="date" id="preferredDate" required>
-
+    <input type="date" id="preferredDate" required><br><br>
     <label>Notes:</label>
-    <textarea id="notes" rows="3" placeholder="Any special instructions..."></textarea>
-
+    <textarea id="requestNotes" placeholder="Any special instructions..."></textarea><br>
     <button type="submit">Send Request</button>
   </form>
 
+  <br>
   <button onclick="logout()">Logout</button>
 </div>
 
 <footer>&copy; 2025 Holiday Lawn & Garden</footer>
 
 <script>
-  const db = firebase.firestore();
+const db = firebase.firestore();
+let currentUser;
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user) return location.href = "login.html";
-
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
     document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
-    loadUserRequests(user.email);
-  });
+    loadRequests();
+  } else {
+    window.location.href = "login.html";
+  }
+});
 
-  function loadUserRequests(email) {
-    const tbody = document.querySelector("#requestsTable tbody");
-    db.collection("service_requests").where("email", "==", email).orderBy("submittedAt", "desc").get()
-      .then(snapshot => {
-        tbody.innerHTML = "";
-        if (snapshot.empty) {
-          tbody.innerHTML = "<tr><td colspan='4'>No service requests found.</td></tr>";
-          return;
-        }
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const row = `
-            <tr>
-              <td>${d.serviceType || "N/A"}</td>
-              <td>${d.preferredDate ? new Date(d.preferredDate).toLocaleDateString() : "N/A"}</td>
-              <td>${d.notes || "N/A"}</td>
-              <td>${d.status || "Pending"}</td>
-            </tr>
-          `;
-          tbody.innerHTML += row;
-        });
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
+
+      snapshot.forEach(doc => {
+        const r = doc.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${r.serviceType}</td>
+            <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
+            <td>${r.notes || "-"}</td>
+            <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
+            <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
+          </tr>
+        `;
       });
-  }
-
-  function submitRequest(event) {
-    event.preventDefault();
-    const serviceType = document.getElementById("serviceType").value;
-    const preferredDate = document.getElementById("preferredDate").value;
-    const notes = document.getElementById("notes").value;
-
-    const user = firebase.auth().currentUser;
-    if (!user) return alert("Please log in first.");
-
-    db.collection("service_requests").add({
-      fullName: user.email.split("@")[0],
-      email: user.email,
-      serviceType,
-      preferredDate,
-      notes,
-      status: "Pending",
-      submittedAt: new Date().toISOString()
-    }).then(() => {
-      alert("✅ Request submitted successfully!");
-      document.getElementById("requestForm").reset();
-      loadUserRequests(user.email);
     });
-  }
+}
 
-  function logout() {
-    firebase.auth().signOut().then(() => location.href = "login.html");
+function submitRequest(e) {
+  e.preventDefault();
+  const type = document.getElementById("serviceType").value;
+  const date = document.getElementById("preferredDate").value;
+  const notes = document.getElementById("requestNotes").value;
+
+  if (!type || !date) return alert("All fields are required.");
+
+  db.collection("service_requests").add({
+    fullName: currentUser.displayName || "Customer",
+    email: currentUser.email,
+    serviceType: type,
+    preferredDate: date,
+    notes: notes,
+    status: "Pending",
+    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Request submitted");
+    document.querySelector("form").reset();
+    loadRequests();
+  });
+}
+
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
   }
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
 </script>
 
 </body>
