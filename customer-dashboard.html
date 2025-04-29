@@ -22,8 +22,6 @@
     .status-approved { color: green; }
     .status-inprogress { color: orange; }
     .status-completed { color: blue; }
-    .status-paid { color: green; }
-    .status-unpaid { color: red; }
   </style>
 </head>
 <body>
@@ -32,7 +30,7 @@
 
 <div class="container">
   <h2 id="greeting">Hello, Customer!</h2>
-  <p>Thank you for choosing Holiday Lawn & Garden. Your service requests are shown below.</p>
+  <p>Thank you for choosing Holiday Lawn & Garden.<br>Your service requests are shown below.</p>
 
   <h3>Your Service Requests</h3>
   <table id="requestsTable">
@@ -45,7 +43,7 @@
   <h3>Submit New Request</h3>
   <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
-    <select id="serviceType">
+    <select id="serviceType" required>
       <option value="">Select...</option>
       <option value="Lawn Mowing">Lawn Mowing</option>
       <option value="Hedge Trimming">Hedge Trimming</option>
@@ -58,15 +56,8 @@
     <button type="submit">Send Request</button>
   </form>
 
-  <h3>Your Invoices</h3>
-  <table id="invoiceTable">
-    <thead>
-      <tr><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr>
-    </thead>
-    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-  </table>
-
-  <br><button onclick="logout()">Logout</button>
+  <br>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <footer>&copy; 2025 Holiday Lawn & Garden</footer>
@@ -80,7 +71,6 @@ firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
     loadRequests();
-    loadInvoices();
   } else {
     window.location.href = "login.html";
   }
@@ -89,12 +79,15 @@ firebase.auth().onAuthStateChanged(user => {
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
   db.collection("service_requests")
-    .where("email", "==", currentUser.email)
+    .where("customerEmail", "==", currentUser.email) // ✅ must match index field
     .orderBy("submittedAt", "desc")
     .get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
+      if (snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
+        return;
+      }
       snapshot.forEach(doc => {
         const r = doc.data();
         tbody.innerHTML += `
@@ -104,8 +97,13 @@ function loadRequests() {
             <td>${r.notes || "-"}</td>
             <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
             <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
-          </tr>`;
+          </tr>
+        `;
       });
+    })
+    .catch(err => {
+      console.error("Error loading requests:", err);
+      tbody.innerHTML = '<tr><td colspan="5">Error loading data</td></tr>';
     });
 }
 
@@ -114,11 +112,12 @@ function submitRequest(e) {
   const type = document.getElementById("serviceType").value;
   const date = document.getElementById("preferredDate").value;
   const notes = document.getElementById("requestNotes").value;
+
   if (!type || !date) return alert("All fields are required.");
 
   db.collection("service_requests").add({
     fullName: currentUser.displayName || "Customer",
-    email: currentUser.email,
+    customerEmail: currentUser.email, // ✅ updated to match index
     serviceType: type,
     preferredDate: date,
     notes: notes,
@@ -137,33 +136,8 @@ function deleteRequest(id) {
   }
 }
 
-function loadInvoices() {
-  const tbody = document.querySelector("#invoiceTable tbody");
-  db.collection("invoices")
-    .where("customerEmail", "==", currentUser.email)
-    .orderBy("dueDate", "desc")
-    .get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No invoices found</td></tr>';
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const status = d.paid ? "Paid" : "Unpaid";
-        const action = d.paid ? "-" : `<a href="pay-your-bill.html"><button>Pay Now</button></a>`;
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.invoiceNumber}</td>
-            <td>$${(d.amountDue || 0).toFixed(2)}</td>
-            <td>${d.dueDate}</td>
-            <td class="status-${status.toLowerCase()}">${status}</td>
-            <td>${action}</td>
-          </tr>`;
-      });
-    });
-}
-
 function logout() {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 
