@@ -1,130 +1,226 @@
+<!-- FULL UPDATED admin.html WITH MULTIPLE SERVICES -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Invoice #3</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 2em;
-      background: #fff;
-      color: #000;
-    }
-    .invoice-box {
-      max-width: 800px;
-      margin: auto;
-      border: 1px solid #eee;
-      padding: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .header img {
-      height: 80px;
-    }
-    h1 {
-      font-size: 24px;
-      margin: 0;
-    }
-    .info-table {
-      width: 100%;
-      margin-top: 20px;
-    }
-    .info-table td {
-      padding: 5px 0;
-    }
-    .details, .items {
-      width: 100%;
-      margin-top: 30px;
-      border-collapse: collapse;
-    }
-    .details td, .items th, .items td {
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-    .items th {
-      background-color: #f0f0f0;
-    }
-    .footer {
-      margin-top: 30px;
-      text-align: center;
-    }
-    .signature {
-      margin-top: 60px;
-      text-align: left;
-    }
-    .print-btn {
-      margin-top: 20px;
-      text-align: center;
-    }
-    @media print {
-      .print-btn {
-        display: none;
-      }
-    }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
+    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
+    .admin-container { max-width: 1200px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background: #228B22; color: white; }
+    .overdue { background: #ffe5e5; }
+    input, button, select { padding: 0.5em; margin: 0.5em 0; border-radius: 5px; }
+    button { background: #228B22; color: white; border: none; cursor: pointer; }
+    button:hover { background: #006400; }
+    .logout { display: inline-block; margin-top: 1em; color: #228B22; cursor: pointer; text-decoration: underline; }
+    #loadingSpinner { display: none; margin-top: 1em; color: #228B22; }
+    .service-line { display: flex; gap: 1em; align-items: center; margin-bottom: 0.5em; }
+    .service-line input { width: 100%; }
   </style>
 </head>
 <body>
-  <div class="invoice-box">
-    <div class="header">
-      <img src="Hollidays_Lawn_Garden_Logo.png" alt="Company Logo">
-      <h1>Invoice</h1>
-    </div>
-
-    <table class="info-table">
-      <tr>
-        <td><strong>From:</strong><br>
-          Holliday's Lawn & Garden<br>
-          Karl Holliday<br>
-          Phone: 504-717-1887<br>
-          Email: 7holliday@gmail.com
-        </td>
-        <td><strong>To:</strong><br>
-          ronellbradley@gmail.com
-        </td>
-      </tr>
+  <header><h1>Admin Dashboard</h1></header>
+  <main class="admin-container">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead>
+        <tr>
+          <th>Customer Name</th><th>Email</th><th>Service Requested</th>
+          <th>Preferred Date</th><th>Notes</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead><tbody></tbody>
     </table>
 
-    <table class="details">
-      <tr>
-        <td><strong>Invoice #:</strong> 3</td>
-        <td><strong>Date Issued:</strong> April 29, 2025</td>
-        <td><strong>Due Date:</strong> May 1, 2025</td>
-      </tr>
+    <h2>Create Invoice</h2>
+    <form id="invoiceForm" onsubmit="createInvoice(event)">
+      <input type="email" id="invoiceEmail" placeholder="Customer Email" required><br>
+      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
+      <input type="date" id="invoiceDueDate" required><br>
+      <div id="servicesList">
+        <div class="service-line">
+          <input type="text" placeholder="Service Description" class="serviceDesc" required>
+          <input type="number" placeholder="Amount ($)" class="serviceAmount" min="0" step="0.01" required>
+        </div>
+      </div>
+      <button type="button" onclick="addService()">+ Add Another Service</button><br>
+      <button type="submit">Create Invoice</button>
+    </form>
+
+    <h2>Invoices Due</h2>
+    <table id="invoicesDueTable">
+      <thead>
+        <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+      </thead><tbody></tbody>
     </table>
 
-    <table class="items">
-      <tr>
-        <th>Description</th>
-        <th>Quantity</th>
-        <th>Rate</th>
-        <th>Total</th>
-      </tr>
-      <tr>
-        <td>Lawn Mowing Service</td>
-        <td>1</td>
-        <td>$90.00</td>
-        <td>$90.00</td>
-      </tr>
+    <h2>Paid Invoices</h2>
+    <table id="invoicesPaidTable">
+      <thead>
+        <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+      </thead><tbody></tbody>
     </table>
 
-    <table class="details">
-      <tr>
-        <td colspan="3" style="text-align: right;"><strong>Total Due:</strong></td>
-        <td><strong>$90.00</strong></td>
-      </tr>
-    </table>
+    <a onclick="logout()" class="logout">Logout</a>
+    <div id="loadingSpinner">Logging out...</div>
+  </main>
 
-    <div class="signature">
-      <p><strong>Notes:</strong><br>
-      Thank you for your business! If you have any questions, please contact us at the info above.</p>
-    </div>
+  <footer id="footer"></footer>
+  <script>
+    const db = firebase.firestore();
 
-    <div class="print-btn">
-      <button onclick="window.print()">🖨️ Print Invoice</button>
-    </div>
-  </div>
+    firebase.auth().onAuthStateChanged(user => {
+      if (user && ["ronellbradley@bradleyvs.com"].includes(user.email)) {
+        loadServiceRequests(); loadInvoices();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    function addService() {
+      const div = document.createElement('div');
+      div.className = 'service-line';
+      div.innerHTML = `
+        <input type="text" placeholder="Service Description" class="serviceDesc" required>
+        <input type="number" placeholder="Amount ($)" class="serviceAmount" min="0" step="0.01" required>
+      `;
+      document.getElementById('servicesList').appendChild(div);
+    }
+
+    function createInvoice(event) {
+      event.preventDefault();
+      const email = document.getElementById('invoiceEmail').value;
+      const number = document.getElementById('invoiceNumber').value;
+      const dueDate = document.getElementById('invoiceDueDate').value;
+      const descs = Array.from(document.querySelectorAll('.serviceDesc')).map(i => i.value);
+      const amounts = Array.from(document.querySelectorAll('.serviceAmount')).map(i => parseFloat(i.value));
+      const items = descs.map((desc, i) => ({ desc, amount: amounts[i] }));
+      const total = amounts.reduce((a, b) => a + b, 0);
+
+      db.collection("invoices").add({
+        customerEmail: email,
+        invoiceNumber: number,
+        dueDate: dueDate,
+        paid: false,
+        items,
+        amountDue: total,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        alert("✅ Invoice Created!");
+        document.getElementById('invoiceForm').reset();
+        document.getElementById('servicesList').innerHTML = `
+          <div class="service-line">
+            <input type="text" placeholder="Service Description" class="serviceDesc" required>
+            <input type="number" placeholder="Amount ($)" class="serviceAmount" min="0" step="0.01" required>
+          </div>`;
+        loadInvoices();
+      });
+    }
+
+    function loadServiceRequests() {
+      db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+        const tbody = document.querySelector("#requestsTable tbody");
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          tbody.innerHTML += `<tr>
+            <td>${d.fullName || "N/A"}</td><td>${d.email}</td><td>${d.serviceType}</td>
+            <td>${new Date(d.preferredDate).toLocaleDateString()}</td>
+            <td>${d.notes || "-"}</td><td>Pending</td>
+            <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
+          </tr>`;
+        });
+      });
+    }
+
+    function loadInvoices() {
+      const dueTbody = document.querySelector("#invoicesDueTable tbody");
+      const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+      dueTbody.innerHTML = "";
+      paidTbody.innerHTML = "";
+
+      db.collection("invoices").orderBy("dueDate").get().then(snapshot => {
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const due = new Date(d.dueDate).toLocaleDateString();
+          const row = `<td>${d.customerEmail.split('@')[0]}</td><td>${d.customerEmail}</td>
+            <td>${d.invoiceNumber}</td><td>$${d.amountDue.toFixed(2)}</td>
+            <td>${due}</td><td>${d.paid ? 'Paid' : 'Unpaid'}</td>`;
+          if (!d.paid) {
+            dueTbody.innerHTML += `<tr>${row}<td>
+              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
+              <button onclick="viewInvoice('${d.invoiceNumber}', '${d.customerEmail}', '${d.dueDate}', ${JSON.stringify(d.items)})">View</button>
+              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+            </td></tr>`;
+          } else {
+            paidTbody.innerHTML += `<tr>${row}</tr>`;
+          }
+        });
+      });
+    }
+
+    function markCompleted(id) {
+      db.collection("service_requests").doc(id).delete().then(loadServiceRequests);
+    }
+
+    function markPaid(id) {
+      db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+    }
+
+    function deleteInvoice(id) {
+      if (confirm("Delete invoice?")) {
+        db.collection("invoices").doc(id).delete().then(loadInvoices);
+      }
+    }
+
+    function viewInvoice(number, email, dueDate, items) {
+      const total = items.reduce((a, b) => a + b.amount, 0);
+      const tableRows = items.map(i => `<tr><td>${i.desc}</td><td style="text-align:right;">$${i.amount.toFixed(2)}</td></tr>`).join('');
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html><head><title>Invoice ${number}</title></head>
+        <body style="font-family:Arial;padding:2em;">
+          <img src="Hollidays_Lawn_Garden_Logo.png" style="max-height:80px"><br><br>
+          <h2>Holliday's Lawn & Garden</h2>
+          <p><strong>Owner:</strong> Karl Holliday<br>
+          <strong>Phone:</strong> 504-717-1887<br>
+          <strong>Email:</strong> 7holliday@gmail.com</p><hr>
+          <p><strong>Invoice #:</strong> ${number}<br>
+          <strong>Customer:</strong> ${email}<br>
+          <strong>Due:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr><th>Description</th><th style="text-align:right;">Amount</th></tr>
+            ${tableRows}
+            <tr><td><strong>Total</strong></td><td style="text-align:right;"><strong>$${total.toFixed(2)}</strong></td></tr>
+          </table>
+          <p style="margin-top:2em;">Thank you for your business!</p>
+          <button onclick="window.print()">🖨️ Print</button>
+        </body></html>
+      `);
+    }
+
+    function logout() {
+      document.getElementById('loadingSpinner').style.display = 'block';
+      firebase.auth().signOut().then(() => {
+        setTimeout(() => {
+          alert("✅ Logged out!");
+          window.location.href = "login.html";
+        }, 1000);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const year = new Date().getFullYear();
+      document.getElementById("footer").innerHTML = `&copy; ${year} Holliday's Lawn & Garden. All rights reserved.`;
+    });
+  </script>
 </body>
 </html>
