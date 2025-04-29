@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Customer Dashboard - Holiday Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
+
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
+    header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
     .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
@@ -19,44 +21,32 @@
     select, input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 10%;
-      left: 0; right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-      z-index: 999;
-      box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    }
-    .modal h2 { color: #228B22; }
-    .modal-header { text-align: center; }
-    .modal-footer { text-align: center; margin-top: 20px; }
-    .close-btn { float: right; cursor: pointer; font-weight: bold; color: #228B22; }
-    @media print {
-      .no-print, header, footer { display: none !important; }
-      .modal { border: none; box-shadow: none; }
-    }
+    .status-approved { color: green; }
+    .status-inprogress { color: orange; }
+    .status-completed { color: blue; }
+    /* Modal Styling */
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
+    .close { float:right; font-size:24px; cursor:pointer; }
   </style>
 </head>
+
 <body>
 
 <header><h1>Welcome to Your Dashboard</h1></header>
 
 <div class="container">
   <h2 id="greeting">Hello, Customer!</h2>
-  <p>Thank you for choosing Holiday Lawn & Garden.<br>Your service requests and invoices are shown below.</p>
+  <p>Thank you for choosing Holiday Lawn & Garden.<br>Your service requests and invoices are below.</p>
 
-  <h3>Your Invoices</h3>
-  <table id="invoiceTable">
-    <thead><tr><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+  <h3>Your Service Requests</h3>
+  <table id="requestsTable">
+    <thead>
+      <tr><th>Service</th><th>Preferred Date</th><th>Notes</th><th>Status</th><th>Actions</th></tr>
+    </thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <br>
   <h3>Submit New Request</h3>
   <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
@@ -73,21 +63,24 @@
     <button type="submit">Send Request</button>
   </form>
 
+  <h3>Your Invoices</h3>
+  <table id="invoicesTable">
+    <thead>
+      <tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+
   <br>
   <button onclick="logout()">Logout</button>
 </div>
 
-<!-- Printable Invoice Modal -->
-<div id="invoiceModal" class="modal no-print">
-  <span class="close-btn" onclick="document.getElementById('invoiceModal').style.display='none'">✖</span>
-  <div class="modal-header">
-    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" width="100" />
-    <h2>Invoice</h2>
-    <p><strong>Holliday’s Lawn & Garden</strong><br>1234 Garden Ln, Greenville, SC 29601<br>Phone: (123) 456-7890</p>
-  </div>
-  <div id="invoiceDetails"></div>
-  <div class="modal-footer">
-    <button onclick="window.print()">🖨️ Print Invoice</button>
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Invoice Details</h2>
+    <div id="invoiceDetails"></div>
   </div>
 </div>
 
@@ -101,44 +94,32 @@ firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
+    loadRequests();
     loadInvoices();
   } else {
-    location.href = 'login.html';
+    window.location.href = "login.html";
   }
 });
 
-function loadInvoices() {
-  const tbody = document.querySelector("#invoiceTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).get()
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No invoices found</td></tr>';
+      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
       snapshot.forEach(doc => {
-        const d = doc.data();
+        const r = doc.data();
         tbody.innerHTML += `
           <tr>
-            <td>${d.invoiceNumber}</td>
-            <td>$${(d.amountDue || 0).toFixed(2)}</td>
-            <td>${d.dueDate || "N/A"}</td>
-            <td>${d.paid ? "Paid" : "Unpaid"}</td>
-            <td><button onclick="viewInvoice('${d.invoiceNumber}', '${d.customerEmail}', '${d.dueDate}', ${d.amountDue})">View Invoice</button></td>
-          </tr>`;
+            <td>${r.serviceType}</td>
+            <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
+            <td>${r.notes || "-"}</td>
+            <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
+            <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
+          </tr>
+        `;
       });
     });
-}
-
-function viewInvoice(number, email, dueDate, amount) {
-  const details = `
-    <p><strong>Invoice #:</strong> ${number}</p>
-    <p><strong>Invoice Date:</strong> ${new Date().toLocaleDateString()}</p>
-    <p><strong>Due Date:</strong> ${dueDate}</p>
-    <p><strong>Bill To:</strong> ${email}</p>
-    <hr>
-    <p><strong>Service Description:</strong> Lawn and Garden Services</p>
-    <p><strong>Amount Due:</strong> <strong>$${amount.toFixed(2)}</strong></p>
-  `;
-  document.getElementById("invoiceDetails").innerHTML = details;
-  document.getElementById("invoiceModal").style.display = "block";
 }
 
 function submitRequest(e) {
@@ -146,7 +127,6 @@ function submitRequest(e) {
   const type = document.getElementById("serviceType").value;
   const date = document.getElementById("preferredDate").value;
   const notes = document.getElementById("requestNotes").value;
-
   if (!type || !date) return alert("All fields are required.");
 
   db.collection("service_requests").add({
@@ -160,7 +140,62 @@ function submitRequest(e) {
   }).then(() => {
     alert("✅ Request submitted");
     document.querySelector("form").reset();
+    loadRequests();
   });
+}
+
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
+  }
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No invoices yet</td></tr>';
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.invoiceNumber}</td>
+            <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
+            <td>$${(d.amountDue || 0).toFixed(2)}</td>
+            <td>${d.paid ? "Paid" : "Unpaid"}</td>
+            <td><button onclick="viewInvoice('${d.invoiceNumber}', '${d.customerEmail}', '${d.dueDate}', ${d.amountDue})">View</button></td>
+          </tr>
+        `;
+      });
+    });
+}
+
+function viewInvoice(number, email, dueDate, amount) {
+  const details = `
+    <p><strong>Invoice #:</strong> ${number}</p>
+    <p><strong>Invoice Date:</strong> ${new Date().toLocaleDateString()}</p>
+    <p><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
+    <p><strong>Bill To:</strong> ${email}</p>
+    <hr>
+    <p><strong>Service Description:</strong> Lawn and Garden Services</p>
+    <p><strong>Amount Due:</strong> <strong>$${amount.toFixed(2)}</strong></p>
+    <div style="text-align:center; margin-top: 1.5em;">
+      <a href="pay-your-bill.html?invoice=${encodeURIComponent(number)}&amount=${amount.toFixed(2)}" 
+         target="_blank" 
+         style="display:inline-block; padding:10px 20px; background:#228B22; color:#fff; text-decoration:none; border-radius:5px;">
+        💳 Pay Now
+      </a>
+    </div>
+  `;
+  document.getElementById("invoiceDetails").innerHTML = details;
+  document.getElementById("invoiceModal").style.display = "flex";
+}
+
+function closeModal(e) {
+  if (e.target.id === 'invoiceModal' || e.target.classList.contains('close')) {
+    document.getElementById("invoiceModal").style.display = "none";
+  }
 }
 
 function logout() {
