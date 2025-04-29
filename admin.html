@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.legacy.min.js"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial, sans-serif; margin: 0; }
     header { background-color: #228B22; padding: 1em; color: white; text-align: center; }
@@ -24,218 +24,88 @@
   </style>
 </head>
 <body>
+  <header><h1>Admin Dashboard</h1></header>
+  <main class="admin-container">
+    <h2>Invoices Due</h2>
+    <button onclick="downloadInvoicePDF('001', 'customer@example.com', 'INV-001', 120.00, '2025-05-01')">Download Sample PDF</button>
+  </main>
 
-<header><h1>Admin Dashboard</h1></header>
+  <script>
+    function downloadInvoicePDF(id, email, number, amount, dueDate) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
 
-<main class="admin-container">
+      const logoImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXgAAAF4CAYAAAA+MKtEAA..." // your base64 string here
 
-  <h2>Service Requests</h2>
-  <table id="requestsTable"><thead>
-    <tr><th>Name</th><th>Email</th><th>Service</th><th>Date</th><th>Notes</th><th>Status</th><th>Action</th></tr>
-  </thead><tbody><tr><td colspan="7">Loading...</td></tr></tbody></table>
+      doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
+      let y = 35;
 
-  <h2>Create Invoice</h2>
-  <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required><br>
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
-    <input type="text" id="serviceDescription" placeholder="Service Description" required><br>
-    <input type="number" id="serviceAmount" placeholder="Amount ($)" required><br>
-    <input type="date" id="invoiceDueDate" required><br>
-    <button type="submit">Create Invoice</button>
-  </form>
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 0, 0);
+      doc.text("Holliday's Lawn & Garden", 105, y, { align: 'center' });
+      y += 8;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text("1234 Garden Lane, Greenville, SC 29601", 105, y, { align: 'center' });
+      y += 5;
+      doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, y, { align: 'center' });
+      y += 10;
 
-  <h2>Invoices Due</h2>
-  <table id="invoicesDueTable"><thead>
-    <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
-  </thead><tbody><tr><td colspan="7">Loading...</td></tr></tbody></table>
+      doc.setDrawColor(34, 139, 34);
+      doc.line(20, y, 190, y);
+      y += 10;
 
-  <h2>Paid Invoices</h2>
-  <table id="invoicesPaidTable"><thead>
-    <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
-  </thead><tbody><tr><td colspan="6">Loading...</td></tr></tbody></table>
+      doc.setFontSize(20);
+      doc.setTextColor(34, 139, 34);
+      doc.setFont('helvetica', 'bold');
+      doc.text("INVOICE", 20, y);
+      y += 10;
 
-  <a onclick="logout()" class="logout">Logout</a>
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Invoice #: ${number}`, 20, y); y += 7;
+      doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, y); y += 7;
+      doc.text(`Due Date: ${dueDate}`, 20, y);
 
-</main>
+      doc.setFont('helvetica', 'bold');
+      doc.text("Bill To:", 140, 55);
+      doc.setFont('helvetica', 'normal');
+      doc.text(email, 140, 65);
 
-<footer style="text-align:center; margin-top: 2em;">&copy; 2025 Holliday's Lawn & Garden</footer>
+      doc.setDrawColor(34, 139, 34);
+      doc.line(20, 90, 190, 90);
 
-<script>
-const db = firebase.firestore();
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(34, 139, 34);
+      doc.text("Service Description", 20, 100);
+      doc.text("Amount", 160, 100);
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user && ["ronellbradley@bradleyvs.com"].includes(user.email)) {
-    loadServiceRequests();
-    loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
-});
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      doc.text("Lawn and Garden Services", 20, 110);
+      doc.text(`$${amount.toFixed(2)}`, 160, 110);
 
-function loadServiceRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) {
-      tbody.innerHTML = `<tr><td colspan="7">No requests found</td></tr>`;
-      return;
+      doc.setDrawColor(34, 139, 34);
+      doc.line(20, 120, 190, 120);
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(34, 139, 34);
+      doc.text("Total Due:", 140, 130);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      doc.text("Thank you for your business!", 105, 280, { align: 'center' });
+
+      const blobUrl = doc.output('bloburl');
+      window.open(blobUrl, '_blank');
     }
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.fullName || "N/A"}</td>
-          <td>${d.email || "N/A"}</td>
-          <td>${d.serviceType || "N/A"}</td>
-          <td>${d.preferredDate || "N/A"}</td>
-          <td>${d.notes || "N/A"}</td>
-          <td>Pending</td>
-          <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-        </tr>
-      `;
-    });
-  });
-}
-
-function loadInvoices() {
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  dueBody.innerHTML = ""; paidBody.innerHTML = "";
-
-  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const overdue = !d.paid && new Date(d.dueDate) < new Date();
-      const row = `
-        <tr class="${overdue ? 'overdue' : ''}">
-          <td>${d.customerEmail?.split('@')[0] || "N/A"}</td>
-          <td>${d.customerEmail || "N/A"}</td>
-          <td>${d.invoiceNumber || "N/A"}</td>
-          <td>$${(d.amountDue || 0).toFixed(2)}</td>
-          <td>${d.dueDate || "N/A"}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button><button onclick="downloadInvoicePDF('${doc.id}', '${d.customerEmail}', '${d.invoiceNumber}', ${d.amountDue}, '${d.dueDate}')">PDF</button>` : ""}
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-          </td>
-        </tr>
-      `;
-      d.paid ? paidBody.innerHTML += row : dueBody.innerHTML += row;
-    });
-  });
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById('invoiceEmail').value;
-  const number = document.getElementById('invoiceNumber').value;
-  const desc = document.getElementById('serviceDescription').value;
-  const amt = parseFloat(document.getElementById('serviceAmount').value);
-  const due = document.getElementById('invoiceDueDate').value;
-
-  if (isNaN(amt)) return alert("Invalid amount");
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services: [{ description: desc, amount: amt }],
-    amountDue: amt,
-    dueDate: due,
-    paid: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Invoice Created");
-    document.getElementById('invoiceForm').reset();
-    loadInvoices();
-  });
-}
-
-function markCompleted(id) {
-  db.collection("service_requests").doc(id).delete().then(loadServiceRequests);
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete().then(loadInvoices);
-  }
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
-}
-
-function downloadInvoicePDF(...) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
-
-  let y = 35;
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text("Holliday's Lawn & Garden", 105, y, { align: 'center' });
-  y += 8;
-  doc.setFontSize(10);
-  doc.text("1234 Garden Lane, Greenville, SC 29601", 105, y, { align: 'center' });
-  y += 5;
-  doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, y, { align: 'center' });
-  y += 10;
-  doc.setDrawColor(34, 139, 34);
-  doc.line(20, y, 190, y);
-  y += 10;
-
-  doc.setFontSize(20);
-  doc.setTextColor(34, 139, 34);
-  doc.text("INVOICE", 20, y);
-  y += 10;
-
-  doc.setFontSize(12);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`Invoice #: ${number}`, 20, y); y += 7;
-  doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, y); y += 7;
-  doc.text(`Due Date: ${dueDate}`, 20, y);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text("Bill To:", 140, 55);
-  doc.setFont('helvetica', 'normal');
-  doc.text(email, 140, 65);
-
-  doc.setDrawColor(34, 139, 34);
-  doc.line(20, 90, 190, 90);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(34, 139, 34);
-  doc.text("Service Description", 20, 100);
-  doc.text("Amount", 160, 100);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  doc.text("Lawn and Garden Services", 20, 110);
-  doc.text(`$${amount.toFixed(2)}`, 160, 110);
-
-  doc.setDrawColor(34, 139, 34);
-  doc.line(20, 120, 190, 120);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(34, 139, 34);
-  doc.text("Total Due:", 140, 130);
-  doc.setTextColor(0, 0, 0);
-  doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
-
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'italic');
-  doc.setTextColor(100, 100, 100);
-  doc.text("Thank you for your business!", 105, 280, { align: 'center' });
-
-  const pdfBlobUrl = doc.output('bloburl');
-  window.open(pdfBlobUrl, '_blank');
-}
-</script>
-
+  </script>
 </body>
 </html>
+
