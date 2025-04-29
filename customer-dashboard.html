@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard - Holiday Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -12,17 +12,16 @@
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
     select, input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .status-pending { color: orange; }
     .status-approved { color: green; }
+    .status-inprogress { color: orange; }
     .status-completed { color: blue; }
-    .summary-box { margin: 1em 0; padding: 1em; background: #e8f5e9; border-left: 5px solid #228B22; }
   </style>
 </head>
 <body>
@@ -31,7 +30,7 @@
 
 <div class="container">
   <h2 id="greeting">Hello, Customer!</h2>
-  <div class="summary-box" id="summaryBox">Loading summary...</div>
+  <p>Thank you for choosing Holiday Lawn & Garden. Your service requests are shown below.</p>
 
   <h3>Your Service Requests</h3>
   <table id="requestsTable">
@@ -57,14 +56,7 @@
     <button type="submit">Send Request</button>
   </form>
 
-  <h3>Your Invoices</h3>
-  <table id="invoiceTable">
-    <thead>
-      <tr><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr>
-    </thead>
-    <tbody><tr><td colspan="5">Loading invoices...</td></tr></tbody>
-  </table>
-
+  <br>
   <button onclick="logout()">Logout</button>
 </div>
 
@@ -79,7 +71,6 @@ firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
     loadRequests();
-    loadInvoices();
   } else {
     window.location.href = "login.html";
   }
@@ -87,27 +78,33 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
+  tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
   db.collection("service_requests")
-    .where("email", "==", currentUser.email)
+    .where("customerEmail", "==", currentUser.email)
     .orderBy("submittedAt", "desc")
     .get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      let count = 0;
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='5'>No requests found.</td></tr>";
+        return;
+      }
       snapshot.forEach(doc => {
-        count++;
         const r = doc.data();
         tbody.innerHTML += `
           <tr>
             <td>${r.serviceType}</td>
             <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
             <td>${r.notes || "-"}</td>
-            <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
+            <td class="status-${(r.status || "pending").toLowerCase()}">${r.status || "Pending"}</td>
             <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
           </tr>
         `;
       });
-      document.getElementById("summaryBox").innerHTML = `You have <strong>${count}</strong> service request(s).`;
+    })
+    .catch(err => {
+      console.error("Error loading requests:", err);
+      tbody.innerHTML = "<tr><td colspan='5'>Failed to load requests.</td></tr>";
     });
 }
 
@@ -117,11 +114,11 @@ function submitRequest(e) {
   const date = document.getElementById("preferredDate").value;
   const notes = document.getElementById("requestNotes").value;
 
-  if (!type || !date) return alert("All fields are required.");
+  if (!type || !date) return alert("Please select a service type and preferred date.");
 
   db.collection("service_requests").add({
     fullName: currentUser.displayName || "Customer",
-    email: currentUser.email,
+    customerEmail: currentUser.email, // <-- MATCH INDEX
     serviceType: type,
     preferredDate: date,
     notes: notes,
@@ -140,32 +137,8 @@ function deleteRequest(id) {
   }
 }
 
-function loadInvoices() {
-  const tbody = document.querySelector("#invoiceTable tbody");
-  db.collection("invoices")
-    .where("customerEmail", "==", currentUser.email)
-    .orderBy("dueDate", "desc")
-    .get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const inv = doc.data();
-        const isPaid = inv.paid;
-        tbody.innerHTML += `
-          <tr>
-            <td>${inv.invoiceNumber}</td>
-            <td>$${inv.amountDue.toFixed(2)}</td>
-            <td>${inv.dueDate}</td>
-            <td>${isPaid ? 'Paid' : 'Unpaid'}</td>
-            <td>${!isPaid ? `<a href='pay-your-bill.html'><button>Pay Now</button></a>` : '-'}</td>
-          </tr>
-        `;
-      });
-    });
-}
-
 function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
 }
 </script>
 
