@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Customer Dashboard - Holiday Lawn & Garden</title>
+  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
-
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -37,7 +36,7 @@
 
 <div class="container">
   <h2 id="greeting">Hello, Customer!</h2>
-  <p>Thank you for choosing Holiday Lawn & Garden.<br>Your service requests and invoices are below.</p>
+  <p>Thank you for choosing Holliday's Lawn & Garden.<br>Your service requests and invoices are below.</p>
 
   <h3>Your Service Requests</h3>
   <table id="requestsTable">
@@ -84,7 +83,7 @@
   </div>
 </div>
 
-<footer>&copy; 2025 Holiday Lawn & Garden</footer>
+<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
 <script>
 const db = firebase.firestore();
@@ -180,6 +179,10 @@ function viewInvoice(number, email, dueDate, amount) {
     <hr>
     <p><strong>Service Description:</strong> Lawn and Garden Services</p>
     <p><strong>Amount Due:</strong> <strong>$${amount.toFixed(2)}</strong></p>
+    <hr>
+    <p><strong>Business Owner:</strong> Karl Holliday</p>
+    <p><strong>Email:</strong> <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a></p>
+    <p><strong>Phone:</strong> <a href="tel:5047171887">(504) 717-1887</a></p>
     <div style="text-align:center; margin-top: 1.5em;">
       <a href="pay-your-bill.html?invoice=${encodeURIComponent(number)}&amount=${amount.toFixed(2)}" 
          target="_blank" 
