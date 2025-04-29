@@ -22,6 +22,8 @@
     .status-approved { color: green; }
     .status-inprogress { color: orange; }
     .status-completed { color: blue; }
+    .status-paid { color: green; }
+    .status-unpaid { color: red; }
   </style>
 </head>
 <body>
@@ -56,8 +58,15 @@
     <button type="submit">Send Request</button>
   </form>
 
-  <br>
-  <button onclick="logout()">Logout</button>
+  <h3>Your Invoices</h3>
+  <table id="invoiceTable">
+    <thead>
+      <tr><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+
+  <br><button onclick="logout()">Logout</button>
 </div>
 
 <footer>&copy; 2025 Holiday Lawn & Garden</footer>
@@ -71,6 +80,7 @@ firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
     loadRequests();
+    loadInvoices();
   } else {
     window.location.href = "login.html";
   }
@@ -78,17 +88,13 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
   db.collection("service_requests")
-    .where("customerEmail", "==", currentUser.email)
+    .where("email", "==", currentUser.email)
     .orderBy("submittedAt", "desc")
     .get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) {
-        tbody.innerHTML = "<tr><td colspan='5'>No requests found.</td></tr>";
-        return;
-      }
+      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
       snapshot.forEach(doc => {
         const r = doc.data();
         tbody.innerHTML += `
@@ -96,15 +102,10 @@ function loadRequests() {
             <td>${r.serviceType}</td>
             <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
             <td>${r.notes || "-"}</td>
-            <td class="status-${(r.status || "pending").toLowerCase()}">${r.status || "Pending"}</td>
+            <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
             <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
-          </tr>
-        `;
+          </tr>`;
       });
-    })
-    .catch(err => {
-      console.error("Error loading requests:", err);
-      tbody.innerHTML = "<tr><td colspan='5'>Failed to load requests.</td></tr>";
     });
 }
 
@@ -113,12 +114,11 @@ function submitRequest(e) {
   const type = document.getElementById("serviceType").value;
   const date = document.getElementById("preferredDate").value;
   const notes = document.getElementById("requestNotes").value;
-
-  if (!type || !date) return alert("Please select a service type and preferred date.");
+  if (!type || !date) return alert("All fields are required.");
 
   db.collection("service_requests").add({
     fullName: currentUser.displayName || "Customer",
-    customerEmail: currentUser.email, // <-- MATCH INDEX
+    email: currentUser.email,
     serviceType: type,
     preferredDate: date,
     notes: notes,
@@ -135,6 +135,31 @@ function deleteRequest(id) {
   if (confirm("Delete this request?")) {
     db.collection("service_requests").doc(id).delete().then(loadRequests);
   }
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoiceTable tbody");
+  db.collection("invoices")
+    .where("customerEmail", "==", currentUser.email)
+    .orderBy("dueDate", "desc")
+    .get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No invoices found</td></tr>';
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const status = d.paid ? "Paid" : "Unpaid";
+        const action = d.paid ? "-" : `<a href="pay-your-bill.html"><button>Pay Now</button></a>`;
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.invoiceNumber}</td>
+            <td>$${(d.amountDue || 0).toFixed(2)}</td>
+            <td>${d.dueDate}</td>
+            <td class="status-${status.toLowerCase()}">${status}</td>
+            <td>${action}</td>
+          </tr>`;
+      });
+    });
 }
 
 function logout() {
