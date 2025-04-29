@@ -250,17 +250,63 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  doc.setFontSize(18);
-  doc.text("Invoice", 14, 20);
+  // --- Header ---
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text("Holliday's Lawn & Garden", 105, 20, { align: 'center' });
 
   doc.setFontSize(12);
-  doc.text(`Invoice #: ${number}`, 14, 40);
-  doc.text(`Customer: ${email}`, 14, 50);
-  doc.text(`Amount Due: $${amount.toFixed(2)}`, 14, 60);
-  doc.text(`Due Date: ${dueDate}`, 14, 70);
-  doc.text(`Status: Unpaid`, 14, 80);
-  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 90);
+  doc.setFont('helvetica', 'normal');
+  doc.text("1234 Garden Lane, Greenville, SC 29601", 105, 28, { align: 'center' });
+  doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, 35, { align: 'center' });
 
+  // --- Divider ---
+  doc.line(20, 42, 190, 42); // horizontal line
+
+  // --- Invoice Section ---
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text("INVOICE", 20, 55);
+
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Invoice #: ${number}`, 20, 65);
+  doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, 73);
+  doc.text(`Due Date: ${dueDate}`, 20, 81);
+
+  // --- Customer Section ---
+  doc.setFont('helvetica', 'bold');
+  doc.text("Bill To:", 140, 55);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${email}`, 140, 65);
+
+  // --- Divider ---
+  doc.line(20, 90, 190, 90);
+
+  // --- Service Details ---
+  doc.setFont('helvetica', 'bold');
+  doc.text("Service Description", 20, 100);
+  doc.text("Amount", 160, 100);
+
+  doc.setFont('helvetica', 'normal');
+  doc.text("Lawn and Garden Services", 20, 110);
+  doc.text(`$${amount.toFixed(2)}`, 160, 110);
+
+  // --- Divider ---
+  doc.line(20, 120, 190, 120);
+
+  // --- Total Section ---
+  doc.setFont('helvetica', 'bold');
+  doc.text("Total Due:", 140, 130);
+  doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
+
+  // --- Footer ---
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'italic');
+  doc.text("Thank you for your business!", 105, 280, { align: 'center' });
+
+  // --- Save PDF ---
   doc.save(`Invoice-${number}.pdf`);
 }
 </script>
