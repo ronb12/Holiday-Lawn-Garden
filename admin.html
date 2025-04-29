@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -60,8 +63,26 @@
     button:hover {
       background: #006400;
     }
+    .logout {
+      margin-top: 2em;
+      display: inline-block;
+      color: #228B22;
+      text-decoration: underline;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .logout:hover {
+      text-decoration: none;
+    }
+    #loadingSpinner {
+      display: none;
+      font-weight: bold;
+      color: #228B22;
+      margin-top: 1em;
+    }
   </style>
 </head>
+
 <body>
   <header>
     <h1>Admin Dashboard</h1>
@@ -307,5 +328,6 @@
       });
     }
   </script>
+
 </body>
 </html>
