@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Google Identity Services -->
+  <!-- Google Identity Services (optional for future use) -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
@@ -83,7 +83,7 @@
     <input type="password" id="loginPassword" placeholder="Password" required><br>
     <button onclick="emailPasswordLogin()">Login</button>
 
-    <!-- Google Sign In -->
+    <!-- Google Sign In (optional) -->
     <div class="g_id_signin"
          data-type="standard"
          data-shape="rectangular"
@@ -106,7 +106,7 @@
 </footer>
 
 <script>
-  // Firebase Email/Password Login
+  // Email/Password Login with role-based redirect
   function emailPasswordLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -118,14 +118,21 @@
 
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        window.location.href = "admin.html"; // ✅ Corrected redirect
+        const userEmail = userCredential.user.email;
+        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail); // ✅ Replace/add more admins as needed
+
+        if (isAdmin) {
+          window.location.href = "admin.html";
+        } else {
+          window.location.href = "customer-dashboard.html"; // ✅ Make sure this page exists
+        }
       })
       .catch((error) => {
-        alert(error.message);
+        alert("Login failed: " + error.message);
       });
   }
 
-  // Optional: Fade-in animation
+  // Fade-in animation
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
