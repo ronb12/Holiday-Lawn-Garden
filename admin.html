@@ -168,9 +168,9 @@ function logout() {
   firebase.auth().signOut().then(() => window.location.href = "login.html");
 }
 
-function downloadInvoicePDF(id, email, number, amount, dueDate) {
+function downloadInvoicePDF(...) {
+  const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const logoImg = "data:image/png;base64,..."; // Replace with your real base64 logo
 
   doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
 
