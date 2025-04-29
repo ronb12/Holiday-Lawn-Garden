@@ -158,10 +158,6 @@ function loadServiceRequests() {
           </tr>
         `;
       });
-    })
-    .catch(err => {
-      console.error("🔥 Firestore error:", err);
-      tbody.innerHTML = `<tr><td colspan="7">Error loading requests</td></tr>`;
     });
 }
 
@@ -246,19 +242,15 @@ function logout() {
   });
 }
 
-<script>
 function downloadInvoicePDF(id, email, number, amount, dueDate) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // ✅ Base64 version of Holliday’s Lawn & Garden logo
-  const logoImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXgAAAF4CAYAAAA+MKtEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEkklEQVR4nO3dMW7jOBRFUTKSyXPyprYOH7BoO0L+nV6LbcJrF7w5iQ+dSm/gF7L/tu8AQAAAAAAAAAAAAAAAAAAAAB4Mdbf3Bz91wBgI4I4wzwTAThHGMeEMkzDMcQwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlMzycUwT5TM8nFME+UzPJxTBPlM2/H9jDPlvzjefD/5KZHXw3X/LAAQAAAAAAAAAAAAAAAJ6BH1ABY6KLNL88VdcAAAAASUVORK5CYII=";
+  const logoImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXgAAAF4CAYAAAA+MKtEAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEkklEQVR4nO3dMW7jOBRFUTKSyXPyprYOH7BoO0L+nV6LbcJrF7w5iQ+dSm/gF7L/tu8AQAAAAAAAAAAAAAAAOCLZbi1QJ/7Cdb6yTME1wWeBX4b+Mu1eBZcErx4O19xvE2AY8E7p7XT8BTxcsG8C9GuVHgZcGKxXfRdoeMDz02qPb9slEdAeKf9wrj22fXwfbkL3o4sHnhvDaP8qlW+fPyrmjwhv6x37HTuT5+jYe8jDZRxNvpQj6X9WxGzjjvoG7AZuAeYAvHXj0X0ZL2DdY7xH2nED2IDVWQ+QPtR3Btwg1ygr3Qdg58Rb6vXzvBbDF6RJv33ThyUdOIE8H8UbfxQH4c8eCeDr1Fbi3TxnyUtU0YA6cDOL94vyg3MGwUdZFXsW3Kz6VzImvZBdyCvOB8bIXFxF3v8RvU9o5YOmZlwvvlpwcY6i9kK/sWnKtzAcX15A7zRu8vWHBzH6jfm74yL0dxdv2+JH+Av05zvqHr7exWvAzz1G2C/x0c5/iEjkIHz9+C2udXefcxy4iP9RdpcD+ZXY95DfwGqxB+2H65a/pcoLMX0N+bt6v+Hp4TEnr3GHoQ5D9KnZ/wrn97wrcvc95XsZeBtdH+r+c9HjUXdtnqAHZufvfyKzzmvxnWcuXNAR4fLo2cpzQ74+dYuYLWbrdKvb5zX5nOLZc4b0OVH22qfqXEnU+6nz4Lq8PQPr3XtrcdwckuYwd/UftbMD1Gn7fL+mbZ0v3KXpQvFcZaWzkOtxmmviuUXsZ/AAj1ZAr4DpZ+d/XRr6/E2Qk+NWR9fMtcAXpAXuuLsHFNNxPkO8p5HkPlH0g/fCb5EVOp9ZVJqt9pPl7KOV9ExXkb69D6vfAjeAuYMb2PkD8mD9w+Wrxz4TfSg+8Y22+gSTqOnr0cz3b8x9F6WCP9RG13MJx9kfbHQAAAAASUVORK5CYII=";
 
-  // Add Logo
   doc.addImage(logoImg, 'PNG', 80, 10, 50, 20);
   let y = 35;
 
-  // Business Info
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -271,12 +263,10 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.text("Phone: (123) 456-7890 | Email: support@hollidayslawn.com", 105, y, { align: 'center' });
   y += 10;
 
-  // Divider
   doc.setDrawColor(34, 139, 34);
   doc.line(20, y, 190, y);
   y += 10;
 
-  // Invoice Header
   doc.setFontSize(20);
   doc.setTextColor(34, 139, 34);
   doc.setFont('helvetica', 'bold');
@@ -290,17 +280,14 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.text(`Invoice Date: ${new Date().toLocaleDateString()}`, 20, y); y += 7;
   doc.text(`Due Date: ${dueDate}`, 20, y);
 
-  // Customer info
   doc.setFont('helvetica', 'bold');
   doc.text("Bill To:", 140, 55);
   doc.setFont('helvetica', 'normal');
   doc.text(email, 140, 65);
 
-  // Divider
   doc.setDrawColor(34, 139, 34);
   doc.line(20, 90, 190, 90);
 
-  // Services
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(34, 139, 34);
   doc.text("Service Description", 20, 100);
@@ -311,11 +298,9 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.text("Lawn and Garden Services", 20, 110);
   doc.text(`$${amount.toFixed(2)}`, 160, 110);
 
-  // Divider
   doc.setDrawColor(34, 139, 34);
   doc.line(20, 120, 190, 120);
 
-  // Total
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(14);
   doc.setTextColor(34, 139, 34);
@@ -323,7 +308,6 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.setTextColor(0, 0, 0);
   doc.text(`$${amount.toFixed(2)}`, 180, 130, { align: 'right' });
 
-  // Footer
   doc.setFontSize(10);
   doc.setFont('helvetica', 'italic');
   doc.setTextColor(100, 100, 100);
@@ -332,7 +316,6 @@ function downloadInvoicePDF(id, email, number, amount, dueDate) {
   doc.save(`Invoice-${number}.pdf`);
 }
 </script>
-}
-</script>
+
 </body>
 </html>
