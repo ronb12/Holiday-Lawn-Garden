@@ -5,194 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
-
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-
   <style>
-    .admin-container {
-      max-width: 1200px;
-      margin: 3em auto;
-      padding: 2em;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background-color: #228B22;
-      color: white;
-    }
-    td.overdue {
-      background-color: #ffcccc;
-    }
-    button {
-      background-color: #228B22;
-      color: white;
-      border: none;
-      padding: 0.5em 1em;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #006400;
-    }
-    .logout {
-      margin-top: 2em;
-      display: inline-block;
-      color: #228B22;
-      text-decoration: none;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .logout:hover {
-      text-decoration: underline;
-    }
-    input {
-      padding: 0.5em;
-      margin: 0.5em;
-      width: 250px;
-    }
-    #loadingSpinner {
-      display: none;
-      margin-top: 20px;
-      font-size: 1.2em;
-      color: #228B22;
-    }
+    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
+    .admin-container { max-width: 1200px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background: #228B22; color: white; }
+    .overdue { background: #ffe5e5; }
+    input, button { padding: 0.5em; margin: 0.5em 0; border-radius: 5px; }
+    button { background: #228B22; color: white; border: none; cursor: pointer; }
+    button:hover { background: #006400; }
   </style>
 </head>
 <body>
+<header><h1>Admin Dashboard</h1></header>
+<main class="admin-container">
+  <h2>Invoices Due</h2>
+  <table id="invoicesDueTable">
+    <thead>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<header>
-  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="services.html">Services</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="gallery.html">Gallery</a>
-    <a href="login.html">Login</a>
-  </nav>
-  <p>Admin Dashboard</p>
-</header>
-
-<main>
-  <div class="admin-container fade-in">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead>
-        <tr>
-          <th>Customer Name</th>
-          <th>Email</th>
-          <th>Service Requested</th>
-          <th>Preferred Date</th>
-          <th>Notes</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>Create Invoice</h2>
-    <form id="invoiceForm" onsubmit="createInvoice(event)">
-      <input type="text" id="invoiceEmail" placeholder="Customer Email" required><br>
-      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required><br>
-      <input type="number" id="invoiceAmount" placeholder="Amount Due ($)" min="1" step="0.01" required><br>
-      <input type="date" id="invoiceDueDate" required><br>
-      <button type="submit">Create Invoice</button>
-    </form>
-
-    <h2>Invoices Due</h2>
-    <table id="invoicesDueTable">
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>Email</th>
-          <th>Invoice #</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <h2>Paid Invoices</h2>
-    <table id="invoicesPaidTable">
-      <thead>
-        <tr>
-          <th>Customer</th>
-          <th>Email</th>
-          <th>Invoice #</th>
-          <th>Amount</th>
-          <th>Due Date</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <a onclick="logout()" class="logout">Logout</a>
-    <div id="loadingSpinner">Logging out...</div>
-  </div>
+  <h2>Paid Invoices</h2>
+  <table id="invoicesPaidTable">
+    <thead>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </main>
-
-<footer>
-  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-</footer>
-
+<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 <script>
   const db = firebase.firestore();
-
   firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      const adminEmails = ["ronellbradley@bradleyvs.com"]; // ✅ Your admin email here
-      if (!adminEmails.includes(user.email)) {
-        alert("Access Denied. Redirecting...");
-        window.location.href = "index.html";
-      } else {
-        loadServiceRequests();
-        loadInvoices();
-      }
+    if (!user || user.email !== 'ronellbradley@bradleyvs.com') {
+      window.location.href = 'login.html';
     } else {
-      window.location.href = "login.html";
+      loadInvoices();
     }
   });
-
-  function loadServiceRequests() {
-  db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
-    const tbody = document.querySelector("#requestsTable tbody");
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();  // use 'd' here to match your usage below
-      const row = `<tr>
-        <td>${d.fullName || "N/A"}</td>
-        <td>${d.email || "N/A"}</td>
-        <td>${d.serviceType || "N/A"}</td>
-        <td>${d.preferredDate ? new Date(d.preferredDate).toLocaleDateString() : "N/A"}</td>
-        <td>${d.notes || "N/A"}</td>
-        <td>Pending</td>
-        <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
-      </tr>`;
-      tbody.innerHTML += row;
-    });
-  });
-}
 
   function loadInvoices() {
     const dueTbody = document.querySelector("#invoicesDueTable tbody");
@@ -200,130 +58,40 @@
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
 
-    db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
+    db.collection("invoices").orderBy("dueDate").get().then(snapshot => {
       snapshot.forEach(doc => {
-        const data = doc.data();
-        const dueDate = new Date(data.dueDate);
-        const today = new Date();
-        const isOverdue = dueDate < today;
-        const trClass = isOverdue ? 'overdue' : '';
-
-        if (!data.paid) {
-          dueTbody.innerHTML += `<tr class="${trClass}">
-            <td>${data.customerEmail.split('@')[0]}</td>
-            <td>${data.customerEmail}</td>
-            <td>${data.invoiceNumber}</td>
-            <td>$${data.amountDue.toFixed(2)}</td>
-            <td>${data.dueDate}</td>
-            <td>Unpaid</td>
-            <td>
-              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
-              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-            </td>
-          </tr>`;
-        } else {
-          paidTbody.innerHTML += `<tr>
-            <td>${data.customerEmail.split('@')[0]}</td>
-            <td>${data.customerEmail}</td>
-            <td>${data.invoiceNumber}</td>
-            <td>$${data.amountDue.toFixed(2)}</td>
-            <td>${data.dueDate}</td>
-            <td>Paid</td>
-          </tr>`;
-        }
+        const d = doc.data();
+        const row = `<tr${!d.paid && new Date(d.dueDate) < new Date() ? ' class="overdue"' : ''}>
+          <td>${d.customerEmail.split('@')[0]}</td>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? 'Paid' : 'Unpaid'}</td>
+          <td>${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ''} <button onclick="printInvoice('${d.customerEmail}','${d.invoiceNumber}','${d.amountDue}','${d.dueDate}')">Print</button></td>
+        </tr>`;
+        (d.paid ? paidTbody : dueTbody).innerHTML += row;
       });
     });
   }
 
-  function createInvoice(event) {
-    event.preventDefault();
-    const email = document.getElementById('invoiceEmail').value;
-    const number = document.getElementById('invoiceNumber').value;
-    const amount = parseFloat(document.getElementById('invoiceAmount').value);
-    const dueDate = document.getElementById('invoiceDueDate').value;
-
-    db.collection("invoices").add({
-      customerEmail: email,
-      invoiceNumber: number,
-      amountDue: amount,
-      dueDate: dueDate,
-      paid: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(() => {
-      alert("✅ Invoice Created!");
-      document.getElementById('invoiceForm').reset();
-      loadInvoices();
-    })
-    .catch(error => {
-      console.error("Error creating invoice:", error);
-      alert("❌ Error creating invoice.");
-    });
+  function markPaid(id) {
+    db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
   }
 
-  function markCompleted(docId) {
-    db.collection("service_requests").doc(docId).delete()
-      .then(() => {
-        alert("✅ Service request marked completed!");
-        loadServiceRequests();
-      })
-      .catch(error => {
-        console.error("Error removing request: ", error);
-        alert("❌ Error updating request.");
-      });
+  function printInvoice(email, number, amount, dueDate) {
+    const win = window.open('', '_blank');
+    win.document.write(`<html><head><title>Invoice ${number}</title></head><body>`);
+    win.document.write(`<h1>Invoice: ${number}</h1>`);
+    win.document.write(`<p><strong>Customer:</strong> ${email}</p>`);
+    win.document.write(`<p><strong>Due Date:</strong> ${dueDate}</p>`);
+    win.document.write(`<p><strong>Amount Due:</strong> $${parseFloat(amount).toFixed(2)}</p>`);
+    win.document.write(`<p><strong>Business:</strong> Karl Holliday<br>Email: 7holliday@gmail.com<br>Phone: 504-717-1887</p>`);
+    win.document.write(`<hr><p>Thank you for your business!</p>`);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
   }
-
-  function markPaid(docId) {
-    db.collection("invoices").doc(docId).update({ paid: true })
-      .then(() => {
-        alert("✅ Invoice marked as paid!");
-        loadInvoices();
-      })
-      .catch(error => {
-        console.error("Error marking paid:", error);
-        alert("❌ Error updating invoice.");
-      });
-  }
-
-  function deleteInvoice(docId) {
-    if (confirm("Are you sure you want to delete this invoice?")) {
-      db.collection("invoices").doc(docId).delete()
-        .then(() => {
-          alert("✅ Invoice deleted!");
-          loadInvoices();
-        })
-        .catch(error => {
-          console.error("Error deleting invoice:", error);
-          alert("❌ Error deleting invoice.");
-        });
-    }
-  }
-
-  function logout() {
-    document.getElementById('loadingSpinner').style.display = 'block';
-    firebase.auth().signOut().then(() => {
-      setTimeout(() => {
-        alert("✅ You have been logged out successfully!");
-        window.location.href = "login.html";
-      }, 1000);
-    }).catch((error) => {
-      console.error("Logout error:", error);
-      alert("❌ Error logging out. Please try again.");
-    });
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.fade-in').forEach(section => {
-    observer.observe(section);
-  });
 </script>
-
 </body>
 </html>
