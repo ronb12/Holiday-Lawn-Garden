@@ -68,8 +68,8 @@
       margin-top: 20px;
     }
   </style>
-
 </head>
+
 <body>
 
 <header>
@@ -183,12 +183,19 @@ function loadServiceRequests() {
     } else {
       snapshot.forEach(doc => {
         const d = doc.data();
+        // ✅ Safe fallback for missing fields
+        const fullName = d.fullName || "N/A";
+        const email = d.email || "N/A";
+        const serviceType = d.serviceType || "N/A";
+        const preferredDate = d.preferredDate || "N/A";
+        const notes = d.notes || "N/A";
+
         tbody.innerHTML += `<tr>
-          <td>${d.fullName}</td>
-          <td>${d.email}</td>
-          <td>${d.serviceType}</td>
-          <td>${d.preferredDate}</td>
-          <td>${d.notes}</td>
+          <td>${fullName}</td>
+          <td>${email}</td>
+          <td>${serviceType}</td>
+          <td>${preferredDate}</td>
+          <td>${notes}</td>
           <td>Pending</td>
           <td><button onclick="markCompleted('${doc.id}')">Mark Completed</button></td>
         </tr>`;
@@ -220,11 +227,11 @@ function loadInvoices() {
         const overdueClass = (!d.paid && dueDateObj < today) ? 'overdue' : '';
 
         const row = `<tr class="${overdueClass}">
-          <td>${d.customerEmail.split('@')[0]}</td>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.grandTotal ? d.grandTotal.toFixed(2) : d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
+          <td>${d.customerEmail ? d.customerEmail.split('@')[0] : "N/A"}</td>
+          <td>${d.customerEmail || "N/A"}</td>
+          <td>${d.invoiceNumber || "N/A"}</td>
+          <td>$${d.grandTotal ? d.grandTotal.toFixed(2) : (d.amountDue ? d.amountDue.toFixed(2) : "0.00")}</td>
+          <td>${d.dueDate || "N/A"}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
             ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
