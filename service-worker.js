@@ -1,12 +1,11 @@
 const CACHE_NAME = 'holliday-lawn-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/Hollidays_Lawn_Garden_Logo.png'
+  'index.html',
+  'style.css',
+  'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'Hollidays_Lawn_Garden_Logo.png'
 ];
 
 // Install and cache files
