@@ -16,18 +16,17 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js') // ✅ RELATIVE path
-        .then(reg => console.log('✅ Service Worker registered:', reg.scope))
-        .catch(err => console.error('❌ Service Worker registration failed:', err));
-    });
-  }
-</script>
 
-</head>
-<body>
+  <!-- Register Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.error('❌ Service Worker registration failed:', err));
+      });
+    }
+  </script>
 
   <style>
     body {
@@ -179,23 +178,6 @@
       color: #555;
       margin-top: 2em;
     }
-    <button id="installBtn" style="
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  padding: 12px 20px;
-  background: #228B22;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  font-size: 1em;
-  font-weight: bold;
-  display: none;
-  z-index: 1000;
-">
-  📲 Install App
-</button>
-
   </style>
 </head>
 
@@ -225,36 +207,37 @@
 <section class="services-section">
   <h2>Our Services</h2>
   <div class="services-cards">
-    <div class="service-card">
-      <i>🌿</i>
-      <h3>Mowing & Trimming</h3>
-    </div>
-    <div class="service-card">
-      <i>🏡</i>
-      <h3>Landscape Design</h3>
-    </div>
-    <div class="service-card">
-      <i>🧹</i>
-      <h3>Pressure Washing</h3>
-    </div>
-    <div class="service-card">
-      <i>🏢</i>
-      <h3>Commercial Lawn Care</h3>
-    </div>
+    <div class="service-card"><i>🌿</i><h3>Mowing & Trimming</h3></div>
+    <div class="service-card"><i>🏡</i><h3>Landscape Design</h3></div>
+    <div class="service-card"><i>🧹</i><h3>Pressure Washing</h3></div>
+    <div class="service-card"><i>🏢</i><h3>Commercial Lawn Care</h3></div>
   </div>
 </section>
 
 <section class="testimonials">
   <h2>What Our Customers Say</h2>
-  <div class="testimonial">
-    "Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service." — ⭐⭐⭐⭐⭐
-  </div>
-  <div class="testimonial">
-    "Reliable, friendly, and the best landscaping crew I’ve ever hired!" — ⭐⭐⭐⭐⭐
-  </div>
+  <div class="testimonial">"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service." — ⭐⭐⭐⭐⭐</div>
+  <div class="testimonial">"Reliable, friendly, and the best landscaping crew I’ve ever hired!" — ⭐⭐⭐⭐⭐</div>
 </section>
 
 <a href="contact.html" class="sticky-contact">📞 Contact Us</a>
+
+<!-- ✅ INSTALL BUTTON -->
+<button id="installBtn" style="
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  padding: 12px 20px;
+  background: #228B22;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  font-size: 1em;
+  font-weight: bold;
+  display: none;
+  z-index: 1000;">
+  📲 Install App
+</button>
 
 <footer>
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
@@ -271,17 +254,39 @@
     nav.classList.toggle('active');
   }
 
-  const allowedAdmins = [
-    "ronellbradley@bradleyvs.com"  // ✅ Replace this with your real admin email
-  ];
-
+  const allowedAdmins = ["ronellbradley@bradleyvs.com"];
   firebase.auth().onAuthStateChanged(user => {
     const adminLink = document.getElementById('adminLink');
     if (user && allowedAdmins.includes(user.email)) {
-      adminLink.style.display = 'inline-block'; // Show Admin link
+      adminLink.style.display = 'inline-block';
     } else {
-      adminLink.style.display = 'none'; // Hide Admin link if not admin
+      adminLink.style.display = 'none';
     }
+  });
+</script>
+
+<!-- Install App Script -->
+<script>
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
+  });
+
+  installBtn.addEventListener('click', () => {
+    installBtn.style.display = 'none';
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('✅ User accepted the install prompt');
+      } else {
+        console.log('❌ User dismissed the install prompt');
+      }
+      deferredPrompt = null;
+    });
   });
 </script>
 
