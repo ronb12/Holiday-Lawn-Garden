@@ -1,3 +1,4 @@
+<!-- Full Updated Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,98 +8,26 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f9f4;
-      margin: 0;
-    }
-    header, footer {
-      background: #228B22;
-      color: white;
-      text-align: center;
-      padding: 1em;
-    }
-    .admin-container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 2em;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #228B22;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1em 0;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-    th {
-      background: #228B22;
-      color: white;
-    }
-    .overdue {
-      background: #ffe5e5;
-    }
-    input, select {
-      padding: 0.5em;
-      margin: 0.3em 0;
-      width: 100%;
-    }
-    button {
-      background: #228B22;
-      color: white;
-      border: none;
-      padding: 0.5em 1em;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #006400;
-    }
-    .logout {
-      margin-top: 1em;
-      color: #228B22;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .service-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .service-row input, .service-row select {
-      flex: 1;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
+    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
+    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    h2 { color: #228B22; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background: #228B22; color: white; }
+    input, select { padding: 0.5em; margin: 0.3em 0; width: 100%; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #006400; }
+    .logout { margin-top: 1em; color: #228B22; text-decoration: underline; cursor: pointer; }
+    .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .service-row input { flex: 1; }
   </style>
 </head>
 <body>
+
 <header><h1>Admin Dashboard</h1></header>
+
 <main class="admin-container">
-  <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead>
-      <tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Update</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Quotes</h2>
-  <table id="quotesTable">
-    <thead>
-      <tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required>
@@ -110,27 +39,30 @@
     <button type="submit">Create Invoice</button>
   </form>
 
+  <h2>Accepted Quotes</h2>
+  <table id="acceptedQuotesTable">
+    <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Notes</th><th>Amount</th><th>Actions</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
   <h2>Invoices Due</h2>
   <table id="invoicesDueTable">
-    <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
-    </thead>
+    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
 
   <h2>Paid Invoices</h2>
   <table id="invoicesPaidTable">
-    <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
-    </thead>
+    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr></thead>
     <tbody></tbody>
   </table>
 
   <a onclick="logout()" class="logout">Logout</a>
 </main>
-<footer id="footer"></footer>
 
-<!-- Firebase SDK -->
+<footer id="footer">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+
+<!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -141,34 +73,30 @@ const db = firebase.firestore();
 
 firebase.auth().onAuthStateChanged(user => {
   if (user?.email === "ronellbradley@bradleyvs.com") {
-    loadRequests();
-    loadQuotes();
-    loadInvoices();
     addServiceRow();
+    loadInvoices();
+    loadAcceptedQuotes();
   } else {
-    window.location.href = "login.html";
+    location.href = "login.html";
   }
 });
 
-function addServiceRow() {
+function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
-    <select><option value="Custom">Custom</option></select>
-    <input type="text" placeholder="Description" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" step="0.01" oninput="calcTotal()">
+    <input type="text" placeholder="Description" value="${desc}" oninput="calcTotal()">
+    <input type="number" placeholder="Amount" min="0" step="0.01" value="${amt}" oninput="calcTotal()">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
   container.appendChild(row);
 }
 
 function calcTotal() {
-  const rows = document.querySelectorAll(".service-row");
   let total = 0;
-  rows.forEach(row => {
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    total += amt;
+  document.querySelectorAll(".service-row").forEach(row => {
+    total += parseFloat(row.querySelector("input[type=number]").value || 0);
   });
   document.getElementById("totalAmount").innerText = total.toFixed(2);
 }
@@ -185,6 +113,7 @@ function createInvoice(e) {
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
   const total = services.reduce((sum, s) => sum + s.amount, 0);
+
   db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
@@ -199,21 +128,20 @@ function createInvoice(e) {
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow();
     calcTotal();
+    loadInvoices();
   });
 }
 
 function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
+  const dueBody = document.querySelector("#invoicesDueTable tbody");
+  const paidBody = document.querySelector("#invoicesPaidTable tbody");
+  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
+    dueBody.innerHTML = "";
+    paidBody.innerHTML = "";
     snapshot.forEach(doc => {
       const d = doc.data();
-      const overdue = !d.paid && new Date(d.dueDate) < new Date();
       const row = `
-        <tr class="${overdue ? "overdue" : ""}">
-          <td>${d.customerEmail.split('@')[0]}</td>
+        <tr>
           <td>${d.customerEmail}</td>
           <td>${d.invoiceNumber}</td>
           <td>$${d.amountDue.toFixed(2)}</td>
@@ -221,40 +149,12 @@ function loadInvoices() {
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
             ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
-            <button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>
             <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
         </tr>`;
-      d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
+      d.paid ? paidBody.innerHTML += row : dueBody.innerHTML += row;
     });
   });
-}
-
-function viewInvoice(data) {
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <html><head><title>Invoice ${data.invoiceNumber}</title></head>
-    <body style="font-family:Arial;padding:2em;">
-      <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height:80px">
-      <h2 style="color:#228B22;">Holliday's Lawn & Garden</h2>
-      <p><strong>Owner:</strong> Karl Holliday<br>
-         <strong>Phone:</strong> 504-717-1887<br>
-         <strong>Email:</strong> 7holliday@gmail.com</p>
-      <hr>
-      <h3>Invoice #: ${data.invoiceNumber}</h3>
-      <p><strong>Customer:</strong> ${data.customerEmail}</p>
-      <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-      <table border="1" style="width:100%;border-collapse:collapse;">
-        <thead><tr><th>Description</th><th>Amount</th></tr></thead>
-        <tbody>
-          ${data.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
-        </tbody>
-      </table>
-      <h3 style="text-align:right;">Total: $${data.amountDue.toFixed(2)}</h3>
-      <p style="text-align:center;">Thank you for your business!</p>
-      <button onclick="window.print()">🖨️ Print Invoice</button>
-    </body></html>
-  `);
 }
 
 function markPaid(id) {
@@ -267,95 +167,38 @@ function deleteInvoice(id) {
   }
 }
 
-function loadRequests() {
-  const tbody = document.querySelector("#serviceRequestsTable tbody");
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      if (r.status === "Completed") return;
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.fullName || 'N/A'}</td>
-          <td>${r.email || 'N/A'}</td>
-          <td>${r.notes || 'N/A'}</td>
-          <td>${r.status || "Pending"}</td>
-          <td>
-            <select onchange="updateStatus('${doc.id}', this.value)">
-              <option value="">Change</option>
-              <option value="Approved">Approved</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-function updateStatus(id, status) {
-  if (status === "Completed") {
-    db.collection("service_requests").doc(id).get().then(doc => {
-      const data = doc.data();
-      db.collection("quotes").add({
-        fullName: data.fullName || data.name || "N/A",
-        email: data.email || "N/A",
-        quote: data.notes || "N/A",
-        createdAt: new Date()
-      }).then(() => db.collection("service_requests").doc(id).delete());
-    });
-  } else {
-    db.collection("service_requests").doc(id).update({ status });
-  }
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+function loadAcceptedQuotes() {
+  const tbody = document.querySelector("#acceptedQuotesTable tbody");
+  db.collection("quotes").where("status", "==", "Accepted").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const q = doc.data();
-      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
       tbody.innerHTML += `
         <tr>
-          <td>${q.fullName || "N/A"}</td>
-          <td>${q.email || "N/A"}</td>
-          <td>${q.quote || "N/A"}</td>
-          <td>${date}</td>
-          <td><button onclick="convertQuoteToInvoice('${doc.id}')">Convert to Invoice</button></td>
+          <td>${q.name || ''}</td>
+          <td>${q.email || ''}</td>
+          <td>${q.service || ''}</td>
+          <td>${q.notes || ''}</td>
+          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+          <td><button onclick='loadQuoteIntoInvoice(${JSON.stringify({ email: q.email, service: q.service, amount: q.amount })})'>Create Invoice</button></td>
         </tr>`;
     });
   });
 }
 
-function convertQuoteToInvoice(quoteId) {
-  db.collection("quotes").doc(quoteId).get().then(doc => {
-    const data = doc.data();
-    document.getElementById("invoiceEmail").value = data.email || "";
-    document.getElementById("invoiceNumber").value = Date.now();
-    document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
-    document.getElementById("serviceList").innerHTML = "";
-
-    const row = document.createElement("div");
-    row.className = "service-row";
-    row.innerHTML = `
-      <select><option>${data.quote || 'Custom Service'}</option></select>
-      <input type="text" value="${data.quote || ''}" />
-      <input type="number" placeholder="Amount ($)" step="0.01" oninput="calcTotal()" />
-      <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-    `;
-    document.getElementById("serviceList").appendChild(row);
-  });
+function loadQuoteIntoInvoice(quote) {
+  document.getElementById("invoiceEmail").value = quote.email;
+  document.getElementById("invoiceNumber").value = "INV-" + Math.floor(1000 + Math.random() * 9000);
+  document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
+  document.getElementById("serviceList").innerHTML = "";
+  addServiceRow(quote.service, quote.amount);
+  calcTotal();
 }
 
 function logout() {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("footer").innerHTML =
-    `&copy; ${new Date().getFullYear()} Holliday's Lawn & Garden. All rights reserved.`;
-});
 </script>
+
 </body>
 </html>
