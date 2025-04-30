@@ -32,7 +32,7 @@
 
   <h3>Your Quotes</h3>
   <table id="quotesTable">
-    <thead><tr><th>Quote</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+    <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
@@ -83,8 +83,8 @@ function loadQuotes() {
       tbody.innerHTML += `
         <tr>
           <td>${q.quote}</td>
+          <td>$${parseFloat(q.Quotes || 0).toFixed(2)}</td>
           <td>${q.status || "Pending"}</td>
-          <td>${date}</td>
           <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
         </tr>`;
     });
