@@ -1,3 +1,4 @@
+<!-- Full Working Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,20 +8,77 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
-    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    h2 { color: #228B22; text-align: center; }
-    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
-    th { background: #228B22; color: white; }
-    .overdue { background: #ffe5e5; }
-    input, select { padding: 0.5em; margin: 0.3em 0; width: 100%; }
-    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    button:hover { background: #006400; }
-    .logout { margin-top: 1em; color: #228B22; text-decoration: underline; cursor: pointer; }
-    .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .service-row input, .service-row select { flex: 1; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+      margin: 0;
+    }
+    header, footer {
+      background: #228B22;
+      color: white;
+      text-align: center;
+      padding: 1em;
+    }
+    .admin-container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 2em;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #228B22;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1em 0;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background: #228B22;
+      color: white;
+    }
+    .overdue {
+      background: #ffe5e5;
+    }
+    input, select {
+      padding: 0.5em;
+      margin: 0.3em 0;
+      width: 100%;
+    }
+    button {
+      background: #228B22;
+      color: white;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #006400;
+    }
+    .logout {
+      margin-top: 1em;
+      color: #228B22;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .service-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .service-row input, .service-row select {
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -39,19 +97,25 @@
 
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Update</th></tr></thead>
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Update</th></tr>
+    </thead>
     <tbody></tbody>
   </table>
 
   <h2>Invoices Due</h2>
   <table id="invoicesDueTable">
-    <thead><tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
+    </thead>
     <tbody></tbody>
   </table>
 
   <h2>Paid Invoices</h2>
   <table id="invoicesPaidTable">
-    <thead><tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr></thead>
+    <thead>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+    </thead>
     <tbody></tbody>
   </table>
 
@@ -84,21 +148,23 @@ function addServiceRow() {
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
-    <select onchange="calcTotal()">
+    <select>
       <option value="">Select Service</option>
       ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
       <option value="Custom">Other (manual entry)</option>
     </select>
-    <input type="text" placeholder="Description" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal()">
+    <input type="text" placeholder="Description">
+    <input type="number" placeholder="Amount ($)" min="0" step="0.01">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
   container.appendChild(row);
+  calcTotal();
 }
 
 function calcTotal() {
+  const rows = document.querySelectorAll(".service-row");
   let total = 0;
-  document.querySelectorAll(".service-row").forEach(row => {
+  rows.forEach(row => {
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     total += amt;
   });
@@ -111,16 +177,16 @@ function createInvoice(e) {
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
-  let total = 0;
 
   document.querySelectorAll(".service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value.trim();
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && !isNaN(amt)) {
+    if (desc && amt > 0) {
       services.push({ description: desc, amount: amt });
-      total += amt;
     }
   });
+
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
 
   db.collection("invoices").add({
     customerEmail: email,
@@ -155,7 +221,7 @@ function loadInvoices() {
           <td>${d.customerEmail.split('@')[0]}</td>
           <td>${d.customerEmail}</td>
           <td>${d.invoiceNumber}</td>
-          <td>$${(d.amountDue || 0).toFixed(2)}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
@@ -189,7 +255,7 @@ function viewInvoice(data) {
           ${data.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
         </tbody>
       </table>
-      <h3 style="text-align:right;">Total: $${(data.amountDue || 0).toFixed(2)}</h3>
+      <h3 style="text-align:right;">Total: $${data.amountDue.toFixed(2)}</h3>
       <p style="text-align:center;">Thank you for your business!</p>
       <button onclick="window.print()">🖨️ Print Invoice</button>
     </body></html>
@@ -208,12 +274,11 @@ function deleteInvoice(id) {
 
 function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
-      if (r.status === "Completed") return; // hide completed
+      if (r.status === "Completed") return;
       tbody.innerHTML += `
         <tr>
           <td>${r.fullName || ''}</td>
