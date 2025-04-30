@@ -10,6 +10,7 @@ const urlsToCache = [
 
 // Install event: cache core files
 self.addEventListener('install', event => {
+  self.skipWaiting(); // 🔄 Activate this service worker immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('📦 Caching assets');
@@ -18,26 +19,11 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event: respond from cache or fetch from network
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Serve from cache if found, else fetch from network
-        return response || fetch(event.request);
-      })
-      .catch(() => {
-        // Optionally return fallback page or image here if offline
-        return caches.match('index.html'); // or create offline.html
-      })
-  );
-});
-
-// Activate event: clean up old caches
+// Activate event: clean up old caches and claim control
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(keys => 
+    caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
           if (!cacheWhitelist.includes(key)) {
@@ -46,6 +32,17 @@ self.addEventListener('activate', event => {
           }
         })
       )
+    ).then(() => self.clients.claim()) // 🚀 Take control of all tabs immediately
+  );
+});
+
+// Fetch event: serve from cache first, then fallback to network
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(response =>
+      response || fetch(event.request)
+    ).catch(() =>
+      caches.match('index.html') // Fallback for offline use
     )
   );
 });
