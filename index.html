@@ -1,33 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holliday's Lawn & Garden</title>
 
-  <!-- Styles & Manifest -->
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="icons/icon-192.png" sizes="192x192">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <!-- PWA Meta -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <meta name="theme-color" content="#228B22" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Theme & PWA Meta -->
-  <meta name="theme-color" content="#228B22">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-  <!-- Register Service Worker -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
-          .catch(err => console.error('❌ Service Worker registration failed:', err));
-      });
-    }
-  </script>
-
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
@@ -71,7 +59,6 @@
     .nav-links a:hover {
       text-decoration: underline;
     }
-
     @media (max-width: 768px) {
       .hamburger {
         display: block;
@@ -88,14 +75,14 @@
     }
 
     .hero {
-  background: url('https://www.hdwallpapers.in/download/garden_park_with_green_grass_and_colorful_flowers_hd_garden-1920x1080.jpg') no-repeat center center/cover;
-  height: 400px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+      background: url('https://cdn.pixabay.com/photo/2016/11/29/04/17/garden-1868043_1280.jpg') no-repeat center center/cover;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
     }
     .hero h1 {
       font-size: 2.5em;
@@ -118,6 +105,7 @@
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
+
     .services-section {
       padding: 3em 1em;
       background: #fff;
@@ -146,6 +134,7 @@
       margin-bottom: 0.5em;
       color: #228B22;
     }
+
     .testimonials {
       background: #f4f9f4;
       padding: 3em 1em;
@@ -157,6 +146,7 @@
       font-style: italic;
       font-size: 1.1em;
     }
+
     .sticky-contact {
       position: fixed;
       bottom: 20px;
@@ -170,6 +160,22 @@
       font-size: 1em;
       z-index: 1000;
     }
+
+    #installBtn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      padding: 12px 20px;
+      background: #228B22;
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 1em;
+      font-weight: bold;
+      display: none;
+      z-index: 1000;
+    }
+
     footer {
       background: #eee;
       text-align: center;
@@ -179,116 +185,99 @@
       margin-top: 2em;
     }
   </style>
+
+  <!-- Service Worker Register -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+          .catch(err => console.error('❌ Service Worker registration failed:', err));
+      });
+    }
+  </script>
 </head>
 
 <body>
+  <header>
+    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" />
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="pay-your-bill.html">Pay Your Bill</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
+      <a href="admin-login.html" id="adminLink">Admin</a>
+    </nav>
+    <p style="margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
+  </header>
 
-<header>
-  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo">
-  <div class="hamburger" onclick="toggleMenu()">☰</div>
-  <nav class="nav-links" id="navLinks">
-    <a href="index.html">Home</a>
-    <a href="services.html">Services</a>
-    <a href="about.html">About</a>
-    <a href="contact.html">Contact</a>
-    <a href="pay-your-bill.html">Pay Your Bill</a>
-    <a href="gallery.html">Gallery</a>
-    <a href="login.html">Login</a>
-    <a href="admin-login.html" id="adminLink">Admin</a>
-  </nav>
-  <p style="margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
-</header>
+  <section class="hero">
+    <h1>Welcome to Holliday's Lawn & Garden</h1>
+    <a href="contact.html" class="cta-button">Get a Free Estimate</a>
+  </section>
 
-<section class="hero">
-  <h1>Welcome to Holliday's Lawn & Garden</h1>
-  <a href="contact.html" class="cta-button">Get a Free Estimate</a>
-</section>
+  <section class="services-section">
+    <h2>Our Services</h2>
+    <div class="services-cards">
+      <div class="service-card"><i>🌿</i><h3>Mowing & Trimming</h3></div>
+      <div class="service-card"><i>🏡</i><h3>Landscape Design</h3></div>
+      <div class="service-card"><i>🧹</i><h3>Pressure Washing</h3></div>
+      <div class="service-card"><i>🏢</i><h3>Commercial Lawn Care</h3></div>
+    </div>
+  </section>
 
-<section class="services-section">
-  <h2>Our Services</h2>
-  <div class="services-cards">
-    <div class="service-card"><i>🌿</i><h3>Mowing & Trimming</h3></div>
-    <div class="service-card"><i>🏡</i><h3>Landscape Design</h3></div>
-    <div class="service-card"><i>🧹</i><h3>Pressure Washing</h3></div>
-    <div class="service-card"><i>🏢</i><h3>Commercial Lawn Care</h3></div>
-  </div>
-</section>
+  <section class="testimonials">
+    <h2>What Our Customers Say</h2>
+    <div class="testimonial">"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service." — ⭐⭐⭐⭐⭐</div>
+    <div class="testimonial">"Reliable, friendly, and the best landscaping crew I’ve ever hired!" — ⭐⭐⭐⭐⭐</div>
+  </section>
 
-<section class="testimonials">
-  <h2>What Our Customers Say</h2>
-  <div class="testimonial">"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service." — ⭐⭐⭐⭐⭐</div>
-  <div class="testimonial">"Reliable, friendly, and the best landscaping crew I’ve ever hired!" — ⭐⭐⭐⭐⭐</div>
-</section>
+  <a href="contact.html" class="sticky-contact">📞 Contact Us</a>
+  <button id="installBtn">📲 Install App</button>
 
-<a href="contact.html" class="sticky-contact">📞 Contact Us</a>
+  <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-<!-- ✅ INSTALL BUTTON -->
-<button id="installBtn" style="
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  padding: 12px 20px;
-  background: #228B22;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  font-size: 1em;
-  font-weight: bold;
-  display: none;
-  z-index: 1000;">
-  📲 Install App
-</button>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="firebase-init.js"></script>
 
-<footer>
-  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-</footer>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="firebase-init.js"></script>
-
-<script>
-  function toggleMenu() {
-    const nav = document.getElementById('navLinks');
-    nav.classList.toggle('active');
-  }
-
-  const allowedAdmins = ["ronellbradley@bradleyvs.com"];
-  firebase.auth().onAuthStateChanged(user => {
-    const adminLink = document.getElementById('adminLink');
-    if (user && allowedAdmins.includes(user.email)) {
-      adminLink.style.display = 'inline-block';
-    } else {
-      adminLink.style.display = 'none';
+  <script>
+    function toggleMenu() {
+      const nav = document.getElementById('navLinks');
+      nav.classList.toggle('active');
     }
-  });
-</script>
 
-<!-- Install App Script -->
-<script>
-  let deferredPrompt;
-  const installBtn = document.getElementById('installBtn');
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block';
-  });
-
-  installBtn.addEventListener('click', () => {
-    installBtn.style.display = 'none';
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('✅ User accepted the install prompt');
-      } else {
-        console.log('❌ User dismissed the install prompt');
-      }
-      deferredPrompt = null;
+    const allowedAdmins = ["ronellbradley@bradleyvs.com"];
+    firebase.auth().onAuthStateChanged(user => {
+      const adminLink = document.getElementById('adminLink');
+      adminLink.style.display = user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
     });
-  });
-</script>
 
+    // Install App Logic
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', () => {
+      installBtn.style.display = 'none';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(choiceResult => {
+        console.log(choiceResult.outcome === 'accepted'
+          ? '✅ User accepted the install prompt'
+          : '❌ User dismissed the install prompt');
+        deferredPrompt = null;
+      });
+    });
+  </script>
 </body>
 </html>
