@@ -4,13 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
+  <title>Customer Dashboard</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
@@ -18,34 +13,32 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #006400; }
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
     .close { float:right; font-size:24px; cursor:pointer; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #006400; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
 </head>
 <body>
-<header><h1>Your Dashboard</h1></header>
 
+<header><h1>Your Dashboard</h1></header>
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
-  <!-- Quotes Section -->
   <h3>Your Quotes</h3>
   <table id="quotesTable">
-    <thead>
-      <tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-    </thead>
+    <thead><tr><th>Quote</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
-  <!-- Invoices -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
-    <thead>
-      <tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-    </thead>
+    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
@@ -70,7 +63,7 @@ let currentUser;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById('greeting').innerText = `Welcome, ${user.email}`;
+    document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
     loadQuotes();
     loadInvoices();
   } else {
@@ -80,46 +73,45 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
-      snapshot.forEach(doc => {
-        const q = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${q.quote || "N/A"}</td>
-            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
-            <td>${q.status || "Pending"}</td>
-            <td>
-              ${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}
-            </td>
-          </tr>`;
-      });
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
+      const accepted = q.status === "Accepted";
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.quote}</td>
+          <td>${q.status || "Pending"}</td>
+          <td>${date}</td>
+          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
+        </tr>`;
     });
+  });
 }
 
 function acceptQuote(id) {
   db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote accepted. You will receive an invoice soon.");
+    alert("✅ Quote Accepted!");
     loadQuotes();
   });
 }
 
 function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices yet</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
     snapshot.forEach(doc => {
       const d = doc.data();
       tbody.innerHTML += `
         <tr>
           <td>${d.invoiceNumber}</td>
-          <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
-          <td>$${(d.amountDue || 0).toFixed(2)}</td>
+          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td><button onclick="viewInvoice(${JSON.stringify(d)})">View</button></td>
+          <td><button onclick='viewInvoice(${JSON.stringify(d)})'>View</button></td>
         </tr>`;
     });
   });
@@ -129,8 +121,11 @@ function viewInvoice(data) {
   const html = `
     <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
     <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-    <p><strong>Customer:</strong> ${data.customerEmail}</p>
-    <p><strong>Amount Due:</strong> <strong>$${data.amountDue.toFixed(2)}</strong></p>
+    <p><strong>Amount Due:</strong> $${data.amountDue.toFixed(2)}</p>
+    <hr>
+    <p><strong>Services:</strong></p>
+    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+    <hr>
     <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
   `;
   document.getElementById("invoiceDetails").innerHTML = html;
