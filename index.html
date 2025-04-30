@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holliday's Lawn & Garden</title>
 
-  <!-- PWA Meta -->
+  <!-- PWA & App Icons -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -48,30 +48,24 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 15px;
-      transition: all 0.3s ease;
     }
     .nav-links a {
       color: white;
       text-decoration: none;
       font-weight: bold;
-      font-size: 1em;
     }
     .nav-links a:hover {
       text-decoration: underline;
     }
     @media (max-width: 768px) {
-      .hamburger {
-        display: block;
-      }
+      .hamburger { display: block; }
       .nav-links {
         display: none;
         flex-direction: column;
         background-color: #228B22;
         width: 100%;
       }
-      .nav-links.active {
-        display: flex;
-      }
+      .nav-links.active { display: flex; }
     }
 
     .hero {
@@ -124,10 +118,6 @@
       border-radius: 8px;
       width: 220px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: 0.3s;
-    }
-    .service-card:hover {
-      transform: translateY(-5px);
     }
     .service-card i {
       font-size: 2em;
@@ -147,23 +137,8 @@
       font-size: 1.1em;
     }
 
-    .sticky-contact {
+    .sticky-contact, #installBtn, #updateBanner {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #228B22;
-      color: white;
-      padding: 0.7em 1.5em;
-      border-radius: 30px;
-      font-weight: bold;
-      text-decoration: none;
-      font-size: 1em;
-      z-index: 1000;
-    }
-
-    #installBtn {
-      position: fixed;
-      bottom: 80px;
       right: 20px;
       padding: 12px 20px;
       background: #228B22;
@@ -172,8 +147,20 @@
       border-radius: 30px;
       font-size: 1em;
       font-weight: bold;
-      display: none;
       z-index: 1000;
+    }
+    .sticky-contact {
+      bottom: 20px;
+      text-decoration: none;
+    }
+    #installBtn { bottom: 80px; display: none; }
+    #updateBanner {
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      display: none;
+      cursor: pointer;
     }
 
     footer {
@@ -185,17 +172,6 @@
       margin-top: 2em;
     }
   </style>
-
-  <!-- Service Worker Register -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log('✅ Service Worker registered:', reg.scope))
-          .catch(err => console.error('❌ Service Worker registration failed:', err));
-      });
-    }
-  </script>
 </head>
 
 <body>
@@ -238,31 +214,29 @@
 
   <a href="contact.html" class="sticky-contact">📞 Contact Us</a>
   <button id="installBtn">📲 Install App</button>
+  <div id="updateBanner">🔄 New update available – Tap to refresh</div>
 
   <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase + Service Worker + App Logic -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
-
   <script>
     function toggleMenu() {
-      const nav = document.getElementById('navLinks');
-      nav.classList.toggle('active');
+      document.getElementById('navLinks').classList.toggle('active');
     }
 
     const allowedAdmins = ["ronellbradley@bradleyvs.com"];
     firebase.auth().onAuthStateChanged(user => {
-      const adminLink = document.getElementById('adminLink');
-      adminLink.style.display = user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
+      document.getElementById('adminLink').style.display =
+        user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
     });
 
-    // Install App Logic
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
 
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       deferredPrompt = e;
       installBtn.style.display = 'block';
@@ -271,13 +245,36 @@
     installBtn.addEventListener('click', () => {
       installBtn.style.display = 'none';
       deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(choiceResult => {
-        console.log(choiceResult.outcome === 'accepted'
-          ? '✅ User accepted the install prompt'
-          : '❌ User dismissed the install prompt');
+      deferredPrompt.userChoice.then(choice => {
+        console.log(choice.outcome === 'accepted'
+          ? '✅ User accepted install'
+          : '❌ User dismissed');
         deferredPrompt = null;
       });
     });
+
+    // Service Worker Update Notification
+    if ('serviceWorker' in navigator) {
+      let newWorker;
+      navigator.serviceWorker.register('service-worker.js').then(reg => {
+        reg.addEventListener('updatefound', () => {
+          newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              document.getElementById('updateBanner').style.display = 'block';
+            }
+          });
+        });
+      });
+
+      document.getElementById('updateBanner').addEventListener('click', () => {
+        newWorker?.postMessage({ action: 'skipWaiting' });
+      });
+
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+      });
+    }
   </script>
 </body>
 </html>
