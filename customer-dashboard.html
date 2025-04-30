@@ -1,16 +1,16 @@
+<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
@@ -18,51 +18,29 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    select, input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
-    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .status-approved { color: green; }
-    .status-inprogress { color: orange; }
-    .status-completed { color: blue; }
-    /* Modal Styling */
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
     .close { float:right; font-size:24px; cursor:pointer; }
   </style>
 </head>
-
 <body>
-
-<header><h1>Welcome to Your Dashboard</h1></header>
+<header><h1>Your Dashboard</h1></header>
 
 <div class="container">
-  <h2 id="greeting">Hello, Customer!</h2>
-  <p>Thank you for choosing Holliday's Lawn & Garden.<br>Your service requests and invoices are below.</p>
+  <h2 id="greeting">Welcome!</h2>
 
-  <h3>Your Service Requests</h3>
-  <table id="requestsTable">
+  <!-- Quotes Section -->
+  <h3>Your Quotes</h3>
+  <table id="quotesTable">
     <thead>
-      <tr><th>Service</th><th>Preferred Date</th><th>Notes</th><th>Status</th><th>Actions</th></tr>
+      <tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr>
     </thead>
-    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
-  <h3>Submit New Request</h3>
-  <form onsubmit="submitRequest(event)">
-    <label>Service Type:</label>
-    <select id="serviceType">
-      <option value="">Select...</option>
-      <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Hedge Trimming">Hedge Trimming</option>
-      <option value="Leaf Cleanup">Leaf Cleanup</option>
-    </select><br><br>
-    <label>Preferred Date:</label>
-    <input type="date" id="preferredDate" required><br><br>
-    <label>Notes:</label>
-    <textarea id="requestNotes" placeholder="Any special instructions..."></textarea><br>
-    <button type="submit">Send Request</button>
-  </form>
-
+  <!-- Invoices -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
     <thead>
@@ -71,8 +49,7 @@
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <br>
-  <button onclick="logout()">Logout</button>
+  <br><button onclick="logout()">Logout</button>
 </div>
 
 <!-- Invoice Modal -->
@@ -93,111 +70,75 @@ let currentUser;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
-    loadRequests();
+    document.getElementById('greeting').innerText = `Welcome, ${user.email}`;
+    loadQuotes();
     loadInvoices();
   } else {
-    window.location.href = "login.html";
+    location.href = "login.html";
   }
 });
 
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get()
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No requests yet</td></tr>';
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
       snapshot.forEach(doc => {
-        const r = doc.data();
+        const q = doc.data();
         tbody.innerHTML += `
           <tr>
-            <td>${r.serviceType}</td>
-            <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
-            <td>${r.notes || "-"}</td>
-            <td class="status-${r.status?.toLowerCase() || 'pending'}">${r.status || 'Pending'}</td>
-            <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
-          </tr>
-        `;
+            <td>${q.quote || "N/A"}</td>
+            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+            <td>${q.status || "Pending"}</td>
+            <td>
+              ${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}
+            </td>
+          </tr>`;
       });
     });
 }
 
-function submitRequest(e) {
-  e.preventDefault();
-  const type = document.getElementById("serviceType").value;
-  const date = document.getElementById("preferredDate").value;
-  const notes = document.getElementById("requestNotes").value;
-  if (!type || !date) return alert("All fields are required.");
-
-  db.collection("service_requests").add({
-    fullName: currentUser.displayName || "Customer",
-    email: currentUser.email,
-    serviceType: type,
-    preferredDate: date,
-    notes: notes,
-    status: "Pending",
-    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Request submitted");
-    document.querySelector("form").reset();
-    loadRequests();
+function acceptQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+    alert("✅ Quote accepted. You will receive an invoice soon.");
+    loadQuotes();
   });
-}
-
-function deleteRequest(id) {
-  if (confirm("Delete this request?")) {
-    db.collection("service_requests").doc(id).delete().then(loadRequests);
-  }
 }
 
 function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = '<tr><td colspan="5">No invoices yet</td></tr>';
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.invoiceNumber}</td>
-            <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
-            <td>$${(d.amountDue || 0).toFixed(2)}</td>
-            <td>${d.paid ? "Paid" : "Unpaid"}</td>
-            <td><button onclick="viewInvoice('${d.invoiceNumber}', '${d.customerEmail}', '${d.dueDate}', ${d.amountDue})">View</button></td>
-          </tr>
-        `;
-      });
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices yet</td></tr>";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.invoiceNumber}</td>
+          <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
+          <td>$${(d.amountDue || 0).toFixed(2)}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td><button onclick="viewInvoice(${JSON.stringify(d)})">View</button></td>
+        </tr>`;
     });
+  });
 }
 
-function viewInvoice(number, email, dueDate, amount) {
-  const details = `
-    <p><strong>Invoice #:</strong> ${number}</p>
-    <p><strong>Invoice Date:</strong> ${new Date().toLocaleDateString()}</p>
-    <p><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>
-    <p><strong>Bill To:</strong> ${email}</p>
-    <hr>
-    <p><strong>Service Description:</strong> Lawn and Garden Services</p>
-    <p><strong>Amount Due:</strong> <strong>$${amount.toFixed(2)}</strong></p>
-    <hr>
-    <p><strong>Business Owner:</strong> Karl Holliday</p>
-    <p><strong>Email:</strong> <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a></p>
-    <p><strong>Phone:</strong> <a href="tel:5047171887">(504) 717-1887</a></p>
-    <div style="text-align:center; margin-top: 1.5em;">
-      <a href="pay-your-bill.html?invoice=${encodeURIComponent(number)}&amount=${amount.toFixed(2)}" 
-         target="_blank" 
-         style="display:inline-block; padding:10px 20px; background:#228B22; color:#fff; text-decoration:none; border-radius:5px;">
-        💳 Pay Now
-      </a>
-    </div>
+function viewInvoice(data) {
+  const html = `
+    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Customer:</strong> ${data.customerEmail}</p>
+    <p><strong>Amount Due:</strong> <strong>$${data.amountDue.toFixed(2)}</strong></p>
+    <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
   `;
-  document.getElementById("invoiceDetails").innerHTML = details;
+  document.getElementById("invoiceDetails").innerHTML = html;
   document.getElementById("invoiceModal").style.display = "flex";
 }
 
 function closeModal(e) {
-  if (e.target.id === 'invoiceModal' || e.target.classList.contains('close')) {
+  if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
     document.getElementById("invoiceModal").style.display = "none";
   }
 }
@@ -206,6 +147,5 @@ function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
-
 </body>
 </html>
