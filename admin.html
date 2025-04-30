@@ -86,7 +86,7 @@
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
   <h2>Create Invoice</h2>
-  <form id="invoiceForm">
+  <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required>
     <input type="text" id="invoiceNumber" placeholder="Invoice Number" required>
     <input type="date" id="invoiceDueDate" required><br>
@@ -129,8 +129,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+<script src="admin-functions.js"></script>
 <script>
-// Insert working JS here (omitted for brevity in preview)
 document.getElementById("footer").innerHTML = "&copy; " + new Date().getFullYear() + " Holliday's Lawn & Garden. All rights reserved.";
 </script>
 </body>
