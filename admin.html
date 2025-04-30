@@ -1,4 +1,4 @@
-<!-- Full Updated Admin Dashboard - Holliday's Lawn & Garden -->
+<!-- Full Real-Time Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,9 +138,9 @@ const preloadedServices = ["Lawn Mowing", "Hedge Trimming", "Leaf Cleanup", "Gar
 
 firebase.auth().onAuthStateChanged(user => {
   if (user?.email === "ronellbradley@bradleyvs.com") {
+    addServiceRow();
     loadInvoices();
     loadRequests();
-    addServiceRow();
   } else {
     window.location.href = "login.html";
   }
@@ -202,17 +202,17 @@ function createInvoice(e) {
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow();
     calcTotal();
-    loadInvoices();
   });
 }
 
 function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-  dueTbody.innerHTML = "";
-  paidTbody.innerHTML = "";
 
-  db.collection("invoices").orderBy("dueDate", "asc").get().then(snapshot => {
+  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
+    dueTbody.innerHTML = "";
+    paidTbody.innerHTML = "";
+
     snapshot.forEach(doc => {
       const d = doc.data();
       const overdue = !d.paid && new Date(d.dueDate) < new Date();
@@ -263,20 +263,20 @@ function viewInvoice(data) {
 }
 
 function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+  db.collection("invoices").doc(id).update({ paid: true });
 }
 
 function deleteInvoice(id) {
   if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete().then(loadInvoices);
+    db.collection("invoices").doc(id).delete();
   }
 }
 
 function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-  tbody.innerHTML = "";
 
-  db.collection("service_requests").orderBy("timestamp", "desc").get().then(snapshot => {
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
       tbody.innerHTML += `
@@ -299,7 +299,7 @@ function loadRequests() {
 }
 
 function updateStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status }).then(loadRequests);
+  db.collection("service_requests").doc(id).update({ status });
 }
 
 function logout() {
