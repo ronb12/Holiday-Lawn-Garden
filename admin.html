@@ -148,23 +148,21 @@ function addServiceRow() {
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
-    <select>
+    <select onchange="calcTotal()">
       <option value="">Select Service</option>
       ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
       <option value="Custom">Other (manual entry)</option>
     </select>
-    <input type="text" placeholder="Description">
-    <input type="number" placeholder="Amount ($)" min="0" step="0.01">
+    <input type="text" placeholder="Description (optional)" oninput="calcTotal()">
+    <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal()">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
   container.appendChild(row);
-  calcTotal();
 }
 
 function calcTotal() {
-  const rows = document.querySelectorAll(".service-row");
   let total = 0;
-  rows.forEach(row => {
+  document.querySelectorAll(".service-row").forEach(row => {
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     total += amt;
   });
@@ -179,7 +177,9 @@ function createInvoice(e) {
   const services = [];
 
   document.querySelectorAll(".service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value.trim();
+    const select = row.querySelector("select");
+    const typedDesc = row.querySelector("input[type=text]").value.trim();
+    const desc = typedDesc || select.value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt > 0) {
       services.push({ description: desc, amount: amt });
@@ -274,11 +274,12 @@ function deleteInvoice(id) {
 
 function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
+
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
-      if (r.status === "Completed") return;
+      if (r.status === "Completed") return; // don't show completed
       tbody.innerHTML += `
         <tr>
           <td>${r.fullName || ''}</td>
@@ -308,7 +309,7 @@ function logout() {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("footer").innerHTML =
-    `&copy; ${new Date().getFullYear()} Holliday's Lawn & Garden. All rights reserved.`;
+    "&copy; " + new Date().getFullYear() + " Holliday's Lawn & Garden. All rights reserved.";
 });
 </script>
 </body>
