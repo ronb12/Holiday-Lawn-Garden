@@ -276,14 +276,14 @@ function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   tbody.innerHTML = "";
 
-  db.collection("requests").orderBy("timestamp", "desc").get().then(snapshot => {
+  db.collection("service_requests").orderBy("timestamp", "desc").get().then(snapshot => {
     snapshot.forEach(doc => {
       const r = doc.data();
       tbody.innerHTML += `
         <tr>
-          <td>${r.name}</td>
-          <td>${r.email}</td>
-          <td>${r.request}</td>
+          <td>${r.fullName || ''}</td>
+          <td>${r.email || ''}</td>
+          <td>${r.notes || ''}</td>
           <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateStatus('${doc.id}', this.value)">
@@ -299,7 +299,7 @@ function loadRequests() {
 }
 
 function updateStatus(id, status) {
-  db.collection("requests").doc(id).update({ status }).then(loadRequests);
+  db.collection("service_requests").doc(id).update({ status }).then(loadRequests);
 }
 
 function logout() {
