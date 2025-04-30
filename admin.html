@@ -75,6 +75,7 @@
 
 <script>
 const db = firebase.firestore();
+
 firebase.auth().onAuthStateChanged(user => {
   if (user?.email === "ronellbradley@bradleyvs.com") {
     loadRequests();
@@ -90,11 +91,11 @@ function addServiceRow(desc = '', amt = '') {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
   row.className = "service-row";
-  row.innerHTML = \`
-    <input type="text" placeholder="Description" value="\${desc}" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" value="\${amt}" step="0.01" oninput="calcTotal()">
+  row.innerHTML = `
+    <input type="text" placeholder="Description" value="${desc}" oninput="calcTotal()">
+    <input type="number" placeholder="Amount ($)" value="${amt}" step="0.01" oninput="calcTotal()">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  \`;
+  `;
   container.appendChild(row);
   calcTotal();
 }
@@ -145,20 +146,20 @@ function loadInvoices() {
     snapshot.forEach(doc => {
       const d = doc.data();
       const overdue = !d.paid && new Date(d.dueDate) < new Date();
-      const row = \`
-        <tr class="\${overdue ? "overdue" : ""}">
-          <td>\${d.customerEmail.split('@')[0]}</td>
-          <td>\${d.customerEmail}</td>
-          <td>\${d.invoiceNumber}</td>
-          <td>$\${d.amountDue.toFixed(2)}</td>
-          <td>\${d.dueDate}</td>
-          <td>\${d.paid ? "Paid" : "Unpaid"}</td>
+      const row = `
+        <tr class="${overdue ? "overdue" : ""}">
+          <td>${d.customerEmail.split('@')[0]}</td>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
-            \${!d.paid ? \`<button onclick="markPaid('\${doc.id}')">Mark Paid</button>\` : ""}
-            <button onclick='viewInvoice(\${JSON.stringify(d)})'>View</button>
-            <button onclick="deleteInvoice('\${doc.id}')">Delete</button>
+            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
+            <button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>
+            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
-        </tr>\`;
+        </tr>`;
       d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
     });
   });
@@ -166,24 +167,24 @@ function loadInvoices() {
 
 function viewInvoice(data) {
   const win = window.open("", "_blank");
-  win.document.write(\`
-    <html><head><title>Invoice \${data.invoiceNumber}</title></head>
+  win.document.write(`
+    <html><head><title>Invoice ${data.invoiceNumber}</title></head>
     <body style="font-family:Arial;padding:2em;">
       <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height:80px">
       <h2 style="color:#228B22;">Holliday's Lawn & Garden</h2>
-      <p><strong>Customer:</strong> \${data.customerEmail}</p>
-      <p><strong>Due Date:</strong> \${new Date(data.dueDate).toLocaleDateString()}</p>
+      <p><strong>Customer:</strong> ${data.customerEmail}</p>
+      <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
       <table border="1" style="width:100%;border-collapse:collapse;">
         <thead><tr><th>Description</th><th>Amount</th></tr></thead>
         <tbody>
-          \${data.services.map(s => \`<tr><td>\${s.description}</td><td>$\${s.amount.toFixed(2)}</td></tr>\`).join("")}
+          ${data.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
         </tbody>
       </table>
-      <h3 style="text-align:right;">Total: $\${data.amountDue.toFixed(2)}</h3>
+      <h3 style="text-align:right;">Total: $${data.amountDue.toFixed(2)}</h3>
       <p style="text-align:center;">Thank you for your business!</p>
       <button onclick="window.print()">🖨️ Print Invoice</button>
     </body></html>
-  \`);
+  `);
 }
 
 function markPaid(id) {
@@ -203,21 +204,21 @@ function loadRequests() {
     snapshot.forEach(doc => {
       const r = doc.data();
       if (r.status === "Completed") return;
-      tbody.innerHTML += \`
+      tbody.innerHTML += `
         <tr>
-          <td>\${r.fullName || 'N/A'}</td>
-          <td>\${r.email || 'N/A'}</td>
-          <td>\${r.notes || 'N/A'}</td>
-          <td>\${r.status || "Pending"}</td>
+          <td>${r.fullName || 'N/A'}</td>
+          <td>${r.email || 'N/A'}</td>
+          <td>${r.notes || 'N/A'}</td>
+          <td>${r.status || "Pending"}</td>
           <td>
-            <select onchange="updateStatus('\${doc.id}', this.value)">
+            <select onchange="updateStatus('${doc.id}', this.value)">
               <option value="">Change</option>
               <option value="Approved">Approved</option>
               <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
             </select>
           </td>
-        </tr>\`;
+        </tr>`;
     });
   });
 }
@@ -245,14 +246,14 @@ function loadQuotes() {
     snapshot.forEach(doc => {
       const q = doc.data();
       const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
-      tbody.innerHTML += \`
+      tbody.innerHTML += `
         <tr>
-          <td>\${q.fullName || "N/A"}</td>
-          <td>\${q.email || "N/A"}</td>
-          <td>\${q.quote || "N/A"}</td>
-          <td>\${date}</td>
-          <td><button onclick="convertQuoteToInvoice('\${doc.id}')">Convert to Invoice</button></td>
-        </tr>\`;
+          <td>${q.fullName || "N/A"}</td>
+          <td>${q.email || "N/A"}</td>
+          <td>${q.quote || "N/A"}</td>
+          <td>${date}</td>
+          <td><button onclick="convertQuoteToInvoice('${doc.id}')">Convert to Invoice</button></td>
+        </tr>`;
     });
   });
 }
@@ -261,7 +262,7 @@ function convertQuoteToInvoice(quoteId) {
   db.collection("quotes").doc(quoteId).get().then(doc => {
     const data = doc.data();
     document.getElementById("invoiceEmail").value = data.email || "";
-    document.getElementById("invoiceNumber").value = Date.now();
+    document.getElementById("invoiceNumber").value = "INV-" + Math.floor(Math.random() * 10000);
     document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow(data.quote || "Service", "");
