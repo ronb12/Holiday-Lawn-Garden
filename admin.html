@@ -1,5 +1,4 @@
-
-<!-- Full Updated Admin Dashboard - Holliday's Lawn & Garden -->
+<!-- Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +24,9 @@
   </style>
 </head>
 <body>
+
 <header><h1>Admin Dashboard</h1></header>
+
 <main class="admin-container">
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -61,7 +62,7 @@
 
 <footer id="footer">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-<!-- Firebase Scripts -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -106,11 +107,13 @@ function createInvoice(e) {
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
+
   document.querySelectorAll(".service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
+
   const total = services.reduce((sum, s) => sum + s.amount, 0);
 
   db.collection("invoices").add({
@@ -134,9 +137,11 @@ function createInvoice(e) {
 function loadInvoices() {
   const dueBody = document.querySelector("#invoicesDueTable tbody");
   const paidBody = document.querySelector("#invoicesPaidTable tbody");
+
   db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
     dueBody.innerHTML = "";
     paidBody.innerHTML = "";
+
     snapshot.forEach(doc => {
       const d = doc.data();
       const row = `
@@ -179,7 +184,11 @@ function loadAcceptedQuotes() {
           <td>${q.service || ''}</td>
           <td>${q.notes || ''}</td>
           <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
-          <td><button onclick='loadQuoteIntoInvoice(${JSON.stringify({ email: q.email, service: q.service, amount: q.amount })})'>Create Invoice</button></td>
+          <td>
+            <button onclick='loadQuoteIntoInvoice(${JSON.stringify({ email: q.email, service: q.service, amount: q.amount })})'>
+              Create Invoice
+            </button>
+          </td>
         </tr>`;
     });
   });
