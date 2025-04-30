@@ -37,9 +37,7 @@
     <input type="text" id="invoiceNumber" placeholder="Invoice Number" required>
     <input type="date" id="invoiceDueDate" required><br>
     
-    <div id="serviceList">
-      <!-- Service rows inserted here -->
-    </div>
+    <div id="serviceList"></div>
     <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
@@ -57,7 +55,7 @@
   <h2>Paid Invoices</h2>
   <table id="invoicesPaidTable">
     <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
+      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -150,6 +148,7 @@ function loadInvoices() {
     snapshot.forEach(doc => {
       const d = doc.data();
       const isOverdue = !d.paid && new Date(d.dueDate) < new Date();
+      const encodedData = encodeURIComponent(JSON.stringify(d));
       const row = `
         <tr class="${isOverdue ? "overdue" : ""}">
           <td>${d.customerEmail.split('@')[0]}</td>
@@ -160,7 +159,7 @@ function loadInvoices() {
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
             ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
-            <button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>
+            <button onclick='viewInvoice("${encodedData}")'>View</button>
             <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
         </tr>
@@ -170,7 +169,8 @@ function loadInvoices() {
   });
 }
 
-function viewInvoice(data) {
+function viewInvoice(encodedData) {
+  const data = JSON.parse(decodeURIComponent(encodedData));
   const win = window.open("", "_blank");
   win.document.write(`
     <html><head><title>Invoice ${data.invoiceNumber}</title></head>
