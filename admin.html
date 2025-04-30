@@ -1,4 +1,3 @@
-<!-- Full Real-Time Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,77 +7,17 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon-192.png">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f9f4;
-      margin: 0;
-    }
-    header, footer {
-      background: #228B22;
-      color: white;
-      text-align: center;
-      padding: 1em;
-    }
-    .admin-container {
-      max-width: 1100px;
-      margin: auto;
-      padding: 2em;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #228B22;
-      text-align: center;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1em 0;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      text-align: left;
-    }
-    th {
-      background: #228B22;
-      color: white;
-    }
-    .overdue {
-      background: #ffe5e5;
-    }
-    input, select {
-      padding: 0.5em;
-      margin: 0.3em 0;
-      width: 100%;
-    }
-    button {
-      background: #228B22;
-      color: white;
-      border: none;
-      padding: 0.5em 1em;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:hover {
-      background: #006400;
-    }
-    .logout {
-      margin-top: 1em;
-      color: #228B22;
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .service-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .service-row input, .service-row select {
-      flex: 1;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
+    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
+    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    h2 { color: #228B22; text-align: center; }
+    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background: #228B22; color: white; }
+    input, select { padding: 0.5em; margin: 0.3em 0; width: 100%; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    button:hover { background: #006400; }
+    .logout { margin-top: 1em; color: #228B22; text-decoration: underline; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -86,17 +25,6 @@
 <header><h1>Admin Dashboard</h1></header>
 
 <main class="admin-container">
-  <h2>Create Invoice</h2>
-  <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required>
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required>
-    <input type="date" id="invoiceDueDate" required><br>
-    <div id="serviceList"></div>
-    <button type="button" onclick="addServiceRow()">+ Add Service</button>
-    <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
-    <button type="submit">Create Invoice</button>
-  </form>
-
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable">
     <thead>
@@ -105,28 +33,23 @@
     <tbody></tbody>
   </table>
 
-  <h2>Invoices Due</h2>
-  <table id="invoicesDueTable">
-    <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Paid Invoices</h2>
-  <table id="invoicesPaidTable">
-    <thead>
-      <tr><th>Customer</th><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due Date</th><th>Status</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>Invoice from Request</h2>
+  <div id="invoiceFormWrapper" style="display:none;">
+    <form id="invoiceForm" onsubmit="createInvoice(event)">
+      <input type="email" id="invoiceEmail" placeholder="Customer Email" required>
+      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required>
+      <input type="date" id="invoiceDueDate" required><br>
+      <input type="text" id="invoiceDescription" placeholder="Description" required>
+      <input type="number" id="invoiceAmount" placeholder="Amount ($)" min="0" step="0.01" required><br>
+      <button type="submit">Create Invoice</button>
+    </form>
+  </div>
 
   <a onclick="logout()" class="logout">Logout</a>
 </main>
 
 <footer id="footer"></footer>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -134,148 +57,18 @@
 
 <script>
 const db = firebase.firestore();
-const preloadedServices = ["Lawn Mowing", "Hedge Trimming", "Leaf Cleanup", "Garden Design"];
 
 firebase.auth().onAuthStateChanged(user => {
   if (user?.email === "ronellbradley@bradleyvs.com") {
-    addServiceRow();
-    loadInvoices();
     loadRequests();
   } else {
     window.location.href = "login.html";
   }
 });
 
-function addServiceRow() {
-  const container = document.getElementById("serviceList");
-  const row = document.createElement("div");
-  row.className = "service-row";
-  row.innerHTML = `
-    <select onchange="calcTotal()">
-      <option value="">Select Service</option>
-      ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
-      <option value="Custom">Other (manual entry)</option>
-    </select>
-    <input type="text" placeholder="Description" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal()">
-    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  `;
-  container.appendChild(row);
-}
-
-function calcTotal() {
-  const rows = document.querySelectorAll(".service-row");
-  let total = 0;
-  rows.forEach(row => {
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    total += amt;
-  });
-  document.getElementById("totalAmount").innerText = total.toFixed(2);
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value;
-  const number = document.getElementById("invoiceNumber").value;
-  const due = document.getElementById("invoiceDueDate").value;
-  const services = [];
-
-  document.querySelectorAll(".service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value;
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt) services.push({ description: desc, amount: amt });
-  });
-
-  const total = services.reduce((sum, s) => sum + s.amount, 0);
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services,
-    amountDue: total,
-    dueDate: due,
-    paid: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Invoice Created");
-    document.getElementById("invoiceForm").reset();
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow();
-    calcTotal();
-  });
-}
-
-function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const overdue = !d.paid && new Date(d.dueDate) < new Date();
-      const row = `
-        <tr class="${overdue ? "overdue" : ""}">
-          <td>${d.customerEmail.split('@')[0]}</td>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
-            <button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-          </td>
-        </tr>`;
-      d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
-    });
-  });
-}
-
-function viewInvoice(data) {
-  const win = window.open("", "_blank");
-  win.document.write(`
-    <html><head><title>Invoice ${data.invoiceNumber}</title></head>
-    <body style="font-family:Arial;padding:2em;">
-      <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height:80px">
-      <h2 style="color:#228B22;">Holliday's Lawn & Garden</h2>
-      <p><strong>Owner:</strong> Karl Holliday<br>
-         <strong>Phone:</strong> 504-717-1887<br>
-         <strong>Email:</strong> 7holliday@gmail.com</p>
-      <hr>
-      <h3>Invoice #: ${data.invoiceNumber}</h3>
-      <p><strong>Customer:</strong> ${data.customerEmail}</p>
-      <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-      <table border="1" style="width:100%;border-collapse:collapse;">
-        <thead><tr><th>Description</th><th>Amount</th></tr></thead>
-        <tbody>
-          ${data.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
-        </tbody>
-      </table>
-      <h3 style="text-align:right;">Total: $${data.amountDue.toFixed(2)}</h3>
-      <p style="text-align:center;">Thank you for your business!</p>
-      <button onclick="window.print()">🖨️ Print Invoice</button>
-    </body></html>
-  `);
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
-}
-
 function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+  db.collection("service_requests").where("archived", "!=", true).onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
@@ -286,7 +79,7 @@ function loadRequests() {
           <td>${r.notes || ''}</td>
           <td>${r.status || "Pending"}</td>
           <td>
-            <select onchange="updateStatus('${doc.id}', this.value)">
+            <select onchange="updateStatus('${doc.id}', this.value, '${r.fullName}', '${r.email}', \`${r.notes}\`)">
               <option value="">Change</option>
               <option value="Approved">Approved</option>
               <option value="In Progress">In Progress</option>
@@ -298,8 +91,42 @@ function loadRequests() {
   });
 }
 
-function updateStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status });
+function updateStatus(id, status, name, email, notes) {
+  db.collection("service_requests").doc(id).update({ status }).then(() => {
+    if (status === "Completed") {
+      if (confirm("✅ Request marked as Completed. Do you want to convert this into an invoice?")) {
+        document.getElementById("invoiceFormWrapper").style.display = "block";
+        document.getElementById("invoiceEmail").value = email;
+        document.getElementById("invoiceDescription").value = notes || `Service Request from ${name}`;
+        document.getElementById("invoiceNumber").value = "INV-" + Math.floor(Math.random() * 100000);
+        document.getElementById("invoiceDueDate").valueAsDate = new Date();
+        db.collection("service_requests").doc(id).update({ archived: true });
+      }
+    }
+  });
+}
+
+function createInvoice(e) {
+  e.preventDefault();
+  const email = document.getElementById("invoiceEmail").value;
+  const number = document.getElementById("invoiceNumber").value;
+  const dueDate = document.getElementById("invoiceDueDate").value;
+  const description = document.getElementById("invoiceDescription").value;
+  const amount = parseFloat(document.getElementById("invoiceAmount").value || 0);
+
+  db.collection("invoices").add({
+    customerEmail: email,
+    invoiceNumber: number,
+    services: [{ description, amount }],
+    amountDue: amount,
+    dueDate: dueDate,
+    paid: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Invoice created.");
+    document.getElementById("invoiceFormWrapper").style.display = "none";
+    document.getElementById("invoiceForm").reset();
+  });
 }
 
 function logout() {
