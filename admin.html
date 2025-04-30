@@ -1,4 +1,4 @@
-<!-- Full Working Admin Dashboard - Holliday's Lawn & Garden -->
+<!-- Full Admin Dashboard: Request > Quote > Invoice -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,17 +48,16 @@
     .overdue {
       background: #ffe5e5;
     }
-    input, select {
+    input, select, button {
       padding: 0.5em;
       margin: 0.3em 0;
       width: 100%;
+      border-radius: 5px;
     }
     button {
       background: #228B22;
       color: white;
       border: none;
-      padding: 0.5em 1em;
-      border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
     }
@@ -84,6 +83,22 @@
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
+  <h2>Service Requests</h2>
+  <table id="serviceRequestsTable">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Update</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Quotes</h2>
+  <table id="quotesTable">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required>
@@ -94,14 +109,6 @@
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
     <button type="submit">Create Invoice</button>
   </form>
-
-  <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead>
-      <tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Update</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
   <h2>Invoices Due</h2>
   <table id="invoicesDueTable">
@@ -123,7 +130,7 @@
 </main>
 <footer id="footer"></footer>
 
-<!-- Firebase SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -138,6 +145,7 @@ firebase.auth().onAuthStateChanged(user => {
     addServiceRow();
     loadInvoices();
     loadRequests();
+    loadQuotes();
   } else {
     window.location.href = "login.html";
   }
@@ -148,16 +156,17 @@ function addServiceRow() {
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
-    <select onchange="calcTotal()">
+    <select>
       <option value="">Select Service</option>
       ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
-      <option value="Custom">Other (manual entry)</option>
+      <option value="Custom">Other</option>
     </select>
-    <input type="text" placeholder="Description (optional)" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal()">
+    <input type="text" placeholder="Description">
+    <input type="number" placeholder="Amount ($)" min="0" step="0.01">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
   container.appendChild(row);
+  calcTotal();
 }
 
 function calcTotal() {
@@ -175,19 +184,13 @@ function createInvoice(e) {
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
-
   document.querySelectorAll(".service-row").forEach(row => {
-    const select = row.querySelector("select");
-    const typedDesc = row.querySelector("input[type=text]").value.trim();
-    const desc = typedDesc || select.value;
+    const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt > 0) {
-      services.push({ description: desc, amount: amt });
-    }
+    if (desc && amt) services.push({ description: desc, amount: amt });
   });
 
   const total = services.reduce((sum, s) => sum + s.amount, 0);
-
   db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
@@ -201,18 +204,15 @@ function createInvoice(e) {
     document.getElementById("invoiceForm").reset();
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow();
-    calcTotal();
+    loadInvoices();
   });
 }
 
 function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-
+  const due = document.querySelector("#invoicesDueTable tbody");
+  const paid = document.querySelector("#invoicesPaidTable tbody");
   db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
-
+    due.innerHTML = ""; paid.innerHTML = "";
     snapshot.forEach(doc => {
       const d = doc.data();
       const overdue = !d.paid && new Date(d.dueDate) < new Date();
@@ -230,9 +230,88 @@ function loadInvoices() {
             <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
         </tr>`;
-      d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
+      d.paid ? paid.innerHTML += row : due.innerHTML += row;
     });
   });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#serviceRequestsTable tbody");
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      if (r.status === "Completed") return;
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.fullName}</td>
+          <td>${r.email}</td>
+          <td>${r.notes}</td>
+          <td>${r.status || "Pending"}</td>
+          <td>
+            <select onchange="updateRequestStatus('${doc.id}', this.value)">
+              <option value="">Change</option>
+              <option value="Approved">Approved</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </td>
+        </tr>`;
+    });
+  });
+}
+
+function updateRequestStatus(id, status) {
+  if (status === "Completed") {
+    db.collection("service_requests").doc(id).get().then(doc => {
+      const d = doc.data();
+      db.collection("quotes").add({
+        name: d.fullName,
+        email: d.email,
+        notes: d.notes,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      db.collection("service_requests").doc(id).delete(); // remove after quote
+    });
+  } else {
+    db.collection("service_requests").doc(id).update({ status });
+  }
+}
+
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.name}</td>
+          <td>${q.email}</td>
+          <td>${q.notes}</td>
+          <td>${new Date(q.createdAt?.toDate()).toLocaleDateString()}</td>
+          <td><button onclick="preloadQuote('${q.email}', '${q.notes}')">Convert to Invoice</button></td>
+        </tr>`;
+    });
+  });
+}
+
+function preloadQuote(email, notes) {
+  document.getElementById("invoiceEmail").value = email;
+  document.getElementById("invoiceNumber").value = "QUOTE-" + Date.now();
+  document.getElementById("invoiceDueDate").valueAsDate = new Date();
+  document.getElementById("serviceList").innerHTML = "";
+  addServiceRow();
+}
+
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
 }
 
 function viewInvoice(data) {
@@ -240,12 +319,11 @@ function viewInvoice(data) {
   win.document.write(`
     <html><head><title>Invoice ${data.invoiceNumber}</title></head>
     <body style="font-family:Arial;padding:2em;">
-      <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height:80px">
+      <img src="Hollidays_Lawn_Garden_Logo.png" style="max-height:80px">
       <h2 style="color:#228B22;">Holliday's Lawn & Garden</h2>
       <p><strong>Owner:</strong> Karl Holliday<br>
          <strong>Phone:</strong> 504-717-1887<br>
-         <strong>Email:</strong> 7holliday@gmail.com</p>
-      <hr>
+         <strong>Email:</strong> 7holliday@gmail.com</p><hr>
       <h3>Invoice #: ${data.invoiceNumber}</h3>
       <p><strong>Customer:</strong> ${data.customerEmail}</p>
       <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
@@ -260,47 +338,6 @@ function viewInvoice(data) {
       <button onclick="window.print()">🖨️ Print Invoice</button>
     </body></html>
   `);
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
-}
-
-function loadRequests() {
-  const tbody = document.querySelector("#serviceRequestsTable tbody");
-
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      if (r.status === "Completed") return; // don't show completed
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.fullName || ''}</td>
-          <td>${r.email || ''}</td>
-          <td>${r.notes || ''}</td>
-          <td>${r.status || "Pending"}</td>
-          <td>
-            <select onchange="updateStatus('${doc.id}', this.value)">
-              <option value="">Change</option>
-              <option value="Approved">Approved</option>
-              <option value="In Progress">In Progress</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-function updateStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status });
 }
 
 function logout() {
