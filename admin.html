@@ -1,4 +1,3 @@
-<!-- Full Working Admin Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,7 +83,6 @@
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
-
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable">
     <thead>
@@ -132,7 +130,7 @@
 </main>
 <footer id="footer"></footer>
 
-<!-- Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -140,14 +138,13 @@
 
 <script>
 const db = firebase.firestore();
-const preloadedServices = ["Lawn Mowing", "Hedge Trimming", "Leaf Cleanup", "Garden Design"];
 
 firebase.auth().onAuthStateChanged(user => {
   if (user?.email === "ronellbradley@bradleyvs.com") {
-    addServiceRow();
-    loadInvoices();
     loadRequests();
     loadQuotes();
+    loadInvoices();
+    addServiceRow();
   } else {
     window.location.href = "login.html";
   }
@@ -158,13 +155,9 @@ function addServiceRow() {
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
-    <select onchange="calcTotal()">
-      <option value="">Select Service</option>
-      ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
-      <option value="Custom">Other</option>
-    </select>
+    <select><option value="Custom">Custom</option></select>
     <input type="text" placeholder="Description" oninput="calcTotal()">
-    <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal()">
+    <input type="number" placeholder="Amount ($)" step="0.01" oninput="calcTotal()">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
   container.appendChild(row);
@@ -186,15 +179,12 @@ function createInvoice(e) {
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
-
   document.querySelectorAll(".service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
-
   const total = services.reduce((sum, s) => sum + s.amount, 0);
-
   db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
@@ -215,7 +205,6 @@ function createInvoice(e) {
 function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-
   db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
@@ -224,10 +213,10 @@ function loadInvoices() {
       const overdue = !d.paid && new Date(d.dueDate) < new Date();
       const row = `
         <tr class="${overdue ? "overdue" : ""}">
-          <td>${d.customerEmail?.split?.('@')[0] || 'Customer'}</td>
+          <td>${d.customerEmail.split('@')[0]}</td>
           <td>${d.customerEmail}</td>
           <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue?.toFixed(2) || '0.00'}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
@@ -239,16 +228,6 @@ function loadInvoices() {
       d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
     });
   });
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
 }
 
 function viewInvoice(data) {
@@ -278,9 +257,18 @@ function viewInvoice(data) {
   `);
 }
 
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
+}
+
 function loadRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
@@ -288,9 +276,9 @@ function loadRequests() {
       if (r.status === "Completed") return;
       tbody.innerHTML += `
         <tr>
-          <td>${r.fullName || ''}</td>
-          <td>${r.email || ''}</td>
-          <td>${r.notes || ''}</td>
+          <td>${r.fullName || 'N/A'}</td>
+          <td>${r.email || 'N/A'}</td>
+          <td>${r.notes || 'N/A'}</td>
           <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateStatus('${doc.id}', this.value)">
@@ -310,9 +298,9 @@ function updateStatus(id, status) {
     db.collection("service_requests").doc(id).get().then(doc => {
       const data = doc.data();
       db.collection("quotes").add({
-        fullName: data.name || data.fullName || "Unknown",
+        fullName: data.fullName || data.name || "N/A",
         email: data.email || "N/A",
-        quote: data.request || data.notes || "N/A",
+        quote: data.notes || "N/A",
         createdAt: new Date()
       }).then(() => db.collection("service_requests").doc(id).delete());
     });
@@ -323,17 +311,17 @@ function updateStatus(id, status) {
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  tbody.innerHTML = "";
-
   db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const q = doc.data();
+      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
       tbody.innerHTML += `
         <tr>
-          <td>${q.fullName || 'N/A'}</td>
-          <td>${q.email || 'N/A'}</td>
-          <td>${q.quote || 'N/A'}</td>
-          <td>${q.createdAt?.toDate?.().toLocaleDateString() || 'N/A'}</td>
+          <td>${q.fullName || "N/A"}</td>
+          <td>${q.email || "N/A"}</td>
+          <td>${q.quote || "N/A"}</td>
+          <td>${date}</td>
           <td><button onclick="convertQuoteToInvoice('${doc.id}')">Convert to Invoice</button></td>
         </tr>`;
     });
@@ -347,12 +335,13 @@ function convertQuoteToInvoice(quoteId) {
     document.getElementById("invoiceNumber").value = Date.now();
     document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
     document.getElementById("serviceList").innerHTML = "";
+
     const row = document.createElement("div");
     row.className = "service-row";
     row.innerHTML = `
-      <select><option>${data.quote}</option></select>
-      <input type="text" value="${data.quote}" />
-      <input type="number" placeholder="Amount ($)" step="0.01" />
+      <select><option>${data.quote || 'Custom Service'}</option></select>
+      <input type="text" value="${data.quote || ''}" />
+      <input type="number" placeholder="Amount ($)" step="0.01" oninput="calcTotal()" />
       <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
     `;
     document.getElementById("serviceList").appendChild(row);
