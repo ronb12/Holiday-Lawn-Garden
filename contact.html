@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Us - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#228B22" />
 </head>
 <body>
 
@@ -19,7 +20,7 @@
     </nav>
   </header>
 
-  <main>
+  <main style="max-width: 600px; margin: auto; padding: 2em;">
     <h2>Contact Us</h2>
     <p>Have a question, need a quote, or ready to schedule your service? We're here to help! Send us a message below and we’ll get back to you as soon as possible.</p>
 
@@ -31,7 +32,7 @@
       <input type="email" id="email" name="email" required><br><br>
 
       <label for="phone">Phone Number:</label><br>
-      <input type="text" id="phone" name="phone"><br><br>
+      <input type="tel" id="phone" name="phone" placeholder="e.g. 504-123-4567"><br><br>
 
       <label for="message">Message:</label><br>
       <textarea id="message" name="message" rows="4" required></textarea><br><br>
@@ -41,31 +42,31 @@
 
     <div style="margin-top: 2em;">
       <h3>Other Ways to Reach Us:</h3>
-      <p><strong>Email:</strong> 7holliday@gmail.com</p>
-      <p><strong>Phone:</strong> (504) 717-1887</p>
+      <p><strong>Email:</strong> <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a></p>
+      <p><strong>Phone:</strong> <a href="tel:+15047171887">(504) 717-1887</a></p>
     </div>
   </main>
 
-  <footer>
+  <footer style="text-align: center; background: #eee; padding: 1em; margin-top: 2em;">
     &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
 
-  <!-- Firebase Scripts -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Contact Form Submit Script -->
+  <!-- Contact Form Logic -->
   <script>
     const db = firebase.firestore();
 
     document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const fullName = document.getElementById('name').value;
-      const email = document.getElementById('email').value;
-      const phone = document.getElementById('phone').value;
-      const notes = document.getElementById('message').value;
+      const fullName = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const notes = document.getElementById('message').value.trim();
 
       try {
         await db.collection('service_requests').add({
@@ -75,7 +76,8 @@
           notes,
           serviceType: "Contact Form",
           preferredDate: new Date().toISOString(),
-          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+          status: "Pending",
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
         alert("✅ Message sent successfully! We’ll be in touch.");
         document.getElementById('contactForm').reset();
