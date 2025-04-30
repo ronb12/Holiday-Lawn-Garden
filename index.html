@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Holliday's Lawn & Garden</title>
 
-  <!-- PWA & App Icons -->
+  <!-- PWA Meta -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
@@ -14,7 +14,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-  <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
   <style>
     body {
@@ -53,6 +52,7 @@
       color: white;
       text-decoration: none;
       font-weight: bold;
+      font-size: 1em;
     }
     .nav-links a:hover {
       text-decoration: underline;
@@ -118,7 +118,9 @@
       border-radius: 8px;
       width: 220px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: 0.3s;
     }
+    .service-card:hover { transform: translateY(-5px); }
     .service-card i {
       font-size: 2em;
       margin-bottom: 0.5em;
@@ -137,8 +139,23 @@
       font-size: 1.1em;
     }
 
-    .sticky-contact, #installBtn, #updateBanner {
+    .sticky-contact {
       position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #228B22;
+      color: white;
+      padding: 0.7em 1.5em;
+      border-radius: 30px;
+      font-weight: bold;
+      text-decoration: none;
+      font-size: 1em;
+      z-index: 1000;
+    }
+
+    #installBtn {
+      position: fixed;
+      bottom: 80px;
       right: 20px;
       padding: 12px 20px;
       background: #228B22;
@@ -147,20 +164,22 @@
       border-radius: 30px;
       font-size: 1em;
       font-weight: bold;
+      display: none;
       z-index: 1000;
     }
-    .sticky-contact {
-      bottom: 20px;
-      text-decoration: none;
-    }
-    #installBtn { bottom: 80px; display: none; }
+
     #updateBanner {
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      text-align: center;
       display: none;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #228B22;
+      color: white;
+      text-align: center;
+      padding: 1em;
+      font-weight: bold;
       cursor: pointer;
+      z-index: 2000;
     }
 
     footer {
@@ -218,10 +237,11 @@
 
   <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-  <!-- Firebase + Service Worker + App Logic -->
+  <!-- Firebase + PWA Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
+
   <script>
     function toggleMenu() {
       document.getElementById('navLinks').classList.toggle('active');
@@ -233,46 +253,45 @@
         user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
     });
 
+    // Install Prompt
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
-
-    window.addEventListener('beforeinstallprompt', e => {
+    window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       installBtn.style.display = 'block';
     });
-
     installBtn.addEventListener('click', () => {
       installBtn.style.display = 'none';
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(choice => {
-        console.log(choice.outcome === 'accepted'
-          ? '✅ User accepted install'
-          : '❌ User dismissed');
+        console.log(choice.outcome === 'accepted' ? '✅ Installed' : '❌ Dismissed');
         deferredPrompt = null;
       });
     });
 
     // Service Worker Update Notification
     if ('serviceWorker' in navigator) {
-      let newWorker;
       navigator.serviceWorker.register('service-worker.js').then(reg => {
-        reg.addEventListener('updatefound', () => {
-          newWorker = reg.installing;
-          newWorker.addEventListener('statechange', () => {
+        reg.onupdatefound = () => {
+          const newWorker = reg.installing;
+          newWorker.onstatechange = () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              document.getElementById('updateBanner').style.display = 'block';
+              const banner = document.getElementById('updateBanner');
+              banner.style.display = 'block';
+              banner.addEventListener('click', () => {
+                newWorker.postMessage({ action: 'skipWaiting' });
+              });
             }
-          });
-        });
+          };
+        };
       });
 
-      document.getElementById('updateBanner').addEventListener('click', () => {
-        newWorker?.postMessage({ action: 'skipWaiting' });
-      });
-
+      let refreshing;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (refreshing) return;
         window.location.reload();
+        refreshing = true;
       });
     }
   </script>
