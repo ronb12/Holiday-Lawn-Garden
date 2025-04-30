@@ -8,14 +8,12 @@ const urlsToCache = [
   'Hollidays_Lawn_Garden_Logo.png'
 ];
 
-// Install and cache files
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
-// Fetch from cache or network
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -23,18 +21,15 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Clean up old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(keyList =>
-      Promise.all(
-        keyList.map(key => {
-          if (!cacheWhitelist.includes(key)) {
-            return caches.delete(key);
-          }
-        })
-      )
+      Promise.all(keyList.map(key => {
+        if (!cacheWhitelist.includes(key)) {
+          return caches.delete(key);
+        }
+      }))
     )
   );
 });
