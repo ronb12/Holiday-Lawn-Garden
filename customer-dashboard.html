@@ -2,36 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard</title>
 
   <!-- ✅ Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script> <!-- ✅ Your Firebase config -->
+  <script src="firebase-init.js"></script>
 
   <!-- ✅ PayPal -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
+
+  <!-- ✅ Embedded CSS -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #fdfdfd;
+      color: #222;
+    }
+    h1, h2, h3 {
+      color: #2b6e44;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+      background-color: #fafafa;
+    }
+    input, textarea, button {
+      margin: 5px;
+      padding: 6px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      background-color: #2b6e44;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #205634;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 </head>
 <body>
   <h1 id="greeting">Welcome</h1>
-
-  <!-- Profile Modal -->
-  <div id="profileModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <h3>Edit Profile</h3>
-      <input id="profileFullName" placeholder="Full Name" />
-      <input id="profileStreet" placeholder="Street" />
-      <input id="profileCity" placeholder="City" />
-      <input id="profileState" placeholder="State" />
-      <input id="profileZip" placeholder="ZIP" />
-      <input type="file" onchange="previewAvatar(event)" />
-      <img id="avatarImg" src="assets/default-avatar.png" width="80" />
-      <button onclick="saveProfile()">Save</button>
-      <button class="close" onclick="closeModal(event)">Close</button>
-    </div>
-  </div>
 
   <!-- Submit Service Request -->
   <form onsubmit="submitRequest(event)">
@@ -46,132 +90,54 @@
     <button type="submit">Submit</button>
   </form>
 
-  <table id="requestsTable">
-    <thead>
-      <tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Delete</th></tr>
-    </thead>
+  <h2>Your Quotes</h2>
+  <table id="quotesTable">
+    <thead><tr><th>Quote</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody></tbody>
   </table>
 
-  <script>
-    const db = firebase.firestore();
-    let currentUser;
-    let selectedInvoice = null;
-    let userProfile = {};
+  <h2>Your Invoices</h2>
+  <table id="invoicesTable">
+    <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody></tbody>
+  </table>
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-        loadUserProfile();
-        loadRequests();
-        loadQuotes();
-        loadInvoices();
-      } else {
-        window.location.href = "login.html";
-      }
-    });
+  <button onclick="openProfile()">Edit Profile</button>
+  <button onclick="logout()">Logout</button>
 
-    function loadUserProfile() {
-      db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-        if (doc.exists) {
-          userProfile = doc.data();
-          ["fullName", "street", "city", "state", "zip"].forEach(id => {
-            const el = document.getElementById("profile" + capitalize(id));
-            if (el) el.value = userProfile[id] || "";
-            const formEl = document.getElementById(id);
-            if (formEl) formEl.value = userProfile[id] || "";
-          });
-          if (userProfile.avatarURL) {
-            document.getElementById("avatarImg").src = userProfile.avatarURL;
-          }
-        }
-      });
-    }
+  <!-- Modals -->
+  <div id="paypalModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Complete Payment</h3>
+      <div id="paypalButtons"></div>
+      <button class="close" onclick="closeModal(event)">Cancel</button>
+    </div>
+  </div>
 
-    function saveProfile() {
-      const updated = {
-        fullName: document.getElementById("profileFullName").value,
-        street: document.getElementById("profileStreet").value,
-        city: document.getElementById("profileCity").value,
-        state: document.getElementById("profileState").value,
-        zip: document.getElementById("profileZip").value
-      };
-      db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
-        alert("✅ Profile updated");
-        loadUserProfile();
-        closeModal({ target: { classList: ['modal'] } });
-      });
-    }
-
-    function previewAvatar(event) {
-      const img = document.getElementById("avatarImg");
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          img.src = e.target.result;
-          db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
-    function submitRequest(e) {
-      e.preventDefault();
-      const data = {
-        email: currentUser.email,
-        fullName: userProfile.fullName || "",
-        serviceType: document.getElementById("serviceType").value,
-        preferredDate: document.getElementById("preferredDate").value,
-        notes: document.getElementById("requestNotes").value,
-        street: document.getElementById("street").value,
-        city: document.getElementById("city").value,
-        state: document.getElementById("state").value,
-        zip: document.getElementById("zip").value,
-        status: "Pending",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection("service_requests").add(data).then(() => {
-        alert("✅ Request submitted.");
-        e.target.reset();
-        loadRequests();
-      });
-    }
-
-    function loadRequests() {
-      const tbody = document.querySelector("#requestsTable tbody");
-      db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
-        .then(snapshot => {
-          tbody.innerHTML = "";
-          if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
-          snapshot.forEach(doc => {
-            const r = doc.data();
-            const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-            const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
-            tbody.innerHTML += `
-              <tr>
-                <td>${r.serviceType}</td>
-                <td>${date}</td>
-                <td>${r.status}</td>
-                <td>${address}</td>
-                <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
-              </tr>`;
-          });
-        });
-    }
-
-    function deleteRequest(id) {
-      if (confirm("Delete this request?")) {
-        db.collection("service_requests").doc(id).delete().then(loadRequests);
-      }
-    }
-
-    function capitalize(str) {
-      return str.charAt(0).toUpperCase() + str.slice(1);
-    }
-  </script>
+  <div id="invoiceModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Invoice Details</h3>
+      <div id="invoiceDetails"></div>
+      <button class="close" onclick="closeModal(event)">Close</button>
+    </div>
+  </div>
 <script>
+  const db = firebase.firestore();
+  let currentUser;
+  let selectedInvoice = null;
+  let userProfile = {};
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+      loadQuotes();
+      loadInvoices();
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
   function loadQuotes() {
     const tbody = document.querySelector("#quotesTable tbody");
     db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
@@ -182,8 +148,8 @@
         const accepted = q.status === "Accepted";
         tbody.innerHTML += `
           <tr>
-            <td>${q.quote}</td>
-            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+            <td>${q.quote || "N/A"}</td>
+            <td>$${q.amount !== undefined ? parseFloat(q.amount).toFixed(2) : "0.00"}</td>
             <td>${q.status || "Pending"}</td>
             <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
           </tr>`;
@@ -264,58 +230,19 @@
     }).render("#paypalButtons");
   }
 
-  function openProfile() {
-    document.getElementById("profileModal").style.display = "flex";
-    if (userProfile?.avatarURL) {
-      document.getElementById("avatarImg").src = userProfile.avatarURL;
-    }
-  }
-
   function closeModal(e) {
     if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
       document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
     }
   }
 
+  function openProfile() {
+    alert("⚠️ Profile editing is not included in this version.");
+  }
+
   function logout() {
     firebase.auth().signOut().then(() => location.href = "login.html");
   }
 </script>
-
-<!-- Modals -->
-<div id="paypalModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h3>Complete Payment</h3>
-    <div id="paypalButtons"></div>
-    <button class="close" onclick="closeModal(event)">Cancel</button>
-  </div>
-</div>
-
-<div id="invoiceModal" class="modal" style="display:none;">
-  <div class="modal-content">
-    <h3>Invoice Details</h3>
-    <div id="invoiceDetails"></div>
-    <button class="close" onclick="closeModal(event)">Close</button>
-  </div>
-</div>
-
-<!-- Quotes Table -->
-<h2>Your Quotes</h2>
-<table id="quotesTable">
-  <thead><tr><th>Quote</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-  <tbody></tbody>
-</table>
-
-<!-- Invoices Table -->
-<h2>Your Invoices</h2>
-<table id="invoicesTable">
-  <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-  <tbody></tbody>
-</table>
-
-<!-- Logout -->
-<button onclick="openProfile()">Edit Profile</button>
-<button onclick="logout()">Logout</button>
-
 </body>
 </html>
