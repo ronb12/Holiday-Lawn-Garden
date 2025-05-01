@@ -1,3 +1,4 @@
+<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,7 +9,7 @@
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .container { max-width: 960px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
@@ -28,6 +29,32 @@
 <header><h1>Your Dashboard</h1></header>
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
+
+  <h3>Submit a New Service Request</h3>
+  <form onsubmit="submitRequest(event)">
+    <label>Service Type:</label>
+    <select id="serviceType" required>
+      <option value="">Select</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Leaf Cleanup">Leaf Cleanup</option>
+      <option value="Custom">Custom</option>
+    </select>
+    <label>Preferred Date:</label>
+    <input type="date" id="preferredDate" required>
+    <label>Notes:</label>
+    <textarea id="requestNotes" placeholder="Additional details"></textarea>
+    <label>Street:</label><input type="text" id="street" required>
+    <label>City:</label><input type="text" id="city" required>
+    <label>State:</label><input type="text" id="state" required>
+    <label>ZIP:</label><input type="text" id="zip" required>
+    <br><button type="submit">Submit Request</button>
+  </form>
+
+  <h3>Your Requests</h3>
+  <table id="requestsTable">
+    <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
 
   <h3>Your Quotes</h3>
   <table id="quotesTable">
@@ -63,6 +90,7 @@ firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+    loadRequests();
     loadQuotes();
     loadInvoices();
   } else {
@@ -70,21 +98,65 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
+function submitRequest(e) {
+  e.preventDefault();
+  const data = {
+    email: currentUser.email,
+    serviceType: document.getElementById("serviceType").value,
+    preferredDate: document.getElementById("preferredDate").value,
+    notes: document.getElementById("requestNotes").value,
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value,
+    status: "Pending",
+    submittedAt: new Date()
+  };
+  db.collection("service_requests").add(data).then(() => {
+    alert("Request submitted!");
+    e.target.reset();
+    loadRequests();
+  });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests</td></tr>";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.serviceType}</td>
+          <td>${new Date(r.preferredDate).toLocaleDateString()}</td>
+          <td>${r.status}</td>
+          <td>${r.street}, ${r.city}, ${r.state} ${r.zip}</td>
+          <td>${r.status !== "Completed" ? `<button onclick="deleteRequest('${doc.id}')">Cancel</button>` : "-"}</td>
+        </tr>`;
+    });
+  });
+}
+
+function deleteRequest(id) {
+  if (confirm("Cancel this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
+  }
+}
+
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
   db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes</td></tr>";
     snapshot.forEach(doc => {
       const q = doc.data();
-      const amount = parseFloat(q.Quotes || 0).toFixed(2);
-      const accepted = q.status === "Accepted";
       tbody.innerHTML += `
         <tr>
           <td>${q.quote}</td>
-          <td>$${amount}</td>
+          <td>$${(q.amount || 0).toFixed(2)}</td>
           <td>${q.status || "Pending"}</td>
-          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
+          <td>${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
         </tr>`;
     });
   });
@@ -92,25 +164,25 @@ function loadQuotes() {
 
 function acceptQuote(id) {
   db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote Accepted!");
+    alert("Quote accepted");
     loadQuotes();
   });
 }
 
 function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices</td></tr>";
     snapshot.forEach(doc => {
       const d = doc.data();
       tbody.innerHTML += `
         <tr>
           <td>${d.invoiceNumber}</td>
           <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>$${(d.amountDue || 0).toFixed(2)}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td><button onclick='viewInvoice(${JSON.stringify(d)})'>${d.paid ? "Receipt" : "View"}</button></td>
+          <td><button onclick='viewInvoice(${JSON.stringify(d)})'>View</button></td>
         </tr>`;
     });
   });
@@ -125,8 +197,7 @@ function viewInvoice(data) {
     <p><strong>Services:</strong></p>
     <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
     <hr>
-    <p><strong>Status:</strong> ${data.paid ? "✅ Paid" : "❌ Unpaid"}</p>
-    ${data.paid ? `<p><strong>Payment Date:</strong> ${new Date(data.paidAt?.toDate?.() || Date.now()).toLocaleDateString()}</p>` : ""}
+    <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
   `;
   document.getElementById("invoiceDetails").innerHTML = html;
   document.getElementById("invoiceModal").style.display = "flex";
