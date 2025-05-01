@@ -1,230 +1,321 @@
-<script>
-const db = firebase.firestore();
-let currentUser;
-let selectedInvoice = null;
-let userProfile = {};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Dashboard</title>
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-    loadUserProfile();
-    loadRequests();
-    loadQuotes();
-    loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
-});
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script> <!-- ✅ Your Firebase config -->
 
-function loadUserProfile() {
-  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-    if (doc.exists) {
-      userProfile = doc.data();
-      ["fullName", "street", "city", "state", "zip"].forEach(id => {
-        const el = document.getElementById("profile" + capitalize(id));
-        if (el) el.value = userProfile[id] || "";
-        const formEl = document.getElementById(id);
-        if (formEl) formEl.value = userProfile[id] || "";
+  <!-- ✅ PayPal -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
+</head>
+<body>
+  <h1 id="greeting">Welcome</h1>
+
+  <!-- Profile Modal -->
+  <div id="profileModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <h3>Edit Profile</h3>
+      <input id="profileFullName" placeholder="Full Name" />
+      <input id="profileStreet" placeholder="Street" />
+      <input id="profileCity" placeholder="City" />
+      <input id="profileState" placeholder="State" />
+      <input id="profileZip" placeholder="ZIP" />
+      <input type="file" onchange="previewAvatar(event)" />
+      <img id="avatarImg" src="assets/default-avatar.png" width="80" />
+      <button onclick="saveProfile()">Save</button>
+      <button class="close" onclick="closeModal(event)">Close</button>
+    </div>
+  </div>
+
+  <!-- Submit Service Request -->
+  <form onsubmit="submitRequest(event)">
+    <h2>Submit Service Request</h2>
+    <input id="serviceType" required placeholder="Service Type" />
+    <input type="date" id="preferredDate" required />
+    <textarea id="requestNotes" placeholder="Notes"></textarea>
+    <input id="street" placeholder="Street" />
+    <input id="city" placeholder="City" />
+    <input id="state" placeholder="State" />
+    <input id="zip" placeholder="ZIP" />
+    <button type="submit">Submit</button>
+  </form>
+
+  <table id="requestsTable">
+    <thead>
+      <tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Delete</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const db = firebase.firestore();
+    let currentUser;
+    let selectedInvoice = null;
+    let userProfile = {};
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+        loadUserProfile();
+        loadRequests();
+        loadQuotes();
+        loadInvoices();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    function loadUserProfile() {
+      db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+        if (doc.exists) {
+          userProfile = doc.data();
+          ["fullName", "street", "city", "state", "zip"].forEach(id => {
+            const el = document.getElementById("profile" + capitalize(id));
+            if (el) el.value = userProfile[id] || "";
+            const formEl = document.getElementById(id);
+            if (formEl) formEl.value = userProfile[id] || "";
+          });
+          if (userProfile.avatarURL) {
+            document.getElementById("avatarImg").src = userProfile.avatarURL;
+          }
+        }
       });
-      if (userProfile.avatarURL) {
-        document.getElementById("avatarImg").src = userProfile.avatarURL;
+    }
+
+    function saveProfile() {
+      const updated = {
+        fullName: document.getElementById("profileFullName").value,
+        street: document.getElementById("profileStreet").value,
+        city: document.getElementById("profileCity").value,
+        state: document.getElementById("profileState").value,
+        zip: document.getElementById("profileZip").value
+      };
+      db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+        alert("✅ Profile updated");
+        loadUserProfile();
+        closeModal({ target: { classList: ['modal'] } });
+      });
+    }
+
+    function previewAvatar(event) {
+      const img = document.getElementById("avatarImg");
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          img.src = e.target.result;
+          db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
+        };
+        reader.readAsDataURL(file);
       }
     }
-  });
-}
 
-function saveProfile() {
-  const updated = {
-    fullName: document.getElementById("profileFullName").value,
-    street: document.getElementById("profileStreet").value,
-    city: document.getElementById("profileCity").value,
-    state: document.getElementById("profileState").value,
-    zip: document.getElementById("profileZip").value
-  };
-  db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
-    alert("✅ Profile updated");
-    loadUserProfile();
-    closeModal({ target: { classList: ['modal'] } });
-  });
-}
+    function submitRequest(e) {
+      e.preventDefault();
+      const data = {
+        email: currentUser.email,
+        fullName: userProfile.fullName || "",
+        serviceType: document.getElementById("serviceType").value,
+        preferredDate: document.getElementById("preferredDate").value,
+        notes: document.getElementById("requestNotes").value,
+        street: document.getElementById("street").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value,
+        status: "Pending",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection("service_requests").add(data).then(() => {
+        alert("✅ Request submitted.");
+        e.target.reset();
+        loadRequests();
+      });
+    }
 
-function previewAvatar(event) {
-  const img = document.getElementById("avatarImg");
-  const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      img.src = e.target.result;
-      db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
-    };
-    reader.readAsDataURL(file);
-  }
-}
+    function loadRequests() {
+      const tbody = document.querySelector("#requestsTable tbody");
+      db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
+        .then(snapshot => {
+          tbody.innerHTML = "";
+          if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+          snapshot.forEach(doc => {
+            const r = doc.data();
+            const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+            const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+            tbody.innerHTML += `
+              <tr>
+                <td>${r.serviceType}</td>
+                <td>${date}</td>
+                <td>${r.status}</td>
+                <td>${address}</td>
+                <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+              </tr>`;
+          });
+        });
+    }
 
-function submitRequest(e) {
-  e.preventDefault();
-  const data = {
-    email: currentUser.email,
-    fullName: userProfile.fullName || "", // ✅ include name in request
-    serviceType: document.getElementById("serviceType").value,
-    preferredDate: document.getElementById("preferredDate").value,
-    notes: document.getElementById("requestNotes").value,
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value,
-    status: "Pending",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  db.collection("service_requests").add(data).then(() => {
-    alert("✅ Request submitted.");
-    e.target.reset();
-    loadRequests();
-  });
-}
+    function deleteRequest(id) {
+      if (confirm("Delete this request?")) {
+        db.collection("service_requests").doc(id).delete().then(loadRequests);
+      }
+    }
 
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
-    .then(snapshot => {
+    function capitalize(str) {
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+  </script>
+<script>
+  function loadQuotes() {
+    const tbody = document.querySelector("#quotesTable tbody");
+    db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
       snapshot.forEach(doc => {
-        const r = doc.data();
-        const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-        const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+        const q = doc.data();
+        const accepted = q.status === "Accepted";
         tbody.innerHTML += `
           <tr>
-            <td>${r.serviceType}</td>
-            <td>${date}</td>
-            <td>${r.status}</td>
-            <td>${address}</td>
-            <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+            <td>${q.quote}</td>
+            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+            <td>${q.status || "Pending"}</td>
+            <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
           </tr>`;
       });
     });
-}
-
-function deleteRequest(id) {
-  if (confirm("Delete this request?")) {
-    db.collection("service_requests").doc(id).delete().then(loadRequests);
   }
-}
-</script>
-<script>
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const accepted = q.status === "Accepted";
-      tbody.innerHTML += `
-        <tr>
-          <td>${q.quote}</td>
-          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
-          <td>${q.status || "Pending"}</td>
-          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
-        </tr>`;
+
+  function acceptQuote(id) {
+    db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+      alert("✅ Quote accepted!");
+      loadQuotes();
     });
-  });
-}
+  }
 
-function acceptQuote(id) {
-  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote accepted!");
-    loadQuotes();
-  });
-}
-
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const actionBtn = d.paid
-        ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>`
-        : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.invoiceNumber}</td>
-          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>${actionBtn}</td>
-        </tr>`;
-    });
-  });
-}
-
-function viewInvoice(data) {
-  const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
-  const html = `
-    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
-    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-    <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
-    <hr>
-    <p><strong>Services:</strong></p>
-    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
-    <hr>
-    <p><strong>Billing Address:</strong> ${address}</p>
-    <p><strong>Status:</strong> Paid</p>
-    <p style="text-align:center;">Thank you for your business!</p>
-  `;
-  document.getElementById("invoiceDetails").innerHTML = html;
-  document.getElementById("invoiceModal").style.display = "flex";
-}
-
-function initiatePay(invoiceId, amount) {
-  selectedInvoice = invoiceId;
-  document.getElementById("paypalModal").style.display = "flex";
-  renderPayPal(amount);
-}
-
-function renderPayPal(amount) {
-  document.getElementById("paypalButtons").innerHTML = "";
-  paypal.Buttons({
-    createOrder: function(data, actions) {
-      return actions.order.create({
-        purchase_units: [{ amount: { value: amount.toFixed(2) } }]
+  function loadInvoices() {
+    const tbody = document.querySelector("#invoicesTable tbody");
+    db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const actionBtn = d.paid
+          ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>`
+          : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
+        tbody.innerHTML += `
+          <tr>
+            <td>${d.invoiceNumber}</td>
+            <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+            <td>$${d.amountDue.toFixed(2)}</td>
+            <td>${d.paid ? "Paid" : "Unpaid"}</td>
+            <td>${actionBtn}</td>
+          </tr>`;
       });
-    },
-    onApprove: function(data, actions) {
-      return actions.order.capture().then(function(details) {
-        db.collection("invoices").doc(selectedInvoice).update({ paid: true }).then(() => {
-          alert("✅ Payment successful!");
-          document.getElementById("paypalModal").style.display = "none";
-          loadInvoices();
+    });
+  }
+
+  function viewInvoice(data) {
+    const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
+    const html = `
+      <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+      <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+      <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
+      <hr>
+      <p><strong>Services:</strong></p>
+      <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+      <hr>
+      <p><strong>Billing Address:</strong> ${address}</p>
+      <p><strong>Status:</strong> Paid</p>
+      <p style="text-align:center;">Thank you for your business!</p>
+    `;
+    document.getElementById("invoiceDetails").innerHTML = html;
+    document.getElementById("invoiceModal").style.display = "flex";
+  }
+
+  function initiatePay(invoiceId, amount) {
+    selectedInvoice = invoiceId;
+    document.getElementById("paypalModal").style.display = "flex";
+    renderPayPal(amount);
+  }
+
+  function renderPayPal(amount) {
+    document.getElementById("paypalButtons").innerHTML = "";
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{ amount: { value: amount.toFixed(2) } }]
         });
-      });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          db.collection("invoices").doc(selectedInvoice).update({ paid: true }).then(() => {
+            alert("✅ Payment successful!");
+            document.getElementById("paypalModal").style.display = "none";
+            loadInvoices();
+          });
+        });
+      }
+    }).render("#paypalButtons");
+  }
+
+  function openProfile() {
+    document.getElementById("profileModal").style.display = "flex";
+    if (userProfile?.avatarURL) {
+      document.getElementById("avatarImg").src = userProfile.avatarURL;
     }
-  }).render("#paypalButtons");
-}
-
-function openProfile() {
-  document.getElementById("profileModal").style.display = "flex";
-  if (userProfile?.avatarURL) {
-    document.getElementById("avatarImg").src = userProfile.avatarURL;
   }
-}
 
-function closeModal(e) {
-  if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+  function closeModal(e) {
+    if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
+      document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    }
   }
-}
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
-}
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+  function logout() {
+    firebase.auth().signOut().then(() => location.href = "login.html");
+  }
 </script>
+
+<!-- Modals -->
+<div id="paypalModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Complete Payment</h3>
+    <div id="paypalButtons"></div>
+    <button class="close" onclick="closeModal(event)">Cancel</button>
+  </div>
+</div>
+
+<div id="invoiceModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Invoice Details</h3>
+    <div id="invoiceDetails"></div>
+    <button class="close" onclick="closeModal(event)">Close</button>
+  </div>
+</div>
+
+<!-- Quotes Table -->
+<h2>Your Quotes</h2>
+<table id="quotesTable">
+  <thead><tr><th>Quote</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- Invoices Table -->
+<h2>Your Invoices</h2>
+<table id="invoicesTable">
+  <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<!-- Logout -->
+<button onclick="openProfile()">Edit Profile</button>
+<button onclick="logout()">Logout</button>
+
 </body>
 </html>
