@@ -1,20 +1,15 @@
-<!-- Customer Dashboard - Holliday's Lawn & Garden -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
+  <link rel="manifest" href="manifest.json" />
   <style>
-    body { background: #f4f9f4; font-family: Arial; margin: 0; }
+    body { font-family: Arial; background: #f4f9f4; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .container { max-width: 1000px; margin: 2em auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
@@ -23,36 +18,42 @@
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
     .close { float:right; font-size:24px; cursor:pointer; }
+    input, select, textarea {
+      width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box;
+    }
+    #profilePicPreview {
+      width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 1em;
+    }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
 </head>
 <body>
-<header><h1>Your Dashboard</h1></header>
+
+<header>
+  <h1>Your Dashboard</h1>
+  <button onclick="openProfile()">👤 Profile</button>
+</header>
 
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
-
-  <!-- Quotes Section -->
   <h3>Your Quotes</h3>
   <table id="quotesTable">
-    <thead>
-      <tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-    </thead>
+    <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
-  <!-- Invoices -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
-    <thead>
-      <tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-    </thead>
+    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
   <br><button onclick="logout()">Logout</button>
 </div>
 
-<!-- Invoice Modal -->
 <div id="invoiceModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
@@ -61,18 +62,37 @@
   </div>
 </div>
 
+<div id="profileModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Your Profile</h2>
+    <img id="profilePicPreview" src="assets/default-avatar.png" alt="Avatar" />
+    <input type="file" id="profilePicInput" accept="image/*" />
+    <form id="profileForm">
+      <label>Full Name:</label><input id="profileName" />
+      <label>Email:</label><input id="profileEmail" disabled />
+      <label>Street:</label><input id="profileStreet" />
+      <label>City:</label><input id="profileCity" />
+      <label>State:</label><input id="profileState" />
+      <label>ZIP:</label><input id="profileZip" />
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+</div>
+
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
 <script>
-const db = firebase.firestore();
+let db = firebase.firestore();
 let currentUser;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById('greeting').innerText = `Welcome, ${user.email}`;
+    document.getElementById('greeting').innerText = \`Welcome, \${user.email}\`;
     loadQuotes();
     loadInvoices();
+    loadProfile();
   } else {
     location.href = "login.html";
   }
@@ -80,29 +100,19 @@ firebase.auth().onAuthStateChanged(user => {
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
-      snapshot.forEach(doc => {
-        const q = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${q.quote || "N/A"}</td>
-            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
-            <td>${q.status || "Pending"}</td>
-            <td>
-              ${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}
-            </td>
-          </tr>`;
-      });
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      tbody.innerHTML += \`
+        <tr>
+          <td>\${q.quote || "N/A"}</td>
+          <td>$\${parseFloat(q.amount || 0).toFixed(2)}</td>
+          <td>\${q.status || "Pending"}</td>
+          <td>\${q.status !== "Accepted" ? \`<button onclick="acceptQuote('\${doc.id}')">Accept</button>\` : "Accepted"}</td>
+        </tr>\`;
     });
-}
-
-function acceptQuote(id) {
-  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote accepted. You will receive an invoice soon.");
-    loadQuotes();
   });
 }
 
@@ -110,42 +120,73 @@ function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
   db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices yet</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices</td></tr>";
     snapshot.forEach(doc => {
       const d = doc.data();
-      tbody.innerHTML += `
+      tbody.innerHTML += \`
         <tr>
-          <td>${d.invoiceNumber}</td>
-          <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
-          <td>$${(d.amountDue || 0).toFixed(2)}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td><button onclick="viewInvoice(${JSON.stringify(d)})">View</button></td>
-        </tr>`;
+          <td>\${d.invoiceNumber}</td>
+          <td>\${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>$\${d.amountDue.toFixed(2)}</td>
+          <td>\${d.paid ? "Paid" : "Unpaid"}</td>
+          <td><button onclick='viewInvoice(\${JSON.stringify(d)})'>View</button></td>
+        </tr>\`;
     });
   });
 }
 
 function viewInvoice(data) {
-  const html = `
-    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
-    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-    <p><strong>Customer:</strong> ${data.customerEmail}</p>
-    <p><strong>Amount Due:</strong> <strong>$${data.amountDue.toFixed(2)}</strong></p>
-    <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
-  `;
+  const html = \`
+    <p><strong>Invoice #:</strong> \${data.invoiceNumber}</p>
+    <p><strong>Due Date:</strong> \${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Amount:</strong> $\${data.amountDue.toFixed(2)}</p>
+    <p><strong>Status:</strong> \${data.paid ? "Paid" : "Unpaid"}</p>
+  \`;
   document.getElementById("invoiceDetails").innerHTML = html;
   document.getElementById("invoiceModal").style.display = "flex";
 }
 
+function openProfile() {
+  document.getElementById("profileModal").style.display = "flex";
+}
+
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.getElementById("invoiceModal").style.display = "none";
+    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
   }
 }
 
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
+
+function loadProfile() {
+  const profilePic = document.getElementById("profilePicPreview");
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    const data = doc.data() || {};
+    document.getElementById("profileEmail").value = currentUser.email;
+    document.getElementById("profileName").value = data.name || "";
+    document.getElementById("profileStreet").value = data.street || "";
+    document.getElementById("profileCity").value = data.city || "";
+    document.getElementById("profileState").value = data.state || "";
+    document.getElementById("profileZip").value = data.zip || "";
+    if (data.avatarUrl) profilePic.src = data.avatarUrl;
+  });
+}
+
+document.getElementById("profileForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById("profileName").value,
+    street: document.getElementById("profileStreet").value,
+    city: document.getElementById("profileCity").value,
+    state: document.getElementById("profileState").value,
+    zip: document.getElementById("profileZip").value
+  };
+  db.collection("profiles").doc(currentUser.uid).set(data, { merge: true }).then(() => {
+    alert("✅ Profile saved.");
+    closeModal({ target: { classList: { contains: () => true } } });
+  });
+});
 </script>
-</body>
 </html>
