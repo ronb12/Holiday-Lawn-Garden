@@ -78,12 +78,11 @@ function loadQuotes() {
     if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
     snapshot.forEach(doc => {
       const q = doc.data();
-      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
       const accepted = q.status === "Accepted";
       tbody.innerHTML += `
         <tr>
-          <td>${q.quote}</td>
-          <td>$${parseFloat(q.Quotes || 0).toFixed(2)}</td>
+          <td>${q.quote || "N/A"}</td>
+          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
           <td>${q.status || "Pending"}</td>
           <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
         </tr>`;
