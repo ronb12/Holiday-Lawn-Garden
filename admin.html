@@ -199,12 +199,16 @@ function loadServiceRequests() {
     snapshot.forEach(doc => {
       const r = doc.data();
       if (r.status === "Completed") return;
+      const address = `${r.street || ""}, ${r.city || ""}, ${r.state || ""} ${r.zip || ""}`;
       tbody.innerHTML += `
         <tr>
           <td>${r.fullName || ""}</td>
           <td>${r.email || ""}</td>
-          <td>${r.street || ""}, ${r.city || ""}, ${r.state || ""} ${r.zip || ""}</td>
-          <td>${r.notes || ""}</td>
+          <td>${address}</td>
+          <td>
+            <strong>Service:</strong> ${r.serviceType || "N/A"}<br/>
+            <strong>Notes:</strong> ${r.notes || "None"}
+          </td>
           <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateStatus('${doc.id}', this.value)">
@@ -215,7 +219,8 @@ function loadServiceRequests() {
             </select>
           </td>
         </tr>`;
-    });
+  });
+}
   });
 }
 
