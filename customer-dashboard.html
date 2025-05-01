@@ -1,4 +1,3 @@
-<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,19 +19,24 @@
     th { background: #228B22; color: white; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
-    .close { float:right; font-size:24px; cursor:pointer; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
+    .close { float: right; font-size: 24px; cursor: pointer; }
     input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
+    .avatar { width: 100px; border-radius: 50%; margin-bottom: 10px; }
+    #profileBtn { float: right; margin: -2.5em 1em 1em 0; background: transparent; border: none; font-size: 24px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-<header><h1>Your Dashboard</h1></header>
+<header>
+  <h1>Your Dashboard</h1>
+  <button id="profileBtn" onclick="openProfile()">👤</button>
+</header>
+
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
-  <!-- Submit Request -->
   <h3>Submit a Service Request</h3>
   <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
@@ -50,56 +54,40 @@
     <label>Notes:</label>
     <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
 
-    <div style="display: flex; gap: 10px;">
-      <div style="flex: 1;">
-        <label>Street:</label>
-        <input type="text" id="street" required>
-      </div>
-      <div style="flex: 1;">
-        <label>City:</label>
-        <input type="text" id="city" required>
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 10px;">
-      <div style="flex: 1;">
-        <label>State:</label>
-        <input type="text" id="state" required>
-      </div>
-      <div style="flex: 1;">
-        <label>ZIP:</label>
-        <input type="text" id="zip" required>
-      </div>
-    </div>
+    <label>Street:</label>
+    <input type="text" id="street" required>
+    <label>City:</label>
+    <input type="text" id="city" required>
+    <label>State:</label>
+    <input type="text" id="state" required>
+    <label>ZIP:</label>
+    <input type="text" id="zip" required>
 
     <button type="submit">Submit Request</button>
   </form>
-  <!-- Requests Table -->
-  <h3>Your Service Requests</h3>
+
+  <h3>Your Requests</h3>
   <table id="requestsTable">
     <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <!-- Quotes Table -->
   <h3>Your Quotes</h3>
   <table id="quotesTable">
     <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
-  <!-- Invoices Table -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
     <thead><tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <br>
-  <button onclick="logout()">Logout</button>
+  <br><button onclick="logout()">Logout</button>
 </div>
 
-<!-- Receipt Modal -->
+<!-- Modals -->
 <div id="invoiceModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
@@ -111,16 +99,39 @@
   </div>
 </div>
 
-<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+<!-- Profile Modal -->
+<div id="profileModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Your Profile</h2>
+    <div style="text-align:center;">
+      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" class="avatar">
+      <br>
+      <input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)">
+    </div>
+    <label>Street:</label>
+    <input type="text" id="profileStreet">
+    <label>City:</label>
+    <input type="text" id="profileCity">
+    <label>State:</label>
+    <input type="text" id="profileState">
+    <label>ZIP:</label>
+    <input type="text" id="profileZip">
+    <button onclick="saveProfile()">💾 Save</button>
+  </div>
+</div>
 
+<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 <script>
 const db = firebase.firestore();
 let currentUser;
+let userProfile = {};
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+    loadUserProfile();
     loadRequests();
     loadQuotes();
     loadInvoices();
@@ -128,6 +139,47 @@ firebase.auth().onAuthStateChanged(user => {
     window.location.href = "login.html";
   }
 });
+
+function loadUserProfile() {
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    if (doc.exists) {
+      userProfile = doc.data();
+      document.getElementById("street").value = userProfile.street || "";
+      document.getElementById("city").value = userProfile.city || "";
+      document.getElementById("state").value = userProfile.state || "";
+      document.getElementById("zip").value = userProfile.zip || "";
+
+      document.getElementById("profileStreet").value = userProfile.street || "";
+      document.getElementById("profileCity").value = userProfile.city || "";
+      document.getElementById("profileState").value = userProfile.state || "";
+      document.getElementById("profileZip").value = userProfile.zip || "";
+    }
+  });
+}
+
+function saveProfile() {
+  const updated = {
+    street: document.getElementById("profileStreet").value,
+    city: document.getElementById("profileCity").value,
+    state: document.getElementById("profileState").value,
+    zip: document.getElementById("profileZip").value
+  };
+  db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+    alert("✅ Profile updated");
+    loadUserProfile();
+    closeModal({ target: { classList: ['modal'] } });
+  });
+}
+
+function previewAvatar(event) {
+  const img = document.getElementById("avatarImg");
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => img.src = e.target.result;
+    reader.readAsDataURL(file);
+  }
+}
 
 function submitRequest(e) {
   e.preventDefault();
@@ -241,9 +293,17 @@ function viewInvoice(data) {
   document.getElementById("invoiceModal").style.display = "flex";
 }
 
+function openProfile() {
+  document.getElementById("profileModal").style.display = "flex";
+  if (userProfile?.avatarURL) {
+    document.getElementById("avatarImg").src = userProfile.avatarURL;
+  }
+}
+
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
     document.getElementById("invoiceModal").style.display = "none";
+    document.getElementById("profileModal").style.display = "none";
   }
 }
 
