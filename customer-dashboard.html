@@ -1,4 +1,3 @@
-<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,11 +77,12 @@ function loadQuotes() {
     if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
     snapshot.forEach(doc => {
       const q = doc.data();
+      const amount = parseFloat(q.Quotes || 0).toFixed(2);
       const accepted = q.status === "Accepted";
       tbody.innerHTML += `
         <tr>
-          <td>${q.quote || "N/A"}</td>
-          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+          <td>${q.quote}</td>
+          <td>$${amount}</td>
           <td>${q.status || "Pending"}</td>
           <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
         </tr>`;
@@ -110,7 +110,7 @@ function loadInvoices() {
           <td>${new Date(d.dueDate).toLocaleDateString()}</td>
           <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td><button onclick='viewInvoice(${JSON.stringify(d)})'>View</button></td>
+          <td><button onclick='viewInvoice(${JSON.stringify(d)})'>${d.paid ? "Receipt" : "View"}</button></td>
         </tr>`;
     });
   });
@@ -125,7 +125,8 @@ function viewInvoice(data) {
     <p><strong>Services:</strong></p>
     <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
     <hr>
-    <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
+    <p><strong>Status:</strong> ${data.paid ? "✅ Paid" : "❌ Unpaid"}</p>
+    ${data.paid ? `<p><strong>Payment Date:</strong> ${new Date(data.paidAt?.toDate?.() || Date.now()).toLocaleDateString()}</p>` : ""}
   `;
   document.getElementById("invoiceDetails").innerHTML = html;
   document.getElementById("invoiceModal").style.display = "flex";
