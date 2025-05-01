@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
@@ -13,14 +12,16 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #006400; }
+    label { font-weight: bold; display: block; margin-top: 1em; }
+    input, select, textarea { width: 100%; padding: 0.5em; margin-top: 0.3em; box-sizing: border-box; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 150px; }
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
+    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:600px; }
     .close { float:right; font-size:24px; cursor:pointer; }
-    .avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
-    .profile-header { display: flex; justify-content: space-between; align-items: center; }
-    .profile-btn { background: none; color: white; text-decoration: underline; cursor: pointer; border: none; font-size: 1em; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #006400; }
+    .banner { background: #dff0d8; color: #3c763d; padding: 10px; border-radius: 5px; margin-bottom: 1em; display: none; text-align: center; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -28,17 +29,18 @@
   <script src="firebase-init.js"></script>
 </head>
 <body>
+
 <header>
-  <div class="profile-header">
-    <h1>Your Dashboard</h1>
-    <button class="profile-btn" onclick="openProfile()">👤 Profile</button>
-  </div>
+  <h1>Your Dashboard</h1>
 </header>
+
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
-  <h3>Submit Service Request</h3>
-  <form id="requestForm" onsubmit="submitRequest(event)">
+  <div class="banner" id="successBanner">✅ Your service request was submitted!</div>
+
+  <h3>Submit a Service Request</h3>
+  <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
     <select id="serviceType" required>
       <option value="">Select</option>
@@ -47,20 +49,44 @@
       <option>Leaf Cleanup</option>
       <option>Other</option>
     </select>
+
+    <label>Preferred Date:</label>
     <input type="date" id="preferredDate" required>
-    <textarea id="notes" placeholder="Additional notes..."></textarea>
-    <input type="text" id="street" placeholder="Street Address" required>
-    <input type="text" id="city" placeholder="City" required>
-    <input type="text" id="state" placeholder="State" required>
-    <input type="text" id="zip" placeholder="ZIP Code" required>
+
+    <label>Notes:</label>
+    <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
+
+    <label><input type="checkbox" id="editAddressToggle" onchange="toggleAddressEdit()"> Edit Address</label>
+
+    <div class="row">
+      <div>
+        <label>Street:</label>
+        <input type="text" id="street" required readonly>
+      </div>
+      <div>
+        <label>City:</label>
+        <input type="text" id="city" required readonly>
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>State:</label>
+        <input type="text" id="state" required readonly>
+      </div>
+      <div>
+        <label>ZIP:</label>
+        <input type="text" id="zip" required readonly>
+      </div>
+    </div>
+
     <button type="submit">Submit Request</button>
   </form>
-  <h3>Your Service Requests</h3>
+
+  <h3>Your Requests</h3>
   <table id="requestsTable">
     <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
-
   <h3>Your Quotes</h3>
   <table id="quotesTable">
     <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
@@ -69,11 +95,11 @@
 
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
-    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <button onclick="logout()">Logout</button>
+  <br><button onclick="logout()">Logout</button>
 </div>
 
 <!-- Receipt Modal -->
@@ -82,17 +108,9 @@
     <span class="close" onclick="closeModal(event)">&times;</span>
     <h2>Invoice Receipt</h2>
     <div id="invoiceDetails"></div>
-    <button onclick="window.print()">🖨️ Print</button>
-  </div>
-</div>
-
-<!-- Profile Modal -->
-<div id="profileModal" class="modal" onclick="closeModal(event)">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal(event)">&times;</span>
-    <h2>Your Profile</h2>
-    <img id="avatar" src="assets/default-avatar.png" class="avatar" alt="Profile">
-    <p id="profileInfo">Loading...</p>
+    <div style="text-align:center; margin-top: 20px;">
+      <button onclick="window.print()">🖨️ Print Receipt</button>
+    </div>
   </div>
 </div>
 
@@ -100,20 +118,46 @@
 
 <script>
 const db = firebase.firestore();
-let currentUser;
+let currentUser = null;
+let profileData = {};
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-    loadProfile();
-    loadQuotes();
-    loadInvoices();
-    loadRequests();
+    loadProfile(() => {
+      prefillAddress();
+      loadRequests();
+      loadQuotes();
+      loadInvoices();
+    });
   } else {
-    location.href = "login.html";
+    window.location.href = "login.html";
   }
 });
+
+function loadProfile(callback) {
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    if (doc.exists) {
+      profileData = doc.data();
+      callback();
+    }
+  });
+}
+
+function prefillAddress() {
+  document.getElementById("street").value = profileData.street || '';
+  document.getElementById("city").value = profileData.city || '';
+  document.getElementById("state").value = profileData.state || '';
+  document.getElementById("zip").value = profileData.zip || '';
+}
+
+function toggleAddressEdit() {
+  const editable = document.getElementById("editAddressToggle").checked;
+  ["street", "city", "state", "zip"].forEach(id => {
+    document.getElementById(id).readOnly = !editable;
+  });
+}
 
 function submitRequest(e) {
   e.preventDefault();
@@ -121,7 +165,7 @@ function submitRequest(e) {
     email: currentUser.email,
     serviceType: document.getElementById("serviceType").value,
     preferredDate: document.getElementById("preferredDate").value,
-    notes: document.getElementById("notes").value,
+    notes: document.getElementById("requestNotes").value,
     street: document.getElementById("street").value,
     city: document.getElementById("city").value,
     state: document.getElementById("state").value,
@@ -130,9 +174,12 @@ function submitRequest(e) {
     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   db.collection("service_requests").add(data).then(() => {
-    alert("✅ Request Submitted");
+    document.getElementById("successBanner").style.display = "block";
     e.target.reset();
+    toggleAddressEdit(); // reset address fields to readonly
+    prefillAddress(); // refill them with default
     loadRequests();
+    setTimeout(() => document.getElementById("successBanner").style.display = "none", 4000);
   });
 }
 
@@ -147,7 +194,7 @@ function loadRequests() {
       tbody.innerHTML += `
         <tr>
           <td>${r.serviceType}</td>
-          <td>${new Date(r.preferredDate).toLocaleDateString()}</td>
+          <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
           <td>${r.status}</td>
           <td>${address}</td>
           <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
@@ -173,7 +220,7 @@ function loadQuotes() {
       tbody.innerHTML += `
         <tr>
           <td>${q.quote}</td>
-          <td>$${parseFloat(q.Quotes || 0).toFixed(2)}</td>
+          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
           <td>${q.status || "Pending"}</td>
           <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
         </tr>`;
@@ -183,7 +230,7 @@ function loadQuotes() {
 
 function acceptQuote(id) {
   db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote Accepted!");
+    alert("✅ Quote accepted!");
     loadQuotes();
   });
 }
@@ -225,26 +272,9 @@ function viewInvoice(data) {
   document.getElementById("invoiceModal").style.display = "flex";
 }
 
-function loadProfile() {
-  db.collection("users").doc(currentUser.uid).get().then(doc => {
-    const u = doc.data() || {};
-    document.getElementById("profileInfo").innerHTML = `
-      <p><strong>Name:</strong> ${u.name || "N/A"}</p>
-      <p><strong>Email:</strong> ${currentUser.email}</p>
-      <p><strong>Address:</strong> ${u.street || ''}, ${u.city || ''}, ${u.state || ''} ${u.zip || ''}</p>
-    `;
-    document.getElementById("avatar").src = u.avatarUrl || "assets/default-avatar.png";
-  });
-}
-
-function openProfile() {
-  document.getElementById("profileModal").style.display = "flex";
-}
-
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
     document.getElementById("invoiceModal").style.display = "none";
-    document.getElementById("profileModal").style.display = "none";
   }
 }
 
