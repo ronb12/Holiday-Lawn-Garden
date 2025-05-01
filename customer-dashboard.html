@@ -1,136 +1,151 @@
-
+<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Customer Dashboard</title>
+  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .container { max-width: 900px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:600px; }
-    .close { float:right; font-size:24px; cursor:pointer; }
-    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
-    img.profile-pic { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
+    .close { float:right; font-size:24px; cursor:pointer; }
   </style>
 </head>
 <body>
-
-<header>
-  <h1>Your Dashboard</h1>
-  <button onclick="openProfile()">👤 Profile</button>
-</header>
+<header><h1>Your Dashboard</h1></header>
 
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
-  <p>Full request, quote, invoice, profile, and receipt functionality.</p>
+
+  <!-- Quotes Section -->
+  <h3>Your Quotes</h3>
+  <table id="quotesTable">
+    <thead>
+      <tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+    </thead>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+  </table>
+
+  <!-- Invoices -->
+  <h3>Your Invoices</h3>
+  <table id="invoicesTable">
+    <thead>
+      <tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+
+  <br><button onclick="logout()">Logout</button>
 </div>
 
-<!-- Profile Modal -->
-<div id="profileModal" class="modal" onclick="closeModal(event)">
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
-    <h2>Your Profile</h2>
-    <img id="profilePicPreview" class="profile-pic" src="https://via.placeholder.com/100" alt="Profile Picture">
-    <input type="file" id="profilePicInput" accept="image/*"><br>
-    <input type="text" id="fullName" placeholder="Full Name">
-    <input type="text" id="street" placeholder="Street Address">
-    <input type="text" id="city" placeholder="City">
-    <input type="text" id="state" placeholder="State">
-    <input type="text" id="zip" placeholder="ZIP Code">
-    <button onclick="saveProfile()">💾 Save Profile</button>
+    <h2>Invoice Details</h2>
+    <div id="invoiceDetails"></div>
   </div>
 </div>
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
-<script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
-const storage = firebase.storage();
 let currentUser;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    loadProfile();
-    document.getElementById("greeting").innerText = "Welcome, " + user.email;
+    document.getElementById('greeting').innerText = `Welcome, ${user.email}`;
+    loadQuotes();
+    loadInvoices();
   } else {
     location.href = "login.html";
   }
 });
 
-function openProfile() {
-  document.getElementById("profileModal").style.display = "flex";
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
+      snapshot.forEach(doc => {
+        const q = doc.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${q.quote || "N/A"}</td>
+            <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+            <td>${q.status || "Pending"}</td>
+            <td>
+              ${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}
+            </td>
+          </tr>`;
+      });
+    });
+}
+
+function acceptQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+    alert("✅ Quote accepted. You will receive an invoice soon.");
+    loadQuotes();
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices yet</td></tr>";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.invoiceNumber}</td>
+          <td>${d.dueDate ? new Date(d.dueDate).toLocaleDateString() : "N/A"}</td>
+          <td>$${(d.amountDue || 0).toFixed(2)}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td><button onclick="viewInvoice(${JSON.stringify(d)})">View</button></td>
+        </tr>`;
+    });
+  });
+}
+
+function viewInvoice(data) {
+  const html = `
+    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Customer:</strong> ${data.customerEmail}</p>
+    <p><strong>Amount Due:</strong> <strong>$${data.amountDue.toFixed(2)}</strong></p>
+    <p><strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
+  `;
+  document.getElementById("invoiceDetails").innerHTML = html;
+  document.getElementById("invoiceModal").style.display = "flex";
 }
 
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.getElementById("profileModal").style.display = "none";
+    document.getElementById("invoiceModal").style.display = "none";
   }
 }
 
-function loadProfile() {
-  db.collection("users").doc(currentUser.uid).get().then(doc => {
-    const d = doc.data() || {};
-    document.getElementById("fullName").value = d.fullName || "";
-    document.getElementById("street").value = d.street || "";
-    document.getElementById("city").value = d.city || "";
-    document.getElementById("state").value = d.state || "";
-    document.getElementById("zip").value = d.zip || "";
-    if (d.photoURL) {
-      document.getElementById("profilePicPreview").src = d.photoURL;
-    }
-  });
-}
-
-document.getElementById("profilePicInput").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById("profilePicPreview").src = reader.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-function saveProfile() {
-  const fullName = document.getElementById("fullName").value;
-  const street = document.getElementById("street").value;
-  const city = document.getElementById("city").value;
-  const state = document.getElementById("state").value;
-  const zip = document.getElementById("zip").value;
-  const file = document.getElementById("profilePicInput").files[0];
-
-  const saveToFirestore = (photoURL = "") => {
-    db.collection("users").doc(currentUser.uid).set({
-      fullName, street, city, state, zip,
-      photoURL: photoURL || document.getElementById("profilePicPreview").src,
-      email: currentUser.email
-    }).then(() => alert("✅ Profile Updated"));
-  };
-
-  if (file) {
-    const ref = storage.ref("profile_pics/" + currentUser.uid + ".jpg");
-    ref.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(saveToFirestore);
-  } else {
-    saveToFirestore();
-  }
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
-
 </body>
 </html>
-
