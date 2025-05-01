@@ -1,15 +1,15 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="manifest" href="manifest.json" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
   <style>
-    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 1000px; margin: 2em auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
@@ -18,12 +18,9 @@
     .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
     .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
     .close { float:right; font-size:24px; cursor:pointer; }
-    input, select, textarea {
-      width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box;
-    }
-    #profilePicPreview {
-      width: 100px; height: 100px; object-fit: cover; border-radius: 50%; margin-bottom: 1em;
-    }
+    .avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; }
+    .profile-header { display: flex; justify-content: space-between; align-items: center; }
+    .profile-btn { background: none; color: white; text-decoration: underline; cursor: pointer; border: none; font-size: 1em; }
   </style>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -31,14 +28,39 @@
   <script src="firebase-init.js"></script>
 </head>
 <body>
-
 <header>
-  <h1>Your Dashboard</h1>
-  <button onclick="openProfile()">👤 Profile</button>
+  <div class="profile-header">
+    <h1>Your Dashboard</h1>
+    <button class="profile-btn" onclick="openProfile()">👤 Profile</button>
+  </div>
 </header>
-
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
+
+  <h3>Submit Service Request</h3>
+  <form id="requestForm" onsubmit="submitRequest(event)">
+    <label>Service Type:</label>
+    <select id="serviceType" required>
+      <option value="">Select</option>
+      <option>Lawn Mowing</option>
+      <option>Hedge Trimming</option>
+      <option>Leaf Cleanup</option>
+      <option>Other</option>
+    </select>
+    <input type="date" id="preferredDate" required>
+    <textarea id="notes" placeholder="Additional notes..."></textarea>
+    <input type="text" id="street" placeholder="Street Address" required>
+    <input type="text" id="city" placeholder="City" required>
+    <input type="text" id="state" placeholder="State" required>
+    <input type="text" id="zip" placeholder="ZIP Code" required>
+    <button type="submit">Submit Request</button>
+  </form>
+  <h3>Your Service Requests</h3>
+  <table id="requestsTable">
+    <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+
   <h3>Your Quotes</h3>
   <table id="quotesTable">
     <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
@@ -51,99 +73,168 @@
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <br><button onclick="logout()">Logout</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
+<!-- Receipt Modal -->
 <div id="invoiceModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
-    <h2>Invoice Details</h2>
+    <h2>Invoice Receipt</h2>
     <div id="invoiceDetails"></div>
+    <button onclick="window.print()">🖨️ Print</button>
   </div>
 </div>
 
+<!-- Profile Modal -->
 <div id="profileModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
     <h2>Your Profile</h2>
-    <img id="profilePicPreview" src="assets/default-avatar.png" alt="Avatar" />
-    <input type="file" id="profilePicInput" accept="image/*" />
-    <form id="profileForm">
-      <label>Full Name:</label><input id="profileName" />
-      <label>Email:</label><input id="profileEmail" disabled />
-      <label>Street:</label><input id="profileStreet" />
-      <label>City:</label><input id="profileCity" />
-      <label>State:</label><input id="profileState" />
-      <label>ZIP:</label><input id="profileZip" />
-      <button type="submit">Save Profile</button>
-    </form>
+    <img id="avatar" src="assets/default-avatar.png" class="avatar" alt="Profile">
+    <p id="profileInfo">Loading...</p>
   </div>
 </div>
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
 <script>
-let db = firebase.firestore();
+const db = firebase.firestore();
 let currentUser;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById('greeting').innerText = \`Welcome, \${user.email}\`;
+    document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+    loadProfile();
     loadQuotes();
     loadInvoices();
-    loadProfile();
+    loadRequests();
   } else {
     location.href = "login.html";
   }
 });
 
+function submitRequest(e) {
+  e.preventDefault();
+  const data = {
+    email: currentUser.email,
+    serviceType: document.getElementById("serviceType").value,
+    preferredDate: document.getElementById("preferredDate").value,
+    notes: document.getElementById("notes").value,
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value,
+    status: "Pending",
+    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection("service_requests").add(data).then(() => {
+    alert("✅ Request Submitted");
+    e.target.reset();
+    loadRequests();
+  });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.serviceType}</td>
+          <td>${new Date(r.preferredDate).toLocaleDateString()}</td>
+          <td>${r.status}</td>
+          <td>${address}</td>
+          <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+        </tr>`;
+    });
+  });
+}
+
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
+  }
+}
+
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
   db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
     snapshot.forEach(doc => {
       const q = doc.data();
-      tbody.innerHTML += \`
+      const accepted = q.status === "Accepted";
+      tbody.innerHTML += `
         <tr>
-          <td>\${q.quote || "N/A"}</td>
-          <td>$\${parseFloat(q.amount || 0).toFixed(2)}</td>
-          <td>\${q.status || "Pending"}</td>
-          <td>\${q.status !== "Accepted" ? \`<button onclick="acceptQuote('\${doc.id}')">Accept</button>\` : "Accepted"}</td>
-        </tr>\`;
+          <td>${q.quote}</td>
+          <td>$${parseFloat(q.Quotes || 0).toFixed(2)}</td>
+          <td>${q.status || "Pending"}</td>
+          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
+        </tr>`;
     });
+  });
+}
+
+function acceptQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+    alert("✅ Quote Accepted!");
+    loadQuotes();
   });
 }
 
 function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate").get().then(snapshot => {
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices</td></tr>";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
     snapshot.forEach(doc => {
       const d = doc.data();
-      tbody.innerHTML += \`
+      tbody.innerHTML += `
         <tr>
-          <td>\${d.invoiceNumber}</td>
-          <td>\${new Date(d.dueDate).toLocaleDateString()}</td>
-          <td>$\${d.amountDue.toFixed(2)}</td>
-          <td>\${d.paid ? "Paid" : "Unpaid"}</td>
-          <td><button onclick='viewInvoice(\${JSON.stringify(d)})'>View</button></td>
-        </tr>\`;
+          <td>${d.invoiceNumber}</td>
+          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td>${d.paid ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>` : "-"}</td>
+        </tr>`;
     });
   });
 }
 
 function viewInvoice(data) {
-  const html = \`
-    <p><strong>Invoice #:</strong> \${data.invoiceNumber}</p>
-    <p><strong>Due Date:</strong> \${new Date(data.dueDate).toLocaleDateString()}</p>
-    <p><strong>Amount:</strong> $\${data.amountDue.toFixed(2)}</p>
-    <p><strong>Status:</strong> \${data.paid ? "Paid" : "Unpaid"}</p>
-  \`;
+  const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
+  const html = `
+    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
+    <hr>
+    <p><strong>Services:</strong></p>
+    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+    <hr>
+    <p><strong>Billing Address:</strong> ${address}</p>
+    <p><strong>Status:</strong> Paid</p>
+    <p style="text-align:center;">Thank you for your business!</p>
+  `;
   document.getElementById("invoiceDetails").innerHTML = html;
   document.getElementById("invoiceModal").style.display = "flex";
+}
+
+function loadProfile() {
+  db.collection("users").doc(currentUser.uid).get().then(doc => {
+    const u = doc.data() || {};
+    document.getElementById("profileInfo").innerHTML = `
+      <p><strong>Name:</strong> ${u.name || "N/A"}</p>
+      <p><strong>Email:</strong> ${currentUser.email}</p>
+      <p><strong>Address:</strong> ${u.street || ''}, ${u.city || ''}, ${u.state || ''} ${u.zip || ''}</p>
+    `;
+    document.getElementById("avatar").src = u.avatarUrl || "assets/default-avatar.png";
+  });
 }
 
 function openProfile() {
@@ -152,41 +243,14 @@ function openProfile() {
 
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    document.getElementById("invoiceModal").style.display = "none";
+    document.getElementById("profileModal").style.display = "none";
   }
 }
 
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
-
-function loadProfile() {
-  const profilePic = document.getElementById("profilePicPreview");
-  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-    const data = doc.data() || {};
-    document.getElementById("profileEmail").value = currentUser.email;
-    document.getElementById("profileName").value = data.name || "";
-    document.getElementById("profileStreet").value = data.street || "";
-    document.getElementById("profileCity").value = data.city || "";
-    document.getElementById("profileState").value = data.state || "";
-    document.getElementById("profileZip").value = data.zip || "";
-    if (data.avatarUrl) profilePic.src = data.avatarUrl;
-  });
-}
-
-document.getElementById("profileForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const data = {
-    name: document.getElementById("profileName").value,
-    street: document.getElementById("profileStreet").value,
-    city: document.getElementById("profileCity").value,
-    state: document.getElementById("profileState").value,
-    zip: document.getElementById("profileZip").value
-  };
-  db.collection("profiles").doc(currentUser.uid).set(data, { merge: true }).then(() => {
-    alert("✅ Profile saved.");
-    closeModal({ target: { classList: { contains: () => true } } });
-  });
-});
 </script>
+</body>
 </html>
