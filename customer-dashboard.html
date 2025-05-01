@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial; margin: 0; }
     header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
@@ -12,33 +17,21 @@
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    label { font-weight: bold; display: block; margin-top: 1em; }
-    input, select, textarea { width: 100%; padding: 0.5em; margin-top: 0.3em; box-sizing: border-box; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .row > div { flex: 1; min-width: 150px; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:600px; }
-    .close { float:right; font-size:24px; cursor:pointer; }
-    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .banner { background: #dff0d8; color: #3c763d; padding: 10px; border-radius: 5px; margin-bottom: 1em; display: none; text-align: center; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:20px; border-radius:8px; width:90%; max-width:500px; }
+    .close { float:right; font-size:24px; cursor:pointer; }
+    input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
 </head>
 <body>
 
-<header>
-  <h1>Your Dashboard</h1>
-</header>
-
+<header><h1>Your Dashboard</h1></header>
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
-  <div class="banner" id="successBanner">✅ Your service request was submitted!</div>
-
+  <!-- Submit Request -->
   <h3>Submit a Service Request</h3>
   <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
@@ -56,46 +49,48 @@
     <label>Notes:</label>
     <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
 
-    <label><input type="checkbox" id="editAddressToggle" onchange="toggleAddressEdit()"> Edit Address</label>
-
-    <div class="row">
-      <div>
+    <div style="display: flex; gap: 10px;">
+      <div style="flex: 1;">
         <label>Street:</label>
-        <input type="text" id="street" required readonly>
+        <input type="text" id="street" required>
       </div>
-      <div>
+      <div style="flex: 1;">
         <label>City:</label>
-        <input type="text" id="city" required readonly>
+        <input type="text" id="city" required>
       </div>
     </div>
-    <div class="row">
-      <div>
+
+    <div style="display: flex; gap: 10px;">
+      <div style="flex: 1;">
         <label>State:</label>
-        <input type="text" id="state" required readonly>
+        <input type="text" id="state" required>
       </div>
-      <div>
+      <div style="flex: 1;">
         <label>ZIP:</label>
-        <input type="text" id="zip" required readonly>
+        <input type="text" id="zip" required>
       </div>
     </div>
 
     <button type="submit">Submit Request</button>
   </form>
 
-  <h3>Your Requests</h3>
+  <!-- Requests Table -->
+  <h3>Your Service Requests</h3>
   <table id="requestsTable">
     <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
+  <!-- Quotes Table -->
   <h3>Your Quotes</h3>
   <table id="quotesTable">
     <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
 
+  <!-- Invoices Table -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
-    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
@@ -108,7 +103,7 @@
     <span class="close" onclick="closeModal(event)">&times;</span>
     <h2>Invoice Receipt</h2>
     <div id="invoiceDetails"></div>
-    <div style="text-align:center; margin-top: 20px;">
+    <div style="text-align:center;margin-top:20px;">
       <button onclick="window.print()">🖨️ Print Receipt</button>
     </div>
   </div>
@@ -118,46 +113,19 @@
 
 <script>
 const db = firebase.firestore();
-let currentUser = null;
-let profileData = {};
+let currentUser;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-    loadProfile(() => {
-      prefillAddress();
-      loadRequests();
-      loadQuotes();
-      loadInvoices();
-    });
+    loadRequests();
+    loadQuotes();
+    loadInvoices();
   } else {
     window.location.href = "login.html";
   }
 });
-
-function loadProfile(callback) {
-  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-    if (doc.exists) {
-      profileData = doc.data();
-      callback();
-    }
-  });
-}
-
-function prefillAddress() {
-  document.getElementById("street").value = profileData.street || '';
-  document.getElementById("city").value = profileData.city || '';
-  document.getElementById("state").value = profileData.state || '';
-  document.getElementById("zip").value = profileData.zip || '';
-}
-
-function toggleAddressEdit() {
-  const editable = document.getElementById("editAddressToggle").checked;
-  ["street", "city", "state", "zip"].forEach(id => {
-    document.getElementById(id).readOnly = !editable;
-  });
-}
 
 function submitRequest(e) {
   e.preventDefault();
@@ -174,33 +142,32 @@ function submitRequest(e) {
     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   db.collection("service_requests").add(data).then(() => {
-    document.getElementById("successBanner").style.display = "block";
+    alert("✅ Request submitted.");
     e.target.reset();
-    toggleAddressEdit(); // reset address fields to readonly
-    prefillAddress(); // refill them with default
     loadRequests();
-    setTimeout(() => document.getElementById("successBanner").style.display = "none", 4000);
   });
 }
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.serviceType}</td>
-          <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
-          <td>${r.status}</td>
-          <td>${address}</td>
-          <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
-        </tr>`;
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+      snapshot.forEach(doc => {
+        const r = doc.data();
+        const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+        const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+        tbody.innerHTML += `
+          <tr>
+            <td>${r.serviceType}</td>
+            <td>${date}</td>
+            <td>${r.status}</td>
+            <td>${address}</td>
+            <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+          </tr>`;
+      });
     });
-  });
 }
 
 function deleteRequest(id) {
