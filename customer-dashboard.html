@@ -11,51 +11,70 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- ✅ PayPal -->
+  <!-- ✅ PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
 
-  <!-- ✅ Embedded CSS -->
+  <!-- ✅ Holliday's Lawn & Garden Green Theme Styles -->
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #f4f9f4;
       padding: 20px;
-      background: #fdfdfd;
       color: #222;
     }
+
     h1, h2, h3 {
-      color: #2b6e44;
+      color: #228B22;
+      margin-bottom: 10px;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
       margin: 10px 0 20px;
     }
+
     th, td {
       border: 1px solid #ccc;
-      padding: 8px;
+      padding: 10px;
       text-align: left;
     }
+
     th {
-      background-color: #f2f2f2;
+      background-color: #e6f2e6;
+      color: #228B22;
     }
+
     tr:nth-child(even) {
-      background-color: #fafafa;
+      background-color: #f8fcf8;
     }
+
     input, textarea, button {
-      margin: 5px;
-      padding: 6px 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      margin: 5px 0;
+      padding: 8px 12px;
       font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
+
+    input, textarea {
+      width: 100%;
+      max-width: 400px;
+    }
+
     button {
-      background-color: #2b6e44;
+      background-color: #228B22;
       color: white;
+      font-weight: bold;
       cursor: pointer;
+      border: none;
+      transition: background-color 0.2s ease-in-out;
     }
+
     button:hover {
-      background-color: #205634;
+      background-color: #1a731a;
     }
+
     .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -63,14 +82,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 999;
     }
+
     .modal-content {
       background: white;
       padding: 20px;
       width: 90%;
       max-width: 500px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .close {
+      background-color: #999;
+      margin-top: 10px;
+    }
+
+    .close:hover {
+      background-color: #666;
     }
   </style>
 </head>
@@ -125,7 +155,6 @@
   const db = firebase.firestore();
   let currentUser;
   let selectedInvoice = null;
-  let userProfile = {};
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
@@ -137,6 +166,26 @@
       window.location.href = "login.html";
     }
   });
+
+  function submitRequest(e) {
+    e.preventDefault();
+    const data = {
+      email: currentUser.email,
+      serviceType: document.getElementById("serviceType").value,
+      preferredDate: document.getElementById("preferredDate").value,
+      notes: document.getElementById("requestNotes").value,
+      street: document.getElementById("street").value,
+      city: document.getElementById("city").value,
+      state: document.getElementById("state").value,
+      zip: document.getElementById("zip").value,
+      status: "Pending",
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection("service_requests").add(data).then(() => {
+      alert("✅ Request submitted.");
+      e.target.reset();
+    });
+  }
 
   function loadQuotes() {
     const tbody = document.querySelector("#quotesTable tbody");
@@ -237,7 +286,7 @@
   }
 
   function openProfile() {
-    alert("⚠️ Profile editing is not included in this version.");
+    alert("⚠️ Profile editing not included in this version.");
   }
 
   function logout() {
