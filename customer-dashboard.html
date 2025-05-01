@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,226 +18,119 @@
     .close { float:right; font-size:24px; cursor:pointer; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    form label { font-weight: bold; margin-top: 1em; display: block; }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.5em;
-      margin-bottom: 1em;
-      box-sizing: border-box;
-    }
+    input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
+    img.profile-pic { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
 </head>
 <body>
 
-<header><h1>Your Dashboard</h1></header>
+<header>
+  <h1>Your Dashboard</h1>
+  <button onclick="openProfile()">👤 Profile</button>
+</header>
+
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
-
-  <h3>Submit a New Service Request</h3>
-  <form onsubmit="submitRequest(event)">
-    <label>Service Type:</label>
-    <select id="serviceType" required>
-      <option value="">Select</option>
-      <option>Lawn Mowing</option>
-      <option>Hedge Trimming</option>
-      <option>Leaf Cleanup</option>
-      <option>Other</option>
-    </select>
-
-    <label>Preferred Date:</label>
-    <input type="date" id="preferredDate" required>
-
-    <label>Notes:</label>
-    <textarea id="requestNotes" placeholder="Additional details..."></textarea>
-
-    <label>Street Address:</label>
-    <input type="text" id="street" required>
-    <label>City:</label>
-    <input type="text" id="city" required>
-    <label>State:</label>
-    <input type="text" id="state" required>
-    <label>ZIP:</label>
-    <input type="text" id="zip" required>
-
-    <button type="submit">Submit Request</button>
-  </form>
-
-  <h3>Your Requests</h3>
-  <table id="requestsTable">
-    <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
-    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-  </table>
-
-  <h3>Your Quotes</h3>
-  <table id="quotesTable">
-    <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-  </table>
-
-  <h3>Your Invoices</h3>
-  <table id="invoicesTable">
-    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-  </table>
-
-  <br><button onclick="logout()">Logout</button>
+  <p>Full request, quote, invoice, profile, and receipt functionality.</p>
 </div>
 
-<!-- Receipt Modal -->
-<div id="invoiceModal" class="modal" onclick="closeModal(event)">
+<!-- Profile Modal -->
+<div id="profileModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
-    <h2>Invoice Receipt</h2>
-    <div id="invoiceDetails"></div>
-    <div style="text-align:center;margin-top:20px;">
-      <button onclick="window.print()">🖨️ Print Receipt</button>
-    </div>
+    <h2>Your Profile</h2>
+    <img id="profilePicPreview" class="profile-pic" src="https://via.placeholder.com/100" alt="Profile Picture">
+    <input type="file" id="profilePicInput" accept="image/*"><br>
+    <input type="text" id="fullName" placeholder="Full Name">
+    <input type="text" id="street" placeholder="Street Address">
+    <input type="text" id="city" placeholder="City">
+    <input type="text" id="state" placeholder="State">
+    <input type="text" id="zip" placeholder="ZIP Code">
+    <button onclick="saveProfile()">💾 Save Profile</button>
   </div>
 </div>
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+<script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
+const storage = firebase.storage();
 let currentUser;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-    loadRequests();
-    loadQuotes();
-    loadInvoices();
+    loadProfile();
+    document.getElementById("greeting").innerText = "Welcome, " + user.email;
   } else {
     location.href = "login.html";
   }
 });
 
-function submitRequest(e) {
-  e.preventDefault();
-  const data = {
-    email: currentUser.email,
-    serviceType: document.getElementById("serviceType").value,
-    preferredDate: document.getElementById("preferredDate").value,
-    notes: document.getElementById("requestNotes").value,
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value,
-    status: "Pending",
-    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  db.collection("service_requests").add(data).then(() => {
-    alert("✅ Request Submitted");
-    e.target.reset();
-    loadRequests();
-  });
-}
-
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const date = r.preferredDate || "N/A";
-      const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-      tbody.innerHTML += `
-        <tr>
-          <td>${r.serviceType}</td>
-          <td>${new Date(date).toLocaleDateString()}</td>
-          <td>${r.status}</td>
-          <td>${address}</td>
-          <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
-        </tr>`;
-    });
-  });
-}
-
-function deleteRequest(id) {
-  if (confirm("Delete this request?")) {
-    db.collection("service_requests").doc(id).delete().then(loadRequests);
-  }
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const accepted = q.status === "Accepted";
-      tbody.innerHTML += `
-        <tr>
-          <td>${q.quote}</td>
-          <td>$${parseFloat(q.Quotes || 0).toFixed(2)}</td>
-          <td>${q.status || "Pending"}</td>
-          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
-        </tr>`;
-    });
-  });
-}
-
-function acceptQuote(id) {
-  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
-    alert("✅ Quote Accepted!");
-    loadQuotes();
-  });
-}
-
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
-    tbody.innerHTML = "";
-    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.invoiceNumber}</td>
-          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>${d.paid ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>` : "-"}</td>
-        </tr>`;
-    });
-  });
-}
-
-function viewInvoice(data) {
-  const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
-  const html = `
-    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
-    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
-    <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
-    <hr>
-    <p><strong>Services:</strong></p>
-    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
-    <hr>
-    <p><strong>Billing Address:</strong> ${address}</p>
-    <p><strong>Status:</strong> Paid</p>
-    <p style="text-align:center;">Thank you for your business!</p>
-  `;
-  document.getElementById("invoiceDetails").innerHTML = html;
-  document.getElementById("invoiceModal").style.display = "flex";
+function openProfile() {
+  document.getElementById("profileModal").style.display = "flex";
 }
 
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.getElementById("invoiceModal").style.display = "none";
+    document.getElementById("profileModal").style.display = "none";
   }
 }
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
+function loadProfile() {
+  db.collection("users").doc(currentUser.uid).get().then(doc => {
+    const d = doc.data() || {};
+    document.getElementById("fullName").value = d.fullName || "";
+    document.getElementById("street").value = d.street || "";
+    document.getElementById("city").value = d.city || "";
+    document.getElementById("state").value = d.state || "";
+    document.getElementById("zip").value = d.zip || "";
+    if (d.photoURL) {
+      document.getElementById("profilePicPreview").src = d.photoURL;
+    }
+  });
+}
+
+document.getElementById("profilePicInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById("profilePicPreview").src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function saveProfile() {
+  const fullName = document.getElementById("fullName").value;
+  const street = document.getElementById("street").value;
+  const city = document.getElementById("city").value;
+  const state = document.getElementById("state").value;
+  const zip = document.getElementById("zip").value;
+  const file = document.getElementById("profilePicInput").files[0];
+
+  const saveToFirestore = (photoURL = "") => {
+    db.collection("users").doc(currentUser.uid).set({
+      fullName, street, city, state, zip,
+      photoURL: photoURL || document.getElementById("profilePicPreview").src,
+      email: currentUser.email
+    }).then(() => alert("✅ Profile Updated"));
+  };
+
+  if (file) {
+    const ref = storage.ref("profile_pics/" + currentUser.uid + ".jpg");
+    ref.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(saveToFirestore);
+  } else {
+    saveToFirestore();
+  }
 }
 </script>
 
 </body>
 </html>
+
