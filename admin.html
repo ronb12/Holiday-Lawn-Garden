@@ -6,6 +6,8 @@
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
     header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
@@ -20,6 +22,7 @@
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .service-row input, .service-row select { flex: 1; }
     .summary { display: flex; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
+    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -32,12 +35,18 @@
     <div>💵 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
   </div>
 
+  <!-- Service Requests -->
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
 
+  <!-- Quotes -->
   <h2>Quotes</h2>
+  <div class="export-buttons">
+    <button onclick="exportQuotesCSV()">📤 Export Quotes (CSV)</button>
+  </div>
   <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead><tbody></tbody></table>
 
+  <!-- Create Invoice -->
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -55,35 +64,47 @@
     <button type="submit">Create Invoice</button>
   </form>
 
+  <!-- Invoices Due -->
   <h2>Invoices Due</h2>
+  <div class="export-buttons">
+    <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
+  </div>
   <table id="invoicesDueTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
 
+  <!-- Paid Invoices -->
   <h2>Paid Invoices</h2>
-  <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead><tbody></tbody></table>
+  <div class="export-buttons">
+    <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
+  </div>
+  <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead><tbody></tbody></table>
 
   <br /><button onclick="logout()">Logout</button>
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- Firebase Scripts -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
-
 <script>
 const db = firebase.firestore();
 let invoiceSequence = 1000;
+let currentUser;
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user?.email === "ronellbradley@bradleyvs.com") {
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) return location.href = "login.html";
+  currentUser = user;
+
+  const roleDoc = await db.collection("users").doc(user.uid).get();
+  if (roleDoc.exists && roleDoc.data().role === "admin") {
     loadServiceRequests();
     loadQuotes();
     loadInvoices();
-    loadStats();
     fetchInvoiceSequence();
     addServiceRow();
   } else {
+    alert("Access denied. Admins only.");
     location.href = "login.html";
   }
 });
@@ -141,7 +162,6 @@ function createInvoice(e) {
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
   const total = services.reduce((sum, s) => sum + s.amount, 0);
-
   const address = {
     street: document.getElementById("street").value,
     city: document.getElementById("city").value,
@@ -155,7 +175,10 @@ function createInvoice(e) {
     services,
     amountDue: total,
     dueDate: due,
-    address,
+    street: address.street,
+    city: address.city,
+    state: address.state,
+    zip: address.zip,
     paid: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
@@ -247,6 +270,7 @@ function convertQuoteToInvoice(quoteId) {
 function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+
   db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
@@ -255,29 +279,80 @@ function loadInvoices() {
 
     snapshot.forEach(doc => {
       const d = doc.data();
-      const row = `
+      const baseRow = `
         <tr>
           <td>${d.customerEmail}</td>
           <td>${d.invoiceNumber}</td>
           <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
+      `;
+
+      if (d.paid) {
+        paidTotal += d.amountDue;
+        paidTbody.innerHTML += baseRow + `
+          <td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td>
+        </tr>`;
+      } else {
+        dueCount++;
+        dueTbody.innerHTML += baseRow + `
           <td>
-            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
+            <button onclick="markPaid('${doc.id}')">Mark Paid</button>
             <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
         </tr>`;
-      if (d.paid) {
-        paidTotal += d.amountDue;
-        paidTbody.innerHTML += row;
-      } else {
-        dueCount++;
-        dueTbody.innerHTML += row;
       }
     });
 
     document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
     document.getElementById("invoiceCount").innerText = dueCount;
+  });
+}
+
+function downloadInvoice(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(14);
+  doc.text(`Invoice #${data.invoiceNumber}`, 20, 20);
+  doc.text(`Customer: ${data.customerEmail}`, 20, 30);
+  doc.text(`Due: ${data.dueDate}`, 20, 40);
+  doc.text("Services:", 20, 50);
+  let y = 60;
+  (data.services || []).forEach(s => {
+    doc.text(`- ${s.description}: $${s.amount.toFixed(2)}`, 25, y);
+    y += 10;
+  });
+  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 20, y + 10);
+  doc.save(`Invoice-${data.invoiceNumber}.pdf`);
+}
+
+function exportQuotesCSV() {
+  db.collection("quotes").get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "quotes.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function exportInvoicesCSV(showPaid) {
+  db.collection("invoices").where("paid", "==", showPaid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = showPaid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   });
 }
 
@@ -292,8 +367,8 @@ function deleteInvoice(id) {
 }
 
 function loadStats() {
-  // Triggered by other functions — pulls counts and totals
-  loadQuotes(); loadInvoices();
+  loadQuotes();
+  loadInvoices();
 }
 
 function logout() {
