@@ -175,10 +175,7 @@ function createInvoice(e) {
     services,
     amountDue: total,
     dueDate: due,
-    street: address.street,
-    city: address.city,
-    state: address.state,
-    zip: address.zip,
+    ...address,
     paid: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
@@ -219,8 +216,7 @@ function loadServiceRequests() {
             </select>
           </td>
         </tr>`;
-  });
-}
+    });
   });
 }
 
@@ -284,28 +280,26 @@ function loadInvoices() {
 
     snapshot.forEach(doc => {
       const d = doc.data();
-      const baseRow = `
+      const row = `
         <tr>
           <td>${d.customerEmail}</td>
           <td>${d.invoiceNumber}</td>
           <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
-      `;
-
-      if (d.paid) {
-        paidTotal += d.amountDue;
-        paidTbody.innerHTML += baseRow + `
-          <td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td>
-        </tr>`;
-      } else {
-        dueCount++;
-        dueTbody.innerHTML += baseRow + `
           <td>
-            <button onclick="markPaid('${doc.id}')">Mark Paid</button>
-            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+            ${d.paid ? `<button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button>` : `
+              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
+              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+            `}
           </td>
         </tr>`;
+      if (d.paid) {
+        paidTotal += d.amountDue;
+        paidTbody.innerHTML += row;
+      } else {
+        dueCount++;
+        dueTbody.innerHTML += row;
       }
     });
 
