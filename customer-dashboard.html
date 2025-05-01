@@ -2,18 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
   <script src="firebase-init.js"></script>
-  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
   <style>
-    body { font-family: Arial; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
+    body { background: #f4f9f4; font-family: Arial; margin: 0; }
+    header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
     .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
@@ -23,33 +23,109 @@
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
     .close { float: right; font-size: 24px; cursor: pointer; }
-    .paypal-button-container { margin-top: 20px; }
+    .avatar { width: 100px; border-radius: 50%; margin-bottom: 10px; }
+    #profileBtn { float: right; margin: -2.5em 1em 1em 0; background: transparent; border: none; font-size: 24px; cursor: pointer; }
   </style>
 </head>
 <body>
+
 <header>
   <h1>Your Dashboard</h1>
+  <button id="profileBtn" onclick="openProfile()">👤</button>
 </header>
+
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
-  <h3>Your Invoices</h3>
-  <table id="invoicesTable">
-    <thead>
-      <tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>
-    </thead>
+  <h3>Submit a Service Request</h3>
+  <form onsubmit="submitRequest(event)">
+    <label>Service Type:</label>
+    <select id="serviceType" required>
+      <option value="">Select</option>
+      <option>Lawn Mowing</option>
+      <option>Hedge Trimming</option>
+      <option>Leaf Cleanup</option>
+      <option>Other</option>
+    </select>
+
+    <label>Preferred Date:</label>
+    <input type="date" id="preferredDate" required>
+
+    <label>Notes:</label>
+    <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
+
+    <label>Street:</label>
+    <input type="text" id="street" required>
+    <label>City:</label>
+    <input type="text" id="city" required>
+    <label>State:</label>
+    <input type="text" id="state" required>
+    <label>ZIP:</label>
+    <input type="text" id="zip" required>
+
+    <button type="submit">Submit Request</button>
+  </form>
+
+  <h3>Your Service Requests</h3>
+  <table id="requestsTable">
+    <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <div id="paypalModal" class="modal" onclick="closeModal(event)">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal(event)">&times;</span>
-      <h2>Pay Invoice</h2>
-      <div id="paypalButtons"></div>
-    </div>
-  </div>
+  <h3>Your Quotes</h3>
+  <table id="quotesTable">
+    <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+  </table>
+
+  <h3>Your Invoices</h3>
+  <table id="invoicesTable">
+    <thead><tr><th>Invoice #</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
 
   <br><button onclick="logout()">Logout</button>
+</div>
+
+<!-- Modals -->
+<div id="paypalModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Pay Invoice</h2>
+    <div id="paypalButtons"></div>
+  </div>
+</div>
+
+<div id="invoiceModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Invoice Receipt</h2>
+    <div id="invoiceDetails"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <button onclick="window.print()">🖨️ Print Receipt</button>
+    </div>
+  </div>
+</div>
+
+<div id="profileModal" class="modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal(event)">&times;</span>
+    <h2>Your Profile</h2>
+    <div style="text-align:center;">
+      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" class="avatar">
+      <br>
+      <input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)">
+    </div>
+    <label>Street:</label>
+    <input type="text" id="profileStreet">
+    <label>City:</label>
+    <input type="text" id="profileCity">
+    <label>State:</label>
+    <input type="text" id="profileState">
+    <label>ZIP:</label>
+    <input type="text" id="profileZip">
+    <button onclick="saveProfile()">💾 Save</button>
+  </div>
 </div>
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
@@ -57,36 +133,173 @@
 const db = firebase.firestore();
 let currentUser;
 let selectedInvoice = null;
+let userProfile = {};
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+    loadUserProfile();
+    loadRequests();
+    loadQuotes();
     loadInvoices();
   } else {
     window.location.href = "login.html";
   }
 });
 
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get()
+function loadUserProfile() {
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    if (doc.exists) {
+      userProfile = doc.data();
+      ["street", "city", "state", "zip"].forEach(id => {
+        document.getElementById(id).value = userProfile[id] || "";
+        document.getElementById("profile" + capitalize(id)).value = userProfile[id] || "";
+      });
+      if (userProfile.avatarURL) {
+        document.getElementById("avatarImg").src = userProfile.avatarURL;
+      }
+    }
+  });
+}
+
+function saveProfile() {
+  const updated = {
+    street: document.getElementById("profileStreet").value,
+    city: document.getElementById("profileCity").value,
+    state: document.getElementById("profileState").value,
+    zip: document.getElementById("profileZip").value
+  };
+  db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+    alert("✅ Profile updated");
+    loadUserProfile();
+    closeModal({ target: { classList: ['modal'] } });
+  });
+}
+
+function previewAvatar(event) {
+  const img = document.getElementById("avatarImg");
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => img.src = e.target.result;
+    reader.readAsDataURL(file);
+    // Optionally save to Firestore in base64 (not scalable for large files)
+    db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
+  }
+}
+
+function submitRequest(e) {
+  e.preventDefault();
+  const data = {
+    email: currentUser.email,
+    serviceType: document.getElementById("serviceType").value,
+    preferredDate: document.getElementById("preferredDate").value,
+    notes: document.getElementById("requestNotes").value,
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value,
+    status: "Pending",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection("service_requests").add(data).then(() => {
+    alert("✅ Request submitted.");
+    e.target.reset();
+    loadRequests();
+  });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
     .then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
+      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
       snapshot.forEach(doc => {
-        const d = doc.data();
-        const actionBtn = d.paid ? "Paid" : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
+        const r = doc.data();
+        const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+        const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
         tbody.innerHTML += `
           <tr>
-            <td>${d.invoiceNumber}</td>
-            <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-            <td>$${d.amountDue.toFixed(2)}</td>
-            <td>${d.paid ? "Paid" : "Unpaid"}</td>
-            <td>${actionBtn}</td>
+            <td>${r.serviceType}</td>
+            <td>${date}</td>
+            <td>${r.status}</td>
+            <td>${address}</td>
+            <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
           </tr>`;
       });
     });
+}
+
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
+  }
+}
+
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const accepted = q.status === "Accepted";
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.quote}</td>
+          <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
+          <td>${q.status || "Pending"}</td>
+          <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
+        </tr>`;
+    });
+  });
+}
+
+function acceptQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+    alert("✅ Quote accepted!");
+    loadQuotes();
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices found</td></tr>";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const actionBtn = d.paid ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>` : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.invoiceNumber}</td>
+          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td>${actionBtn}</td>
+        </tr>`;
+    });
+  });
+}
+
+function viewInvoice(data) {
+  const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
+  const html = `
+    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+    <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
+    <hr>
+    <p><strong>Services:</strong></p>
+    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+    <hr>
+    <p><strong>Billing Address:</strong> ${address}</p>
+    <p><strong>Status:</strong> Paid</p>
+    <p style="text-align:center;">Thank you for your business!</p>
+  `;
+  document.getElementById("invoiceDetails").innerHTML = html;
+  document.getElementById("invoiceModal").style.display = "flex";
 }
 
 function initiatePay(invoiceId, amount) {
@@ -96,15 +309,11 @@ function initiatePay(invoiceId, amount) {
 }
 
 function renderPayPal(amount) {
-  document.getElementById("paypalButtons").innerHTML = ""; // Clear previous buttons
+  document.getElementById("paypalButtons").innerHTML = "";
   paypal.Buttons({
     createOrder: function(data, actions) {
       return actions.order.create({
-        purchase_units: [{
-          amount: {
-            value: amount.toFixed(2)
-          }
-        }]
+        purchase_units: [{ amount: { value: amount.toFixed(2) } }]
       });
     },
     onApprove: function(data, actions) {
@@ -116,18 +325,30 @@ function renderPayPal(amount) {
         });
       });
     }
-  }).render('#paypalButtons');
+  }).render("#paypalButtons");
+}
+
+function openProfile() {
+  document.getElementById("profileModal").style.display = "flex";
+  if (userProfile?.avatarURL) {
+    document.getElementById("avatarImg").src = userProfile.avatarURL;
+  }
 }
 
 function closeModal(e) {
   if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
-    document.getElementById("paypalModal").style.display = "none";
+    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
   }
 }
 
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 </script>
 </body>
 </html>
+
