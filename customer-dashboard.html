@@ -14,50 +14,29 @@
   <!-- ✅ PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
 
-  <!-- ✅ Holliday's Lawn & Garden Green Theme Styles -->
+  <!-- ✅ Green Theme Styles (Matches Admin Panel) -->
   <style>
     body {
-      font-family: Arial, sans-serif;
       background: #f4f9f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
       padding: 20px;
-      color: #222;
     }
 
     h1, h2, h3 {
       color: #228B22;
-      margin-bottom: 10px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 10px 0 20px;
+    form, .section {
+      margin-bottom: 30px;
     }
 
-    th, td {
+    input, textarea, select {
+      padding: 8px;
       border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #e6f2e6;
-      color: #228B22;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f8fcf8;
-    }
-
-    input, textarea, button {
-      margin: 5px 0;
-      padding: 8px 12px;
+      border-radius: 6px;
+      margin: 6px 0;
       font-size: 14px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    input, textarea {
       width: 100%;
       max-width: 400px;
     }
@@ -66,48 +45,83 @@
       background-color: #228B22;
       color: white;
       font-weight: bold;
-      cursor: pointer;
       border: none;
-      transition: background-color 0.2s ease-in-out;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
     }
 
     button:hover {
-      background-color: #1a731a;
+      background-color: #1a5f1a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+
+    th {
+      background-color: #228B22;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f0f9f0;
     }
 
     .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0, 0, 0, 0.6);
-      display: flex;
+      display: none;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      z-index: 1000;
     }
 
     .modal-content {
       background: white;
       padding: 20px;
+      border-radius: 10px;
       width: 90%;
       max-width: 500px;
-      border-radius: 10px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
     }
 
-    .close {
-      background-color: #999;
-      margin-top: 10px;
-    }
-
-    .close:hover {
-      background-color: #666;
+    .modal img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <h1 id="greeting">Welcome</h1>
 
-  <!-- Submit Service Request -->
+  <!-- ✅ Profile Modal -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <h3>Edit Profile</h3>
+      <input id="profileFullName" placeholder="Full Name" />
+      <input id="profileStreet" placeholder="Street" />
+      <input id="profileCity" placeholder="City" />
+      <input id="profileState" placeholder="State" />
+      <input id="profileZip" placeholder="ZIP Code" />
+      <input type="file" onchange="previewAvatar(event)" />
+      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" />
+      <button onclick="saveProfile()">Save</button>
+      <button onclick="closeModal(event)" class="close">Close</button>
+    </div>
+  </div>
+
+  <!-- ✅ Service Request Form -->
   <form onsubmit="submitRequest(event)">
     <h2>Submit Service Request</h2>
     <input id="serviceType" required placeholder="Service Type" />
@@ -120,46 +134,71 @@
     <button type="submit">Submit</button>
   </form>
 
-  <h2>Your Quotes</h2>
-  <table id="quotesTable">
-    <thead><tr><th>Quote</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <!-- ✅ Service Requests Table -->
+  <div class="section">
+    <h2>Your Service Requests</h2>
+    <table id="requestsTable">
+      <thead>
+        <tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Delete</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <h2>Your Invoices</h2>
-  <table id="invoicesTable">
-    <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <!-- ✅ Quotes Table -->
+  <div class="section">
+    <h2>Your Quotes</h2>
+    <table id="quotesTable">
+      <thead>
+        <tr><th>Quote</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- ✅ Invoices Table -->
+  <div class="section">
+    <h2>Your Invoices</h2>
+    <table id="invoicesTable">
+      <thead>
+        <tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <button onclick="openProfile()">Edit Profile</button>
   <button onclick="logout()">Logout</button>
 
-  <!-- Modals -->
-  <div id="paypalModal" class="modal" style="display:none;">
-    <div class="modal-content">
-      <h3>Complete Payment</h3>
-      <div id="paypalButtons"></div>
-      <button class="close" onclick="closeModal(event)">Cancel</button>
-    </div>
-  </div>
-
-  <div id="invoiceModal" class="modal" style="display:none;">
+  <!-- ✅ Invoice Modal -->
+  <div id="invoiceModal" class="modal">
     <div class="modal-content">
       <h3>Invoice Details</h3>
       <div id="invoiceDetails"></div>
-      <button class="close" onclick="closeModal(event)">Close</button>
+      <button onclick="closeModal(event)" class="close">Close</button>
+    </div>
+  </div>
+
+  <!-- ✅ PayPal Modal -->
+  <div id="paypalModal" class="modal">
+    <div class="modal-content">
+      <h3>Complete Payment</h3>
+      <div id="paypalButtons"></div>
+      <button onclick="closeModal(event)" class="close">Cancel</button>
     </div>
   </div>
 <script>
   const db = firebase.firestore();
   let currentUser;
   let selectedInvoice = null;
+  let userProfile = {};
 
   firebase.auth().onAuthStateChanged(user => {
     if (user) {
       currentUser = user;
       document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+      loadUserProfile();
+      loadRequests();
       loadQuotes();
       loadInvoices();
     } else {
@@ -167,10 +206,56 @@
     }
   });
 
+  function loadUserProfile() {
+    db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+      if (doc.exists) {
+        userProfile = doc.data();
+        ["fullName", "street", "city", "state", "zip"].forEach(id => {
+          const el = document.getElementById("profile" + capitalize(id));
+          if (el) el.value = userProfile[id] || "";
+          const formEl = document.getElementById(id);
+          if (formEl) formEl.value = userProfile[id] || "";
+        });
+        if (userProfile.avatarURL) {
+          document.getElementById("avatarImg").src = userProfile.avatarURL;
+        }
+      }
+    });
+  }
+
+  function saveProfile() {
+    const updated = {
+      fullName: document.getElementById("profileFullName").value,
+      street: document.getElementById("profileStreet").value,
+      city: document.getElementById("profileCity").value,
+      state: document.getElementById("profileState").value,
+      zip: document.getElementById("profileZip").value
+    };
+    db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+      alert("✅ Profile updated");
+      loadUserProfile();
+      closeModal({ target: { classList: ["modal"] } });
+    });
+  }
+
+  function previewAvatar(event) {
+    const img = document.getElementById("avatarImg");
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        img.src = e.target.result;
+        db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   function submitRequest(e) {
     e.preventDefault();
     const data = {
       email: currentUser.email,
+      fullName: userProfile.fullName || "",
       serviceType: document.getElementById("serviceType").value,
       preferredDate: document.getElementById("preferredDate").value,
       notes: document.getElementById("requestNotes").value,
@@ -184,7 +269,36 @@
     db.collection("service_requests").add(data).then(() => {
       alert("✅ Request submitted.");
       e.target.reset();
+      loadRequests();
     });
+  }
+
+  function loadRequests() {
+    const tbody = document.querySelector("#requestsTable tbody");
+    db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
+      .then(snapshot => {
+        tbody.innerHTML = "";
+        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+        snapshot.forEach(doc => {
+          const r = doc.data();
+          const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+          const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+          tbody.innerHTML += `
+            <tr>
+              <td>${r.serviceType}</td>
+              <td>${date}</td>
+              <td>${r.status}</td>
+              <td>${address}</td>
+              <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+            </tr>`;
+        });
+      });
+  }
+
+  function deleteRequest(id) {
+    if (confirm("Delete this request?")) {
+      db.collection("service_requests").doc(id).delete().then(loadRequests);
+    }
   }
 
   function loadQuotes() {
@@ -279,18 +393,22 @@
     }).render("#paypalButtons");
   }
 
+  function openProfile() {
+    document.getElementById("profileModal").style.display = "flex";
+  }
+
   function closeModal(e) {
     if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
       document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
     }
   }
 
-  function openProfile() {
-    alert("⚠️ Profile editing not included in this version.");
-  }
-
   function logout() {
     firebase.auth().signOut().then(() => location.href = "login.html");
+  }
+
+  function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 </script>
 </body>
