@@ -5,16 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard</title>
 
-  <!-- ✅ Firebase SDKs -->
+  <!-- Firebase + PayPal SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
-
-  <!-- ✅ PayPal SDK -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
 
-  <!-- ✅ Green Theme Styles (Matches Admin Panel) -->
+  <!-- Green Theme Style -->
   <style>
     body {
       background: #f4f9f4;
@@ -22,16 +20,10 @@
       margin: 0;
       padding: 20px;
     }
-
     h1, h2, h3 {
       color: #228B22;
     }
-
-    form, .section {
-      margin-bottom: 30px;
-    }
-
-    input, textarea, select {
+    input, select, textarea {
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 6px;
@@ -40,7 +32,6 @@
       width: 100%;
       max-width: 400px;
     }
-
     button {
       background-color: #228B22;
       color: white;
@@ -50,31 +41,25 @@
       padding: 8px 16px;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #1a5f1a;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
     }
-
     th, td {
       padding: 10px;
       border: 1px solid #ccc;
     }
-
     th {
       background-color: #228B22;
       color: white;
     }
-
     tr:nth-child(even) {
       background-color: #f0f9f0;
     }
-
     .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -84,7 +69,6 @@
       justify-content: center;
       z-index: 1000;
     }
-
     .modal-content {
       background: white;
       padding: 20px;
@@ -92,7 +76,6 @@
       width: 90%;
       max-width: 500px;
     }
-
     .modal img {
       width: 80px;
       height: 80px;
@@ -105,7 +88,7 @@
 <body>
   <h1 id="greeting">Welcome</h1>
 
-  <!-- ✅ Profile Modal -->
+  <!-- Profile Modal -->
   <div id="profileModal" class="modal">
     <div class="modal-content">
       <h3>Edit Profile</h3>
@@ -121,10 +104,22 @@
     </div>
   </div>
 
-  <!-- ✅ Service Request Form -->
+  <!-- Submit Request -->
   <form onsubmit="submitRequest(event)">
     <h2>Submit Service Request</h2>
-    <input id="serviceType" required placeholder="Service Type" />
+
+    <!-- ✅ Dropdown Select with Custom Input -->
+    <label for="serviceTypeSelect">Service Type</label>
+    <select id="serviceTypeSelect" onchange="toggleCustomService()">
+      <option value="">Select a Service</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Leaf Removal">Leaf Removal</option>
+      <option value="Mulch Installation">Mulch Installation</option>
+      <option value="Pressure Washing">Pressure Washing</option>
+      <option value="Other">Other (Custom Work)</option>
+    </select>
+    <input id="serviceType" placeholder="Enter custom service..." style="display:none;" />
+
     <input type="date" id="preferredDate" required />
     <textarea id="requestNotes" placeholder="Notes"></textarea>
     <input id="street" placeholder="Street" />
@@ -134,7 +129,7 @@
     <button type="submit">Submit</button>
   </form>
 
-  <!-- ✅ Service Requests Table -->
+  <!-- Requests Table -->
   <div class="section">
     <h2>Your Service Requests</h2>
     <table id="requestsTable">
@@ -145,7 +140,7 @@
     </table>
   </div>
 
-  <!-- ✅ Quotes Table -->
+  <!-- Quotes Table -->
   <div class="section">
     <h2>Your Quotes</h2>
     <table id="quotesTable">
@@ -156,7 +151,7 @@
     </table>
   </div>
 
-  <!-- ✅ Invoices Table -->
+  <!-- Invoices Table -->
   <div class="section">
     <h2>Your Invoices</h2>
     <table id="invoicesTable">
@@ -170,7 +165,7 @@
   <button onclick="openProfile()">Edit Profile</button>
   <button onclick="logout()">Logout</button>
 
-  <!-- ✅ Invoice Modal -->
+  <!-- Invoice Modal -->
   <div id="invoiceModal" class="modal">
     <div class="modal-content">
       <h3>Invoice Details</h3>
@@ -179,7 +174,7 @@
     </div>
   </div>
 
-  <!-- ✅ PayPal Modal -->
+  <!-- PayPal Modal -->
   <div id="paypalModal" class="modal">
     <div class="modal-content">
       <h3>Complete Payment</h3>
@@ -206,57 +201,28 @@
     }
   });
 
-  function loadUserProfile() {
-    db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-      if (doc.exists) {
-        userProfile = doc.data();
-        ["fullName", "street", "city", "state", "zip"].forEach(id => {
-          const el = document.getElementById("profile" + capitalize(id));
-          if (el) el.value = userProfile[id] || "";
-          const formEl = document.getElementById(id);
-          if (formEl) formEl.value = userProfile[id] || "";
-        });
-        if (userProfile.avatarURL) {
-          document.getElementById("avatarImg").src = userProfile.avatarURL;
-        }
-      }
-    });
-  }
-
-  function saveProfile() {
-    const updated = {
-      fullName: document.getElementById("profileFullName").value,
-      street: document.getElementById("profileStreet").value,
-      city: document.getElementById("profileCity").value,
-      state: document.getElementById("profileState").value,
-      zip: document.getElementById("profileZip").value
-    };
-    db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
-      alert("✅ Profile updated");
-      loadUserProfile();
-      closeModal({ target: { classList: ["modal"] } });
-    });
-  }
-
-  function previewAvatar(event) {
-    const img = document.getElementById("avatarImg");
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        img.src = e.target.result;
-        db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
-      };
-      reader.readAsDataURL(file);
+  function toggleCustomService() {
+    const select = document.getElementById("serviceTypeSelect");
+    const custom = document.getElementById("serviceType");
+    if (select.value === "Other") {
+      custom.style.display = "block";
+      custom.required = true;
+    } else {
+      custom.style.display = "none";
+      custom.required = false;
     }
   }
 
   function submitRequest(e) {
     e.preventDefault();
+    const serviceSelect = document.getElementById("serviceTypeSelect");
+    const serviceInput = document.getElementById("serviceType");
+    const finalService = serviceSelect.value === "Other" ? serviceInput.value : serviceSelect.value;
+
     const data = {
       email: currentUser.email,
       fullName: userProfile.fullName || "",
-      serviceType: document.getElementById("serviceType").value,
+      serviceType: finalService,
       preferredDate: document.getElementById("preferredDate").value,
       notes: document.getElementById("requestNotes").value,
       street: document.getElementById("street").value,
@@ -305,10 +271,12 @@
     const tbody = document.querySelector("#quotesTable tbody");
     db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").get().then(snapshot => {
       tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No quotes found</td></tr>";
+      let visibleQuotes = 0;
       snapshot.forEach(doc => {
         const q = doc.data();
+        if (q.status === "Archived") return; // 👈 Skip archived
         const accepted = q.status === "Accepted";
+        visibleQuotes++;
         tbody.innerHTML += `
           <tr>
             <td>${q.quote || "N/A"}</td>
@@ -317,6 +285,9 @@
             <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
           </tr>`;
       });
+      if (visibleQuotes === 0) {
+        tbody.innerHTML = "<tr><td colspan='4'>No quotes available</td></tr>";
+      }
     });
   }
 
@@ -367,12 +338,6 @@
     document.getElementById("invoiceModal").style.display = "flex";
   }
 
-  function initiatePay(invoiceId, amount) {
-    selectedInvoice = invoiceId;
-    document.getElementById("paypalModal").style.display = "flex";
-    renderPayPal(amount);
-  }
-
   function renderPayPal(amount) {
     document.getElementById("paypalButtons").innerHTML = "";
     paypal.Buttons({
@@ -393,14 +358,70 @@
     }).render("#paypalButtons");
   }
 
-  function openProfile() {
-    document.getElementById("profileModal").style.display = "flex";
+  function initiatePay(invoiceId, amount) {
+    selectedInvoice = invoiceId;
+    document.getElementById("paypalModal").style.display = "flex";
+    renderPayPal(amount);
+  }
+
+  function loadUserProfile() {
+    db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+      if (doc.exists) {
+        userProfile = doc.data();
+        ["fullName", "street", "city", "state", "zip"].forEach(id => {
+          const el = document.getElementById("profile" + capitalize(id));
+          if (el) el.value = userProfile[id] || "";
+          const formEl = document.getElementById(id);
+          if (formEl) formEl.value = userProfile[id] || "";
+        });
+        if (userProfile.avatarURL) {
+          document.getElementById("avatarImg").src = userProfile.avatarURL;
+        }
+      }
+    });
+  }
+
+  function saveProfile() {
+    const updated = {
+      fullName: document.getElementById("profileFullName").value,
+      street: document.getElementById("profileStreet").value,
+      city: document.getElementById("profileCity").value,
+      state: document.getElementById("profileState").value,
+      zip: document.getElementById("profileZip").value
+    };
+    db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+      alert("✅ Profile updated");
+      loadUserProfile();
+      closeModal({ target: document.createElement("div") }); // Safe trigger
+    });
+  }
+
+  function previewAvatar(event) {
+    const img = document.getElementById("avatarImg");
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        img.src = e.target.result;
+        db.collection("profiles").doc(currentUser.uid).set({ avatarURL: img.src }, { merge: true });
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function closeModal(e) {
-    if (e.target.classList.contains("modal") || e.target.classList.contains("close")) {
+    const target = e.target;
+    if (target && target.classList && typeof target.classList.contains === 'function') {
+      if (target.classList.contains("modal") || target.classList.contains("close")) {
+        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+      }
+    } else {
       document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
     }
+  }
+
+  function openProfile() {
+    document.getElementById("profileModal").style.display = "flex";
   }
 
   function logout() {
