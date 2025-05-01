@@ -1,3 +1,4 @@
+<!-- Customer Dashboard - Holliday's Lawn & Garden -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -25,10 +27,12 @@
   </style>
 </head>
 <body>
+
 <header><h1>Your Dashboard</h1></header>
 <div class="container">
   <h2 id="greeting">Welcome!</h2>
 
+  <!-- Submit Request -->
   <h3>Submit a Service Request</h3>
   <form onsubmit="submitRequest(event)">
     <label>Service Type:</label>
@@ -47,34 +51,52 @@
     <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
 
     <div style="display: flex; gap: 10px;">
-      <div style="flex: 1;"><label>Street:</label><input type="text" id="street" required></div>
-      <div style="flex: 1;"><label>City:</label><input type="text" id="city" required></div>
+      <div style="flex: 1;">
+        <label>Street:</label>
+        <input type="text" id="street" required>
+      </div>
+      <div style="flex: 1;">
+        <label>City:</label>
+        <input type="text" id="city" required>
+      </div>
     </div>
+
     <div style="display: flex; gap: 10px;">
-      <div style="flex: 1;"><label>State:</label><input type="text" id="state" required></div>
-      <div style="flex: 1;"><label>ZIP:</label><input type="text" id="zip" required></div>
+      <div style="flex: 1;">
+        <label>State:</label>
+        <input type="text" id="state" required>
+      </div>
+      <div style="flex: 1;">
+        <label>ZIP:</label>
+        <input type="text" id="zip" required>
+      </div>
     </div>
+
     <button type="submit">Submit Request</button>
   </form>
-
+  <!-- Requests Table -->
   <h3>Your Service Requests</h3>
   <table id="requestsTable">
     <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
+  <!-- Quotes Table -->
   <h3>Your Quotes</h3>
   <table id="quotesTable">
     <thead><tr><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
+
+  <!-- Invoices Table -->
   <h3>Your Invoices</h3>
   <table id="invoicesTable">
     <thead><tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
 
-  <br><button onclick="logout()">Logout</button>
+  <br>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <!-- Receipt Modal -->
@@ -103,7 +125,7 @@ firebase.auth().onAuthStateChanged(user => {
     loadQuotes();
     loadInvoices();
   } else {
-    location.href = "login.html";
+    window.location.href = "login.html";
   }
 });
 
