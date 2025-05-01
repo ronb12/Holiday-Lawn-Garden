@@ -5,29 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { background: #f4f9f4; font-family: Arial; margin: 0; }
-    header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
-    .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    header, footer { background-color: #228B22; color: white; text-align: center; padding: 1em; }
+    .container { max-width: 1000px; margin: 2em auto; background: white; padding: 2em; border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; border-radius: 5px; cursor: pointer; }
+    button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
-    .close { float: right; font-size: 24px; cursor: pointer; }
-    .avatar { width: 100px; border-radius: 50%; margin-bottom: 10px; }
-    #profileBtn { float: right; margin: -2.5em 1em 1em 0; background: transparent; border: none; font-size: 24px; cursor: pointer; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal-content { background:white; padding:20px; border-radius:8px; max-width:600px; width:90%; }
+    .close { float:right; font-size:24px; cursor:pointer; }
+    input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
+    .avatar { width: 100px; border-radius: 50%; }
+    #profileBtn { float: right; font-size: 24px; background: none; color: white; border: none; cursor: pointer; }
   </style>
 </head>
 <body>
-
 <header>
   <h1>Your Dashboard</h1>
   <button id="profileBtn" onclick="openProfile()">👤</button>
@@ -46,14 +46,22 @@
       <option>Leaf Cleanup</option>
       <option>Other</option>
     </select>
+
     <label>Preferred Date:</label>
     <input type="date" id="preferredDate" required>
+
     <label>Notes:</label>
     <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
-    <label>Street:</label><input type="text" id="street" required>
-    <label>City:</label><input type="text" id="city" required>
-    <label>State:</label><input type="text" id="state" required>
-    <label>ZIP:</label><input type="text" id="zip" required>
+
+    <label>Street:</label>
+    <input type="text" id="street" required>
+    <label>City:</label>
+    <input type="text" id="city" required>
+    <label>State:</label>
+    <input type="text" id="state" required>
+    <label>ZIP:</label>
+    <input type="text" id="zip" required>
+
     <button type="submit">Submit Request</button>
   </form>
 
@@ -74,7 +82,6 @@
     <thead><tr><th>Invoice #</th><th>Due Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
     <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
   </table>
-
   <br><button onclick="logout()">Logout</button>
 </div>
 
@@ -96,14 +103,19 @@
     <span class="close" onclick="closeModal(event)">&times;</span>
     <h2>Your Profile</h2>
     <div style="text-align:center;">
-      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" class="avatar">
-      <br><input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)">
+      <img id="avatarImg" src="assets/default-avatar.png" class="avatar" />
+      <br><input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)" />
     </div>
-    <label>Full Name:</label><input type="text" id="fullName">
-    <label>Street:</label><input type="text" id="profileStreet">
-    <label>City:</label><input type="text" id="profileCity">
-    <label>State:</label><input type="text" id="profileState">
-    <label>ZIP:</label><input type="text" id="profileZip">
+    <label>Full Name:</label>
+    <input type="text" id="fullName">
+    <label>Street:</label>
+    <input type="text" id="profileStreet">
+    <label>City:</label>
+    <input type="text" id="profileCity">
+    <label>State:</label>
+    <input type="text" id="profileState">
+    <label>ZIP:</label>
+    <input type="text" id="profileZip">
     <button onclick="saveProfile()">💾 Save</button>
   </div>
 </div>
@@ -131,12 +143,12 @@ function loadUserProfile() {
   db.collection("profiles").doc(currentUser.uid).get().then(doc => {
     if (doc.exists) {
       userProfile = doc.data();
+      document.getElementById("fullName").value = userProfile.fullName || "";
       document.getElementById("street").value = userProfile.street || "";
       document.getElementById("city").value = userProfile.city || "";
       document.getElementById("state").value = userProfile.state || "";
       document.getElementById("zip").value = userProfile.zip || "";
 
-      document.getElementById("fullName").value = userProfile.fullName || "";
       document.getElementById("profileStreet").value = userProfile.street || "";
       document.getElementById("profileCity").value = userProfile.city || "";
       document.getElementById("profileState").value = userProfile.state || "";
@@ -157,8 +169,7 @@ function saveProfile() {
     state: document.getElementById("profileState").value,
     zip: document.getElementById("profileZip").value
   };
-
-  db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
+  db.collection("profiles").doc(currentUser.uid).set(updated, { merge: true }).then(() => {
     alert("✅ Profile updated");
     loadUserProfile();
     closeModal({ target: { classList: ['modal'] } });
@@ -166,23 +177,21 @@ function saveProfile() {
 }
 
 function previewAvatar(event) {
-  const img = document.getElementById("avatarImg");
   const file = event.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      img.src = e.target.result;
-      db.collection("profiles").doc(currentUser.uid).set({ avatarURL: e.target.result }, { merge: true });
-    };
-    reader.readAsDataURL(file);
-  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const imgURL = e.target.result;
+    document.getElementById("avatarImg").src = imgURL;
+    db.collection("profiles").doc(currentUser.uid).set({ avatarURL: imgURL }, { merge: true });
+  };
+  if (file) reader.readAsDataURL(file);
 }
 
 function submitRequest(e) {
   e.preventDefault();
   const data = {
-    fullName: userProfile.fullName || "",
     email: currentUser.email,
+    fullName: document.getElementById("fullName").value,
     serviceType: document.getElementById("serviceType").value,
     preferredDate: document.getElementById("preferredDate").value,
     notes: document.getElementById("requestNotes").value,
@@ -202,24 +211,23 @@ function submitRequest(e) {
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
-    .then(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
-      snapshot.forEach(doc => {
-        const r = doc.data();
-        const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-        const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
-        tbody.innerHTML += `
-          <tr>
-            <td>${r.serviceType}</td>
-            <td>${date}</td>
-            <td>${r.status}</td>
-            <td>${address}</td>
-            <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
-          </tr>`;
-      });
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get().then(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+      const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.serviceType}</td>
+          <td>${date}</td>
+          <td>${r.status}</td>
+          <td>${address}</td>
+          <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+        </tr>`;
     });
+  });
 }
 
 function deleteRequest(id) {
@@ -238,7 +246,7 @@ function loadQuotes() {
       const accepted = q.status === "Accepted";
       tbody.innerHTML += `
         <tr>
-          <td>${q.quote}</td>
+          <td>${q.quote || 'N/A'}</td>
           <td>$${parseFloat(q.amount || 0).toFixed(2)}</td>
           <td>${q.status || "Pending"}</td>
           <td>${!accepted ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
@@ -303,9 +311,8 @@ function closeModal(e) {
 }
 
 function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
 }
 </script>
 </body>
 </html>
-
