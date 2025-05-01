@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Account - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <style>
+    body { background: #f4f9f4; font-family: Arial, sans-serif; margin: 0; }
+    header, footer { background-color: #228B22; color: white; padding: 1em; text-align: center; }
     .create-container {
-      max-width: 400px;
+      max-width: 450px;
       margin: 3em auto;
       padding: 2em;
       background: white;
@@ -19,7 +20,7 @@
     input[type="text"], input[type="email"], input[type="password"] {
       width: 90%;
       padding: 0.7em;
-      margin: 1em 0;
+      margin: 0.5em 0;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
@@ -32,67 +33,85 @@
       font-size: 1em;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #006400;
-    }
-    .login-links {
-      margin-top: 1em;
-      font-size: 0.9em;
-    }
-    .login-links a {
-      color: #228B22;
-      text-decoration: none;
-    }
+    button:hover { background-color: #006400; }
+    .login-links { margin-top: 1em; font-size: 0.9em; }
+    .login-links a { color: #228B22; text-decoration: none; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
 </head>
 <body>
 
-  <header>
-    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="services.html">Services</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="login.html">Login</a>
-    </nav>
-    <p>Create Your Account</p>
-  </header>
+<header>
+  <h1>Create Account</h1>
+</header>
 
-  <main>
-    <div class="create-container fade-in">
-      <h2>Create Account</h2>
-      <form action="dashboard.html" method="GET"> <!-- In real site, this saves to database -->
-        <input type="text" name="name" placeholder="Full Name" required><br>
-        <input type="email" name="email" placeholder="Email Address" required><br>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
-        <button type="submit">Create Account</button>
-      </form>
-      <div class="login-links">
-        <p>Already have an account? <a href="login.html">Login here</a>.</p>
-      </div>
+<main>
+  <div class="create-container fade-in">
+    <form onsubmit="register(event)">
+      <input type="text" id="fullName" placeholder="Full Name" required><br>
+      <input type="email" id="email" placeholder="Email Address" required><br>
+      <input type="password" id="password" placeholder="Password" required><br>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required><br>
+      <hr>
+      <input type="text" id="street" placeholder="Street Address" required><br>
+      <input type="text" id="city" placeholder="City" required><br>
+      <input type="text" id="state" placeholder="State" required><br>
+      <input type="text" id="zip" placeholder="ZIP Code" required><br>
+      <button type="submit">Create Account</button>
+    </form>
+    <div class="login-links">
+      <p>Already have an account? <a href="login.html">Login here</a>.</p>
     </div>
-  </main>
+  </div>
+</main>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-  </footer>
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
 
-  <script>
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
+<script>
+  async function register(e) {
+    e.preventDefault();
+    const name = document.getElementById("fullName").value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const street = document.getElementById("street").value;
+    const city = document.getElementById("city").value;
+    const state = document.getElementById("state").value;
+    const zip = document.getElementById("zip").value;
+
+    if (pass !== confirm) {
+      alert("❌ Passwords do not match.");
+      return;
+    }
+
+    try {
+      const userCred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+      const uid = userCred.user.uid;
+
+      await firebase.firestore().collection("users").doc(uid).set({
+        fullName: name,
+        email,
+        address: {
+          street,
+          city,
+          state,
+          zip
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
       });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.fade-in').forEach(section => {
-      observer.observe(section);
-    });
-  </script>
+
+      alert("✅ Account created successfully!");
+      window.location.href = "customer-dashboard.html";
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+</script>
 
 </body>
 </html>
-
