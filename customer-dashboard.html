@@ -22,7 +22,6 @@
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; }
     .close { float: right; font-size: 24px; cursor: pointer; }
-    input, select, textarea { width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box; }
     .avatar { width: 100px; border-radius: 50%; margin-bottom: 10px; }
     #profileBtn { float: right; margin: -2.5em 1em 1em 0; background: transparent; border: none; font-size: 24px; cursor: pointer; }
   </style>
@@ -47,24 +46,17 @@
       <option>Leaf Cleanup</option>
       <option>Other</option>
     </select>
-
     <label>Preferred Date:</label>
     <input type="date" id="preferredDate" required>
-
     <label>Notes:</label>
     <textarea id="requestNotes" placeholder="Any additional notes..."></textarea>
-
-    <label>Street:</label>
-    <input type="text" id="street" required>
-    <label>City:</label>
-    <input type="text" id="city" required>
-    <label>State:</label>
-    <input type="text" id="state" required>
-    <label>ZIP:</label>
-    <input type="text" id="zip" required>
-
+    <label>Street:</label><input type="text" id="street" required>
+    <label>City:</label><input type="text" id="city" required>
+    <label>State:</label><input type="text" id="state" required>
+    <label>ZIP:</label><input type="text" id="zip" required>
     <button type="submit">Submit Request</button>
   </form>
+
   <h3>Your Requests</h3>
   <table id="requestsTable">
     <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Action</th></tr></thead>
@@ -86,7 +78,7 @@
   <br><button onclick="logout()">Logout</button>
 </div>
 
-<!-- Invoice Modal -->
+<!-- Modals -->
 <div id="invoiceModal" class="modal" onclick="closeModal(event)">
   <div class="modal-content">
     <span class="close" onclick="closeModal(event)">&times;</span>
@@ -104,21 +96,17 @@
     <span class="close" onclick="closeModal(event)">&times;</span>
     <h2>Your Profile</h2>
     <div style="text-align:center;">
-      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" class="avatar"><br>
-      <input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)">
+      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" class="avatar">
+      <br><input type="file" id="avatarUpload" accept="image/*" onchange="previewAvatar(event)">
     </div>
-    <label>Street:</label>
-    <input type="text" id="profileStreet">
-    <label>City:</label>
-    <input type="text" id="profileCity">
-    <label>State:</label>
-    <input type="text" id="profileState">
-    <label>ZIP:</label>
-    <input type="text" id="profileZip">
+    <label>Full Name:</label><input type="text" id="fullName">
+    <label>Street:</label><input type="text" id="profileStreet">
+    <label>City:</label><input type="text" id="profileCity">
+    <label>State:</label><input type="text" id="profileState">
+    <label>ZIP:</label><input type="text" id="profileZip">
     <button onclick="saveProfile()">💾 Save</button>
   </div>
 </div>
-
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
 <script>
@@ -135,7 +123,7 @@ firebase.auth().onAuthStateChanged(user => {
     loadQuotes();
     loadInvoices();
   } else {
-    location.href = "login.html";
+    window.location.href = "login.html";
   }
 });
 
@@ -143,10 +131,17 @@ function loadUserProfile() {
   db.collection("profiles").doc(currentUser.uid).get().then(doc => {
     if (doc.exists) {
       userProfile = doc.data();
-      ['street','city','state','zip'].forEach(key => {
-        document.getElementById(key).value = userProfile[key] || "";
-        document.getElementById("profile" + key.charAt(0).toUpperCase() + key.slice(1)).value = userProfile[key] || "";
-      });
+      document.getElementById("street").value = userProfile.street || "";
+      document.getElementById("city").value = userProfile.city || "";
+      document.getElementById("state").value = userProfile.state || "";
+      document.getElementById("zip").value = userProfile.zip || "";
+
+      document.getElementById("fullName").value = userProfile.fullName || "";
+      document.getElementById("profileStreet").value = userProfile.street || "";
+      document.getElementById("profileCity").value = userProfile.city || "";
+      document.getElementById("profileState").value = userProfile.state || "";
+      document.getElementById("profileZip").value = userProfile.zip || "";
+
       if (userProfile.avatarURL) {
         document.getElementById("avatarImg").src = userProfile.avatarURL;
       }
@@ -156,11 +151,13 @@ function loadUserProfile() {
 
 function saveProfile() {
   const updated = {
+    fullName: document.getElementById("fullName").value,
     street: document.getElementById("profileStreet").value,
     city: document.getElementById("profileCity").value,
     state: document.getElementById("profileState").value,
     zip: document.getElementById("profileZip").value
   };
+
   db.collection("profiles").doc(currentUser.uid).set(updated).then(() => {
     alert("✅ Profile updated");
     loadUserProfile();
@@ -169,19 +166,22 @@ function saveProfile() {
 }
 
 function previewAvatar(event) {
+  const img = document.getElementById("avatarImg");
   const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById("avatarImg").src = e.target.result;
-    db.collection("profiles").doc(currentUser.uid).set({ avatarURL: e.target.result }, { merge: true });
-  };
-  reader.readAsDataURL(file);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      img.src = e.target.result;
+      db.collection("profiles").doc(currentUser.uid).set({ avatarURL: e.target.result }, { merge: true });
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function submitRequest(e) {
   e.preventDefault();
   const data = {
+    fullName: userProfile.fullName || "",
     email: currentUser.email,
     serviceType: document.getElementById("serviceType").value,
     preferredDate: document.getElementById("preferredDate").value,
@@ -191,7 +191,7 @@ function submitRequest(e) {
     state: document.getElementById("state").value,
     zip: document.getElementById("zip").value,
     status: "Pending",
-    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   };
   db.collection("service_requests").add(data).then(() => {
     alert("✅ Request submitted.");
@@ -202,7 +202,7 @@ function submitRequest(e) {
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").get()
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").get()
     .then(snapshot => {
       tbody.innerHTML = "";
       if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
@@ -293,9 +293,6 @@ function viewInvoice(data) {
 
 function openProfile() {
   document.getElementById("profileModal").style.display = "flex";
-  if (userProfile?.avatarURL) {
-    document.getElementById("avatarImg").src = userProfile.avatarURL;
-  }
 }
 
 function closeModal(e) {
@@ -311,3 +308,4 @@ function logout() {
 </script>
 </body>
 </html>
+
