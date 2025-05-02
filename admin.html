@@ -20,17 +20,21 @@
     button:hover { background: #006400; }
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .service-row input, .service-row select { flex: 1; }
-    .summary { display: flex; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
+    .summary { display: flex; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; flex-wrap: wrap; gap: 1em; }
     .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
+
   <div class="summary">
     <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
+    <div>📋 <strong>Service Requests Pending:</strong> <span id="requestCount">0</span></div>
+    <div>🚧 <strong>Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
     <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
-    <div>💵 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+    <div>💰 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+    <div>📉 <strong>Total Outstanding:</strong> $<span id="totalDue">0.00</span></div>
   </div>
 
   <h2>Service Requests</h2>
@@ -64,6 +68,7 @@
     <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
+
   <h2>Paid Invoices</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -77,25 +82,24 @@
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
+<!-- Scripts will begin in Part 2 -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
-let currentUser;
 let invoiceSequence = 1000;
 
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
-  currentUser = user;
-
   const roleDoc = await db.collection("users").doc(user.uid).get();
   if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
     addServiceRow();
     loadInvoices();
     loadServiceRequests();
+    loadQuoteCount();
   } else {
     alert("Access denied. Admins only.");
     location.href = "login.html";
@@ -109,12 +113,7 @@ function fetchInvoiceSequence() {
   });
 }
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
-}
-
 function addServiceRow(desc = "", amt = "") {
-  const container = document.getElementById("serviceList");
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
@@ -129,7 +128,7 @@ function addServiceRow(desc = "", amt = "") {
     <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
-  container.appendChild(row);
+  document.getElementById("serviceList").appendChild(row);
   calcTotal();
 }
 
@@ -152,7 +151,6 @@ function createInvoice(e) {
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
-
   const total = services.reduce((sum, s) => sum + s.amount, 0);
   const address = {
     street: document.getElementById("street").value,
@@ -185,10 +183,10 @@ function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
 
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
+  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
-    let paidTotal = 0, dueCount = 0;
+    let paidTotal = 0, dueCount = 0, outstanding = 0;
 
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -205,13 +203,89 @@ function loadInvoices() {
         paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>View</button></td></tr>`;
       } else {
         dueCount++;
+        outstanding += d.amountDue;
         dueTbody.innerHTML += row + `<td><button onclick="markPaid('${doc.id}')">Mark Paid</button> <button onclick="deleteInvoice('${doc.id}')">Delete</button></td></tr>`;
       }
     });
 
     document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
     document.getElementById("invoiceCount").innerText = dueCount;
+    document.getElementById("totalDue").innerText = outstanding.toFixed(2);
   });
+}
+
+function loadServiceRequests() {
+  const tbody = document.querySelector("#serviceRequestsTable tbody");
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    let pending = 0;
+    let inProgress = 0;
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.status === "Pending") pending++;
+      if (d.status === "In Progress") inProgress++;
+
+      const row = `
+        <tr>
+          <td>${d.fullName || ""}</td>
+          <td>${d.email}</td>
+          <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
+          <td>${d.serviceType || ""}</td>
+          <td>${d.status}</td>
+          <td>
+            <select onchange="updateRequestStatus('${doc.id}', this.value)">
+              <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
+            </select>
+          </td>
+        </tr>`;
+      tbody.innerHTML += row;
+    });
+
+    document.getElementById("requestCount").innerText = pending;
+    document.getElementById("inProgressCount").innerText = inProgress;
+  });
+}
+
+function loadQuoteCount() {
+  db.collection("quotes").where("status", "==", "Pending").onSnapshot(snapshot => {
+    document.getElementById("quoteCount").innerText = snapshot.size;
+  });
+}
+
+function updateRequestStatus(id, status) {
+  db.collection("service_requests").doc(id).update({ status });
+}
+
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
+}
+
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 
 function downloadInvoice(data) {
@@ -263,6 +337,7 @@ function finalizeInvoicePDF(doc, data) {
 
   doc.setFont("helvetica", "bold");
   doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.text("Thank you for your business!", 15, y + 25);
@@ -271,61 +346,6 @@ function finalizeInvoicePDF(doc, data) {
   const url = URL.createObjectURL(blob);
   const win = window.open(url, "_blank");
   win.onload = () => win.print();
-}
-
-function exportInvoicesCSV(paid) {
-  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
-    const rows = [];
-    snapshot.forEach(doc => rows.push(doc.data()));
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
-}
-
-function loadServiceRequests() {
-  const tbody = document.querySelector("#serviceRequestsTable tbody");
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const row = `
-        <tr>
-          <td>${d.fullName || ""}</td>
-          <td>${d.email}</td>
-          <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
-          <td>${d.serviceType || ""}</td>
-          <td>${d.status}</td>
-          <td>
-            <select onchange="updateRequestStatus('${doc.id}', this.value)">
-              <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
-              <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
-              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
-            </select>
-          </td>
-        </tr>`;
-      tbody.innerHTML += row;
-    });
-  });
-}
-
-function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status });
 }
 </script>
 </body>
