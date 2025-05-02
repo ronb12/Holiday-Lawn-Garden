@@ -35,19 +35,13 @@
   </div>
 
   <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
 
   <h2>Quotes</h2>
   <div class="export-buttons">
     <button onclick="exportQuotesCSV()">📤 Export Quotes (CSV)</button>
   </div>
-  <table id="quotesTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead><tbody></tbody></table>
 
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -70,19 +64,13 @@
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
   </div>
-  <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="invoicesDueTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
 
   <h2>Paid Invoices</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
   </div>
-  <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead><tbody></tbody></table>
 
   <br /><button onclick="logout()">Logout</button>
 </main>
@@ -100,7 +88,6 @@ let invoiceSequence = 1000;
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
-
   const roleDoc = await db.collection("users").doc(user.uid).get();
   if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
@@ -291,7 +278,6 @@ function loadInvoices() {
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
       `;
-
       if (d.paid) {
         paidTotal += d.amountDue;
         paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td></tr>`;
@@ -309,23 +295,21 @@ function loadInvoices() {
 function downloadInvoice(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  const base64Logo = "data:image/png;base64,..." // <-- Replace with your real base64 logo
 
-  const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."; // Replace with real base64 from earlier
-
-  doc.addImage(logoBase64, "PNG", 15, 10, 30, 30);
+  doc.addImage(base64Logo, "PNG", 15, 10, 30, 30);
   doc.setFontSize(16);
   doc.setTextColor(34, 139, 34);
   doc.text("Holliday's Lawn & Garden", 50, 20);
-
   doc.setFontSize(11);
   doc.setTextColor(0);
+
   const dateStr = new Date(data.createdAt?.seconds * 1000).toLocaleDateString();
   doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
   doc.text(`Customer: ${data.customerEmail}`, 15, 58);
-  doc.text(`Due Date: ${dateStr}`, 15, 66);
-  doc.text(`Address: ${data.street || ""}, ${data.city || ""}, ${data.state || ""} ${data.zip || ""}`, 15, 74);
+  doc.text(`Due Date: ${data.dueDate || dateStr}`, 15, 66);
+  doc.text(`Address: ${data.street}, ${data.city}, ${data.state} ${data.zip}`, 15, 74);
 
-  doc.setFontSize(12);
   doc.setFillColor(34, 139, 34);
   doc.setTextColor(255);
   doc.rect(15, 84, 180, 8, 'F');
