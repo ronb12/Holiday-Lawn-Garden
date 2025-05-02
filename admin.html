@@ -60,7 +60,6 @@
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
     <button type="submit">Create Invoice</button>
   </form>
-
   <h2>Invoices Due</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
@@ -102,6 +101,7 @@ firebase.auth().onAuthStateChanged(async user => {
     location.href = "login.html";
   }
 });
+
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -122,10 +122,7 @@ function loadServiceRequests() {
           <td>${r.fullName || ""}</td>
           <td>${r.email || ""}</td>
           <td>${address}</td>
-          <td>
-            <strong>Service:</strong> ${r.serviceType || "N/A"}<br/>
-            <strong>Notes:</strong> ${r.notes || "None"}
-          </td>
+          <td><strong>Service:</strong> ${r.serviceType || "N/A"}<br/><strong>Notes:</strong> ${r.notes || "None"}</td>
           <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateStatus('${doc.id}', this.value)">
@@ -146,7 +143,6 @@ function updateStatus(id, status) {
       const d = doc.data();
       const amount = prompt("Enter a quote amount for this request:");
       if (!amount || isNaN(amount)) return alert("❌ Invalid amount. Quote not created.");
-
       db.collection("quotes").add({
         ...d,
         createdAt: new Date(),
@@ -172,7 +168,7 @@ function loadQuotes() {
         <tr>
           <td>${q.fullName || "N/A"}</td>
           <td>${q.email || "N/A"}</td>
-          <td>${q.quote || "N/A"}</td>
+          <td>${q.quote || "N/A"} - $${q.amount?.toFixed(2) || "0.00"}</td>
           <td>${date}</td>
           <td><button onclick="convertQuoteToInvoice('${doc.id}')">Convert to Invoice</button></td>
         </tr>`;
