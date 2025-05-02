@@ -241,7 +241,31 @@ function loadServiceRequests() {
 }
 
 function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status });
+  db.collection("service_requests").doc(id).update({ status }).then(() => {
+    if (status === "Completed") {
+      db.collection("service_requests").doc(id).get().then(doc => {
+        const data = doc.data();
+        if (confirm("✅ Marked Completed.\nWould you like to convert this into a quote?")) {
+          db.collection("quotes").add({
+            fullName: data.fullName,
+            email: data.email,
+            serviceType: data.serviceType,
+            address: {
+              street: data.street,
+              city: data.city,
+              state: data.state,
+              zip: data.zip
+            },
+            amount: 0, // Admin will edit later
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            alert("✅ Quote created successfully.");
+            if (typeof loadQuotes === "function") loadQuotes();
+          });
+        }
+      });
+    }
+  });
 }
 
 function loadInvoices() {
