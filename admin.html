@@ -34,10 +34,7 @@
   </div>
 
   <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
 
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -55,30 +52,22 @@
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
     <button type="submit">Create Invoice</button>
   </form>
-
   <h2>Invoices Due</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
   </div>
-  <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="invoicesDueTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
 
   <h2>Paid Invoices</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
   </div>
-  <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead><tbody></tbody></table>
 
   <br /><button onclick="logout()">Logout</button>
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -87,24 +76,21 @@
 const db = firebase.firestore();
 let currentUser;
 let invoiceSequence = 1000;
-</script>
-<script>
-window.onload = () => {
-  firebase.auth().onAuthStateChanged(async user => {
-    if (!user) return location.href = "login.html";
-    currentUser = user;
 
-    const roleDoc = await db.collection("users").doc(user.uid).get();
-    if (roleDoc.exists && roleDoc.data().role === "admin") {
-      fetchInvoiceSequence();
-      addServiceRow();
-      loadInvoices(); // ✅ Fix: This was missing from some builds
-    } else {
-      alert("Access denied. Admins only.");
-      location.href = "login.html";
-    }
-  });
-};
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) return location.href = "login.html";
+  currentUser = user;
+
+  const roleDoc = await db.collection("users").doc(user.uid).get();
+  if (roleDoc.exists && roleDoc.data().role === "admin") {
+    fetchInvoiceSequence();
+    addServiceRow();
+    loadInvoices();
+  } else {
+    alert("Access denied. Admins only.");
+    location.href = "login.html";
+  }
+});
 
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
@@ -123,7 +109,6 @@ function addServiceRow(desc = "", amt = "") {
       <option value="Lawn Mowing">Lawn Mowing</option>
       <option value="Leaf Raking">Leaf Raking</option>
       <option value="Hedge Trimming">Hedge Trimming</option>
-      <option value="Contact Form">Contact Form</option>
       <option value="Custom">Custom</option>
     </select>
     <input type="text" placeholder="Description" value="${desc}" />
@@ -144,28 +129,23 @@ function calcTotal() {
 
 function createInvoice(e) {
   e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value.trim();
+  const email = document.getElementById("invoiceEmail").value;
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt > 0) services.push({ description: desc, amount: amt });
+    if (desc && amt) services.push({ description: desc, amount: amt });
   });
 
   const total = services.reduce((sum, s) => sum + s.amount, 0);
   const address = {
-    street: document.getElementById("street").value.trim(),
-    city: document.getElementById("city").value.trim(),
-    state: document.getElementById("state").value.trim(),
-    zip: document.getElementById("zip").value.trim()
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value
   };
-
-  if (!email || !number || !due || services.length === 0) {
-    alert("Please complete all invoice fields.");
-    return;
-  }
 
   db.collection("invoices").add({
     customerEmail: email,
@@ -194,8 +174,7 @@ function loadInvoices() {
   db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
-    let paidTotal = 0;
-    let dueCount = 0;
+    let paidTotal = 0, dueCount = 0;
 
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -207,7 +186,6 @@ function loadInvoices() {
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
       `;
-
       if (d.paid) {
         paidTotal += d.amountDue;
         paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td></tr>`;
@@ -222,41 +200,13 @@ function loadInvoices() {
   });
 }
 
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
-}
-
-function exportInvoicesCSV(paid) {
-  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
-    const rows = [];
-    snapshot.forEach(doc => rows.push(doc.data()));
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
-}
-
 function downloadInvoice(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  const base64Logo = "data:image/png;base64,..."; // Replace with your base64 logo
 
-  doc.addImage(base64Logo, "PNG", 15, 10, 30, 30);
+  const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIA..."; // 🔁 Replace with actual base64 logo
+
+  doc.addImage(logo, "PNG", 15, 10, 30, 30);
   doc.setFontSize(16);
   doc.setTextColor(34, 139, 34);
   doc.text("Holliday's Lawn & Garden", 50, 20);
@@ -290,6 +240,35 @@ function downloadInvoice(data) {
   doc.text("Thank you for your business!", 15, y + 25);
 
   doc.save(`Invoice-${data.invoiceNumber}.pdf`);
+}
+
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
+
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
 }
 </script>
 </body>
