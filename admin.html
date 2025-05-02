@@ -204,7 +204,7 @@ function downloadInvoice(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
- const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAIAAADwf7zUAAEAAElEQVR4nKT927Ysx40EgEWgDkVSnLH//zPtkSiJ3IXwQwQys6o3Za/lnhHP7mtlAUggcE1KAgAIIOaxnkgg/fzxgffHgH//599osKBGkUJDIAmgKQgliITAgiSAIASUJE";
+const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAAAiC0utAAAgAElEQVR4nOzde5BdV3r/8fcjCyIMZISW7vT1dW13fSu7dkdG3q2pt/UVdUVRWj+I1HFMZsyRRS8uwTVJkLMqUgEZ6CBaXZbJG3XZpbRG/5GjzzPYX7LzjP4z98W9xzh4b5/vM+35v3dOxZMiRJkiRJkiRJkiRJkiRJ0p+AxrILq3UzZnMAAAAASUVORK5CYII=";
 
   doc.addImage(logo, "PNG", 15, 10, 30, 30);
 
