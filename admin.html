@@ -241,7 +241,6 @@ function downloadInvoice(data) {
   doc.text("Thank you for your business!", 15, y + 25);
 
   doc.save(`Invoice-${data.invoiceNumber}.pdf`);
-}
 
   doc.setFont("helvetica", "bold");
   doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
