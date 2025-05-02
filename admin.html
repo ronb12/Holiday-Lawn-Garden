@@ -72,17 +72,19 @@
 <script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
+let currentUser;
 let invoiceSequence = 1000;
 
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
-  const doc = await db.collection("users").doc(user.uid).get();
-  if (doc.exists && doc.data().role === "admin") {
+  currentUser = user;
+  const roleDoc = await db.collection("users").doc(user.uid).get();
+  if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
     addServiceRow();
     loadInvoices();
   } else {
-    alert("Access denied.");
+    alert("Access denied. Admins only.");
     location.href = "login.html";
   }
 });
@@ -93,8 +95,8 @@ function fetchInvoiceSequence() {
     document.getElementById("invoiceNumber").value = invoiceSequence;
   });
 }
-
 function addServiceRow(desc = "", amt = "") {
+  const container = document.getElementById("serviceList");
   const row = document.createElement("div");
   row.className = "service-row";
   row.innerHTML = `
@@ -109,7 +111,7 @@ function addServiceRow(desc = "", amt = "") {
     <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
   `;
-  document.getElementById("serviceList").appendChild(row);
+  container.appendChild(row);
   calcTotal();
 }
 
@@ -133,25 +135,26 @@ function createInvoice(e) {
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
 
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
   const address = {
     street: document.getElementById("street").value,
     city: document.getElementById("city").value,
     state: document.getElementById("state").value,
     zip: document.getElementById("zip").value
   };
-  const amountDue = services.reduce((sum, s) => sum + s.amount, 0);
 
   db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
     services,
-    amountDue,
+    amountDue: total,
     dueDate: due,
     ...address,
     paid: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
-    db.collection("meta").doc("counters").set({ invoice: ++invoiceSequence }, { merge: true });
+    invoiceSequence++;
+    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
     alert("✅ Invoice Created");
     document.getElementById("invoiceForm").reset();
     document.getElementById("serviceList").innerHTML = "";
@@ -164,10 +167,10 @@ function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
 
-  db.collection("invoices").orderBy("dueDate").onSnapshot(snapshot => {
+  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
     paidTbody.innerHTML = "";
-    let totalPaid = 0, invoiceCount = 0;
+    let paidTotal = 0, dueCount = 0;
 
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -177,18 +180,19 @@ function loadInvoices() {
           <td>${d.invoiceNumber}</td>
           <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>`;
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+      `;
       if (d.paid) {
-        totalPaid += d.amountDue;
-        paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td></tr>`;
+        paidTotal += d.amountDue;
+        paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>View/Print</button></td></tr>`;
       } else {
-        invoiceCount++;
+        dueCount++;
         dueTbody.innerHTML += row + `<td><button onclick="markPaid('${doc.id}')">Mark Paid</button> <button onclick="deleteInvoice('${doc.id}')">Delete</button></td></tr>`;
       }
     });
 
-    document.getElementById("totalPaid").innerText = totalPaid.toFixed(2);
-    document.getElementById("invoiceCount").innerText = invoiceCount;
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("invoiceCount").innerText = dueCount;
   });
 }
 
@@ -202,8 +206,13 @@ function downloadInvoice(data) {
   doc.setFontSize(16);
   doc.setTextColor(34, 139, 34);
   doc.text("Holliday's Lawn & Garden", 50, 20);
-  doc.setFontSize(11);
+
+  doc.setFontSize(10);
   doc.setTextColor(0);
+  doc.text("Owner: Karl Holliday", 50, 26);
+  doc.text("Email: 7holliday@gmail.com", 50, 32);
+  doc.text("Phone: 504-717-1887", 50, 38);
+
   const dateStr = new Date(data.createdAt?.seconds * 1000 || Date.now()).toLocaleDateString();
   doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
   doc.text(`Customer: ${data.customerEmail}`, 15, 58);
@@ -226,14 +235,18 @@ function downloadInvoice(data) {
 
   doc.setFont("helvetica", "bold");
   doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.text("Thank you for your business!", 15, y + 25);
 
   const blob = doc.output("blob");
   const url = URL.createObjectURL(blob);
-  const win = window.open(url, "_blank");
-  win.onload = () => win.print();
+  const printWindow = window.open(url, "_blank");
+  printWindow.onload = () => {
+    printWindow.focus();
+    printWindow.print();
+  };
 }
 
 function exportInvoicesCSV(paid) {
@@ -251,6 +264,10 @@ function exportInvoicesCSV(paid) {
   });
 }
 
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
+
 function markPaid(id) {
   db.collection("invoices").doc(id).update({ paid: true });
 }
@@ -259,10 +276,6 @@ function deleteInvoice(id) {
   if (confirm("Delete this invoice?")) {
     db.collection("invoices").doc(id).delete();
   }
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 </body>
