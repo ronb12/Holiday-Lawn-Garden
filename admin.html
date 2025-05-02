@@ -27,6 +27,7 @@
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
+
   <div class="summary">
     <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
     <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -34,12 +35,13 @@
   </div>
 
   <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead>
-      <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
+
+  <h2>Quotes</h2>
+  <div class="export-buttons">
+    <button onclick="exportQuotesCSV()">📤 Export Quotes (CSV)</button>
+  </div>
+  <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead><tbody></tbody></table>
 
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -74,6 +76,7 @@
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
+<!-- Firebase + Logic -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -91,7 +94,7 @@ firebase.auth().onAuthStateChanged(async user => {
   if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
     addServiceRow();
-    loadServiceRequests(); // ✅ FIXED: Now declared correctly in Part 2
+    loadServiceRequests();
     loadQuotes();
     loadInvoices();
   } else {
@@ -99,15 +102,13 @@ firebase.auth().onAuthStateChanged(async user => {
     location.href = "login.html";
   }
 });
-</script>
-<script>
+
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
     document.getElementById("invoiceNumber").value = invoiceSequence;
   });
 }
-
 function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
@@ -138,12 +139,12 @@ function calcTotal() {
 
 function createInvoice(e) {
   e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value.trim();
-  const number = document.getElementById("invoiceNumber").value.trim();
+  const email = document.getElementById("invoiceEmail").value;
+  const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
   const services = [];
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value.trim();
+    const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
@@ -154,11 +155,6 @@ function createInvoice(e) {
     state: document.getElementById("state").value,
     zip: document.getElementById("zip").value
   };
-
-  if (!email || !number || !due || services.length === 0) {
-    alert("❌ Please fill in all fields and add at least one service.");
-    return;
-  }
 
   db.collection("invoices").add({
     customerEmail: email,
@@ -177,18 +173,16 @@ function createInvoice(e) {
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow();
     loadInvoices();
-  }).catch(error => {
-    alert("❌ Error creating invoice: " + error.message);
   });
 }
 
 function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-  if (!tbody) return;
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
+      if (r.status === "Completed") return;
       const address = `${r.street || ""}, ${r.city || ""}, ${r.state || ""} ${r.zip || ""}`;
       tbody.innerHTML += `
         <tr>
@@ -210,23 +204,96 @@ function loadServiceRequests() {
   });
 }
 
-function updateStatus(id, status) {
-  if (status === "Completed") {
-    db.collection("service_requests").doc(id).get().then(doc => {
-      const d = doc.data();
-      const amount = prompt("Enter a quote amount:");
-      if (!amount || isNaN(amount)) return alert("❌ Invalid quote amount.");
-      db.collection("quotes").add({
-        ...d,
-        quote: d.serviceType,
-        amount: parseFloat(amount),
-        createdAt: new Date(),
-        status: "Pending"
-      }).then(() => db.collection("service_requests").doc(id).delete());
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("status", "==", "Pending").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    document.getElementById("quoteCount").innerText = snapshot.size;
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.fullName || "N/A"}</td>
+          <td>${q.email || "N/A"}</td>
+          <td>${q.quote || "N/A"} - $${q.amount?.toFixed(2) || "0.00"}</td>
+          <td>${date}</td>
+          <td><button onclick="convertQuoteToInvoice('${doc.id}')">Convert to Invoice</button></td>
+        </tr>`;
     });
-  } else {
-    db.collection("service_requests").doc(id).update({ status });
-  }
+  });
+}
+
+function convertQuoteToInvoice(quoteId) {
+  db.collection("quotes").doc(quoteId).get().then(doc => {
+    const q = doc.data();
+    document.getElementById("invoiceEmail").value = q.email || "";
+    document.getElementById("street").value = q.street || "";
+    document.getElementById("city").value = q.city || "";
+    document.getElementById("state").value = q.state || "";
+    document.getElementById("zip").value = q.zip || "";
+    document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("invoiceNumber").value = invoiceSequence;
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow(q.quote || "Service", q.amount || 0);
+    db.collection("quotes").doc(quoteId).update({ status: "Archived" });
+  });
+}
+
+function downloadInvoice(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const base64Logo = "data:image/png;base64,..."; // Replace with actual full base64 logo
+
+  doc.addImage(base64Logo, "PNG", 15, 10, 30, 30);
+  doc.setFontSize(16);
+  doc.setTextColor(34, 139, 34);
+  doc.text("Holliday's Lawn & Garden", 50, 20);
+  doc.setFontSize(11);
+  doc.setTextColor(0);
+
+  const dateStr = new Date(data.createdAt?.seconds * 1000).toLocaleDateString();
+  doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
+  doc.text(`Customer: ${data.customerEmail}`, 15, 58);
+  doc.text(`Due Date: ${data.dueDate || dateStr}`, 15, 66);
+  doc.text(`Address: ${data.street}, ${data.city}, ${data.state} ${data.zip}`, 15, 74);
+
+  doc.setFillColor(34, 139, 34);
+  doc.setTextColor(255);
+  doc.rect(15, 84, 180, 8, 'F');
+  doc.text("Description", 20, 90);
+  doc.text("Amount", 180, 90, null, null, "right");
+
+  let y = 98;
+  doc.setTextColor(0);
+  (data.services || []).forEach(s => {
+    doc.text(s.description, 20, y);
+    doc.text(`$${s.amount.toFixed(2)}`, 180, y, null, null, "right");
+    y += 8;
+  });
+
+  doc.setFont("helvetica", "bold");
+  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Thank you for your business!", 15, y + 25);
+
+  doc.save(`Invoice-${data.invoiceNumber}.pdf`);
+}
+
+function exportQuotesCSV() {
+  db.collection("quotes").get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "quotes.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
 }
 
 function exportInvoicesCSV(paid) {
@@ -242,6 +309,10 @@ function exportInvoicesCSV(paid) {
     a.click();
     URL.revokeObjectURL(url);
   });
+}
+
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
 }
 
 function logout() {
