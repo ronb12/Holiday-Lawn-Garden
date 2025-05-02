@@ -110,6 +110,33 @@ function fetchInvoiceSequence() {
     document.getElementById("invoiceNumber").value = invoiceSequence;
   });
 }
+  function loadServiceRequests() {
+  const tbody = document.querySelector("#serviceRequestsTable tbody");
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      if (r.status === "Completed") return;
+      const address = `${r.street || ""}, ${r.city || ""}, ${r.state || ""} ${r.zip || ""}`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.fullName || ""}</td>
+          <td>${r.email || ""}</td>
+          <td>${address}</td>
+          <td><strong>Service:</strong> ${r.serviceType || "N/A"}<br/><strong>Notes:</strong> ${r.notes || "None"}</td>
+          <td>${r.status || "Pending"}</td>
+          <td>
+            <select onchange="updateStatus('${doc.id}', this.value)">
+              <option value="">Change</option>
+              <option value="Approved">Approved</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </td>
+        </tr>`;
+    });
+  });
+}
 
 function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
