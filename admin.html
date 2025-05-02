@@ -10,35 +10,36 @@
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
     header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
-    .admin-container { max-width: 1200px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin: 1em 0; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
     th { background: #228B22; color: white; }
-    input, select, textarea { padding: 0.5em; width: 100%; margin-top: 0.3em; }
+    input, select, textarea { padding: 0.5em; width: 100%; margin-top: 0.3em; border-radius: 5px; border: 1px solid #ccc; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .service-row input, .service-row select { flex: 1; }
-    .summary { display: flex; flex-wrap: wrap; gap: 1em; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
-    .summary > div { flex: 1; min-width: 200px; }
-    .profit-breakdown { background: #f1f8e9; padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+    .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; gap: 10px; }
+    .summary div { flex: 1 1 30%; min-width: 200px; font-size: 0.95em; }
     .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+    .collapsible { background-color: #f1f1f1; cursor: pointer; padding: 10px; width: 100%; text-align: left; border: none; outline: none; border-radius: 5px; }
+    .active, .collapsible:hover { background-color: #ddd; }
+    .content { padding: 10px; display: none; overflow: hidden; background-color: #f9f9f9; border-radius: 5px; margin-top: 5px; }
+    .content label { display: block; margin-top: 0.5em; }
   </style>
 </head>
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
-
   <div class="summary">
     <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
-    <div>📦 <strong>Service Requests Pending:</strong> <span id="requestCount">0</span></div>
-    <div>🔨 <strong>Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
     <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
-    <div>💸 <strong>Outstanding Balance:</strong> $<span id="totalOutstanding">0.00</span></div>
-    <div>📅 <strong>Revenue This Month:</strong> $<span id="monthlyRevenue">0.00</span></div>
-    <div>💵 <strong>Total Paid (All-Time):</strong> $<span id="totalPaid">0.00</span></div>
-    <div>📊 <strong>Revenue This Year:</strong> $<span id="yearlyRevenue">0.00</span></div>
+    <div>💵 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+    <div>📌 <strong>Jobs In Progress:</strong> <span id="jobsInProgress">0</span></div>
+    <div>🕐 <strong>Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
+    <div>📅 <strong>Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
+    <div>💸 <strong>Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
   </div>
 
   <h2>Service Requests</h2>
@@ -49,7 +50,7 @@
 
   <h2>Quotes</h2>
   <table id="quotesTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Amount</th><th>Date</th><th>Convert</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Created</th><th>Action</th></tr></thead>
     <tbody></tbody>
   </table>
 
@@ -66,28 +67,22 @@
     <input type="date" id="invoiceDueDate" required />
     <div id="serviceList"></div>
     <button type="button" onclick="addServiceRow()">+ Add Service</button>
-
-    <details class="profit-breakdown" id="profitSection">
-      <summary>💡 Auto Profit Breakdown</summary>
-      <label>Distance (miles): <input type="number" id="milesDriven" value="15" /></label>
-      <label>Laborers (1-5): <input type="number" id="laborers" value="1" /></label>
-      <p><strong>Estimated Gas:</strong> $<span id="gasEstimate">0.00</span></p>
-      <p><strong>Labor Cost:</strong> $<span id="laborEstimate">0.00</span></p>
-      <p><strong>Profit Margin:</strong> $<span id="profitEstimate">0.00</span></p>
-    </details>
-
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
     <button type="submit">Create Invoice</button>
   </form>
 
-  <!-- CONTINUED IN PART 2 -->
   <h2>Invoices Due</h2>
+  <div class="export-buttons">
+    <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
+  </div>
   <table id="invoicesDueTable">
     <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
-
   <h2>Paid Invoices</h2>
+  <div class="export-buttons">
+    <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
+  </div>
   <table id="invoicesPaidTable">
     <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
     <tbody></tbody>
@@ -113,11 +108,12 @@ firebase.auth().onAuthStateChanged(async user => {
   if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
     addServiceRow();
+    loadInvoices();
     loadServiceRequests();
     loadQuotes();
-    loadInvoices();
+    updateDashboardTotals();
   } else {
-    alert("Access denied. Admins only.");
+    alert("Access denied.");
     location.href = "login.html";
   }
 });
@@ -129,10 +125,6 @@ function fetchInvoiceSequence() {
   });
 }
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
-}
-
 function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
@@ -141,8 +133,8 @@ function addServiceRow(desc = "", amt = "") {
     <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal();">
       <option value="">Select Service</option>
       <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Leaf Raking">Leaf Raking</option>
-      <option value="Hedge Trimming">Hedge Trimming</option>
+      <option value="Shrub Trimming">Shrub Trimming</option>
+      <option value="Pressure Washing">Pressure Washing</option>
       <option value="Custom">Custom</option>
     </select>
     <input type="text" placeholder="Description" value="${desc}" />
@@ -154,21 +146,10 @@ function addServiceRow(desc = "", amt = "") {
 }
 
 function calcTotal() {
-  const miles = parseFloat(document.getElementById("milesDriven").value || 0);
-  const laborers = parseInt(document.getElementById("laborers").value || 1);
-  const gas = (miles * 0.65).toFixed(2); // 65 cents per mile
-  const labor = (laborers * 20).toFixed(2); // $20 per laborer
-  const profit = (parseFloat(gas) + parseFloat(labor) + 30).toFixed(2); // $30 fixed margin
-
-  document.getElementById("gasEstimate").innerText = gas;
-  document.getElementById("laborEstimate").innerText = labor;
-  document.getElementById("profitEstimate").innerText = profit;
-
   let total = 0;
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
     total += parseFloat(row.querySelector("input[type=number]").value || 0);
   });
-
   document.getElementById("totalAmount").innerText = total.toFixed(2);
 }
 
@@ -216,17 +197,13 @@ function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
-    let pending = 0;
-    let inProgress = 0;
-
+    let jobs = 0;
     snapshot.forEach(doc => {
       const d = doc.data();
-      if (d.status === "Pending") pending++;
-      if (d.status === "In Progress") inProgress++;
-
-      tbody.innerHTML += `
+      if (d.status === "In Progress") jobs++;
+      const row = `
         <tr>
-          <td>${d.fullName || ""}</td>
+          <td>${d.fullName}</td>
           <td>${d.email}</td>
           <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
           <td>${d.serviceType}</td>
@@ -235,119 +212,159 @@ function loadServiceRequests() {
             <select onchange="updateRequestStatus('${doc.id}', this.value)">
               <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
               <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
-              <option value="Completed">Completed → Quote</option>
+              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
             </select>
           </td>
         </tr>`;
+      tbody.innerHTML += row;
     });
-
-    document.getElementById("requestCount").innerText = pending;
-    document.getElementById("inProgressCount").innerText = inProgress;
+    document.getElementById("jobsInProgress").innerText = jobs;
   });
 }
 
 function updateRequestStatus(id, status) {
-  if (status === "Completed") {
-    db.collection("service_requests").doc(id).get().then(doc => {
-      const d = doc.data();
-      const quoteAmt = prompt("Enter quote amount:");
-      if (!quoteAmt || isNaN(quoteAmt)) return alert("Invalid amount.");
-
-      db.collection("quotes").add({
-        ...d,
-        amount: parseFloat(quoteAmt),
-        status: "Pending",
-        createdAt: new Date()
-      }).then(() => db.collection("service_requests").doc(id).delete());
-    });
-  } else {
-    db.collection("service_requests").doc(id).update({ status });
-  }
+  db.collection("service_requests").doc(id).update({ status });
 }
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("status", "==", "Pending").onSnapshot(snapshot => {
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
-    document.getElementById("quoteCount").innerText = snapshot.size;
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const date = q.createdAt?.toDate().toLocaleDateString() || "N/A";
-      tbody.innerHTML += `
-        <tr>
-          <td>${q.fullName || "N/A"}</td>
-          <td>${q.email || "N/A"}</td>
-          <td>${q.serviceType || q.quote || ""}</td>
-          <td>$${q.amount?.toFixed(2) || "0.00"}</td>
-          <td>${date}</td>
-          <td><button onclick="convertQuoteToInvoice('${doc.id}')">Invoice</button></td>
-        </tr>`;
-    });
-  });
-}
-
-function convertQuoteToInvoice(quoteId) {
-  db.collection("quotes").doc(quoteId).get().then(doc => {
-    const q = doc.data();
-    document.getElementById("invoiceEmail").value = q.email;
-    document.getElementById("street").value = q.street;
-    document.getElementById("city").value = q.city;
-    document.getElementById("state").value = q.state;
-    document.getElementById("zip").value = q.zip;
-    document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
-    document.getElementById("invoiceNumber").value = invoiceSequence;
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow(q.serviceType || "Custom", q.amount || 0);
-    document.getElementById("profitSection").style.display = "block";
-    db.collection("quotes").doc(quoteId).update({ status: "Archived" });
-  });
-}
-
-function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
-    let paidTotal = 0, dueCount = 0, outstanding = 0;
-    const thisYear = new Date().getFullYear();
-    const thisMonth = new Date().getMonth();
-    let monthly = 0, yearly = 0;
-
+    let count = 0;
     snapshot.forEach(doc => {
       const d = doc.data();
-      const created = d.createdAt?.toDate();
-      const createdYear = created?.getFullYear();
-      const createdMonth = created?.getMonth();
-
+      if (d.status !== "Archived") count++;
+      const date = d.createdAt?.toDate().toLocaleDateString() || "N/A";
       const row = `
         <tr>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-      `;
+          <td>${d.fullName || ""}</td>
+          <td>${d.email || ""}</td>
+          <td>${d.serviceType || "N/A"}</td>
+          <td>$${d.amount?.toFixed(2) || "0.00"}</td>
+          <td>${date}</td>
+          <td><button onclick="convertToInvoice('${doc.id}')">Convert</button></td>
+        </tr>`;
+      tbody.innerHTML += row;
+    });
+    document.getElementById("quoteCount").innerText = count;
+  });
+}
+
+function convertToInvoice(id) {
+  db.collection("quotes").doc(id).get().then(doc => {
+    const d = doc.data();
+    document.getElementById("invoiceEmail").value = d.email || "";
+    document.getElementById("street").value = d.street || "";
+    document.getElementById("city").value = d.city || "";
+    document.getElementById("state").value = d.state || "";
+    document.getElementById("zip").value = d.zip || "";
+    document.getElementById("invoiceNumber").value = invoiceSequence;
+    document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow(d.serviceType || "Service", d.amount || 0);
+    db.collection("quotes").doc(id).update({ status: "Archived" });
+  });
+}
+
+function updateDashboardTotals() {
+  let yearRevenue = 0, monthRevenue = 0, outstanding = 0;
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  db.collection("invoices").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const dt = d.createdAt?.toDate();
+      if (!dt) return;
 
       if (d.paid) {
-        paidTotal += d.amountDue;
-        if (createdYear === thisYear) yearly += d.amountDue;
-        if (createdYear === thisYear && createdMonth === thisMonth) monthly += d.amountDue;
-        paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>View</button></td></tr>`;
+        if (dt.getFullYear() === currentYear) yearRevenue += d.amountDue;
+        if (dt.getMonth() === currentMonth && dt.getFullYear() === currentYear) monthRevenue += d.amountDue;
       } else {
-        dueCount++;
         outstanding += d.amountDue;
-        dueTbody.innerHTML += row + `<td><button onclick="markPaid('${doc.id}')">Mark Paid</button> <button onclick="deleteInvoice('${doc.id}')">Delete</button></td></tr>`;
       }
     });
 
-    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-    document.getElementById("invoiceCount").innerText = dueCount;
-    document.getElementById("monthlyRevenue").innerText = monthly.toFixed(2);
-    document.getElementById("yearlyRevenue").innerText = yearly.toFixed(2);
+    document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
+    document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
     document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
   });
+}
+
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function downloadInvoice(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const logo = "https://raw.githubusercontent.com/ronb12/Holiday-Lawn-Garden/main/assets/Holliday%27s%20Lawn%20%26%20Garden.png";
+  const img = new Image();
+  img.crossOrigin = "Anonymous";
+  img.onload = () => {
+    doc.addImage(img, "PNG", 15, 10, 30, 30);
+    finalizeInvoicePDF(doc, data);
+  };
+  img.onerror = () => finalizeInvoicePDF(doc, data);
+  img.src = logo;
+}
+
+function finalizeInvoicePDF(doc, data) {
+  doc.setFontSize(16);
+  doc.setTextColor(34, 139, 34);
+  doc.text("Holliday's Lawn & Garden", 50, 20);
+  doc.setFontSize(10);
+  doc.setTextColor(0);
+  doc.text("Owner: Karl Holliday", 50, 26);
+  doc.text("Email: 7holliday@gmail.com", 50, 32);
+  doc.text("Phone: 504-717-1887", 50, 38);
+
+  const dateStr = new Date(data.createdAt?.seconds * 1000 || Date.now()).toLocaleDateString();
+  doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
+  doc.text(`Customer: ${data.customerEmail}`, 15, 58);
+  doc.text(`Due Date: ${data.dueDate || dateStr}`, 15, 66);
+  doc.text(`Address: ${data.street}, ${data.city}, ${data.state} ${data.zip}`, 15, 74);
+
+  doc.setFillColor(34, 139, 34);
+  doc.setTextColor(255);
+  doc.rect(15, 84, 180, 8, 'F');
+  doc.text("Description", 20, 90);
+  doc.text("Amount", 180, 90, null, null, "right");
+
+  let y = 98;
+  doc.setTextColor(0);
+  (data.services || []).forEach(s => {
+    doc.text(s.description, 20, y);
+    doc.text(`$${s.amount.toFixed(2)}`, 180, y, null, null, "right");
+    y += 8;
+  });
+
+  doc.setFont("helvetica", "bold");
+  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Thank you for your business!", 15, y + 25);
+
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, "_blank");
+  win.onload = () => win.print();
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 
 function markPaid(id) {
@@ -359,57 +376,7 @@ function deleteInvoice(id) {
     db.collection("invoices").doc(id).delete();
   }
 }
-
-function downloadInvoice(data) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const logo = "https://raw.githubusercontent.com/ronb12/Holiday-Lawn-Garden/main/assets/Holliday%27s%20Lawn%20%26%20Garden.png";
-  const img = new Image();
-  img.crossOrigin = "Anonymous";
-  img.onload = () => {
-    doc.addImage(img, "PNG", 15, 10, 30, 30);
-    finalizeInvoice(doc, data);
-  };
-  img.onerror = () => finalizeInvoice(doc, data);
-  img.src = logo;
-}
-
-function finalizeInvoice(doc, data) {
-  doc.setFontSize(16);
-  doc.setTextColor(34, 139, 34);
-  doc.text("Holliday's Lawn & Garden", 50, 20);
-  doc.setFontSize(10);
-  doc.setTextColor(0);
-  doc.text("Owner: Karl Holliday", 50, 26);
-  doc.text("Email: 7holliday@gmail.com", 50, 32);
-  doc.text("Phone: 504-717-1887", 50, 38);
-  const dateStr = new Date(data.createdAt?.seconds * 1000 || Date.now()).toLocaleDateString();
-  doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
-  doc.text(`Customer: ${data.customerEmail}`, 15, 58);
-  doc.text(`Due Date: ${data.dueDate || dateStr}`, 15, 66);
-  doc.text(`Address: ${data.street}, ${data.city}, ${data.state} ${data.zip}`, 15, 74);
-  doc.setFillColor(34, 139, 34);
-  doc.setTextColor(255);
-  doc.rect(15, 84, 180, 8, 'F');
-  doc.text("Description", 20, 90);
-  doc.text("Amount", 180, 90, null, null, "right");
-  let y = 98;
-  doc.setTextColor(0);
-  (data.services || []).forEach(s => {
-    doc.text(s.description, 20, y);
-    doc.text(`$${s.amount.toFixed(2)}`, 180, y, null, null, "right");
-    y += 8;
-  });
-  doc.setFont("helvetica", "bold");
-  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.text("Thank you for your business!", 15, y + 25);
-  const blob = doc.output("blob");
-  const url = URL.createObjectURL(blob);
-  const win = window.open(url, "_blank");
-  win.onload = () => win.print();
-}
 </script>
 </body>
 </html>
+
