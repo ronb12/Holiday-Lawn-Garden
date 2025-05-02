@@ -1,3 +1,4 @@
+<!-- admin.html (Part 1 of 2) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,17 +20,18 @@
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .service-row input, .service-row select { flex: 1; }
     .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
     .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .search-bar { display: flex; justify-content: flex-end; margin-bottom: 1em; }
     .search-bar input { width: 300px; padding: 0.5em; }
+    .base-rate-warning { color: orange; font-size: 0.9em; margin-top: 5px; }
   </style>
 </head>
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
+
   <div class="summary">
     <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
     <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -53,7 +55,7 @@
     <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
   </div>
   <table id="quotesTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Created</th><th>Status</th><th>Action</th></tr></thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Status</th><th>Action</th></tr></thead>
     <tbody></tbody>
   </table>
 
@@ -84,54 +86,50 @@
     <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
     <button type="submit">Create Invoice</button>
   </form>
-  <h2>Invoices Due</h2>
-  <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <h2>Paid Invoices</h2>
-  <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <br><button onclick="logout()">Logout</button>
-</main>
-<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
 
-firebase.auth().onAuthStateChanged(user => {
-  if (!user) return location.href = "login.html";
-  loadServiceRequests();
-  loadQuotes();
-  loadInvoices();
-});
+// Average base rates by ZIP and service type
+const baseRates = {
+  "701": { "Lawn Mowing": 45, "Leaf Raking": 55, "Hedge Trimming": 60, "Pressure Washing": 80 },
+  "704": { "Lawn Mowing": 50, "Leaf Raking": 60, "Hedge Trimming": 65, "Pressure Washing": 90 },
+  "default": { "Lawn Mowing": 50, "Leaf Raking": 60, "Hedge Trimming": 70, "Pressure Washing": 100 }
+};
 
-// ✅ Archive quote after conversion
-function archiveQuote(id) {
-  db.collection("quotes").doc(id).update({ archived: true }).then(() => {
-    alert("Quote archived.");
-    loadQuotes();
+// Convert completed service request to quote with auto amount
+function updateRequestStatus(id, status) {
+  db.collection("service_requests").doc(id).update({ status }).then(() => {
+    if (status === "Completed") {
+      db.collection("service_requests").doc(id).get().then(doc => {
+        const data = doc.data();
+        if (confirm("✅ Marked Completed.\nWould you like to convert this into a quote?")) {
+          const zipPrefix = (data.zip || "").slice(0, 3);
+          const service = data.serviceType;
+          const rateTable = baseRates[zipPrefix] || baseRates["default"];
+          const baseRate = rateTable[service] || 50;
+          db.collection("quotes").add({
+            fullName: data.fullName,
+            email: data.email,
+            serviceType: service,
+            amount: baseRate,
+            baseRate,
+            notes: data.notes || "",
+            address: {
+              street: data.street, city: data.city, state: data.state, zip: data.zip
+            },
+            archived: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            alert(`✅ Quote created with base rate: $${baseRate}`);
+            loadQuotes();
+          });
+        }
+      });
+    }
   });
 }
 
-// ✅ Filter quotes using search bar
-function filterQuotes() {
-  const term = document.getElementById("quoteSearch").value.toLowerCase();
-  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-    const match = row.getAttribute("data-search").includes(term);
-    row.style.display = match ? "" : "none";
-  });
-}
-
-// ✅ Load Quotes (not archived)
+// Display active quotes with base rate highlight
 function loadQuotes() {
   db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
     const tbody = document.querySelector("#quotesTable tbody");
@@ -140,13 +138,14 @@ function loadQuotes() {
     snapshot.forEach(doc => {
       const q = doc.data();
       const created = q.createdAt?.toDate().toLocaleDateString() || "";
+      const warning = q.amount < q.baseRate ? `<div class="base-rate-warning">⚠ Below base rate ($${q.baseRate})</div>` : "";
       tbody.innerHTML += `
         <tr data-search="${(q.fullName + q.email + q.serviceType).toLowerCase()}">
           <td>${q.fullName}</td>
           <td>${q.email}</td>
           <td>${q.serviceType}</td>
-          <td>$${q.amount.toFixed(2)}</td>
-          <td>${created}</td>
+          <td>$${q.amount.toFixed(2)} ${warning}</td>
+          <td>$${q.baseRate.toFixed(2)}</td>
           <td>${q.archived ? "Archived" : "Active"}</td>
           <td><button onclick="archiveQuote('${doc.id}')">Archive</button></td>
         </tr>`;
@@ -156,7 +155,24 @@ function loadQuotes() {
   });
 }
 
-// ✅ Load service requests with notes
+// Search filter for quotes
+function filterQuotes() {
+  const term = document.getElementById("quoteSearch").value.toLowerCase();
+  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+    const match = row.getAttribute("data-search").includes(term);
+    row.style.display = match ? "" : "none";
+  });
+}
+
+// Archive quote manually
+function archiveQuote(id) {
+  db.collection("quotes").doc(id).update({ archived: true }).then(() => {
+    alert("Quote archived.");
+    loadQuotes();
+  });
+}
+
+// Load service requests with notes
 function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
@@ -183,35 +199,7 @@ function loadServiceRequests() {
   });
 }
 
-// ✅ Convert Completed request to Quote + archive
-function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status }).then(() => {
-    if (status === "Completed") {
-      db.collection("service_requests").doc(id).get().then(doc => {
-        const data = doc.data();
-        if (confirm("✅ Marked Completed.\nWould you like to convert this into a quote?")) {
-          db.collection("quotes").add({
-            fullName: data.fullName,
-            email: data.email,
-            serviceType: data.serviceType,
-            notes: data.notes || "",
-            address: {
-              street: data.street, city: data.city, state: data.state, zip: data.zip
-            },
-            amount: 0,
-            archived: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => {
-            alert("✅ Quote created successfully.");
-            loadQuotes();
-          });
-        }
-      });
-    }
-  });
-}
-
-// ✅ Auto calculate profit
+// Profit Calculation
 function calcProfit() {
   const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
   const miles = parseFloat(document.getElementById("milesInput").value || "0");
@@ -225,45 +213,21 @@ function calcProfit() {
   document.getElementById("gasCost").innerText = `$${gas}`;
   document.getElementById("laborCost").innerText = `$${labor}`;
   document.getElementById("profitMargin").innerText = `$${profit}`;
+
   document.getElementById("profitMargin").style.color = profit < minProfit ? "red" : "green";
 }
 
-// ✅ Total & Service List Update
-function addServiceRow(desc = "", amt = "") {
-  const container = document.getElementById("serviceList");
-  const row = document.createElement("div");
-  row.className = "service-row";
-  row.innerHTML = `
-    <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
-      <option value="">Select Service</option>
-      <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Leaf Raking">Leaf Raking</option>
-      <option value="Hedge Trimming">Hedge Trimming</option>
-      <option value="Pressure Washing">Pressure Washing</option>
-      <option value="Custom">Custom</option>
-    </select>
-    <input type="text" placeholder="Description" value="${desc}" />
-    <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
-    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  `;
-  container.appendChild(row);
-  calcTotal();
-}
-
-function calcTotal() {
-  let total = 0;
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    total += parseFloat(row.querySelector("input[type=number]").value || 0);
-  });
-  document.getElementById("totalAmount").innerText = total.toFixed(2);
-  calcProfit();
-}
-
-// ✅ Logout
+// Logout
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
+
+// Initial load
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return location.href = "login.html";
+  loadServiceRequests();
+  loadQuotes();
+});
 </script>
 </body>
 </html>
-
