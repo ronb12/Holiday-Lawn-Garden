@@ -195,6 +195,47 @@ function convertQuoteToInvoice(quoteId) {
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
+  function loadInvoices() {
+  const dueTbody = document.querySelector("#invoicesDueTable tbody");
+  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+
+  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
+    dueTbody.innerHTML = "";
+    paidTbody.innerHTML = "";
+    let paidTotal = 0;
+    let dueCount = 0;
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const baseRow = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+      `;
+
+      if (d.paid) {
+        paidTotal += d.amountDue;
+        paidTbody.innerHTML += baseRow + `
+          <td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td>
+        </tr>`;
+      } else {
+        dueCount++;
+        dueTbody.innerHTML += baseRow + `
+          <td>
+            <button onclick="markPaid('${doc.id}')">Mark Paid</button>
+            <button onclick="deleteInvoice('${doc.id}')">Delete</button>
+          </td>
+        </tr>`;
+      }
+    });
+
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("invoiceCount").innerText = dueCount;
+  });
+}
 </script>
 </body>
 </html>
