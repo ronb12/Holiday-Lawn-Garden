@@ -1,4 +1,3 @@
-<!-- Part 1 of admin.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,6 +29,8 @@
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
+
+  <!-- Summary -->
   <div class="summary">
     <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
     <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -40,20 +41,21 @@
     <div>📉 <strong>Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
   </div>
 
+  <!-- Service Requests -->
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable">
-    <thead>
-      <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr>
-    </thead>
+    <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead>
     <tbody></tbody>
   </table>
 
+  <!-- Quotes Table -->
   <h2>Quotes</h2>
   <table id="quotesTable">
     <thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Created</th><th>Action</th></tr></thead>
     <tbody></tbody>
   </table>
 
+  <!-- Create Invoice -->
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -68,6 +70,7 @@
     <div id="serviceList"></div>
     <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
+    <!-- Profit Breakdown -->
     <div id="profitBreakdown" class="collapse-section" style="display: none;">
       <strong>💡 Auto Profit Breakdown</strong><br/>
       Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -81,7 +84,7 @@
     <button type="submit">Create Invoice</button>
   </form>
 
-  <!-- Invoices Due and Paid Invoices will appear below -->
+  <!-- Invoices Due -->
   <h2>Invoices Due</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
@@ -91,6 +94,7 @@
     <tbody></tbody>
   </table>
 
+  <!-- Paid Invoices -->
   <h2>Paid Invoices</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -111,6 +115,7 @@
 <script>
 const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
+const MIN_PROFIT = 30; // Guaranteed minimum profit
 
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
@@ -120,8 +125,8 @@ firebase.auth().onAuthStateChanged(async user => {
     fetchInvoiceSequence();
     addServiceRow();
     loadServiceRequests();
-    loadInvoices();
     loadQuotes();
+    loadInvoices();
   } else {
     alert("Access denied.");
     location.href = "login.html";
@@ -171,7 +176,7 @@ function calcProfit() {
   const laborers = parseInt(document.getElementById("laborInput").value || "1");
   const gas = (miles * 0.65).toFixed(2);
   const labor = (laborers * 20).toFixed(2);
-  const profit = Math.max(0, total - gas - labor).toFixed(2);
+  const profit = Math.max(MIN_PROFIT, total - gas - labor).toFixed(2);
   document.getElementById("gasCost").innerText = `$${gas}`;
   document.getElementById("laborCost").innerText = `$${labor}`;
   document.getElementById("profitMargin").innerText = `$${profit}`;
@@ -256,15 +261,49 @@ function updateRequestStatus(id, status) {
               state: data.state,
               zip: data.zip
             },
-            amount: 0, // Admin will edit later
+            amount: 0,
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           }).then(() => {
-            alert("✅ Quote created successfully.");
-            if (typeof loadQuotes === "function") loadQuotes();
+            alert("✅ Quote created.");
+            loadQuotes();
           });
         }
       });
     }
+  });
+}
+
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const created = d.createdAt?.toDate?.().toLocaleDateString() || "";
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.fullName}</td>
+          <td>${d.email}</td>
+          <td>${d.serviceType}</td>
+          <td>$${(d.amount || 0).toFixed(2)}</td>
+          <td>${created}</td>
+          <td><button onclick="createInvoiceFromQuote('${doc.id}')">Convert</button></td>
+        </tr>`;
+    });
+  });
+}
+
+function createInvoiceFromQuote(id) {
+  db.collection("quotes").doc(id).get().then(doc => {
+    const d = doc.data();
+    document.getElementById("invoiceEmail").value = d.email;
+    document.getElementById("street").value = d.address.street;
+    document.getElementById("city").value = d.address.city;
+    document.getElementById("state").value = d.address.state;
+    document.getElementById("zip").value = d.address.zip;
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow(d.serviceType, d.amount);
+    alert("✅ Quote data loaded into invoice form.");
   });
 }
 
@@ -392,10 +431,6 @@ function deleteInvoice(id) {
 
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
-}
-
-function loadQuotes() {
-  // Can be inserted if quote sync table is required.
 }
 </script>
 </body>
