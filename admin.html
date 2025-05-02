@@ -88,3 +88,209 @@ const db = firebase.firestore();
 let currentUser;
 let invoiceSequence = 1000;
 </script>
+<script>
+window.onload = () => {
+  firebase.auth().onAuthStateChanged(async user => {
+    if (!user) return location.href = "login.html";
+    currentUser = user;
+
+    const roleDoc = await db.collection("users").doc(user.uid).get();
+    if (roleDoc.exists && roleDoc.data().role === "admin") {
+      fetchInvoiceSequence();
+      addServiceRow();
+      loadInvoices(); // ✅ Fix: This was missing from some builds
+    } else {
+      alert("Access denied. Admins only.");
+      location.href = "login.html";
+    }
+  });
+};
+
+function fetchInvoiceSequence() {
+  db.collection("meta").doc("counters").get().then(doc => {
+    invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
+    document.getElementById("invoiceNumber").value = invoiceSequence;
+  });
+}
+
+function addServiceRow(desc = "", amt = "") {
+  const container = document.getElementById("serviceList");
+  const row = document.createElement("div");
+  row.className = "service-row";
+  row.innerHTML = `
+    <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal();">
+      <option value="">Select Service</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Leaf Raking">Leaf Raking</option>
+      <option value="Hedge Trimming">Hedge Trimming</option>
+      <option value="Contact Form">Contact Form</option>
+      <option value="Custom">Custom</option>
+    </select>
+    <input type="text" placeholder="Description" value="${desc}" />
+    <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
+    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
+  `;
+  container.appendChild(row);
+  calcTotal();
+}
+
+function calcTotal() {
+  let total = 0;
+  document.querySelectorAll("#serviceList .service-row").forEach(row => {
+    total += parseFloat(row.querySelector("input[type=number]").value || 0);
+  });
+  document.getElementById("totalAmount").innerText = total.toFixed(2);
+}
+
+function createInvoice(e) {
+  e.preventDefault();
+  const email = document.getElementById("invoiceEmail").value.trim();
+  const number = document.getElementById("invoiceNumber").value;
+  const due = document.getElementById("invoiceDueDate").value;
+  const services = [];
+  document.querySelectorAll("#serviceList .service-row").forEach(row => {
+    const desc = row.querySelector("input[type=text]").value;
+    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+    if (desc && amt > 0) services.push({ description: desc, amount: amt });
+  });
+
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
+  const address = {
+    street: document.getElementById("street").value.trim(),
+    city: document.getElementById("city").value.trim(),
+    state: document.getElementById("state").value.trim(),
+    zip: document.getElementById("zip").value.trim()
+  };
+
+  if (!email || !number || !due || services.length === 0) {
+    alert("Please complete all invoice fields.");
+    return;
+  }
+
+  db.collection("invoices").add({
+    customerEmail: email,
+    invoiceNumber: number,
+    services,
+    amountDue: total,
+    dueDate: due,
+    ...address,
+    paid: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    invoiceSequence++;
+    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+    alert("✅ Invoice Created");
+    document.getElementById("invoiceForm").reset();
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow();
+    loadInvoices();
+  });
+}
+
+function loadInvoices() {
+  const dueTbody = document.querySelector("#invoicesDueTable tbody");
+  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+
+  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
+    dueTbody.innerHTML = "";
+    paidTbody.innerHTML = "";
+    let paidTotal = 0;
+    let dueCount = 0;
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const row = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+      `;
+
+      if (d.paid) {
+        paidTotal += d.amountDue;
+        paidTbody.innerHTML += row + `<td><button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button></td></tr>`;
+      } else {
+        dueCount++;
+        dueTbody.innerHTML += row + `<td><button onclick="markPaid('${doc.id}')">Mark Paid</button> <button onclick="deleteInvoice('${doc.id}')">Delete</button></td></tr>`;
+      }
+    });
+
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("invoiceCount").innerText = dueCount;
+  });
+}
+
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
+}
+
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
+
+function downloadInvoice(data) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const base64Logo = "data:image/png;base64,..."; // Replace with your base64 logo
+
+  doc.addImage(base64Logo, "PNG", 15, 10, 30, 30);
+  doc.setFontSize(16);
+  doc.setTextColor(34, 139, 34);
+  doc.text("Holliday's Lawn & Garden", 50, 20);
+  doc.setFontSize(11);
+  doc.setTextColor(0);
+
+  const dateStr = new Date(data.createdAt?.seconds * 1000).toLocaleDateString();
+  doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
+  doc.text(`Customer: ${data.customerEmail}`, 15, 58);
+  doc.text(`Due Date: ${data.dueDate || dateStr}`, 15, 66);
+  doc.text(`Address: ${data.street}, ${data.city}, ${data.state} ${data.zip}`, 15, 74);
+
+  doc.setFillColor(34, 139, 34);
+  doc.setTextColor(255);
+  doc.rect(15, 84, 180, 8, 'F');
+  doc.text("Description", 20, 90);
+  doc.text("Amount", 180, 90, null, null, "right");
+
+  let y = 98;
+  doc.setTextColor(0);
+  (data.services || []).forEach(s => {
+    doc.text(s.description, 20, y);
+    doc.text(`$${s.amount.toFixed(2)}`, 180, y, null, null, "right");
+    y += 8;
+  });
+
+  doc.setFont("helvetica", "bold");
+  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text("Thank you for your business!", 15, y + 25);
+
+  doc.save(`Invoice-${data.invoiceNumber}.pdf`);
+}
+</script>
+</body>
+</html>
