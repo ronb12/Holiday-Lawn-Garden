@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -114,8 +113,7 @@ firebase.auth().onAuthStateChanged(async user => {
     location.href = "login.html";
   }
 });
-</script>
-<script>
+
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -192,7 +190,6 @@ function createInvoice(e) {
 
 function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
-  if (!tbody) return;
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
@@ -240,7 +237,6 @@ function updateStatus(id, status) {
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  if (!tbody) return;
   db.collection("quotes").where("status", "==", "Pending").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     document.getElementById("quoteCount").innerText = snapshot.size;
@@ -278,7 +274,6 @@ function convertQuoteToInvoice(quoteId) {
 function loadInvoices() {
   const dueTbody = document.querySelector("#invoicesDueTable tbody");
   const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-  if (!dueTbody || !paidTbody) return;
 
   db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
     dueTbody.innerHTML = "";
@@ -315,62 +310,54 @@ function downloadInvoice(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Base64 PNG logo (small version)
-  const base64Logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIA..."; // use your real base64
+  const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA..."; // Replace with real base64 from earlier
 
-  doc.addImage(base64Logo, "PNG", 15, 10, 30, 30);
-
-  // Header
-  doc.setFontSize(18);
+  doc.addImage(logoBase64, "PNG", 15, 10, 30, 30);
+  doc.setFontSize(16);
   doc.setTextColor(34, 139, 34);
-  doc.text("Holliday's Lawn & Garden", 105, 20, null, null, "center");
+  doc.text("Holliday's Lawn & Garden", 50, 20);
 
-  doc.setFontSize(12);
-  doc.setTextColor(0);
-  doc.text(`Invoice #${data.invoiceNumber}`, 20, 45);
-  doc.text(`Date: ${new Date(data.createdAt?.toDate?.() || Date.now()).toLocaleDateString()}`, 150, 45);
-
-  // Business Info
-  doc.setFontSize(10);
-  doc.text("Holliday's Lawn & Garden", 20, 55);
-  doc.text("Phone: 504-717-1887", 20, 60);
-  doc.text("Email: 7holliday@gmail.com", 20, 65);
-
-  // Customer Info
-  doc.text("Bill To:", 20, 75);
-  doc.text(`${data.customerEmail}`, 20, 80);
-  doc.text(`${data.street || ""}`, 20, 85);
-  doc.text(`${data.city || ""}, ${data.state || ""} ${data.zip || ""}`, 20, 90);
-
-  // Table Header
-  doc.setFillColor(34, 139, 34);
-  doc.setTextColor(255);
-  doc.rect(20, 100, 170, 8, 'F');
-  doc.text("Description", 25, 106);
-  doc.text("Amount", 185, 106, null, null, "right");
-
-  // Services
-  let y = 115;
   doc.setFontSize(11);
   doc.setTextColor(0);
+  const dateStr = new Date(data.createdAt?.seconds * 1000).toLocaleDateString();
+  doc.text(`Invoice #: ${data.invoiceNumber}`, 15, 50);
+  doc.text(`Customer: ${data.customerEmail}`, 15, 58);
+  doc.text(`Due Date: ${dateStr}`, 15, 66);
+  doc.text(`Address: ${data.street || ""}, ${data.city || ""}, ${data.state || ""} ${data.zip || ""}`, 15, 74);
+
+  doc.setFontSize(12);
+  doc.setFillColor(34, 139, 34);
+  doc.setTextColor(255);
+  doc.rect(15, 84, 180, 8, 'F');
+  doc.text("Description", 20, 90);
+  doc.text("Amount", 180, 90, null, null, "right");
+
+  let y = 98;
+  doc.setTextColor(0);
   (data.services || []).forEach(s => {
-    doc.text(s.description, 25, y);
-    doc.text(`$${s.amount.toFixed(2)}`, 185, y, null, null, "right");
+    doc.text(s.description, 20, y);
+    doc.text(`$${s.amount.toFixed(2)}`, 180, y, null, null, "right");
     y += 8;
   });
 
-  // Total
   doc.setFont("helvetica", "bold");
-  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 185, y + 5, null, null, "right");
-
-  // Footer
+  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 180, y + 10, null, null, "right");
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("Thank you for your business!", 20, y + 20);
+  doc.text("Thank you for your business!", 15, y + 25);
 
   doc.save(`Invoice-${data.invoiceNumber}.pdf`);
 }
 
+function markPaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true });
+}
+
+function deleteInvoice(id) {
+  if (confirm("Delete this invoice?")) {
+    db.collection("invoices").doc(id).delete();
+  }
+}
 
 function exportQuotesCSV() {
   db.collection("quotes").get().then(snapshot => {
@@ -387,8 +374,8 @@ function exportQuotesCSV() {
   });
 }
 
-function exportInvoicesCSV(showPaid) {
-  db.collection("invoices").where("paid", "==", showPaid).get().then(snapshot => {
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
     const rows = [];
     snapshot.forEach(doc => rows.push(doc.data()));
     const csv = Papa.unparse(rows);
@@ -396,20 +383,10 @@ function exportInvoicesCSV(showPaid) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = showPaid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
     a.click();
     URL.revokeObjectURL(url);
   });
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
 }
 
 function logout() {
