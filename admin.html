@@ -35,18 +35,15 @@
     <div>💵 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
   </div>
 
-  <!-- Service Requests -->
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
 
-  <!-- Quotes -->
   <h2>Quotes</h2>
   <div class="export-buttons">
     <button onclick="exportQuotesCSV()">📤 Export Quotes (CSV)</button>
   </div>
   <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead><tbody></tbody></table>
 
-  <!-- Create Invoice -->
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -64,14 +61,12 @@
     <button type="submit">Create Invoice</button>
   </form>
 
-  <!-- Invoices Due -->
   <h2>Invoices Due</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
   </div>
   <table id="invoicesDueTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
 
-  <!-- Paid Invoices -->
   <h2>Paid Invoices</h2>
   <div class="export-buttons">
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -82,15 +77,14 @@
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
 <script>
 const db = firebase.firestore();
-let invoiceSequence = 1000;
 let currentUser;
+let invoiceSequence = 1000;
 
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
@@ -108,84 +102,10 @@ firebase.auth().onAuthStateChanged(async user => {
     location.href = "login.html";
   }
 });
-
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
     document.getElementById("invoiceNumber").value = invoiceSequence;
-  });
-}
-
-function updateInvoiceSequence() {
-  invoiceSequence++;
-  db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-  document.getElementById("invoiceNumber").value = invoiceSequence;
-}
-
-function addServiceRow(desc = "", amt = "") {
-  const container = document.getElementById("serviceList");
-  const row = document.createElement("div");
-  row.className = "service-row";
-  row.innerHTML = `
-    <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal();">
-      <option value="">Select Service</option>
-      <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Leaf Raking">Leaf Raking</option>
-      <option value="Hedge Trimming">Hedge Trimming</option>
-      <option value="Custom">Custom</option>
-    </select>
-    <input type="text" placeholder="Description" value="${desc}" />
-    <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
-    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  `;
-  container.appendChild(row);
-  calcTotal();
-}
-
-function calcTotal() {
-  let total = 0;
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    total += parseFloat(row.querySelector("input[type=number]").value || 0);
-  });
-  document.getElementById("totalAmount").innerText = total.toFixed(2);
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value;
-  const number = document.getElementById("invoiceNumber").value;
-  const due = document.getElementById("invoiceDueDate").value;
-  const services = [];
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value;
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt) services.push({ description: desc, amount: amt });
-  });
-  const total = services.reduce((sum, s) => sum + s.amount, 0);
-  const address = {
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value
-  };
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services,
-    amountDue: total,
-    dueDate: due,
-    ...address,
-    paid: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Invoice Created");
-    updateInvoiceSequence();
-    document.getElementById("invoiceForm").reset();
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow();
-    loadInvoices();
-    loadStats();
   });
 }
 
@@ -224,8 +144,16 @@ function updateStatus(id, status) {
   if (status === "Completed") {
     db.collection("service_requests").doc(id).get().then(doc => {
       const d = doc.data();
-      db.collection("quotes").add({ ...d, createdAt: new Date(), status: "Pending" })
-        .then(() => db.collection("service_requests").doc(id).delete());
+      const amount = prompt("Enter a quote amount for this request:");
+      if (!amount || isNaN(amount)) return alert("❌ Invalid amount. Quote not created.");
+
+      db.collection("quotes").add({
+        ...d,
+        createdAt: new Date(),
+        amount: parseFloat(amount),
+        quote: d.serviceType,
+        status: "Pending"
+      }).then(() => db.collection("service_requests").doc(id).delete());
     });
   } else {
     db.collection("service_requests").doc(id).update({ status });
@@ -263,111 +191,9 @@ function convertQuoteToInvoice(quoteId) {
     document.getElementById("invoiceDueDate").value = new Date().toISOString().split("T")[0];
     document.getElementById("invoiceNumber").value = invoiceSequence;
     document.getElementById("serviceList").innerHTML = "";
-    addServiceRow(q.quote || "Service", "");
+    addServiceRow(q.quote || "Service", q.amount || 0);
     db.collection("quotes").doc(quoteId).update({ status: "Archived" });
   });
-}
-
-function loadInvoices() {
-  const dueTbody = document.querySelector("#invoicesDueTable tbody");
-  const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueTbody.innerHTML = "";
-    paidTbody.innerHTML = "";
-    let paidTotal = 0;
-    let dueCount = 0;
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const row = `
-        <tr>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${d.paid ? `<button onclick='downloadInvoice(${JSON.stringify(d)})'>PDF</button>` : `
-              <button onclick="markPaid('${doc.id}')">Mark Paid</button>
-              <button onclick="deleteInvoice('${doc.id}')">Delete</button>
-            `}
-          </td>
-        </tr>`;
-      if (d.paid) {
-        paidTotal += d.amountDue;
-        paidTbody.innerHTML += row;
-      } else {
-        dueCount++;
-        dueTbody.innerHTML += row;
-      }
-    });
-
-    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-    document.getElementById("invoiceCount").innerText = dueCount;
-  });
-}
-
-function downloadInvoice(data) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFontSize(14);
-  doc.text(`Invoice #${data.invoiceNumber}`, 20, 20);
-  doc.text(`Customer: ${data.customerEmail}`, 20, 30);
-  doc.text(`Due: ${data.dueDate}`, 20, 40);
-  doc.text("Services:", 20, 50);
-  let y = 60;
-  (data.services || []).forEach(s => {
-    doc.text(`- ${s.description}: $${s.amount.toFixed(2)}`, 25, y);
-    y += 10;
-  });
-  doc.text(`Total: $${data.amountDue.toFixed(2)}`, 20, y + 10);
-  doc.save(`Invoice-${data.invoiceNumber}.pdf`);
-}
-
-function exportQuotesCSV() {
-  db.collection("quotes").get().then(snapshot => {
-    const rows = [];
-    snapshot.forEach(doc => rows.push(doc.data()));
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "quotes.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-function exportInvoicesCSV(showPaid) {
-  db.collection("invoices").where("paid", "==", showPaid).get().then(snapshot => {
-    const rows = [];
-    snapshot.forEach(doc => rows.push(doc.data()));
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = showPaid ? "invoices_paid.csv" : "invoices_due.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true });
-}
-
-function deleteInvoice(id) {
-  if (confirm("Delete this invoice?")) {
-    db.collection("invoices").doc(id).delete();
-  }
-}
-
-function loadStats() {
-  loadQuotes();
-  loadInvoices();
 }
 
 function logout() {
