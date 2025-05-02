@@ -34,13 +34,12 @@
   </div>
 
   <h2>Service Requests</h2>
-  <table id="serviceRequestsTable"><thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
-
-  <h2>Quotes</h2>
-  <div class="export-buttons">
-    <button onclick="exportQuotesCSV()">📤 Export Quotes (CSV)</button>
-  </div>
-  <table id="quotesTable"><thead><tr><th>Name</th><th>Email</th><th>Quote</th><th>Created</th><th>Action</th></tr></thead><tbody></tbody></table>
+  <table id="serviceRequestsTable">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Update</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -70,13 +69,16 @@
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
   </div>
   <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Download</th></tr></thead><tbody></tbody></table>
+
   <br /><button onclick="logout()">Logout</button>
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+
 <script>
 const db = firebase.firestore();
 let currentUser;
@@ -89,7 +91,7 @@ firebase.auth().onAuthStateChanged(async user => {
   if (roleDoc.exists && roleDoc.data().role === "admin") {
     fetchInvoiceSequence();
     addServiceRow();
-    loadServiceRequests();
+    loadServiceRequests(); // ✅ FIXED: Now declared correctly in Part 2
     loadQuotes();
     loadInvoices();
   } else {
@@ -97,7 +99,8 @@ firebase.auth().onAuthStateChanged(async user => {
     location.href = "login.html";
   }
 });
-
+</script>
+<script>
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -138,33 +141,35 @@ function createInvoice(e) {
   const email = document.getElementById("invoiceEmail").value.trim();
   const number = document.getElementById("invoiceNumber").value.trim();
   const due = document.getElementById("invoiceDueDate").value;
-  const street = document.getElementById("street").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const state = document.getElementById("state").value.trim();
-  const zip = document.getElementById("zip").value.trim();
-
   const services = [];
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value.trim();
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt > 0) services.push({ description: desc, amount: amt });
+    if (desc && amt) services.push({ description: desc, amount: amt });
   });
-
-  if (!services.length) return alert("Please add at least one valid service.");
-
   const total = services.reduce((sum, s) => sum + s.amount, 0);
-  const invoiceData = {
+  const address = {
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value
+  };
+
+  if (!email || !number || !due || services.length === 0) {
+    alert("❌ Please fill in all fields and add at least one service.");
+    return;
+  }
+
+  db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
     services,
     amountDue: total,
     dueDate: due,
-    street, city, state, zip,
+    ...address,
     paid: false,
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  db.collection("invoices").add(invoiceData).then(() => {
+  }).then(() => {
     invoiceSequence++;
     db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
     alert("✅ Invoice Created");
@@ -172,9 +177,70 @@ function createInvoice(e) {
     document.getElementById("serviceList").innerHTML = "";
     addServiceRow();
     loadInvoices();
-  }).catch(err => {
-    console.error("Invoice creation failed:", err);
-    alert("❌ Failed to create invoice. Check console for details.");
+  }).catch(error => {
+    alert("❌ Error creating invoice: " + error.message);
+  });
+}
+
+function loadServiceRequests() {
+  const tbody = document.querySelector("#serviceRequestsTable tbody");
+  if (!tbody) return;
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const address = `${r.street || ""}, ${r.city || ""}, ${r.state || ""} ${r.zip || ""}`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.fullName || ""}</td>
+          <td>${r.email || ""}</td>
+          <td>${address}</td>
+          <td><strong>Service:</strong> ${r.serviceType || "N/A"}<br/><strong>Notes:</strong> ${r.notes || "None"}</td>
+          <td>${r.status || "Pending"}</td>
+          <td>
+            <select onchange="updateStatus('${doc.id}', this.value)">
+              <option value="">Change</option>
+              <option value="Approved">Approved</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </td>
+        </tr>`;
+    });
+  });
+}
+
+function updateStatus(id, status) {
+  if (status === "Completed") {
+    db.collection("service_requests").doc(id).get().then(doc => {
+      const d = doc.data();
+      const amount = prompt("Enter a quote amount:");
+      if (!amount || isNaN(amount)) return alert("❌ Invalid quote amount.");
+      db.collection("quotes").add({
+        ...d,
+        quote: d.serviceType,
+        amount: parseFloat(amount),
+        createdAt: new Date(),
+        status: "Pending"
+      }).then(() => db.collection("service_requests").doc(id).delete());
+    });
+  } else {
+    db.collection("service_requests").doc(id).update({ status });
+  }
+}
+
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+    const rows = [];
+    snapshot.forEach(doc => rows.push(doc.data()));
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = paid ? "invoices_paid.csv" : "invoices_due.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   });
 }
 
