@@ -204,7 +204,7 @@ function downloadInvoice(data) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAB1UlEQVRYR+2WvW7CMBCEG3FhSFAIQf//a2tTxD9AZLNkDFXeybbSTqNZHnATJBs2fvqRGS4qKtkgAAAAAAAAAAAACAWiHoUqVcE4IXcCT2nXe5C5ivbDDKHqGKtDFGsB7pIBmEOErAfUQeJQ3CrVgcAeEzDL+VCZBa5XwAVKflqR5BBT1YcXJ7VuJeBznUYRxTKUtKZnDWk3IgDTiyPskT8p9soqcw+hVErqqMofYxzXrJbf3zSn/fRtTccZ5jBGKFTG4RRwHSkEWkEJddBXhH2oGdfppnFZs5zELfjlN2sl1vBrC+B4aTtvUnxu7o7nfhzhV9CBeYKvZYBeoBdFb9FK1WA29mrhRXAxjQGdwbduX4gCtdIbG9LZtTT3PXwF7GVjov3SyXZkWGHVYXY8DRbcvxAsvuXMTbN3Hd9hw57Aat3ZTnMyM/lKfS60oyviP7cNoiM3BlS/R+nN3hRnnHwAAAAAAAAAAAAAAAIAn/wBrJtK8++K4fQAAAABJRU5ErkJggg==";
+ const logo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABAAAAAQACAIAAADwf7zUAAEAAElEQVR4nKT927Ysx40EgEWgDkVSnLH//zPtkSiJ3IXwQwQys6o3Za/lnhHP7mtlAUggcE1KAgAIIOaxnkgg/fzxgffHgH//599osKBGkUJDIAmgKQgliITAgiSAIASUJE";
 
   doc.addImage(logo, "PNG", 15, 10, 30, 30);
 
