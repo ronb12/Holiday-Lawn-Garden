@@ -395,6 +395,59 @@ function markInvoicePaid(id) {
 function printInvoice(id) {
   alert("🖨️ This will trigger a printable invoice PDF preview. (PDF logic to be implemented)");
 }
+  // ✅ Create Invoice
+function createInvoice(e) {
+  e.preventDefault();
+
+  const email = document.getElementById("invoiceEmail").value;
+  const number = document.getElementById("invoiceNumber").value;
+  const due = document.getElementById("invoiceDueDate").value;
+  const services = [];
+  const mileage = parseFloat(document.getElementById("milesInput").value || 0);
+  const labor = parseInt(document.getElementById("laborInput").value || 1);
+
+  if (!due) return alert("⚠️ Please select a due date.");
+  if (!email || !number || isNaN(mileage) || isNaN(labor)) return alert("⚠️ Fill out all required fields.");
+
+  document.querySelectorAll("#serviceList .service-row").forEach(row => {
+    const desc = row.querySelector("input[type=text]").value;
+    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+    if (desc && amt > 0) services.push({ description: desc, amount: amt });
+  });
+
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
+  const address = {
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value
+  };
+
+  if (!services.length) return alert("⚠️ Please add at least one service.");
+
+  db.collection("invoices").add({
+    customerEmail: email,
+    invoiceNumber: number,
+    services,
+    amountDue: total,
+    dueDate: due,
+    ...address,
+    mileage,
+    laborers: labor,
+    paid: false,
+    archived: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    invoiceSequence++;
+    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+    alert("✅ Invoice created.");
+    document.getElementById("invoiceForm").reset();
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow();
+    loadInvoices();
+  });
+}
+
 
 </script>
 </body>
