@@ -1,4 +1,3 @@
-<!-- PART 1: HEADER + DASHBOARD STRUCTURE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,30 +9,51 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
-    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    header, footer {
+      background: #228B22; color: white; padding: 1em;
+      text-align: center; position: relative;
+    }
+    .admin-container {
+      max-width: 1100px; margin: auto; padding: 2em;
+      background: white; border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
     h2 { color: #228B22; }
-    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    table {
+      width: 100%; border-collapse: collapse; margin: 1em 0;
+    }
+    th, td {
+      border: 1px solid #ccc; padding: 10px; text-align: left;
+    }
     th { background: #228B22; color: white; }
-    input, select, textarea { padding: 0.5em; width: 100%; margin-top: 0.3em; }
+    input, select, textarea {
+      padding: 0.5em; width: 100%; margin-top: 0.3em;
+    }
     button {
       background: #228B22; color: white; border: none;
       padding: 0.5em 1em; border-radius: 5px; cursor: pointer;
     }
     button:hover { background: #006400; }
-    .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .service-row {
+      display: flex; gap: 10px; margin-bottom: 10px;
+    }
     .service-row input, .service-row select { flex: 1; }
     .summary {
       display: flex; flex-wrap: wrap; justify-content: space-between;
       background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em;
     }
-    .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
-    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+    .summary div {
+      margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px;
+    }
+    .export-buttons {
+      display: flex; justify-content: flex-end;
+      gap: 10px; margin-bottom: 10px;
+    }
     .collapse-section {
       background: #f0fff0; padding: 1em; margin-top: 1em;
       border-left: 5px solid #228B22; border-radius: 5px;
     }
+    .base-rate-warning { color: red; font-weight: bold; }
     #logoutBtn, #notificationBell {
       position: absolute; top: 15px; font-size: 1em;
     }
@@ -42,359 +62,365 @@
   </style>
 </head>
 <body>
-<header>
-  <h1>Admin Dashboard</h1>
-  <span id="notificationBell" onclick="window.location.href='notifications.html'">🔔</span>
-  <button id="logoutBtn" onclick="logout()">Logout</button>
-</header>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <span id="notificationBell" onclick="window.location.href='notifications.html'">🔔</span>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
+  </header>
 
-<main class="admin-container">
-  <nav>
-    <a href="admin.html">🏠 Dashboard</a> |
-    <a href="notifications.html">🔔 Notifications</a>
-  </nav>
+  <main class="admin-container">
+    <nav>
+      <a href="admin.html">🏠 Dashboard</a> |
+      <a href="notifications.html">🔔 Notifications</a>
+    </nav>
 
-  <div class="summary">
-    <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
-    <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
-    <div><strong>💵 Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
-    <div><strong>📌 Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
-    <div><strong>📆 Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
-    <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
-    <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
-  </div>
-
-  <!-- ✅ SERVICE REQUESTS -->
-  <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- ✅ QUOTES TABLE -->
-  <h2>Quotes</h2>
-  <div class="search-bar">
-    <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
-  </div>
-  <table id="quotesTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- ✅ INVOICE FORM -->
-  <h2>Create Invoice</h2>
-  <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
-    <div class="service-row">
-      <input id="street" placeholder="Street Address" />
-      <input id="city" placeholder="City" />
-      <input id="state" placeholder="State" />
-      <input id="zip" placeholder="ZIP Code" />
-    </div>
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-    <input type="date" id="invoiceDueDate" required />
-
-    <div id="serviceList"></div>
-    <button type="button" onclick="addServiceRow()">+ Add Service</button>
-
-    <div id="profitBreakdown" class="collapse-section" style="display: none;">
-      <strong>💡 Auto Profit Breakdown</strong><br/>
-      Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
-      Laborers (1–5): <input id="laborInput" type="number" value="1" min="1" max="5" onchange="calcProfit()" />
-      <p>Estimated Gas: <span id="gasCost">$0.00</span><br/>
-         Labor Cost: <span id="laborCost">$0.00</span><br/>
-         Profit Margin: <span id="profitMargin">$0.00</span></p>
+    <div class="summary">
+      <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
+      <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
+      <div><strong>💵 Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+      <div><strong>📌 Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
+      <div><strong>📆 Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
+      <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
+      <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
     </div>
 
-    <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
-    <button type="submit">Create Invoice</button>
-  </form>
+    <!-- ✅ SERVICE REQUESTS -->
+    <h2>Service Requests</h2>
+    <table id="serviceRequestsTable">
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-  <!-- ✅ INVOICES -->
-  <h2>Invoices Due</h2>
-  <div class="export-buttons">
-    <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
-  </div>
-  <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
+    <!-- ✅ QUOTES -->
+    <h2>Quotes</h2>
+    <div class="search-bar">
+      <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+    </div>
+    <table id="quotesTable">
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-  <h2>Paid Invoices</h2>
-  <div class="export-buttons">
-    <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
-  </div>
-  <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</main>
+    <!-- ✅ INVOICE FORM -->
+    <h2>Create Invoice</h2>
+    <form id="invoiceForm" onsubmit="createInvoice(event)">
+      <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
+      <div class="service-row">
+        <input id="street" placeholder="Street Address" />
+        <input id="city" placeholder="City" />
+        <input id="state" placeholder="State" />
+        <input id="zip" placeholder="ZIP Code" />
+      </div>
+      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
+      <input type="date" id="invoiceDueDate" required />
 
-<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="firebase-init.js"></script>
-<script>
-  const db = firebase.firestore();
-  let currentUser;
-  let invoiceSequence = 1000;
+      <div id="serviceList"></div>
+      <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
-  firebase.auth().onAuthStateChanged(async user => {
-    if (!user) return location.href = "login.html";
-    currentUser = user;
-    const roleDoc = await db.collection("users").doc(user.uid).get();
-    if (roleDoc.exists && roleDoc.data().role === "admin") {
-      fetchInvoiceSequence();
-      loadServiceRequests();
-      loadQuotes();
-      loadInvoices();
-    } else {
-      alert("Access denied.");
-      location.href = "login.html";
-    }
-  });
+      <div id="profitBreakdown" class="collapse-section" style="display: none;">
+        <strong>💡 Auto Profit Breakdown</strong><br/>
+        Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
+        Laborers (1–5): <input id="laborInput" type="number" value="1" min="1" max="5" onchange="calcProfit()" />
+        <p>Estimated Gas: <span id="gasCost">$0.00</span><br/>
+           Labor Cost: <span id="laborCost">$0.00</span><br/>
+           Profit Margin: <span id="profitMargin">$0.00</span></p>
+      </div>
 
-  function logout() {
-    firebase.auth().signOut().then(() => location.href = "login.html");
-  }
+      <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
+      <button type="submit">Create Invoice</button>
+    </form>
 
-  function fetchInvoiceSequence() {
-    db.collection("meta").doc("counters").get().then(doc => {
-      invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
-      document.getElementById("invoiceNumber").value = invoiceSequence;
-    });
-  }
+    <!-- ✅ INVOICES -->
+    <h2>Invoices Due</h2>
+    <div class="export-buttons">
+      <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
+    </div>
+    <table id="invoicesDueTable">
+      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
 
-  function addServiceRow() {
-    const container = document.getElementById("serviceList");
-    const row = document.createElement("div");
-    row.className = "service-row";
-    row.innerHTML = `
-      <select onchange="this.nextElementSibling.value = this.value === 'Custom' ? '' : this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
-        <option value="">Select Service</option>
-        <option value="Lawn Mowing">Lawn Mowing</option>
-        <option value="Leaf Removal">Leaf Removal</option>
-        <option value="Hedge Trimming">Hedge Trimming</option>
-        <option value="Driveway Pressure Washing">Driveway Pressure Washing</option>
-        <option value="House Pressure Washing">House Pressure Washing</option>
-        <option value="Mulch Installation">Mulch Installation</option>
-        <option value="Garden Bed Cleanup">Garden Bed Cleanup</option>
-        <option value="Shrub Trimming">Shrub Trimming</option>
-        <option value="Pressure Washing">Pressure Washing</option>
-        <option value="Custom">Custom</option>
-      </select>
-      <input type="text" placeholder="Description" />
-      <input type="number" placeholder="Amount" step="0.01" oninput="calcTotal()" />
-      <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-    `;
-    container.appendChild(row);
-  }
+    <h2>Paid Invoices</h2>
+    <div class="export-buttons">
+      <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
+    </div>
+    <table id="invoicesPaidTable">
+      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </main>
 
-  function calcTotal() {
-    let total = 0;
-    document.querySelectorAll("#serviceList .service-row").forEach(row => {
-      total += parseFloat(row.querySelector("input[type=number]").value || 0);
-    });
-    document.getElementById("totalAmount").innerText = total.toFixed(2);
-    calcProfit();
-  }
+  <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+  <!-- ✅ Firebase & App Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script>
+    const db = firebase.firestore();
+    let currentUser;
+    let invoiceSequence = 1000;
+    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA..."; // shortened for brevity
 
-  function calcProfit() {
-    const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
-    const miles = parseFloat(document.getElementById("milesInput").value || "0");
-    const laborers = parseInt(document.getElementById("laborInput").value || "1");
-    const gas = (miles * 0.65).toFixed(2);
-    const labor = (laborers * 20).toFixed(2);
-    const profit = Math.max(30, total - gas - labor).toFixed(2);
-    document.getElementById("gasCost").innerText = `$${gas}`;
-    document.getElementById("laborCost").innerText = `$${labor}`;
-    document.getElementById("profitMargin").innerText = `$${profit}`;
-  }
-
-  function createInvoice(e) {
-    e.preventDefault();
-    const email = document.getElementById("invoiceEmail").value;
-    const number = document.getElementById("invoiceNumber").value;
-    const due = document.getElementById("invoiceDueDate").value;
-    const services = [];
-    document.querySelectorAll("#serviceList .service-row").forEach(row => {
-      const desc = row.querySelector("input[type=text]").value;
-      const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-      if (desc && amt) services.push({ description: desc, amount: amt });
-    });
-    const total = services.reduce((sum, s) => sum + s.amount, 0);
-    const address = {
-      street: document.getElementById("street").value,
-      city: document.getElementById("city").value,
-      state: document.getElementById("state").value,
-      zip: document.getElementById("zip").value
-    };
-    const mileage = parseFloat(document.getElementById("milesInput").value || 0);
-    const labor = parseInt(document.getElementById("laborInput").value || 1);
-
-    db.collection("invoices").add({
-      customerEmail: email,
-      invoiceNumber: number,
-      services,
-      amountDue: total,
-      dueDate: due,
-      ...address,
-      mileage,
-      laborers: labor,
-      paid: false,
-      archived: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      invoiceSequence++;
-      db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-      alert("✅ Invoice Created");
-      document.getElementById("invoiceForm").reset();
-      document.getElementById("serviceList").innerHTML = "";
-      addServiceRow();
-      loadInvoices();
-    });
-  }
-
-  function loadInvoices() {
-    let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    const dueBody = document.querySelector("#invoicesDueTable tbody");
-    const paidBody = document.querySelector("#invoicesPaidTable tbody");
-
-    db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
-      dueBody.innerHTML = "";
-      paidBody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const dueDate = new Date(d.dueDate);
-        const isCurrentYear = dueDate.getFullYear() === currentYear;
-        const isCurrentMonth = dueDate.getMonth() === currentMonth;
-        const row = `
-          <tr>
-            <td>${d.customerEmail}</td>
-            <td>${d.invoiceNumber}</td>
-            <td>$${d.amountDue.toFixed(2)}</td>
-            <td>${d.dueDate}</td>
-            <td>${d.paid ? "Paid" : "Due"}</td>
-            <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️</button>"}</td>
-          </tr>`;
-        if (d.paid) {
-          paidBody.innerHTML += row;
-          paidTotal += d.amountDue;
-          if (isCurrentYear) yearRevenue += d.amountDue;
-          if (isCurrentMonth) monthRevenue += d.amountDue;
-        } else {
-          dueBody.innerHTML += row;
-          dueCount++;
-          outstanding += d.amountDue;
-          inProgress++;
-        }
-      });
-      document.getElementById("invoiceCount").innerText = dueCount;
-      document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-      document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
-      document.getElementById("inProgressCount").innerText = inProgress;
-      document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
-      document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
-    });
-  }
-
-  function markInvoicePaid(id) {
-    db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-  }
-
-  function printInvoice(id) {
-    // ✅ Add PDF logic with logo and full layout in separate function
-    alert("🖨️ PDF Preview coming soon.");
-  }
-
-  function exportInvoicesCSV(isPaid) {
-    db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
-      const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
-      });
-      const csv = Papa.unparse(rows);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
-      link.click();
-    });
-  }
-
-  function filterQuotes() {
-    const term = document.getElementById("quoteSearch").value.toLowerCase();
-    document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-      const match = row.innerText.toLowerCase().includes(term);
-      row.style.display = match ? "" : "none";
-    });
-  }
-
-  function loadServiceRequests() {
-    const tbody = document.querySelector("#serviceRequestsTable tbody");
-    db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const r = doc.data();
-        const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-        const row = `
-          <tr>
-            <td>${r.fullName || "N/A"}</td>
-            <td>${r.email}</td>
-            <td>${address}</td>
-            <td>${r.serviceType}</td>
-            <td>${r.status}</td>
-            <td>${r.notes || ""}</td>
-            <td>
-              <select onchange="updateRequestStatus('${doc.id}', this.value)">
-                <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
-                <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
-                <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
-                <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
-              </select>
-            </td>
-          </tr>`;
-        tbody.innerHTML += row;
-      });
-    });
-  }
-
-  function updateRequestStatus(id, newStatus) {
-    db.collection("service_requests").doc(id).update({ status: newStatus }).then(async () => {
-      // Auto-generate a quote only if it doesn't exist
-      const requestDoc = await db.collection("service_requests").doc(id).get();
-      const data = requestDoc.data();
-      if (newStatus === "Completed") {
-        const existing = await db.collection("quotes")
-          .where("email", "==", data.email)
-          .where("serviceType", "==", data.serviceType)
-          .get();
-        if (existing.empty) {
-          db.collection("quotes").add({
-            email: data.email,
-            fullName: data.fullName,
-            serviceType: data.serviceType,
-            amount: 0,
-            status: "Pending",
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          });
-        }
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) return location.href = "login.html";
+      currentUser = user;
+      const roleDoc = await db.collection("users").doc(user.uid).get();
+      if (roleDoc.exists && roleDoc.data().role === "admin") {
+        fetchInvoiceSequence();
+        loadServiceRequests();
+        loadQuotes();
+        loadInvoices();
+      } else {
+        alert("Access denied."); location.href = "login.html";
       }
     });
-  }
-</script>
+
+    function logout() {
+      firebase.auth().signOut().then(() => location.href = "login.html");
+    }
+
+    function fetchInvoiceSequence() {
+      db.collection("meta").doc("counters").get().then(doc => {
+        invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
+        document.getElementById("invoiceNumber").value = invoiceSequence;
+      });
+    }
+
+    function addServiceRow() {
+      const container = document.getElementById("serviceList");
+      const row = document.createElement("div");
+      row.className = "service-row";
+      row.innerHTML = `
+        <select onchange="this.nextElementSibling.value = this.value === 'Custom' ? '' : this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
+          <option value="">Select Service</option>
+          <option value="Lawn Mowing">Lawn Mowing</option>
+          <option value="Leaf Removal">Leaf Removal</option>
+          <option value="Hedge Trimming">Hedge Trimming</option>
+          <option value="Driveway Pressure Washing">Driveway Pressure Washing</option>
+          <option value="House Pressure Washing">House Pressure Washing</option>
+          <option value="Mulch Installation">Mulch Installation</option>
+          <option value="Garden Bed Cleanup">Garden Bed Cleanup</option>
+          <option value="Shrub Trimming">Shrub Trimming</option>
+          <option value="Pressure Washing">Pressure Washing</option>
+          <option value="Custom">Custom</option>
+        </select>
+        <input type="text" placeholder="Description" />
+        <input type="number" placeholder="Amount" step="0.01" oninput="calcTotal()" />
+        <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function calcTotal() {
+      let total = 0;
+      document.querySelectorAll("#serviceList .service-row").forEach(row => {
+        total += parseFloat(row.querySelector("input[type=number]").value || 0);
+      });
+      document.getElementById("totalAmount").innerText = total.toFixed(2);
+      calcProfit();
+    }
+
+    function calcProfit() {
+      const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
+      const miles = parseFloat(document.getElementById("milesInput").value || "0");
+      const laborers = parseInt(document.getElementById("laborInput").value || "1");
+      const gas = (miles * 0.65).toFixed(2);
+      const labor = (laborers * 20).toFixed(2);
+      const profit = Math.max(30, total - gas - labor).toFixed(2);
+      document.getElementById("gasCost").innerText = `$${gas}`;
+      document.getElementById("laborCost").innerText = `$${labor}`;
+      document.getElementById("profitMargin").innerText = `$${profit}`;
+    }
+
+    function createInvoice(e) {
+      e.preventDefault();
+      const email = document.getElementById("invoiceEmail").value;
+      const number = document.getElementById("invoiceNumber").value;
+      const due = document.getElementById("invoiceDueDate").value;
+      const services = [];
+      document.querySelectorAll("#serviceList .service-row").forEach(row => {
+        const desc = row.querySelector("input[type=text]").value;
+        const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+        if (desc && amt) services.push({ description: desc, amount: amt });
+      });
+      const total = services.reduce((sum, s) => sum + s.amount, 0);
+      const address = {
+        street: document.getElementById("street").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value
+      };
+      const mileage = parseFloat(document.getElementById("milesInput").value || 0);
+      const labor = parseInt(document.getElementById("laborInput").value || 1);
+
+      db.collection("invoices").add({
+        customerEmail: email,
+        invoiceNumber: number,
+        services,
+        amountDue: total,
+        dueDate: due,
+        ...address,
+        mileage,
+        laborers: labor,
+        paid: false,
+        archived: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        invoiceSequence++;
+        db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+        alert("✅ Invoice Created");
+        document.getElementById("invoiceForm").reset();
+        document.getElementById("serviceList").innerHTML = "";
+        addServiceRow();
+        loadInvoices();
+      });
+    }
+
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        let count = 0;
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          if (q.status === "Accepted") {
+            autoCreateInvoiceFromQuote(doc);
+          }
+          if (q.status === "Archived") return;
+          const timeEst = q.estimatedTime || "N/A";
+          const baseRate = q.baseRate ? `$${q.baseRate.toFixed(2)}` : "N/A";
+          tbody.innerHTML += `
+            <tr>
+              <td>${q.fullName || "N/A"}</td>
+              <td>${q.email}</td>
+              <td>${q.serviceType}</td>
+              <td>$${q.amount.toFixed(2)}</td>
+              <td>${baseRate}</td>
+              <td>${timeEst}</td>
+              <td>${q.status}</td>
+              <td><button onclick="generateQuotePDF('${doc.id}')">📄</button></td>
+            </tr>`;
+          if (q.status === "Pending") count++;
+        });
+        document.getElementById("quoteCount").innerText = count;
+      });
+    }
+
+    function autoCreateInvoiceFromQuote(doc) {
+      const q = doc.data();
+      const invoiceData = {
+        customerEmail: q.email,
+        invoiceNumber: "INV-" + Math.floor(Math.random() * 9000 + 1000),
+        services: [{ description: q.serviceType, amount: q.amount }],
+        amountDue: q.amount,
+        dueDate: new Date().toISOString().split("T")[0],
+        street: q.street || "",
+        city: q.city || "",
+        state: q.state || "",
+        zip: q.zip || "",
+        mileage: q.mileage || 0,
+        laborers: q.laborers || 1,
+        paid: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      db.collection("invoices").where("customerEmail", "==", q.email)
+        .where("invoiceNumber", "==", invoiceData.invoiceNumber).get().then(snap => {
+          if (snap.empty) {
+            db.collection("invoices").add(invoiceData);
+            db.collection("quotes").doc(doc.id).update({ status: "Archived" });
+          }
+        });
+    }
+
+    function generateQuotePDF(id) {
+      db.collection("quotes").doc(id).get().then(doc => {
+        const d = doc.data();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        pdf.addImage(logoBase64, 'PNG', 10, 10, 30, 30);
+        pdf.setFontSize(16);
+        pdf.text("Holliday's Lawn & Garden", 50, 20);
+        pdf.setFontSize(12);
+        pdf.text("Karl Holliday | 504-717-1887", 50, 28);
+        pdf.text("7holliday@gmail.com", 50, 34);
+        pdf.line(10, 45, 200, 45);
+        pdf.setFontSize(14);
+        pdf.text("QUOTE", 10, 55);
+        pdf.setFontSize(12);
+        pdf.text(`Customer: ${d.fullName || "N/A"}`, 10, 65);
+        pdf.text(`Service: ${d.serviceType}`, 10, 72);
+        pdf.text(`Total: $${d.amount.toFixed(2)}`, 10, 79);
+        pdf.text(`Status: ${d.status}`, 10, 86);
+        pdf.save(`quote-${d.quote || d.serviceType}.pdf`);
+      });
+    }
+
+    function loadServiceRequests() {
+      const tbody = document.querySelector("#serviceRequestsTable tbody");
+      db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='7'>No requests found</td></tr>";
+        snapshot.forEach(doc => {
+          const r = doc.data();
+          const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+          const row = `
+            <tr>
+              <td>${r.fullName || "N/A"}</td>
+              <td>${r.email}</td>
+              <td>${address}</td>
+              <td>${r.serviceType}</td>
+              <td>${r.status}</td>
+              <td>${r.notes || ""}</td>
+              <td>
+                <select onchange="updateRequestStatus('${doc.id}', this.value)">
+                  <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
+                  <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
+                  <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                  <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
+                </select>
+              </td>
+            </tr>`;
+          tbody.innerHTML += row;
+        });
+      });
+    }
+
+    function updateRequestStatus(id, newStatus) {
+      db.collection("service_requests").doc(id).update({ status: newStatus });
+    }
+
+    function exportInvoicesCSV(isPaid) {
+      db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
+        const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
+        });
+        const csv = Papa.unparse(rows);
+        const blob = new Blob([csv], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+        link.click();
+      });
+    }
+
+    function filterQuotes() {
+      const term = document.getElementById("quoteSearch").value.toLowerCase();
+      document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(term) ? "" : "none";
+      });
+    }
+  </script>
 </body>
 </html>
+
