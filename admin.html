@@ -52,18 +52,18 @@
   <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
 </div>
 
-<!-- ✅ SERVICE REQUESTS -->
+<!-- ✅ SERVICE REQUESTS TABLE -->
 <h2>Service Requests</h2>
 <table id="serviceRequestsTable">
-  <thead>
-    <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr>
-  </thead>
+  <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr></thead>
   <tbody></tbody>
 </table>
 
-<!-- ✅ QUOTES -->
+<!-- ✅ QUOTES TABLE -->
 <h2>Quotes</h2>
-<input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+<div class="search-bar">
+  <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+</div>
 <table id="quotesTable">
   <thead>
     <tr>
@@ -73,7 +73,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ CREATE INVOICE -->
+<!-- ✅ CREATE INVOICE FORM -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -85,7 +85,7 @@
   </div>
   <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
   <input type="date" id="invoiceDueDate" required />
-
+  
   <div id="serviceList"></div>
   <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
@@ -103,9 +103,7 @@
   <button type="submit">Create Invoice</button>
 </form>
 
-<!-- ✅ INVOICES SECTION (CONTINUED IN PART 2) -->
-
-<!-- ✅ INVOICES DUE -->
+<!-- ✅ INVOICES TABLES -->
 <h2>Invoices Due</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
@@ -115,7 +113,6 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ PAID INVOICES -->
 <h2>Paid Invoices</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -125,96 +122,149 @@
   <tbody></tbody>
 </table>
 
+<!-- ✅ FOOTER -->
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
-
+<!-- ✅ Script tags and Part 2 continue below... -->
+<!-- ✅ FIREBASE + LOGO -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+<script src="assets/logo-base64.js"></script>
 
 <script>
 const db = firebase.firestore();
-let invoiceSequence = 1000;
+let currentUser, invoiceSequence = 1000;
 const MIN_PROFIT = 30;
-const logoImg = 'assets/holliday-logo.png'; // ✅ Embedded GitHub logo path
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
+// ✅ Auth Check
+firebase.auth().onAuthStateChanged(async user => {
+  if (!user) return location.href = "login.html";
+  currentUser = user;
+  const roleDoc = await db.collection("users").doc(user.uid).get();
+  if (roleDoc.exists && roleDoc.data().role === "admin") {
+    fetchInvoiceSequence();
+    addServiceRow();
+    loadServiceRequests();
+    loadQuotes();
+    loadInvoices();
+  } else {
+    alert("Access denied."); location.href = "login.html";
+  }
+});
+
+// ✅ Fetch Next Invoice Number
+function fetchInvoiceSequence() {
+  db.collection("meta").doc("counters").get().then(doc => {
+    invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
+    document.getElementById("invoiceNumber").value = invoiceSequence;
+  });
 }
 
-function createInvoice(event) {
-  event.preventDefault();
-  const email = invoiceEmail.value.trim();
-  const number = invoiceNumber.value;
-  const due = invoiceDueDate.value;
+// ✅ Add Row
+function addServiceRow(desc = "", amt = "") {
+  const container = document.getElementById("serviceList");
+  const row = document.createElement("div");
+  row.className = "service-row";
+  row.innerHTML = `
+    <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
+      <option value="">Select Service</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Leaf Removal">Leaf Removal</option>
+      <option value="Hedge Trimming">Hedge Trimming</option>
+      <option value="Driveway Pressure Washing">Driveway Pressure Washing</option>
+      <option value="House Pressure Washing">House Pressure Washing</option>
+      <option value="Mulch Installation">Mulch Installation</option>
+      <option value="Garden Bed Cleanup">Garden Bed Cleanup</option>
+      <option value="Shrub Trimming">Shrub Trimming</option>
+      <option value="Pressure Washing">Pressure Washing</option>
+      <option value="Custom">Custom</option>
+    </select>
+    <input type="text" value="${desc}" placeholder="Description" />
+    <input type="number" value="${amt}" step="0.01" oninput="calcTotal()" />
+    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
+  `;
+  container.appendChild(row);
+  calcTotal();
+}
 
-  if (!email || !due) return alert("Fill all required fields.");
+// ✅ Totals
+function calcTotal() {
+  let total = 0;
+  document.querySelectorAll("#serviceList .service-row").forEach(row => {
+    total += parseFloat(row.querySelector("input[type=number]").value || 0);
+  });
+  document.getElementById("totalAmount").innerText = total.toFixed(2);
+  calcProfit();
+}
+function calcProfit() {
+  const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
+  const miles = parseFloat(document.getElementById("milesInput").value || "0");
+  const laborers = parseInt(document.getElementById("laborInput").value || "1");
+  const gas = (miles * 0.65).toFixed(2);
+  const labor = (laborers * 20).toFixed(2);
+  const profit = Math.max(MIN_PROFIT, total - gas - labor).toFixed(2);
+  document.getElementById("gasCost").innerText = `$${gas}`;
+  document.getElementById("laborCost").innerText = `$${labor}`;
+  document.getElementById("profitMargin").innerText = `$${profit}`;
+}
+
+// ✅ Create Invoice
+function createInvoice(e) {
+  e.preventDefault();
+  const email = document.getElementById("invoiceEmail").value;
+  const number = document.getElementById("invoiceNumber").value;
+  const due = document.getElementById("invoiceDueDate").value;
+  const services = [...document.querySelectorAll("#serviceList .service-row")].map(row => ({
+    description: row.querySelector("input[type=text]").value,
+    amount: parseFloat(row.querySelector("input[type=number]").value || 0)
+  }));
+
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
+  const address = {
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value
+  };
 
   db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
-    if (!snapshot.empty) return alert("⚠️ Invoice already exists. Use a new number.");
-    
-    const services = Array.from(document.querySelectorAll("#serviceList .service-row")).map(row => {
-      return {
-        description: row.querySelector("input[type=text]").value,
-        amount: parseFloat(row.querySelector("input[type=number]").value)
-      };
-    });
-
-    const total = services.reduce((sum, s) => sum + s.amount, 0);
-    const mileage = parseFloat(milesInput.value || 0);
-    const laborers = parseInt(laborInput.value || 1);
-    const gas = mileage * 0.65;
-    const labor = laborers * 20;
-    const profit = total - gas - labor;
-
-    if (profit < MIN_PROFIT) return alert("⚠️ Invoice would result in a loss. Please adjust values.");
-
-    const invoice = {
+    if (!snapshot.empty) return alert("⚠️ Duplicate invoice number.");
+    db.collection("invoices").add({
       customerEmail: email,
       invoiceNumber: number,
       services,
       amountDue: total,
       dueDate: due,
-      street: street.value,
-      city: city.value,
-      state: state.value,
-      zip: zip.value,
-      mileage,
-      laborers,
+      ...address,
       paid: false,
-      createdAt: new Date()
-    };
-
-    db.collection("invoices").add(invoice).then(() => {
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
       invoiceSequence++;
       db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-      invoiceForm.reset();
-      serviceList.innerHTML = "";
+      alert("✅ Invoice created.");
+      document.getElementById("invoiceForm").reset();
+      document.getElementById("serviceList").innerHTML = "";
       addServiceRow();
       loadInvoices();
-      alert("✅ Invoice created.");
     });
   });
 }
 
+// ✅ Load Invoices
 function loadInvoices() {
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
+  const year = now.getFullYear(), month = now.getMonth();
+  const dueBody = document.querySelector("#invoicesDueTable tbody");
+  const paidBody = document.querySelector("#invoicesPaidTable tbody");
+  dueBody.innerHTML = ""; paidBody.innerHTML = "";
+  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRev = 0, monthRev = 0;
 
-  db.collection("invoices").orderBy("dueDate").onSnapshot(snapshot => {
-    const dueTbody = document.querySelector("#invoicesDueTable tbody");
-    const paidTbody = document.querySelector("#invoicesPaidTable tbody");
-    dueTbody.innerHTML = paidTbody.innerHTML = "";
-
+  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
     snapshot.forEach(doc => {
       const d = doc.data();
-      const dueDate = new Date(d.dueDate);
-      const isThisYear = dueDate.getFullYear() === currentYear;
-      const isThisMonth = dueDate.getMonth() === currentMonth;
-
+      const date = new Date(d.dueDate);
       const row = `
         <tr>
           <td>${d.customerEmail}</td>
@@ -222,71 +272,37 @@ function loadInvoices() {
           <td>$${d.amountDue.toFixed(2)}</td>
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Due"}</td>
-          <td>${d.paid
-            ? `<button onclick="printInvoice('${doc.id}')">🖨️</button>`
-            : `<button onclick="markInvoicePaid('${doc.id}')">✔️ Mark Paid</button>`}
-          </td>
+          <td>${d.paid 
+            ? `<button onclick='printInvoice("${doc.id}")'>🖨️</button>` 
+            : `<button onclick='markInvoicePaid("${doc.id}")'>✔️</button>`}</td>
         </tr>`;
-
       if (d.paid) {
-        paidTbody.innerHTML += row;
+        paidBody.innerHTML += row;
         paidTotal += d.amountDue;
-        if (isThisYear) yearRevenue += d.amountDue;
-        if (isThisMonth) monthRevenue += d.amountDue;
+        if (date.getFullYear() === year) yearRev += d.amountDue;
+        if (date.getMonth() === month) monthRev += d.amountDue;
       } else {
-        dueTbody.innerHTML += row;
-        dueCount++;
-        outstanding += d.amountDue;
-        inProgress++;
+        dueBody.innerHTML += row;
+        dueCount++; outstanding += d.amountDue; inProgress++;
       }
     });
-
-    invoiceCount.innerText = dueCount;
-    totalPaid.innerText = paidTotal.toFixed(2);
-    totalOutstanding.innerText = outstanding.toFixed(2);
-    inProgressCount.innerText = inProgress;
-    revenueYear.innerText = yearRevenue.toFixed(2);
-    revenueMonth.innerText = monthRevenue.toFixed(2);
+    document.getElementById("invoiceCount").innerText = dueCount;
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
+    document.getElementById("inProgressCount").innerText = inProgress;
+    document.getElementById("revenueYear").innerText = yearRev.toFixed(2);
+    document.getElementById("revenueMonth").innerText = monthRev.toFixed(2);
   });
 }
 
+// ✅ Mark as Paid
 function markInvoicePaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+  db.collection("invoices").doc(id).update({ paid: true });
 }
 
-function printInvoice(id) {
-  db.collection("invoices").doc(id).get().then(doc => {
-    if (!doc.exists) return alert("Invoice not found.");
-    const d = doc.data();
-
-    const win = window.open("", "_blank");
-    win.document.write(`
-      <html><head><title>Invoice ${d.invoiceNumber}</title></head>
-      <body style="font-family: Arial; padding: 2em;">
-        <img src="${logoImg}" width="180" /><br/><br/>
-        <h2 style="color:#228B22">Invoice #${d.invoiceNumber}</h2>
-        <p><strong>Email:</strong> ${d.customerEmail}<br/>
-           <strong>Address:</strong> ${d.street}, ${d.city}, ${d.state} ${d.zip}<br/>
-           <strong>Due Date:</strong> ${d.dueDate}<br/>
-           <strong>Status:</strong> ${d.paid ? "✅ Paid" : "❌ Due"}</p>
-
-        <table border="1" cellpadding="8" cellspacing="0" width="100%">
-          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
-          <tbody>
-            ${d.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
-          </tbody>
-        </table>
-        <h3 style="text-align:right">Total Due: $${d.amountDue.toFixed(2)}</h3>
-        <br><p style="text-align:center;color:gray">Thank you for choosing Holliday's Lawn & Garden.</p>
-        <br><button onclick="window.print()">🖨️ Print Invoice</button>
-      </body></html>
-    `);
-    win.document.close();
-  });
-}
-
-function exportInvoicesCSV(paid) {
-  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+// ✅ Export CSV
+function exportInvoicesCSV(isPaid) {
+  db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
     const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -296,9 +312,53 @@ function exportInvoicesCSV(paid) {
     const blob = new Blob([csv], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = paid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+    link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
     link.click();
   });
+}
+
+// ✅ Print Invoice Popup
+function printInvoice(id) {
+  db.collection("invoices").doc(id).get().then(doc => {
+    const d = doc.data();
+    const popup = window.open("", "_blank", "width=800,height=900");
+    popup.document.write(`<html><head><title>Invoice</title>
+      <style>
+        body { font-family: Arial; padding: 20px; }
+        h2 { color: #228B22; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        .total { text-align: right; margin-top: 10px; font-weight: bold; }
+      </style>
+    </head><body>
+      <img src="${base64Logo}" width="150"/>
+      <h2>Invoice #${d.invoiceNumber}</h2>
+      <p><strong>To:</strong> ${d.customerEmail}<br/>
+         <strong>Address:</strong> ${d.street}, ${d.city}, ${d.state} ${d.zip}<br/>
+         <strong>Due:</strong> ${d.dueDate}</p>
+      <table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>
+        ${d.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
+      </tbody></table>
+      <p class="total">Total Due: $${d.amountDue.toFixed(2)}</p>
+      <p>Thank you for your business!<br/>Holliday’s Lawn & Garden<br/>Karl Holliday – 504-717-1887<br/>7holliday@gmail.com</p>
+      <button onclick="window.print()">🖨️ Print</button>
+    </body></html>`);
+    popup.document.close();
+  });
+}
+
+// ✅ Filter Quotes
+function filterQuotes() {
+  const term = document.getElementById("quoteSearch").value.toLowerCase();
+  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+    const match = row.getAttribute("data-search").includes(term);
+    row.style.display = match ? "" : "none";
+  });
+}
+
+// ✅ Logout
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 </body>
