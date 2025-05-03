@@ -1,4 +1,4 @@
-<!-- PART 1: HEADER + PAYPAL LAYOUT -->
+<!-- PART 1: PAY YOUR BILL PAGE - NO VENMO -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,8 +14,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- PayPal SDK (replace with real client ID) -->
-  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+  <!-- ✅ PayPal SDK with NO Venmo -->
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=USD&components=buttons,funding-eligibility&enable-funding=card,paylater"></script>
 
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
@@ -86,7 +86,6 @@
     <div style="margin-top: 3em;">
       <h3>Other Ways to Pay (Coming Soon):</h3>
       <p><strong>CashApp:</strong> Coming Soon</p>
-      <p><strong>Venmo:</strong> Coming Soon</p>
       <p><strong>Zelle:</strong> Coming Soon</p>
     </div>
   </div>
