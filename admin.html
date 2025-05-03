@@ -9,20 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
-    header, footer {
-      background: #228B22; color: white; padding: 1em; text-align: center;
-      position: relative;
-    }
-    #logoutBtn, #notificationBell {
-      position: absolute; top: 15px; font-size: 1em;
-    }
-    #logoutBtn { right: 15px; }
-    #notificationBell { right: 60px; cursor: pointer; }
-
-    .admin-container {
-      max-width: 1100px; margin: auto; padding: 2em; background: white;
-      border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
+    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin: 1em 0; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
@@ -30,30 +18,18 @@
     input, select { padding: 0.5em; width: 100%; margin-top: 0.3em; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
-
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .service-row input, .service-row select { flex: 1; }
-
-    .summary {
-      display: flex; flex-wrap: wrap; justify-content: space-between;
-      background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em;
-    }
-    .summary div {
-      margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px;
-    }
-
+    .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
+    .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
     .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
-
-    .collapse-section {
-      background: #f0fff0; padding: 1em; margin-top: 1em;
-      border-left: 5px solid #228B22; border-radius: 5px;
-    }
-
+    .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .base-rate-warning { color: red; font-weight: bold; }
-
-    .print-invoice {
-      text-align: center; margin-top: 20px;
+    #logoutBtn, #notificationBell {
+      position: absolute; top: 15px; font-size: 1em;
     }
+    #logoutBtn { right: 15px; }
+    #notificationBell { right: 60px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -65,12 +41,7 @@
 
 <main class="admin-container">
 
-<nav style="margin-bottom: 1em;">
-  <a href="admin.html">🏠 Dashboard</a> | 
-  <a href="notifications.html">🔔 Notifications</a>
-</nav>
-
-<!-- ✅ DASHBOARD SUMMARY -->
+<!-- ✅ SUMMARY -->
 <div class="summary">
   <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
   <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -81,7 +52,7 @@
   <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
 </div>
 
-<!-- ✅ SERVICE REQUESTS TABLE -->
+<!-- ✅ SERVICE REQUESTS -->
 <h2>Service Requests</h2>
 <table id="serviceRequestsTable">
   <thead>
@@ -90,7 +61,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ QUOTES TABLE -->
+<!-- ✅ QUOTES -->
 <h2>Quotes</h2>
 <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
 <table id="quotesTable">
@@ -102,7 +73,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ INVOICE CREATION -->
+<!-- ✅ CREATE INVOICE -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -113,10 +84,12 @@
     <input id="zip" placeholder="ZIP Code" />
   </div>
   <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-  <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a due date')" oninput="this.setCustomValidity('')" />
+  <input type="date" id="invoiceDueDate" required />
+
   <div id="serviceList"></div>
   <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
+  <!-- ✅ PROFIT BREAKDOWN -->
   <div id="profitBreakdown" class="collapse-section" style="display: none;">
     <strong>💡 Auto Profit Breakdown</strong><br/>
     Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -129,7 +102,10 @@
   <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
   <button type="submit">Create Invoice</button>
 </form>
-<!-- ✅ INVOICE TABLES -->
+
+<!-- ✅ INVOICES SECTION (CONTINUED IN PART 2) -->
+
+<!-- ✅ INVOICES DUE -->
 <h2>Invoices Due</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
@@ -139,6 +115,7 @@
   <tbody></tbody>
 </table>
 
+<!-- ✅ PAID INVOICES -->
 <h2>Paid Invoices</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -148,145 +125,168 @@
   <tbody></tbody>
 </table>
 
+</main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- ✅ FIREBASE + SCRIPT LOGIC -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+
 <script>
 const db = firebase.firestore();
-let currentUser, invoiceSequence = 1000;
+let invoiceSequence = 1000;
 const MIN_PROFIT = 30;
-const logoURL = "assets/logo.png"; // ✅ Logo in local folder
+const logoImg = 'assets/holliday-logo.png'; // ✅ Embedded GitHub logo path
 
-firebase.auth().onAuthStateChanged(async user => {
-  if (!user) return location.href = "login.html";
-  currentUser = user;
-  const roleDoc = await db.collection("users").doc(user.uid).get();
-  if (roleDoc.exists && roleDoc.data().role === "admin") {
-    fetchInvoiceSequence();
-    addServiceRow();
-    loadServiceRequests();
-    loadQuotes();
-    loadInvoices();
-  } else {
-    alert("Access denied."); location.href = "login.html";
-  }
-});
-
-function fetchInvoiceSequence() {
-  db.collection("meta").doc("counters").get().then(doc => {
-    invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
-    document.getElementById("invoiceNumber").value = invoiceSequence;
-  });
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 
-function createInvoice(e) {
-  e.preventDefault();
-  const number = document.getElementById("invoiceNumber").value;
-  const email = document.getElementById("invoiceEmail").value;
-  db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
-    if (!snapshot.empty) return alert("⚠️ Invoice number already exists.");
-    const due = document.getElementById("invoiceDueDate").value;
-    const services = [];
-    document.querySelectorAll("#serviceList .service-row").forEach(row => {
-      const desc = row.querySelector("input[type=text]").value;
-      const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-      if (desc && amt) services.push({ description: desc, amount: amt });
-    });
-    const total = services.reduce((sum, s) => sum + s.amount, 0);
-    const address = {
-      street: document.getElementById("street").value,
-      city: document.getElementById("city").value,
-      state: document.getElementById("state").value,
-      zip: document.getElementById("zip").value
-    };
-    const mileage = parseFloat(document.getElementById("milesInput").value || 0);
-    const labor = parseInt(document.getElementById("laborInput").value || 1);
+function createInvoice(event) {
+  event.preventDefault();
+  const email = invoiceEmail.value.trim();
+  const number = invoiceNumber.value;
+  const due = invoiceDueDate.value;
 
-    db.collection("invoices").add({
+  if (!email || !due) return alert("Fill all required fields.");
+
+  db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
+    if (!snapshot.empty) return alert("⚠️ Invoice already exists. Use a new number.");
+    
+    const services = Array.from(document.querySelectorAll("#serviceList .service-row")).map(row => {
+      return {
+        description: row.querySelector("input[type=text]").value,
+        amount: parseFloat(row.querySelector("input[type=number]").value)
+      };
+    });
+
+    const total = services.reduce((sum, s) => sum + s.amount, 0);
+    const mileage = parseFloat(milesInput.value || 0);
+    const laborers = parseInt(laborInput.value || 1);
+    const gas = mileage * 0.65;
+    const labor = laborers * 20;
+    const profit = total - gas - labor;
+
+    if (profit < MIN_PROFIT) return alert("⚠️ Invoice would result in a loss. Please adjust values.");
+
+    const invoice = {
       customerEmail: email,
       invoiceNumber: number,
       services,
       amountDue: total,
       dueDate: due,
-      ...address,
+      street: street.value,
+      city: city.value,
+      state: state.value,
+      zip: zip.value,
       mileage,
-      laborers: labor,
+      laborers,
       paid: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
+      createdAt: new Date()
+    };
+
+    db.collection("invoices").add(invoice).then(() => {
       invoiceSequence++;
       db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-      alert("✅ Invoice created");
-      document.getElementById("invoiceForm").reset();
-      document.getElementById("serviceList").innerHTML = "";
+      invoiceForm.reset();
+      serviceList.innerHTML = "";
       addServiceRow();
       loadInvoices();
+      alert("✅ Invoice created.");
     });
   });
 }
 
-function printInvoice(id) {
-  db.collection("invoices").doc(id).get().then(async doc => {
-    const d = doc.data();
-    const logo = await toDataURL(logoURL);
-    const paidStamp = d.paid ? "<div style='color:green;font-size:24px;'>PAID</div>" : "";
+function loadInvoices() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
 
-    let servicesHTML = "";
-    d.services.forEach(s => {
-      servicesHTML += `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`;
+  db.collection("invoices").orderBy("dueDate").onSnapshot(snapshot => {
+    const dueTbody = document.querySelector("#invoicesDueTable tbody");
+    const paidTbody = document.querySelector("#invoicesPaidTable tbody");
+    dueTbody.innerHTML = paidTbody.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const dueDate = new Date(d.dueDate);
+      const isThisYear = dueDate.getFullYear() === currentYear;
+      const isThisMonth = dueDate.getMonth() === currentMonth;
+
+      const row = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Due"}</td>
+          <td>${d.paid
+            ? `<button onclick="printInvoice('${doc.id}')">🖨️</button>`
+            : `<button onclick="markInvoicePaid('${doc.id}')">✔️ Mark Paid</button>`}
+          </td>
+        </tr>`;
+
+      if (d.paid) {
+        paidTbody.innerHTML += row;
+        paidTotal += d.amountDue;
+        if (isThisYear) yearRevenue += d.amountDue;
+        if (isThisMonth) monthRevenue += d.amountDue;
+      } else {
+        dueTbody.innerHTML += row;
+        dueCount++;
+        outstanding += d.amountDue;
+        inProgress++;
+      }
     });
 
-    const html = `
-      <html><head><title>Invoice ${d.invoiceNumber}</title></head><body style="font-family:Arial;">
-        <div style="text-align:center;">
-          <img src="${logo}" style="height:80px;" />
-          <h2>Invoice #${d.invoiceNumber}</h2>
-          ${paidStamp}
-          <p><strong>Holliday's Lawn & Garden</strong><br/>
-          Karl Holliday<br/>7holliday@gmail.com<br/>504-717-1887</p>
-        </div>
-        <hr/>
-        <p><strong>To:</strong> ${d.customerEmail}<br/>
-        ${d.street}, ${d.city}, ${d.state} ${d.zip}<br/>
-        Due: ${d.dueDate}</p>
-        <table border="1" cellpadding="10" cellspacing="0" width="100%">
-          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
-          <tbody>${servicesHTML}</tbody>
-        </table>
-        <h3 style="text-align:right;">Total Due: $${d.amountDue.toFixed(2)}</h3>
-        <div class="print-invoice"><button onclick="window.print()">🖨️ Print Invoice</button></div>
-      </body></html>
-    `;
-
-    const win = window.open("", "Invoice", "width=800,height=900");
-    win.document.write(html);
-    win.document.close();
+    invoiceCount.innerText = dueCount;
+    totalPaid.innerText = paidTotal.toFixed(2);
+    totalOutstanding.innerText = outstanding.toFixed(2);
+    inProgressCount.innerText = inProgress;
+    revenueYear.innerText = yearRevenue.toFixed(2);
+    revenueMonth.innerText = monthRevenue.toFixed(2);
   });
-}
-
-function toDataURL(url) {
-  return fetch(url).then(res => res.blob()).then(blob => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  }));
 }
 
 function markInvoicePaid(id) {
   db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
 }
 
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
+function printInvoice(id) {
+  db.collection("invoices").doc(id).get().then(doc => {
+    if (!doc.exists) return alert("Invoice not found.");
+    const d = doc.data();
+
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html><head><title>Invoice ${d.invoiceNumber}</title></head>
+      <body style="font-family: Arial; padding: 2em;">
+        <img src="${logoImg}" width="180" /><br/><br/>
+        <h2 style="color:#228B22">Invoice #${d.invoiceNumber}</h2>
+        <p><strong>Email:</strong> ${d.customerEmail}<br/>
+           <strong>Address:</strong> ${d.street}, ${d.city}, ${d.state} ${d.zip}<br/>
+           <strong>Due Date:</strong> ${d.dueDate}<br/>
+           <strong>Status:</strong> ${d.paid ? "✅ Paid" : "❌ Due"}</p>
+
+        <table border="1" cellpadding="8" cellspacing="0" width="100%">
+          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>
+            ${d.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+        <h3 style="text-align:right">Total Due: $${d.amountDue.toFixed(2)}</h3>
+        <br><p style="text-align:center;color:gray">Thank you for choosing Holliday's Lawn & Garden.</p>
+        <br><button onclick="window.print()">🖨️ Print Invoice</button>
+      </body></html>
+    `);
+    win.document.close();
+  });
 }
 
-function exportInvoicesCSV(isPaid) {
-  db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
+function exportInvoicesCSV(paid) {
+  db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
     const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
     snapshot.forEach(doc => {
       const d = doc.data();
@@ -296,7 +296,7 @@ function exportInvoicesCSV(isPaid) {
     const blob = new Blob([csv], { type: "text/csv" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+    link.download = paid ? "paid_invoices.csv" : "unpaid_invoices.csv";
     link.click();
   });
 }
