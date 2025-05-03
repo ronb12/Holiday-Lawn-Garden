@@ -46,9 +46,7 @@
   <h2>Service Requests</h2>
   <table id="serviceRequestsTable">
     <thead>
-      <tr>
-        <th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th>
-      </tr>
+      <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -72,10 +70,12 @@ const baseRates = {
   "Lawn Mowing": { default: 45, duration: "1 hour" },
   "Leaf Raking": { default: 55, duration: "1.5 hours" },
   "Hedge Trimming": { default: 60, duration: "1.5–2 hours" },
-  "Pressure Washing": { default: 150, duration: "2–3 hours" },
-  "Driveway Pressure Washing": { default: 120, duration: "1.5–2 hours" },
-  "House Pressure Washing": { default: 180, duration: "2.5–4 hours" },
-  "Roof Pressure Washing": { default: 250, duration: "3–4 hours" }
+  "Driveway Pressure Washing": { default: 125, duration: "1.5–2 hours" },
+  "House Pressure Washing": { default: 185, duration: "2.5–3 hours" },
+  "Patio Pressure Washing": { default: 110, duration: "1.5 hours" },
+  "Sidewalk Pressure Washing": { default: 100, duration: "1–1.5 hours" },
+  "Yard Clean Up": { default: 150, duration: "2 hours" },
+  "Shrub Trimming": { default: 95, duration: "1.5 hours" }
 };
 
 // Estimate price based on ZIP and job type
@@ -89,7 +89,7 @@ function estimateDuration(service) {
   return baseRates[service]?.duration || "1–2 hours";
 }
 
-// Load service requests and handle quote conversion
+// Load service requests
 function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
@@ -116,6 +116,7 @@ function loadServiceRequests() {
   });
 }
 
+// Update status and auto-convert to quote
 function updateRequestStatus(id, status) {
   db.collection("service_requests").doc(id).update({ status }).then(() => {
     if (status === "Completed") {
@@ -160,7 +161,7 @@ function updateRequestStatus(id, status) {
   });
 }
 
-// Load quotes table
+// Load active quotes
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
   db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
