@@ -1,3 +1,4 @@
+<!-- PART 1: HEADER + PAYPAL ONLY VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,10 +13,13 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Stripe JS -->
-  <script src="https://js.stripe.com/v3/"></script>
+  <!-- PayPal JS SDK (replace with your client ID) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 
   <style>
+    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
+    .nav-links a { color: white; margin: 0 1em; text-decoration: none; }
     .pay-container {
       max-width: 500px;
       margin: 3em auto;
@@ -25,7 +29,7 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
     }
-    input, select {
+    input {
       width: 90%;
       padding: 0.7em;
       margin: 1em 0;
@@ -42,32 +46,11 @@
       cursor: pointer;
       margin-top: 10px;
     }
-    button:hover {
-      background-color: #006400;
-    }
-    #thank-you {
-      display: none;
-      margin-top: 2em;
-      color: green;
-    }
-    .payment-methods {
-      margin-top: 20px;
-    }
-    .payment-methods h3 {
-      margin-bottom: 10px;
-    }
-    .stripe-card-element {
-      padding: 1em;
-      background: #f9f9f9;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-bottom: 1em;
-    }
+    button:hover { background-color: #006400; }
+    #thank-you { display: none; margin-top: 2em; color: green; }
   </style>
 </head>
-
 <body>
-
 <header>
   <h1>Holliday's Lawn & Garden</h1>
   <nav class="nav-links">
@@ -82,41 +65,12 @@
 </header>
 
 <main>
-  <div class="pay-container fade-in">
+  <div class="pay-container">
     <h2>Pay Your Bill</h2>
-    <p>Choose a payment method below:</p>
+    <p>Use PayPal or a debit/credit card:</p>
 
-    <div class="payment-methods">
-      <h3>💳 Pay by Card (Stripe)</h3>
-
-      <form id="stripe-form">
-        <input type="email" id="stripeEmail" placeholder="Email Address" required><br>
-        <input type="text" id="stripeInvoice" placeholder="Invoice Number" required><br>
-        <input type="number" id="stripeAmount" placeholder="Amount ($)" min="1" step="0.01" required><br>
-
-        <div id="card-element" class="stripe-card-element"></div>
-        <button type="submit">Pay with Card</button>
-      </form>
-    </div>
-
-    <hr style="margin: 2em 0;">
-
-    <div class="payment-methods">
-      <h3>🅿️ Pay by PayPal</h3>
-
-      <form id="paypal-form" action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" onsubmit="showThankYou();">
-        <input type="hidden" name="cmd" value="_xclick">
-        <input type="hidden" name="business" value="your-paypal-email@example.com"> <!-- Replace with real PayPal email -->
-        <input type="hidden" name="currency_code" value="USD">
-
-        <input type="email" id="paypalEmail" name="payer_email" placeholder="Email Address" required><br>
-        <input type="text" id="paypalInvoice" name="item_name" placeholder="Invoice Number" required><br>
-        <input type="number" id="paypalAmount" name="amount" placeholder="Amount ($)" min="1" step="0.01" required><br>
-
-        <button type="submit">Pay with PayPal</button>
-      </form>
-    </div>
-
+    <input type="number" id="paypalAmount" placeholder="Amount ($)" min="1" step="0.01" required>
+    <div id="paypal-button-container" style="margin-top: 1em;"></div>
     <div id="thank-you">
       <h3>✅ Thank you for your payment!</h3>
       <p>We appreciate your business and look forward to serving you again!</p>
@@ -128,7 +82,6 @@
       <p><strong>Venmo:</strong> Coming Soon</p>
       <p><strong>Zelle:</strong> Coming Soon</p>
     </div>
-
   </div>
 </main>
 
@@ -137,47 +90,45 @@
 </footer>
 
 <script>
-  // Initialize Firebase Auth for auto-filling email
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      document.getElementById('stripeEmail').value = user.email;
-      document.getElementById('paypalEmail').value = user.email;
-    }
-  });
-
   function showThankYou() {
     document.getElementById('thank-you').style.display = 'block';
   }
 
-  // Stripe Setup
-  const stripe = Stripe("pk_test_51NXYZ_REPLACE_WITH_YOUR_OWN"); // Replace with YOUR real publishable key
-  const elements = stripe.elements();
-  const card = elements.create("card");
-  card.mount("#card-element");
-
-  // Handle Stripe Payment Submit
-  const stripeForm = document.getElementById('stripe-form');
-  stripeForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const {paymentMethod, error} = await stripe.createPaymentMethod({
-      type: 'card',
-      card: card,
-      billing_details: {
-        email: document.getElementById('stripeEmail').value,
-      },
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert('✅ Payment submitted to Stripe (test mode)!');
-      // In real version, send paymentMethod.id and amount to your server
-      stripeForm.reset();
-      card.clear();
-      document.getElementById('thank-you').style.display = 'block';
+  // Auto-fill PayPal amount from saved email (optional)
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      // Optionally: pre-fill any fields or log usage
+      console.log("User logged in:", user.email);
     }
   });
+
+  paypal.Buttons({
+    style: {
+      layout: 'vertical',
+      color: 'blue',
+      shape: 'rect',
+      label: 'paypal'
+    },
+    createOrder: function(data, actions) {
+      const amount = document.getElementById('paypalAmount').value || '1.00';
+      return actions.order.create({
+        purchase_units: [{
+          amount: { value: amount },
+          description: 'Invoice Payment - Holliday’s Lawn & Garden'
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        showThankYou();
+        alert('✅ Payment completed by ' + details.payer.name.given_name);
+      });
+    },
+    onError: function(err) {
+      console.error(err);
+      alert('❌ PayPal error: ' + err.message);
+    }
+  }).render('#paypal-button-container');
 </script>
 
 </body>
