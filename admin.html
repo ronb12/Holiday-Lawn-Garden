@@ -1,4 +1,4 @@
-<!-- PART 1: HTML HEADER AND STRUCTURE SETUP -->
+<!-- PART 1: HEADER + STRUCTURE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,14 +26,13 @@
     .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .base-rate-warning { color: red; font-weight: bold; }
-    .warning-box { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; margin-top: 10px; border-radius: 5px; }
   </style>
 </head>
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
 
-<!-- Summary Section -->
+<!-- ✅ SUMMARY -->
 <div class="summary">
   <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
   <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -44,11 +43,14 @@
   <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
 </div>
 
+<!-- ✅ SERVICE REQUESTS TABLE -->
 <h2>Service Requests</h2>
 <table id="serviceRequestsTable">
   <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr></thead>
   <tbody></tbody>
 </table>
+
+<!-- ✅ QUOTES TABLE -->
 <h2>Quotes</h2>
 <div class="search-bar">
   <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
@@ -61,8 +63,7 @@
   </thead>
   <tbody></tbody>
 </table>
-
-<!-- Create Invoice -->
+<!-- ✅ CREATE INVOICE FORM -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -74,10 +75,11 @@
   </div>
   <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
   <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a due date')" oninput="this.setCustomValidity('')" />
+  
   <div id="serviceList"></div>
   <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
-  <!-- Profit Breakdown -->
+  <!-- ✅ PROFIT BREAKDOWN -->
   <div id="profitBreakdown" class="collapse-section" style="display: none;">
     <strong>💡 Auto Profit Breakdown</strong><br/>
     Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -91,7 +93,7 @@
   <button type="submit">Create Invoice</button>
 </form>
 
-<!-- Invoices Due -->
+<!-- ✅ INVOICE TABLES -->
 <h2>Invoices Due</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
@@ -101,7 +103,6 @@
   <tbody></tbody>
 </table>
 
-<!-- Paid Invoices -->
 <h2>Paid Invoices</h2>
 <div class="export-buttons">
   <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
@@ -111,9 +112,12 @@
   <tbody></tbody>
 </table>
 
+<!-- ✅ LOGOUT -->
 <br><button onclick="logout()">Logout</button>
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+
+<!-- ✅ FIREBASE SCRIPTS -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -123,6 +127,7 @@ const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
 const MIN_PROFIT = 30;
 
+// ✅ Base Rates for New Orleans
 const baseRates = {
   "Lawn Mowing": { default: 45, duration: "1 hour" },
   "Leaf Raking": { default: 55, duration: "1.5 hours" },
@@ -134,6 +139,7 @@ const baseRates = {
   "Gutter Cleaning": { default: 90, duration: "2 hours" }
 };
 
+// ✅ Auth Check + Initial Load
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
@@ -148,7 +154,7 @@ firebase.auth().onAuthStateChanged(async user => {
     alert("Access denied."); location.href = "login.html";
   }
 });
-
+// ✅ Fetch invoice number counter
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -156,6 +162,7 @@ function fetchInvoiceSequence() {
   });
 }
 
+// ✅ Add service row to invoice
 function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
@@ -174,6 +181,7 @@ function addServiceRow(desc = "", amt = "") {
   calcTotal();
 }
 
+// ✅ Total and Profit Calculation
 function calcTotal() {
   let total = 0;
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
@@ -182,7 +190,6 @@ function calcTotal() {
   document.getElementById("totalAmount").innerText = total.toFixed(2);
   calcProfit();
 }
-
 function calcProfit() {
   const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
   const miles = parseFloat(document.getElementById("milesInput").value || "0");
@@ -194,7 +201,9 @@ function calcProfit() {
   document.getElementById("laborCost").innerText = `$${labor}`;
   document.getElementById("profitMargin").innerText = `$${profit}`;
 }
-  function loadServiceRequests() {
+
+// ✅ Load service requests
+function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
@@ -220,51 +229,115 @@ function calcProfit() {
   });
 }
 
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value;
-  const number = document.getElementById("invoiceNumber").value;
-  const due = document.getElementById("invoiceDueDate").value;
-  if (!due) return alert("⚠️ Please select a due date.");
-
-  const services = [];
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value;
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt) services.push({ description: desc, amount: amt });
-  });
-
-  const total = services.reduce((sum, s) => sum + s.amount, 0);
-  const address = {
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value
-  };
-  const mileage = parseFloat(document.getElementById("milesInput").value || 0);
-  const labor = parseInt(document.getElementById("laborInput").value || 1);
-
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services,
-    amountDue: total,
-    dueDate: due,
-    ...address,
-    mileage,
-    laborers: labor,
-    paid: false,
-    archived: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    invoiceSequence++;
-    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-    alert("✅ Invoice Created");
-    document.getElementById("invoiceForm").reset();
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow();
-    loadInvoices();
+// ✅ Update status
+function updateRequestStatus(id, status) {
+  db.collection("service_requests").doc(id).update({ status }).then(() => {
+    if (status === "Completed") {
+      db.collection("service_requests").doc(id).get().then(doc => {
+        const d = doc.data();
+        if (confirm("Convert to quote?")) {
+          const amount = baseRates[d.serviceType]?.default || 100;
+          const base = baseRates[d.serviceType]?.default || amount;
+          const duration = baseRates[d.serviceType]?.duration || "1–2 hours";
+          const gas = (d.miles || 10) * 0.65;
+          const labor = (d.laborers || 2) * 20;
+          const profit = amount - gas - labor;
+          if (profit < 0) return alert(`⚠️ This quote would result in a LOSS.\nProfit: $${profit.toFixed(2)}`);
+          db.collection("quotes").add({
+            fullName: d.fullName,
+            email: d.email,
+            serviceType: d.serviceType,
+            amount,
+            baseRate: base,
+            estimatedDuration: duration,
+            address: {
+              street: d.street,
+              city: d.city,
+              state: d.state,
+              zip: d.zip
+            },
+            notes: d.notes || "",
+            archived: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => loadQuotes());
+        }
+      });
+    }
   });
 }
+
+// ✅ Load quotes
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    let count = 0;
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const isLow = q.amount < (q.baseRate || 0);
+      tbody.innerHTML += `
+        <tr data-search="${(q.fullName + q.email + q.serviceType).toLowerCase()}">
+          <td>${q.fullName}</td>
+          <td>${q.email}</td>
+          <td>${q.serviceType}</td>
+          <td>$${q.amount.toFixed(2)}</td>
+          <td${isLow ? ' class="base-rate-warning"' : ''}>$${(q.baseRate || 0).toFixed(2)}</td>
+          <td>${q.estimatedDuration || "—"}</td>
+          <td>Active</td>
+          <td><button onclick="createInvoiceFromQuote('${doc.id}')">Convert</button></td>
+        </tr>`;
+      count++;
+    });
+    document.getElementById("quoteCount").innerText = count;
+  });
+}
+
+// ✅ Create invoice from quote
+function createInvoiceFromQuote(id) {
+  db.collection("quotes").doc(id).get().then(doc => {
+    const d = doc.data();
+    document.getElementById("invoiceEmail").value = d.email;
+    document.getElementById("street").value = d.address?.street || "";
+    document.getElementById("city").value = d.address?.city || "";
+    document.getElementById("state").value = d.address?.state || "";
+    document.getElementById("zip").value = d.address?.zip || "";
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow(d.serviceType, d.amount);
+    document.getElementById("profitBreakdown").style.display = "block";
+    alert("🧾 Service added to invoice form. Complete and click Create Invoice.");
+  });
+}
+
+// ✅ Filter quotes
+function filterQuotes() {
+  const term = document.getElementById("quoteSearch").value.toLowerCase();
+  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+    const match = row.getAttribute("data-search").includes(term);
+    row.style.display = match ? "" : "none";
+  });
+}
+
+// ✅ Export invoices
+function exportInvoicesCSV(isPaid) {
+  db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
+    const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
+    });
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+    link.click();
+  });
+}
+
+// ✅ Logout
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
 </script>
+</body>
+</html>
