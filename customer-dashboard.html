@@ -8,11 +8,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
   <style>
     body { background: #f4f9f4; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-    h1, h2, h3 { color: #228B22; }
+    h1, h2 { color: #228B22; }
     input, select, textarea {
       padding: 8px; border: 1px solid #ccc; border-radius: 6px;
       margin: 6px 0; font-size: 14px; width: 100%; max-width: 400px;
@@ -26,7 +26,7 @@
     th, td { padding: 10px; border: 1px solid #ccc; }
     th { background-color: #228B22; color: white; }
     tr:nth-child(even) { background-color: #f0f9f0; }
-    .section { margin-top: 30px; }
+
     .modal {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6); display: none;
@@ -79,7 +79,6 @@
       <option value="Custom">Other (Custom Work)</option>
     </select>
     <input id="serviceType" placeholder="Enter custom service..." style="display:none;" />
-
     <input type="date" id="preferredDate" required />
     <textarea id="requestNotes" placeholder="Notes"></textarea>
     <input id="street" placeholder="Street" />
@@ -96,6 +95,7 @@
       <tbody></tbody>
     </table>
   </div>
+
   <div class="section">
     <h2>Your Quotes</h2>
     <table id="quotesTable">
@@ -115,18 +115,16 @@
   <button onclick="openProfile()">Edit Profile</button>
   <button onclick="logout()">Logout</button>
 
-  <!-- Invoice Modal -->
-  <div id="invoiceModal" class="modal"><div class="modal-content" id="invoiceDetailsContainer">
-    <div id="invoiceDetails"></div>
+  <!-- Modals -->
+  <div id="invoiceModal" class="modal"><div class="modal-content">
+    <h3>Invoice Details</h3><div id="invoiceDetails"></div>
     <button onclick="closeModal(event)" class="close">Close</button>
   </div></div>
 
-  <!-- PayPal Modal -->
   <div id="paypalModal" class="modal"><div class="modal-content">
     <h3>Complete Payment</h3><div id="paypalButtons"></div>
     <button onclick="closeModal(event)" class="close">Cancel</button>
   </div></div>
-
 <script>
   const db = firebase.firestore();
   let currentUser;
@@ -142,20 +140,26 @@
       loadQuotes();
       loadInvoices();
     } else {
-      location.href = "login.html";
+      window.location.href = "login.html";
     }
   });
 
+  function toggleCustomService() {
+    const select = document.getElementById("serviceTypeSelect");
+    const custom = document.getElementById("serviceType");
+    custom.style.display = select.value === "Custom" ? "block" : "none";
+    custom.required = select.value === "Custom";
+  }
+
   function submitRequest(e) {
     e.preventDefault();
-    const type = document.getElementById("serviceTypeSelect").value === "Custom"
+    const serviceType = document.getElementById("serviceTypeSelect").value === "Custom"
       ? document.getElementById("serviceType").value
       : document.getElementById("serviceTypeSelect").value;
-
-    const request = {
+    const data = {
       email: currentUser.email,
       fullName: userProfile.fullName || "",
-      serviceType: type,
+      serviceType,
       preferredDate: document.getElementById("preferredDate").value,
       notes: document.getElementById("requestNotes").value,
       street: document.getElementById("street").value,
@@ -165,9 +169,10 @@
       status: "Pending",
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
-    db.collection("service_requests").add(request).then(() => {
-      alert("✅ Request submitted.");
-      e.target.reset(); loadRequests();
+    db.collection("service_requests").add(data).then(() => {
+      alert("✅ Request submitted");
+      e.target.reset();
+      loadRequests();
     });
   }
 
@@ -176,19 +181,21 @@
     db.collection("service_requests")
       .where("email", "==", currentUser.email)
       .orderBy("timestamp", "desc")
-      .get().then(snapshot => {
+      .onSnapshot(snapshot => {
         tbody.innerHTML = "";
+        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No requests yet</td></tr>";
         snapshot.forEach(doc => {
           const r = doc.data();
           const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
           const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
-          tbody.innerHTML += `<tr>
-            <td>${r.serviceType}</td>
-            <td>${date}</td>
-            <td>${r.status}</td>
-            <td>${address}</td>
-            <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
-          </tr>`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${r.serviceType}</td>
+              <td>${date}</td>
+              <td>${r.status}</td>
+              <td>${address}</td>
+              <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+            </tr>`;
         });
       });
   }
@@ -204,23 +211,32 @@
     db.collection("quotes")
       .where("email", "==", currentUser.email)
       .orderBy("createdAt", "desc")
-      .get().then(snapshot => {
+      .onSnapshot(snapshot => {
         tbody.innerHTML = "";
+        let count = 0;
         snapshot.forEach(doc => {
           const q = doc.data();
           if (q.status === "Archived") return;
-          tbody.innerHTML += `<tr>
-            <td>${q.quote || q.serviceType}</td>
-            <td>$${q.amount?.toFixed(2)}</td>
-            <td>${q.status}</td>
-            <td>${q.status !== "Accepted" ? `<button onclick="acceptQuote('${doc.id}')">Accept</button>` : "Accepted"}</td>
-          </tr>`;
+          count++;
+          tbody.innerHTML += `
+            <tr>
+              <td>${q.quote || q.serviceType}</td>
+              <td>$${q.amount?.toFixed(2) || "0.00"}</td>
+              <td>${q.status || "Pending"}</td>
+              <td>${q.status === "Accepted" ? "✅ Accepted" : `<button onclick="acceptQuote('${doc.id}')">Accept</button>`}</td>
+            </tr>`;
         });
+        if (count === 0) {
+          tbody.innerHTML = "<tr><td colspan='4'>No quotes yet</td></tr>";
+        }
       });
   }
 
   function acceptQuote(id) {
-    db.collection("quotes").doc(id).update({ status: "Accepted" }).then(loadQuotes);
+    db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+      alert("✅ Quote accepted!");
+      loadQuotes();
+    });
   }
 
   function loadInvoices() {
@@ -228,50 +244,28 @@
     db.collection("invoices")
       .where("customerEmail", "==", currentUser.email)
       .orderBy("dueDate", "asc")
-      .get().then(snapshot => {
+      .onSnapshot(snapshot => {
         tbody.innerHTML = "";
+        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='5'>No invoices</td></tr>";
         snapshot.forEach(doc => {
           const d = doc.data();
-          const btn = d.paid
-            ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>`
+          const actionBtn = d.paid
+            ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>`
             : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
-          tbody.innerHTML += `<tr>
-            <td>${d.invoiceNumber}</td>
-            <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-            <td>$${d.amountDue.toFixed(2)}</td>
-            <td>${d.paid ? "Paid" : "Unpaid"}</td>
-            <td>${btn}</td>
-          </tr>`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${d.invoiceNumber}</td>
+              <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+              <td>$${d.amountDue.toFixed(2)}</td>
+              <td>${d.paid ? "Paid" : "Unpaid"}</td>
+              <td>${actionBtn}</td>
+            </tr>`;
         });
       });
   }
 
-  function viewInvoice(data) {
-    const services = data.services || [];
-    const address = `${data.street || ""}, ${data.city || ""}, ${data.state || ""} ${data.zip || ""}`;
-    const invoiceHTML = `
-      <h3>Holliday's Lawn & Garden</h3>
-      <p><strong>Owner:</strong> Karl Holliday<br/>
-      <strong>Email:</strong> 7holliday@gmail.com<br/>
-      <strong>Phone:</strong> 504-717-1887</p>
-      <hr/>
-      <p><strong>Invoice #:</strong> ${data.invoiceNumber}<br/>
-      <strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}<br/>
-      <strong>Status:</strong> ${data.paid ? "Paid" : "Unpaid"}</p>
-      <hr/>
-      <h4>Services</h4>
-      <ul>${services.map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
-      <hr/>
-      <p><strong>Total:</strong> $${data.amountDue.toFixed(2)}</p>
-      <p><strong>Billing Address:</strong><br/>${address}</p>
-      <p style="text-align:center;">Thank you for your business!</p>
-    `;
-    document.getElementById("invoiceDetails").innerHTML = invoiceHTML;
-    document.getElementById("invoiceModal").style.display = "flex";
-  }
-
-  function initiatePay(id, amount) {
-    selectedInvoice = id;
+  function initiatePay(invoiceId, amount) {
+    selectedInvoice = invoiceId;
     document.getElementById("paypalModal").style.display = "flex";
     renderPayPal(amount);
   }
@@ -290,6 +284,24 @@
         });
       })
     }).render("#paypalButtons");
+  }
+
+  function viewInvoice(data) {
+    const address = `${data.street || ''}, ${data.city || ''}, ${data.state || ''} ${data.zip || ''}`;
+    const html = `
+      <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+      <p><strong>Due Date:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+      <p><strong>Amount Paid:</strong> $${data.amountDue.toFixed(2)}</p>
+      <hr>
+      <p><strong>Services:</strong></p>
+      <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+      <hr>
+      <p><strong>Billing Address:</strong> ${address}</p>
+      <p><strong>Status:</strong> Paid</p>
+      <p style="text-align:center;">Thank you for your business!</p>
+    `;
+    document.getElementById("invoiceDetails").innerHTML = html;
+    document.getElementById("invoiceModal").style.display = "flex";
   }
 
   function loadUserProfile() {
@@ -337,13 +349,11 @@
     }
   }
 
-  function toggleCustomService() {
-    const custom = document.getElementById("serviceType");
-    custom.style.display = document.getElementById("serviceTypeSelect").value === "Custom" ? "block" : "none";
-  }
-
   function closeModal(e) {
-    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    const target = e.target;
+    if (target && target.classList && (target.classList.contains("modal") || target.classList.contains("close"))) {
+      document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    }
   }
 
   function openProfile() {
