@@ -1,3 +1,4 @@
+<!-- PART 1: HEADER + STRUCTURE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,35 +23,32 @@
     .service-row input, .service-row select { flex: 1; }
     .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
     .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
+    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .base-rate-warning { color: red; font-weight: bold; }
-    .dim-row { opacity: 0.6; }
-    #notifCount {
-      position: absolute;
-      top: 1.1em;
-      right: 1.3em;
-      background: red;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 50%;
-      font-size: 12px;
-      display: none;
+    #logoutBtn, #notificationBell {
+      position: absolute; top: 15px; font-size: 1em;
     }
+    #logoutBtn { right: 15px; }
+    #notificationBell { right: 60px; cursor: pointer; }
   </style>
 </head>
 <body>
-
 <header>
   <h1>Admin Dashboard</h1>
-  <a href="notifications.html" style="color:white; font-size:1.3em; text-decoration:none; position:absolute; top:1.2em; right:2em;">
-    🔔
-    <span id="notifCount">0</span>
-  </a>
+  <span id="notificationBell" onclick="window.location.href='notifications.html'">🔔</span>
+  <button id="logoutBtn" onclick="logout()">Logout</button>
 </header>
 
 <main class="admin-container">
 
-<!-- ✅ SUMMARY SECTION -->
+<!-- ✅ NAVIGATION -->
+<nav>
+  <a href="admin.html">🏠 Dashboard</a> | 
+  <a href="notifications.html">🔔 Notifications</a>
+</nav>
+
+<!-- ✅ SUMMARY -->
 <div class="summary">
   <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
   <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -70,7 +68,9 @@
 
 <!-- ✅ QUOTES TABLE -->
 <h2>Quotes</h2>
-<input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+<div class="search-bar">
+  <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+</div>
 <table id="quotesTable">
   <thead>
     <tr>
@@ -80,7 +80,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ INVOICE FORM -->
+<!-- ✅ CREATE INVOICE FORM -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -92,10 +92,11 @@
   </div>
   <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
   <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a due date')" oninput="this.setCustomValidity('')" />
+  
   <div id="serviceList"></div>
   <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
-  <!-- ✅ PROFIT CALCULATION -->
+  <!-- ✅ PROFIT BREAKDOWN -->
   <div id="profitBreakdown" class="collapse-section" style="display: none;">
     <strong>💡 Auto Profit Breakdown</strong><br/>
     Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -109,8 +110,27 @@
   <button type="submit">Create Invoice</button>
 </form>
 
-<!-- CONTINUED IN PART 2... -->
-<!-- ✅ FIREBASE SDKs -->
+<!-- ✅ INVOICE TABLES -->
+<h2>Invoices Due</h2>
+<div class="export-buttons">
+  <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
+</div>
+<table id="invoicesDueTable">
+  <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<h2>Paid Invoices</h2>
+<div class="export-buttons">
+  <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
+</div>
+<table id="invoicesPaidTable">
+  <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+  <tbody></tbody>
+</table>
+
+<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+<!-- ✅ FIREBASE SCRIPTS -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -132,6 +152,7 @@ const baseRates = {
   "Gutter Cleaning": { default: 90, duration: "2 hours" }
 };
 
+// ✅ Auth Check
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
@@ -142,28 +163,12 @@ firebase.auth().onAuthStateChanged(async user => {
     loadServiceRequests();
     loadQuotes();
     loadInvoices();
-    updateNotifBell(); // ✅ load bell count
   } else {
     alert("Access denied."); location.href = "login.html";
   }
 });
 
-function updateNotifBell() {
-  db.collection("notifications").where("status", "==", "unread")
-    .onSnapshot(snapshot => {
-      const count = snapshot.size;
-      const badge = document.getElementById("notifCount");
-      if (badge) {
-        if (count > 0) {
-          badge.style.display = "inline-block";
-          badge.innerText = count;
-        } else {
-          badge.style.display = "none";
-        }
-      }
-    });
-}
-
+// ✅ Invoice Number
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -171,6 +176,7 @@ function fetchInvoiceSequence() {
   });
 }
 
+// ✅ Add Service Row
 function addServiceRow(desc = "", amt = "") {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
@@ -189,6 +195,7 @@ function addServiceRow(desc = "", amt = "") {
   calcTotal();
 }
 
+// ✅ Calculate Total
 function calcTotal() {
   let total = 0;
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
@@ -198,6 +205,7 @@ function calcTotal() {
   calcProfit();
 }
 
+// ✅ Calculate Profit
 function calcProfit() {
   const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
   const miles = parseFloat(document.getElementById("milesInput").value || "0");
@@ -210,7 +218,7 @@ function calcProfit() {
   document.getElementById("profitMargin").innerText = `$${profit}`;
 }
 
-// ✅ CREATE INVOICE
+// ✅ Create Invoice
 function createInvoice(e) {
   e.preventDefault();
   const email = document.getElementById("invoiceEmail").value;
@@ -256,6 +264,103 @@ function createInvoice(e) {
     addServiceRow();
     loadInvoices();
   });
+}
+
+// ✅ Load Invoices
+function loadInvoices() {
+  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const dueBody = document.querySelector("#invoicesDueTable tbody");
+  const paidBody = document.querySelector("#invoicesPaidTable tbody");
+  dueBody.innerHTML = "";
+  paidBody.innerHTML = "";
+
+  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const dueDate = new Date(d.dueDate);
+      const isCurrentYear = dueDate.getFullYear() === currentYear;
+      const isCurrentMonth = dueDate.getMonth() === currentMonth;
+
+      const row = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Due"}</td>
+          <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️ Mark Paid</button>"}</td>
+        </tr>`;
+
+      if (d.paid) {
+        paidBody.innerHTML += row;
+        paidTotal += d.amountDue;
+        if (isCurrentYear) yearRevenue += d.amountDue;
+        if (isCurrentMonth) monthRevenue += d.amountDue;
+      } else {
+        dueBody.innerHTML += row;
+        dueCount++;
+        outstanding += d.amountDue;
+        inProgress++;
+      }
+    });
+
+    document.getElementById("invoiceCount").innerText = dueCount;
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
+    document.getElementById("inProgressCount").innerText = inProgress;
+    document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
+    document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
+  });
+}
+
+// ✅ Mark Paid
+function markInvoicePaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+}
+
+// ✅ Print Placeholder
+function printInvoice(id) {
+  alert("🖨️ This will trigger a printable invoice PDF preview. (PDF logic to be implemented)");
+}
+
+// ✅ Export Invoices
+function exportInvoicesCSV(isPaid) {
+  db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
+    const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
+    });
+    const csv = Papa.unparse(rows);
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+    link.click();
+  });
+}
+
+// ✅ Load Quotes (same as part 1)
+function loadQuotes() { /* already in part 1 */ }
+
+// ✅ Load Requests
+function loadServiceRequests() { /* already in part 1 */ }
+
+// ✅ Filter Quotes
+function filterQuotes() {
+  const term = document.getElementById("quoteSearch").value.toLowerCase();
+  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+    const match = row.getAttribute("data-search").includes(term);
+    row.style.display = match ? "" : "none";
+  });
+}
+
+// ✅ Logout
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 </body>
