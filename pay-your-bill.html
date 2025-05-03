@@ -1,3 +1,4 @@
+<!-- PAY-YOUR-BILL.html — GUEST CHECKOUT VERSION -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,8 +14,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- ✅ PayPal Sandbox Client ID for Testing -->
-  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons,funding-eligibility&enable-funding=card,paylater"></script>
+  <!-- ✅ PayPal Sandbox SDK with Venmo Disabled -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons,funding-eligibility&disable-funding=venmo"></script>
 
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
@@ -65,10 +66,13 @@
 
 <main>
   <div class="pay-container">
-    <h2>Pay Your Bill</h2>
-    <p>Use PayPal or a debit/credit card:</p>
+    <h2>Guest Checkout</h2>
+    <p>Enter your invoice number, email, and amount to pay:</p>
 
+    <input type="text" id="invoiceNumberInput" placeholder="Invoice Number" required>
+    <input type="email" id="payerEmailInput" placeholder="Your Email Address" required>
     <input type="number" id="paypalAmount" placeholder="Amount ($)" min="1" step="0.01" required>
+
     <div id="paypal-button-container" style="margin-top: 1em;"></div>
 
     <div id="thank-you">
@@ -118,7 +122,8 @@
     onApprove: function(data, actions) {
       return actions.order.capture().then(async function(details) {
         const amount = parseFloat(details.purchase_units[0].amount.value);
-        const payerEmail = details.payer.email_address;
+        const payerEmail = document.getElementById('payerEmailInput').value.trim();
+        const invoiceNumber = document.getElementById('invoiceNumberInput').value.trim();
         const paidAt = new Date().toLocaleString();
 
         showThankYou();
@@ -126,53 +131,41 @@
         document.getElementById('confirm-amount').innerText = amount.toFixed(2);
         document.getElementById('confirm-date').innerText = paidAt;
         document.getElementById('confirm-email').innerText = payerEmail;
+        document.getElementById('confirm-invoice').innerText = invoiceNumber;
 
         try {
           const db = firebase.firestore();
-          const user = firebase.auth().currentUser;
-
-          if (!user) {
-            alert("⚠️ You're not logged in. Invoice matching unavailable.");
-            return;
-          }
-
-          const invoiceSnap = await db.collection("invoices")
-            .where("customerEmail", "==", user.email)
-            .where("paid", "==", false)
-            .orderBy("dueDate", "asc")
+          const invoiceQuery = await db.collection("invoices")
+            .where("invoiceNumber", "==", invoiceNumber)
             .limit(1)
             .get();
 
-          if (!invoiceSnap.empty) {
-            const doc = invoiceSnap.docs[0];
-            const docRef = doc.ref;
-            const invoiceData = doc.data();
+          if (!invoiceQuery.empty) {
+            const docRef = invoiceQuery.docs[0].ref;
 
             await docRef.update({
               paid: true,
               paidAt: firebase.firestore.FieldValue.serverTimestamp(),
-              paymentMethod: "PayPal (Sandbox)",
+              paymentMethod: "PayPal (Guest)",
               paidAmount: amount,
               paypalPayer: payerEmail
             });
 
-            document.getElementById('confirm-invoice').innerText = invoiceData.invoiceNumber;
-
             await db.collection("notifications").add({
               type: "payment",
-              message: `💰 $${amount.toFixed(2)} received for invoice #${invoiceData.invoiceNumber}`,
-              customer: user.email,
+              message: `💰 $${amount.toFixed(2)} received for invoice #${invoiceNumber}`,
+              customer: payerEmail,
               timestamp: firebase.firestore.FieldValue.serverTimestamp(),
               status: "unread"
             });
 
-            console.log("✅ Payment logged and admin notified.");
+            console.log("✅ Invoice updated and admin notified.");
           } else {
-            alert("⚠️ No unpaid invoice found for your account.");
+            alert("⚠️ Invoice number not found. Please check and try again.");
           }
         } catch (err) {
           console.error("❌ Firestore error:", err);
-          alert("❌ Failed to log payment. Contact support.");
+          alert("❌ Payment succeeded, but invoice update failed. Contact support.");
         }
       });
     },
