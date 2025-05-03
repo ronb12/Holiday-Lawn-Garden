@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
+    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
     .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
     h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin: 1em 0; }
@@ -22,14 +22,32 @@
     .service-row input, .service-row select { flex: 1; }
     .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
     .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
-    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .base-rate-warning { color: red; font-weight: bold; }
     .dim-row { opacity: 0.6; }
+    #notifCount {
+      position: absolute;
+      top: 1.1em;
+      right: 1.3em;
+      background: red;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 50%;
+      font-size: 12px;
+      display: none;
+    }
   </style>
 </head>
 <body>
-<header><h1>Admin Dashboard</h1></header>
+
+<header>
+  <h1>Admin Dashboard</h1>
+  <a href="notifications.html" style="color:white; font-size:1.3em; text-decoration:none; position:absolute; top:1.2em; right:2em;">
+    🔔
+    <span id="notifCount">0</span>
+  </a>
+</header>
+
 <main class="admin-container">
 
 <!-- ✅ SUMMARY SECTION -->
@@ -92,11 +110,12 @@
 </form>
 
 <!-- CONTINUED IN PART 2... -->
-<!-- ✅ FIREBASE SCRIPTS -->
+<!-- ✅ FIREBASE SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
+
 <script>
 const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
@@ -123,10 +142,27 @@ firebase.auth().onAuthStateChanged(async user => {
     loadServiceRequests();
     loadQuotes();
     loadInvoices();
+    updateNotifBell(); // ✅ load bell count
   } else {
     alert("Access denied."); location.href = "login.html";
   }
 });
+
+function updateNotifBell() {
+  db.collection("notifications").where("status", "==", "unread")
+    .onSnapshot(snapshot => {
+      const count = snapshot.size;
+      const badge = document.getElementById("notifCount");
+      if (badge) {
+        if (count > 0) {
+          badge.style.display = "inline-block";
+          badge.innerText = count;
+        } else {
+          badge.style.display = "none";
+        }
+      }
+    });
+}
 
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
@@ -220,183 +256,6 @@ function createInvoice(e) {
     addServiceRow();
     loadInvoices();
   });
-}
-
-// ✅ CREATE FROM QUOTE + ARCHIVE QUOTE
-function createInvoiceFromQuote(id) {
-  db.collection("quotes").doc(id).get().then(doc => {
-    const d = doc.data();
-    document.getElementById("invoiceEmail").value = d.email;
-    document.getElementById("street").value = d.address?.street || "";
-    document.getElementById("city").value = d.address?.city || "";
-    document.getElementById("state").value = d.address?.state || "";
-    document.getElementById("zip").value = d.address?.zip || "";
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow(d.serviceType, d.amount);
-    document.getElementById("profitBreakdown").style.display = "block";
-
-    db.collection("quotes").doc(id).update({ archived: true });
-    alert("🧾 Quote converted to invoice. Complete form and click Create Invoice.");
-  });
-}
-
-// ✅ ARCHIVE COMPLETED REQUESTS ON CONVERSION
-function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status }).then(() => {
-    if (status === "Completed") {
-      db.collection("service_requests").doc(id).get().then(doc => {
-        const d = doc.data();
-        const amount = baseRates[d.serviceType]?.default || 100;
-        const duration = baseRates[d.serviceType]?.duration || "1–2 hours";
-        db.collection("quotes").add({
-          fullName: d.fullName,
-          email: d.email,
-          serviceType: d.serviceType,
-          amount,
-          baseRate: amount,
-          estimatedDuration: duration,
-          address: {
-            street: d.street,
-            city: d.city,
-            state: d.state,
-            zip: d.zip
-          },
-          notes: d.notes || "",
-          archived: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-          db.collection("service_requests").doc(id).update({ archived: true });
-          loadQuotes(); loadServiceRequests();
-        });
-      });
-    }
-  });
-}
-
-// ✅ HIDE ARCHIVED REQUESTS
-function loadServiceRequests() {
-  const tbody = document.querySelector("#serviceRequestsTable tbody");
-  db.collection("service_requests").where("archived", "==", false).orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.fullName || ""}</td>
-          <td>${d.email}</td>
-          <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
-          <td>${d.serviceType || ""}</td>
-          <td>${d.status}</td>
-          <td>${d.notes || "—"}</td>
-          <td>
-            <select onchange="updateRequestStatus('${doc.id}', this.value)">
-              <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
-              <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
-              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-// ✅ LOAD QUOTES
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    let count = 0;
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const isLow = q.amount < (q.baseRate || 0);
-      tbody.innerHTML += `
-        <tr data-search="${(q.fullName + q.email + q.serviceType).toLowerCase()}">
-          <td>${q.fullName}</td>
-          <td>${q.email}</td>
-          <td>${q.serviceType}</td>
-          <td>$${q.amount.toFixed(2)}</td>
-          <td${isLow ? ' class="base-rate-warning"' : ''}>$${(q.baseRate || 0).toFixed(2)}</td>
-          <td>${q.estimatedDuration || "—"}</td>
-          <td>Active</td>
-          <td><button onclick="createInvoiceFromQuote('${doc.id}')">Convert</button></td>
-        </tr>`;
-      count++;
-    });
-    document.getElementById("quoteCount").innerText = count;
-  });
-}
-
-// ✅ FILTER QUOTES
-function filterQuotes() {
-  const term = document.getElementById("quoteSearch").value.toLowerCase();
-  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-    const match = row.getAttribute("data-search").includes(term);
-    row.style.display = match ? "" : "none";
-  });
-}
-
-// ✅ LOAD INVOICES
-function loadInvoices() {
-  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  dueBody.innerHTML = "";
-  paidBody.innerHTML = "";
-
-  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const dueDate = new Date(d.dueDate);
-      const isCurrentYear = dueDate.getFullYear() === currentYear;
-      const isCurrentMonth = dueDate.getMonth() === currentMonth;
-
-      const row = `
-        <tr>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Due"}</td>
-          <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️ Mark Paid</button>"}</td>
-        </tr>
-      `;
-
-      if (d.paid) {
-        paidBody.innerHTML += row;
-        paidTotal += d.amountDue;
-        if (isCurrentYear) yearRevenue += d.amountDue;
-        if (isCurrentMonth) monthRevenue += d.amountDue;
-      } else {
-        dueBody.innerHTML += row;
-        dueCount++;
-        outstanding += d.amountDue;
-        inProgress++;
-      }
-    });
-
-    document.getElementById("invoiceCount").innerText = dueCount;
-    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-    document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
-    document.getElementById("inProgressCount").innerText = inProgress;
-    document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
-    document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
-  });
-}
-
-function markInvoicePaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-function printInvoice(id) {
-  alert("🖨️ This will trigger a printable invoice PDF preview. (PDF logic to be implemented)");
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 </body>
