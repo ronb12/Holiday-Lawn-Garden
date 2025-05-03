@@ -338,6 +338,64 @@ function exportInvoicesCSV(isPaid) {
 function logout() {
   firebase.auth().signOut().then(() => location.href = "login.html");
 }
+  function loadInvoices() {
+  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  const dueBody = document.querySelector("#invoicesDueTable tbody");
+  const paidBody = document.querySelector("#invoicesPaidTable tbody");
+  dueBody.innerHTML = "";
+  paidBody.innerHTML = "";
+
+  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const dueDate = new Date(d.dueDate);
+      const isCurrentYear = dueDate.getFullYear() === currentYear;
+      const isCurrentMonth = dueDate.getMonth() === currentMonth;
+
+      const row = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.dueDate}</td>
+          <td>${d.paid ? "Paid" : "Due"}</td>
+          <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️ Mark Paid</button>"}</td>
+        </tr>
+      `;
+
+      if (d.paid) {
+        paidBody.innerHTML += row;
+        paidTotal += d.amountDue;
+        if (isCurrentYear) yearRevenue += d.amountDue;
+        if (isCurrentMonth) monthRevenue += d.amountDue;
+      } else {
+        dueBody.innerHTML += row;
+        dueCount++;
+        outstanding += d.amountDue;
+        inProgress++;
+      }
+    });
+
+    document.getElementById("invoiceCount").innerText = dueCount;
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+    document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
+    document.getElementById("inProgressCount").innerText = inProgress;
+    document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
+    document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
+  });
+}
+function markInvoicePaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+}
+
+function printInvoice(id) {
+  alert("🖨️ This will trigger a printable invoice PDF preview. (PDF logic to be implemented)");
+}
+
 </script>
 </body>
 </html>
