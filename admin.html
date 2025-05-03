@@ -194,6 +194,32 @@ function calcProfit() {
   document.getElementById("laborCost").innerText = `$${labor}`;
   document.getElementById("profitMargin").innerText = `$${profit}`;
 }
+  function loadServiceRequests() {
+  const tbody = document.querySelector("#serviceRequestsTable tbody");
+  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.fullName || ""}</td>
+          <td>${d.email}</td>
+          <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
+          <td>${d.serviceType || ""}</td>
+          <td>${d.status}</td>
+          <td>${d.notes || "—"}</td>
+          <td>
+            <select onchange="updateRequestStatus('${doc.id}', this.value)">
+              <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
+            </select>
+          </td>
+        </tr>`;
+    });
+  });
+}
+
 
 function createInvoice(e) {
   e.preventDefault();
