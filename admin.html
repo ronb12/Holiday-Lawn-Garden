@@ -41,8 +41,6 @@
 </header>
 
 <main class="admin-container">
-
-<!-- ✅ NAVIGATION -->
 <nav>
   <a href="admin.html">🏠 Dashboard</a> | 
   <a href="notifications.html">🔔 Notifications</a>
@@ -80,7 +78,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ CREATE INVOICE FORM -->
+<!-- ✅ INVOICE FORM -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -109,7 +107,6 @@
   <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
   <button type="submit">Create Invoice</button>
 </form>
-
 <!-- ✅ INVOICE TABLES -->
 <h2>Invoices Due</h2>
 <div class="export-buttons">
@@ -130,12 +127,12 @@
 </table>
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
-<!-- ✅ FIREBASE SCRIPTS -->
+
+<!-- ✅ FIREBASE + LOGIC -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="firebase-init.js"></script>
-
 <script>
 const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
@@ -168,7 +165,7 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 });
 
-// ✅ Invoice Number
+// ✅ Fetch Invoice #
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -195,7 +192,7 @@ function addServiceRow(desc = "", amt = "") {
   calcTotal();
 }
 
-// ✅ Calculate Total
+// ✅ Calculate Total and Profit
 function calcTotal() {
   let total = 0;
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
@@ -204,8 +201,6 @@ function calcTotal() {
   document.getElementById("totalAmount").innerText = total.toFixed(2);
   calcProfit();
 }
-
-// ✅ Calculate Profit
 function calcProfit() {
   const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
   const miles = parseFloat(document.getElementById("milesInput").value || "0");
@@ -218,21 +213,25 @@ function calcProfit() {
   document.getElementById("profitMargin").innerText = `$${profit}`;
 }
 
-// ✅ Create Invoice
+// ✅ Create Invoice (Prevent Duplicates)
 function createInvoice(e) {
   e.preventDefault();
+  const number = document.getElementById("invoiceNumber").value;
+  db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
+    if (!snapshot.empty) return alert("⚠️ Invoice number already exists. Please use a new number.");
+    saveInvoice();
+  });
+}
+function saveInvoice() {
   const email = document.getElementById("invoiceEmail").value;
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
-  if (!due) return alert("⚠️ Please select a due date.");
-
   const services = [];
   document.querySelectorAll("#serviceList .service-row").forEach(row => {
     const desc = row.querySelector("input[type=text]").value;
     const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
     if (desc && amt) services.push({ description: desc, amount: amt });
   });
-
   const total = services.reduce((sum, s) => sum + s.amount, 0);
   const address = {
     street: document.getElementById("street").value,
@@ -242,7 +241,6 @@ function createInvoice(e) {
   };
   const mileage = parseFloat(document.getElementById("milesInput").value || 0);
   const labor = parseInt(document.getElementById("laborInput").value || 1);
-
   db.collection("invoices").add({
     customerEmail: email,
     invoiceNumber: number,
@@ -283,7 +281,6 @@ function loadInvoices() {
       const dueDate = new Date(d.dueDate);
       const isCurrentYear = dueDate.getFullYear() === currentYear;
       const isCurrentMonth = dueDate.getMonth() === currentMonth;
-
       const row = `
         <tr>
           <td>${d.customerEmail}</td>
@@ -293,7 +290,6 @@ function loadInvoices() {
           <td>${d.paid ? "Paid" : "Due"}</td>
           <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️ Mark Paid</button>"}</td>
         </tr>`;
-
       if (d.paid) {
         paidBody.innerHTML += row;
         paidTotal += d.amountDue;
@@ -306,7 +302,6 @@ function loadInvoices() {
         inProgress++;
       }
     });
-
     document.getElementById("invoiceCount").innerText = dueCount;
     document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
     document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
@@ -321,12 +316,30 @@ function markInvoicePaid(id) {
   db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
 }
 
-// ✅ Print Placeholder
+// ✅ Print PDF Preview
 function printInvoice(id) {
-  alert("🖨️ This will trigger a printable invoice PDF preview. (PDF logic to be implemented)");
+  db.collection("invoices").doc(id).get().then(doc => {
+    const d = doc.data();
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html><head><title>Invoice ${d.invoiceNumber}</title></head><body>
+      <h2>Holliday's Lawn & Garden</h2>
+      <p><strong>Invoice #: </strong>${d.invoiceNumber}</p>
+      <p><strong>Customer: </strong>${d.customerEmail}</p>
+      <p><strong>Address: </strong>${d.street}, ${d.city}, ${d.state} ${d.zip}</p>
+      <p><strong>Due Date: </strong>${d.dueDate}</p>
+      <table border="1" cellpadding="5" cellspacing="0"><tr><th>Description</th><th>Amount</th></tr>
+      ${d.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
+      </table>
+      <h3>Total Due: $${d.amountDue.toFixed(2)}</h3>
+      <br><button onclick="window.print()">🖨️ Print</button>
+      </body></html>
+    `);
+    win.document.close();
+  });
 }
 
-// ✅ Export Invoices
+// ✅ Export to CSV
 function exportInvoicesCSV(isPaid) {
   db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
     const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
@@ -343,17 +356,11 @@ function exportInvoicesCSV(isPaid) {
   });
 }
 
-// ✅ Load Quotes (same as part 1)
-function loadQuotes() { /* already in part 1 */ }
-
-// ✅ Load Requests
-function loadServiceRequests() { /* already in part 1 */ }
-
 // ✅ Filter Quotes
 function filterQuotes() {
   const term = document.getElementById("quoteSearch").value.toLowerCase();
   document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-    const match = row.getAttribute("data-search").includes(term);
+    const match = row.getAttribute("data-search")?.includes(term);
     row.style.display = match ? "" : "none";
   });
 }
