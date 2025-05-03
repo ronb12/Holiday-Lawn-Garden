@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Notifications - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <style>
+    body {
+      background: #f4f9f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #228B22;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
+    table {
+      width: 95%;
+      margin: 2em auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 1em;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #228B22;
+      color: white;
+    }
+    .unread {
+      font-weight: bold;
+      background-color: #f0fff0;
+    }
+    .read {
+      opacity: 0.7;
+    }
+    button {
+      padding: 5px 10px;
+      background: #006400;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #004d00;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Notifications</h1>
+    <p>Latest customer payments and updates</p>
+  </header>
+
+  <table id="notificationsTable">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Message</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Notifications will be loaded here -->
+    </tbody>
+  </table>
+<script>
+  const db = firebase.firestore();
+
+  function formatTimestamp(ts) {
+    if (!ts || !ts.toDate) return "";
+    return ts.toDate().toLocaleString();
+  }
+
+  function loadNotifications() {
+    const tbody = document.querySelector("#notificationsTable tbody");
+    tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+
+    db.collection("notifications").orderBy("timestamp", "desc").limit(50).get().then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='5'>No notifications found.</td></tr>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = document.createElement("tr");
+        row.className = data.status === "unread" ? "unread" : "read";
+
+        row.innerHTML = `
+          <td>${data.customer || "-"}</td>
+          <td>${data.message || ""}</td>
+          <td>${formatTimestamp(data.timestamp)}</td>
+          <td>${data.status}</td>
+          <td>
+            ${data.status === "unread" ? `<button onclick="markRead('${doc.id}')">Mark as Read</button>` : ""}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }).catch(err => {
+      console.error("Error loading notifications:", err);
+      tbody.innerHTML = "<tr><td colspan='5'>Error loading notifications.</td></tr>";
+    });
+  }
+
+  function markRead(id) {
+    db.collection("notifications").doc(id).update({ status: "read" })
+      .then(() => loadNotifications())
+      .catch(err => console.error("Error updating notification:", err));
+  }
+
+  window.onload = loadNotifications;
+</script>
+
+</body>
+</html>
