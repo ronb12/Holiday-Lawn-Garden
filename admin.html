@@ -26,8 +26,8 @@
     .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
     .search-bar { display: flex; justify-content: flex-end; margin-bottom: 1em; }
     .search-bar input { width: 300px; padding: 0.5em; }
-    .base-rate-warning { color: red; font-weight: bold; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
+    .base-rate-warning { color: red; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -57,9 +57,7 @@
   </div>
   <table id="quotesTable">
     <thead>
-      <tr>
-        <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
-      </tr>
+      <tr><th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -70,15 +68,13 @@ const baseRates = {
   "Lawn Mowing": { default: 45, duration: "1 hour" },
   "Leaf Raking": { default: 55, duration: "1.5 hours" },
   "Hedge Trimming": { default: 60, duration: "1.5–2 hours" },
-  "Driveway Pressure Washing": { default: 125, duration: "1.5–2 hours" },
-  "House Pressure Washing": { default: 185, duration: "2.5–3 hours" },
-  "Patio Pressure Washing": { default: 110, duration: "1.5 hours" },
-  "Sidewalk Pressure Washing": { default: 100, duration: "1–1.5 hours" },
-  "Yard Clean Up": { default: 150, duration: "2 hours" },
-  "Shrub Trimming": { default: 95, duration: "1.5 hours" }
+  "Driveway Pressure Washing": { default: 120, duration: "1.5–2 hours" },
+  "House Pressure Washing": { default: 180, duration: "2.5–4 hours" },
+  "Shrub Trimming": { default: 65, duration: "1.5–2 hours" },
+  "Garden Bed Cleanup": { default: 80, duration: "2–3 hours" },
+  "Pressure Washing Combo": { default: 275, duration: "3–5 hours" }
 };
 
-// Estimate price based on ZIP and job type
 function estimateRate(service, zip) {
   const base = baseRates[service]?.default || 100;
   const zipAdj = zip ? ((parseInt(zip[0]) % 5) * 5) : 0;
@@ -89,7 +85,50 @@ function estimateDuration(service) {
   return baseRates[service]?.duration || "1–2 hours";
 }
 
-// Load service requests
+function updateRequestStatus(id, status) {
+  db.collection("service_requests").doc(id).update({ status }).then(() => {
+    if (status === "Completed") {
+      db.collection("service_requests").doc(id).get().then(doc => {
+        const d = doc.data();
+        if (confirm("Mark as Completed. Convert to Quote?")) {
+          const amount = estimateRate(d.serviceType, d.zip);
+          const duration = estimateDuration(d.serviceType);
+          const base = baseRates[d.serviceType]?.default || amount;
+          const gas = (d.miles || 10) * 0.65;
+          const labor = (d.laborers || 2) * 20;
+          const profit = amount - gas - labor;
+
+          if (profit < 0) {
+            alert(`⚠️ Loss Warning: Profit would be negative.\nEstimate: $${amount.toFixed(2)}\nGas: $${gas.toFixed(2)}\nLabor: $${labor.toFixed(2)}\nProfit: $${profit.toFixed(2)}`);
+            return;
+          }
+
+          db.collection("quotes").add({
+            fullName: d.fullName,
+            email: d.email,
+            serviceType: d.serviceType,
+            amount,
+            baseRate: base,
+            estimatedDuration: duration,
+            address: {
+              street: d.street,
+              city: d.city,
+              state: d.state,
+              zip: d.zip
+            },
+            notes: d.notes || "",
+            archived: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            alert("✅ Quote created.");
+            loadQuotes();
+          });
+        }
+      });
+    }
+  });
+}
+
 function loadServiceRequests() {
   const tbody = document.querySelector("#serviceRequestsTable tbody");
   db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
@@ -116,52 +155,6 @@ function loadServiceRequests() {
   });
 }
 
-// Update status and auto-convert to quote
-function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status }).then(() => {
-    if (status === "Completed") {
-      db.collection("service_requests").doc(id).get().then(doc => {
-        const d = doc.data();
-        if (confirm("Mark as Completed. Convert to Quote?")) {
-          const amount = estimateRate(d.serviceType, d.zip);
-          const duration = estimateDuration(d.serviceType);
-          const base = baseRates[d.serviceType]?.default || amount;
-          const gas = (d.miles || 10) * 0.65;
-          const labor = (d.laborers || 2) * 20;
-          const profit = amount - gas - labor;
-
-          if (profit < 0) {
-            alert(`⚠️ Warning: This quote would result in a LOSS.\nEstimated Profit: $${profit.toFixed(2)}`);
-            return;
-          }
-
-          db.collection("quotes").add({
-            fullName: d.fullName,
-            email: d.email,
-            serviceType: d.serviceType,
-            amount,
-            baseRate: base,
-            estimatedDuration: duration,
-            address: {
-              street: d.street,
-              city: d.city,
-              state: d.state,
-              zip: d.zip
-            },
-            notes: d.notes || "",
-            archived: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => {
-            alert("✅ Quote created successfully.");
-            loadQuotes();
-          });
-        }
-      });
-    }
-  });
-}
-
-// Load active quotes
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
   db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
@@ -187,18 +180,18 @@ function loadQuotes() {
   });
 }
 
+function archiveQuote(id) {
+  db.collection("quotes").doc(id).update({ archived: true }).then(() => {
+    alert("Quote archived.");
+    loadQuotes();
+  });
+}
+
 function filterQuotes() {
   const term = document.getElementById("quoteSearch").value.toLowerCase();
   document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
     const match = row.getAttribute("data-search").includes(term);
     row.style.display = match ? "" : "none";
-  });
-}
-
-function archiveQuote(id) {
-  db.collection("quotes").doc(id).update({ archived: true }).then(() => {
-    alert("Quote archived.");
-    loadQuotes();
   });
 }
 
@@ -214,5 +207,7 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 });
 </script>
+</main>
+<footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 </body>
 </html>
