@@ -1,4 +1,3 @@
-<!-- PART 1: HEADER + STRUCTURE -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,8 +9,20 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
     body { font-family: Arial; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
-    .admin-container { max-width: 1100px; margin: auto; padding: 2em; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    header, footer {
+      background: #228B22; color: white; padding: 1em; text-align: center;
+      position: relative;
+    }
+    #logoutBtn, #notificationBell {
+      position: absolute; top: 15px; font-size: 1em;
+    }
+    #logoutBtn { right: 15px; }
+    #notificationBell { right: 60px; cursor: pointer; }
+
+    .admin-container {
+      max-width: 1100px; margin: auto; padding: 2em; background: white;
+      border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
     h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin: 1em 0; }
     th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
@@ -19,18 +30,30 @@
     input, select { padding: 0.5em; width: 100%; margin-top: 0.3em; }
     button { background: #228B22; color: white; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
     button:hover { background: #006400; }
+
     .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
     .service-row input, .service-row select { flex: 1; }
-    .summary { display: flex; flex-wrap: wrap; justify-content: space-between; background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em; }
-    .summary div { margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px; }
-    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
-    .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
-    .base-rate-warning { color: red; font-weight: bold; }
-    #logoutBtn, #notificationBell {
-      position: absolute; top: 15px; font-size: 1em;
+
+    .summary {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em;
     }
-    #logoutBtn { right: 15px; }
-    #notificationBell { right: 60px; cursor: pointer; }
+    .summary div {
+      margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px;
+    }
+
+    .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
+
+    .collapse-section {
+      background: #f0fff0; padding: 1em; margin-top: 1em;
+      border-left: 5px solid #228B22; border-radius: 5px;
+    }
+
+    .base-rate-warning { color: red; font-weight: bold; }
+
+    .print-invoice {
+      text-align: center; margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -41,12 +64,13 @@
 </header>
 
 <main class="admin-container">
-<nav>
+
+<nav style="margin-bottom: 1em;">
   <a href="admin.html">🏠 Dashboard</a> | 
   <a href="notifications.html">🔔 Notifications</a>
 </nav>
 
-<!-- ✅ SUMMARY -->
+<!-- ✅ DASHBOARD SUMMARY -->
 <div class="summary">
   <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
   <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
@@ -60,15 +84,15 @@
 <!-- ✅ SERVICE REQUESTS TABLE -->
 <h2>Service Requests</h2>
 <table id="serviceRequestsTable">
-  <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr></thead>
+  <thead>
+    <tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr>
+  </thead>
   <tbody></tbody>
 </table>
 
 <!-- ✅ QUOTES TABLE -->
 <h2>Quotes</h2>
-<div class="search-bar">
-  <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
-</div>
+<input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
 <table id="quotesTable">
   <thead>
     <tr>
@@ -78,7 +102,7 @@
   <tbody></tbody>
 </table>
 
-<!-- ✅ INVOICE FORM -->
+<!-- ✅ INVOICE CREATION -->
 <h2>Create Invoice</h2>
 <form id="invoiceForm" onsubmit="createInvoice(event)">
   <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -90,11 +114,9 @@
   </div>
   <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
   <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a due date')" oninput="this.setCustomValidity('')" />
-  
   <div id="serviceList"></div>
   <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
-  <!-- ✅ PROFIT BREAKDOWN -->
   <div id="profitBreakdown" class="collapse-section" style="display: none;">
     <strong>💡 Auto Profit Breakdown</strong><br/>
     Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -128,7 +150,7 @@
 
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-<!-- ✅ FIREBASE + LOGIC -->
+<!-- ✅ FIREBASE + SCRIPT LOGIC -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -137,19 +159,8 @@
 const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
 const MIN_PROFIT = 30;
+const logoURL = "assets/logo.png"; // ✅ Logo in local folder
 
-const baseRates = {
-  "Lawn Mowing": { default: 45, duration: "1 hour" },
-  "Leaf Raking": { default: 55, duration: "1.5 hours" },
-  "Hedge Trimming": { default: 60, duration: "1.5–2 hours" },
-  "Pressure Washing": { default: 150, duration: "2–3 hours" },
-  "Driveway Pressure Washing": { default: 120, duration: "1.5–2 hours" },
-  "House Pressure Washing": { default: 180, duration: "2.5–4 hours" },
-  "Shrub Trimming": { default: 65, duration: "1–1.5 hours" },
-  "Gutter Cleaning": { default: 90, duration: "2 hours" }
-};
-
-// ✅ Auth Check
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
@@ -165,7 +176,6 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 });
 
-// ✅ Fetch Invoice #
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
     invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -173,173 +183,108 @@ function fetchInvoiceSequence() {
   });
 }
 
-// ✅ Add Service Row
-function addServiceRow(desc = "", amt = "") {
-  const container = document.getElementById("serviceList");
-  const row = document.createElement("div");
-  row.className = "service-row";
-  row.innerHTML = `
-    <select onchange="this.nextElementSibling.value=this.value==='Custom'?'':this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
-      <option value="">Select Service</option>
-      ${Object.keys(baseRates).map(s => `<option value="${s}">${s}</option>`).join("")}
-      <option value="Custom">Custom</option>
-    </select>
-    <input type="text" placeholder="Description" value="${desc}" />
-    <input type="number" placeholder="Amount" value="${amt}" step="0.01" oninput="calcTotal()" />
-    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  `;
-  container.appendChild(row);
-  calcTotal();
-}
-
-// ✅ Calculate Total and Profit
-function calcTotal() {
-  let total = 0;
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    total += parseFloat(row.querySelector("input[type=number]").value || 0);
-  });
-  document.getElementById("totalAmount").innerText = total.toFixed(2);
-  calcProfit();
-}
-function calcProfit() {
-  const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
-  const miles = parseFloat(document.getElementById("milesInput").value || "0");
-  const laborers = parseInt(document.getElementById("laborInput").value || "1");
-  const gas = (miles * 0.65).toFixed(2);
-  const labor = (laborers * 20).toFixed(2);
-  const profit = Math.max(MIN_PROFIT, total - gas - labor).toFixed(2);
-  document.getElementById("gasCost").innerText = `$${gas}`;
-  document.getElementById("laborCost").innerText = `$${labor}`;
-  document.getElementById("profitMargin").innerText = `$${profit}`;
-}
-
-// ✅ Create Invoice (Prevent Duplicates)
 function createInvoice(e) {
   e.preventDefault();
   const number = document.getElementById("invoiceNumber").value;
-  db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
-    if (!snapshot.empty) return alert("⚠️ Invoice number already exists. Please use a new number.");
-    saveInvoice();
-  });
-}
-function saveInvoice() {
   const email = document.getElementById("invoiceEmail").value;
-  const number = document.getElementById("invoiceNumber").value;
-  const due = document.getElementById("invoiceDueDate").value;
-  const services = [];
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    const desc = row.querySelector("input[type=text]").value;
-    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-    if (desc && amt) services.push({ description: desc, amount: amt });
-  });
-  const total = services.reduce((sum, s) => sum + s.amount, 0);
-  const address = {
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value
-  };
-  const mileage = parseFloat(document.getElementById("milesInput").value || 0);
-  const labor = parseInt(document.getElementById("laborInput").value || 1);
-  db.collection("invoices").add({
-    customerEmail: email,
-    invoiceNumber: number,
-    services,
-    amountDue: total,
-    dueDate: due,
-    ...address,
-    mileage,
-    laborers: labor,
-    paid: false,
-    archived: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    invoiceSequence++;
-    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-    alert("✅ Invoice Created");
-    document.getElementById("invoiceForm").reset();
-    document.getElementById("serviceList").innerHTML = "";
-    addServiceRow();
-    loadInvoices();
-  });
-}
-
-// ✅ Load Invoices
-function loadInvoices() {
-  let dueCount = 0, paidTotal = 0, outstanding = 0, inProgress = 0, yearRevenue = 0, monthRevenue = 0;
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  dueBody.innerHTML = "";
-  paidBody.innerHTML = "";
-
-  db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const dueDate = new Date(d.dueDate);
-      const isCurrentYear = dueDate.getFullYear() === currentYear;
-      const isCurrentMonth = dueDate.getMonth() === currentMonth;
-      const row = `
-        <tr>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${d.dueDate}</td>
-          <td>${d.paid ? "Paid" : "Due"}</td>
-          <td>${d.paid ? "<button onclick='printInvoice(\"" + doc.id + "\")'>🖨️</button>" : "<button onclick='markInvoicePaid(\"" + doc.id + "\")'>✔️ Mark Paid</button>"}</td>
-        </tr>`;
-      if (d.paid) {
-        paidBody.innerHTML += row;
-        paidTotal += d.amountDue;
-        if (isCurrentYear) yearRevenue += d.amountDue;
-        if (isCurrentMonth) monthRevenue += d.amountDue;
-      } else {
-        dueBody.innerHTML += row;
-        dueCount++;
-        outstanding += d.amountDue;
-        inProgress++;
-      }
+  db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
+    if (!snapshot.empty) return alert("⚠️ Invoice number already exists.");
+    const due = document.getElementById("invoiceDueDate").value;
+    const services = [];
+    document.querySelectorAll("#serviceList .service-row").forEach(row => {
+      const desc = row.querySelector("input[type=text]").value;
+      const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+      if (desc && amt) services.push({ description: desc, amount: amt });
     });
-    document.getElementById("invoiceCount").innerText = dueCount;
-    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-    document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
-    document.getElementById("inProgressCount").innerText = inProgress;
-    document.getElementById("revenueYear").innerText = yearRevenue.toFixed(2);
-    document.getElementById("revenueMonth").innerText = monthRevenue.toFixed(2);
+    const total = services.reduce((sum, s) => sum + s.amount, 0);
+    const address = {
+      street: document.getElementById("street").value,
+      city: document.getElementById("city").value,
+      state: document.getElementById("state").value,
+      zip: document.getElementById("zip").value
+    };
+    const mileage = parseFloat(document.getElementById("milesInput").value || 0);
+    const labor = parseInt(document.getElementById("laborInput").value || 1);
+
+    db.collection("invoices").add({
+      customerEmail: email,
+      invoiceNumber: number,
+      services,
+      amountDue: total,
+      dueDate: due,
+      ...address,
+      mileage,
+      laborers: labor,
+      paid: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      invoiceSequence++;
+      db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+      alert("✅ Invoice created");
+      document.getElementById("invoiceForm").reset();
+      document.getElementById("serviceList").innerHTML = "";
+      addServiceRow();
+      loadInvoices();
+    });
   });
 }
 
-// ✅ Mark Paid
-function markInvoicePaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-// ✅ Print PDF Preview
 function printInvoice(id) {
-  db.collection("invoices").doc(id).get().then(doc => {
+  db.collection("invoices").doc(id).get().then(async doc => {
     const d = doc.data();
-    const win = window.open("", "_blank");
-    win.document.write(`
-      <html><head><title>Invoice ${d.invoiceNumber}</title></head><body>
-      <h2>Holliday's Lawn & Garden</h2>
-      <p><strong>Invoice #: </strong>${d.invoiceNumber}</p>
-      <p><strong>Customer: </strong>${d.customerEmail}</p>
-      <p><strong>Address: </strong>${d.street}, ${d.city}, ${d.state} ${d.zip}</p>
-      <p><strong>Due Date: </strong>${d.dueDate}</p>
-      <table border="1" cellpadding="5" cellspacing="0"><tr><th>Description</th><th>Amount</th></tr>
-      ${d.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
-      </table>
-      <h3>Total Due: $${d.amountDue.toFixed(2)}</h3>
-      <br><button onclick="window.print()">🖨️ Print</button>
+    const logo = await toDataURL(logoURL);
+    const paidStamp = d.paid ? "<div style='color:green;font-size:24px;'>PAID</div>" : "";
+
+    let servicesHTML = "";
+    d.services.forEach(s => {
+      servicesHTML += `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`;
+    });
+
+    const html = `
+      <html><head><title>Invoice ${d.invoiceNumber}</title></head><body style="font-family:Arial;">
+        <div style="text-align:center;">
+          <img src="${logo}" style="height:80px;" />
+          <h2>Invoice #${d.invoiceNumber}</h2>
+          ${paidStamp}
+          <p><strong>Holliday's Lawn & Garden</strong><br/>
+          Karl Holliday<br/>7holliday@gmail.com<br/>504-717-1887</p>
+        </div>
+        <hr/>
+        <p><strong>To:</strong> ${d.customerEmail}<br/>
+        ${d.street}, ${d.city}, ${d.state} ${d.zip}<br/>
+        Due: ${d.dueDate}</p>
+        <table border="1" cellpadding="10" cellspacing="0" width="100%">
+          <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+          <tbody>${servicesHTML}</tbody>
+        </table>
+        <h3 style="text-align:right;">Total Due: $${d.amountDue.toFixed(2)}</h3>
+        <div class="print-invoice"><button onclick="window.print()">🖨️ Print Invoice</button></div>
       </body></html>
-    `);
+    `;
+
+    const win = window.open("", "Invoice", "width=800,height=900");
+    win.document.write(html);
     win.document.close();
   });
 }
 
-// ✅ Export to CSV
+function toDataURL(url) {
+  return fetch(url).then(res => res.blob()).then(blob => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  }));
+}
+
+function markInvoicePaid(id) {
+  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
+
 function exportInvoicesCSV(isPaid) {
   db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
     const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
@@ -354,20 +299,6 @@ function exportInvoicesCSV(isPaid) {
     link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
     link.click();
   });
-}
-
-// ✅ Filter Quotes
-function filterQuotes() {
-  const term = document.getElementById("quoteSearch").value.toLowerCase();
-  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-    const match = row.getAttribute("data-search")?.includes(term);
-    row.style.display = match ? "" : "none";
-  });
-}
-
-// ✅ Logout
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
 }
 </script>
 </body>
