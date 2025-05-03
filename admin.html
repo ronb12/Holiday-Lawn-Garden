@@ -1,3 +1,4 @@
+<!-- PART 1: HTML HEADER AND STRUCTURE SETUP -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,93 +26,92 @@
     .export-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; }
     .collapse-section { background: #f0fff0; padding: 1em; margin-top: 1em; border-left: 5px solid #228B22; border-radius: 5px; }
     .base-rate-warning { color: red; font-weight: bold; }
+    .warning-box { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; margin-top: 10px; border-radius: 5px; }
   </style>
 </head>
 <body>
 <header><h1>Admin Dashboard</h1></header>
 <main class="admin-container">
 
-  <!-- Summary -->
-  <div class="summary">
-    <div>📄 <strong>Quotes Pending:</strong> <span id="quoteCount">0</span></div>
-    <div>🧾 <strong>Invoices Due:</strong> <span id="invoiceCount">0</span></div>
-    <div>💵 <strong>Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
-    <div>📌 <strong>Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
-    <div>📆 <strong>Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
-    <div>📅 <strong>Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
-    <div>📉 <strong>Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
+<!-- Summary Section -->
+<div class="summary">
+  <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
+  <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
+  <div><strong>💵 Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+  <div><strong>📌 Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
+  <div><strong>📆 Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
+  <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
+  <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
+</div>
+
+<h2>Service Requests</h2>
+<table id="serviceRequestsTable">
+  <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr></thead>
+  <tbody></tbody>
+</table>
+<h2>Quotes</h2>
+<div class="search-bar">
+  <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+</div>
+<table id="quotesTable">
+  <thead>
+    <tr>
+      <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Create Invoice -->
+<h2>Create Invoice</h2>
+<form id="invoiceForm" onsubmit="createInvoice(event)">
+  <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
+  <div class="service-row">
+    <input id="street" placeholder="Street Address" />
+    <input id="city" placeholder="City" />
+    <input id="state" placeholder="State" />
+    <input id="zip" placeholder="ZIP Code" />
+  </div>
+  <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
+  <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a due date')" oninput="this.setCustomValidity('')" />
+  <div id="serviceList"></div>
+  <button type="button" onclick="addServiceRow()">+ Add Service</button>
+
+  <!-- Profit Breakdown -->
+  <div id="profitBreakdown" class="collapse-section" style="display: none;">
+    <strong>💡 Auto Profit Breakdown</strong><br/>
+    Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
+    Laborers (1–5): <input id="laborInput" type="number" value="1" min="1" max="5" onchange="calcProfit()" />
+    <p>Estimated Gas: <span id="gasCost">$0.00</span><br/>
+       Labor Cost: <span id="laborCost">$0.00</span><br/>
+       Profit Margin: <span id="profitMargin">$0.00</span></p>
   </div>
 
-  <!-- Service Requests -->
-  <h2>Service Requests</h2>
-  <table id="serviceRequestsTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th></tr></thead>
-    <tbody></tbody>
-  </table>
+  <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
+  <button type="submit">Create Invoice</button>
+</form>
 
-  <!-- Quotes Table -->
-  <h2>Quotes</h2>
-  <div class="search-bar">
-    <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
-  </div>
-  <table id="quotesTable">
-    <thead>
-      <tr>
-        <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<!-- Invoices Due -->
+<h2>Invoices Due</h2>
+<div class="export-buttons">
+  <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
+</div>
+<table id="invoicesDueTable">
+  <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody></tbody>
+</table>
 
-  <!-- Invoice Form -->
-  <h2>Create Invoice</h2>
-  <form id="invoiceForm" onsubmit="createInvoice(event)">
-    <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
-    <div class="service-row">
-      <input id="street" placeholder="Street Address" />
-      <input id="city" placeholder="City" />
-      <input id="state" placeholder="State" />
-      <input id="zip" placeholder="ZIP Code" />
-    </div>
-    <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-    <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a valid due date')" oninput="this.setCustomValidity('')" />
-    <div id="serviceList"></div>
-    <button type="button" onclick="addServiceRow()">+ Add Service</button>
+<!-- Paid Invoices -->
+<h2>Paid Invoices</h2>
+<div class="export-buttons">
+  <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
+</div>
+<table id="invoicesPaidTable">
+  <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+  <tbody></tbody>
+</table>
 
-    <div id="profitBreakdown" class="collapse-section" style="display: none;">
-      <strong>💡 Auto Profit Breakdown</strong><br/>
-      Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
-      Laborers (1–5): <input id="laborInput" type="number" value="1" min="1" max="5" onchange="calcProfit()" />
-      <p>Estimated Gas: <span id="gasCost">$0.00</span><br/>
-         Labor Cost: <span id="laborCost">$0.00</span><br/>
-         Profit Margin: <span id="profitMargin">$0.00</span></p>
-    </div>
-
-    <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
-    <button type="submit">Create Invoice</button>
-  </form>
-
-  <!-- Invoices Due -->
-  <h2>Invoices Due</h2>
-  <div class="export-buttons">
-    <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
-  </div>
-  <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <!-- Paid Invoices -->
-  <h2>Paid Invoices</h2>
-  <div class="export-buttons">
-    <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
-  </div>
-  <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
-    <tbody></tbody>
-  </table>
-
-  <br><button onclick="logout()">Logout</button>
+<br><button onclick="logout()">Logout</button>
 </main>
 <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
@@ -123,7 +123,17 @@ const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
 const MIN_PROFIT = 30;
 
-// Role & Auth
+const baseRates = {
+  "Lawn Mowing": { default: 45, duration: "1 hour" },
+  "Leaf Raking": { default: 55, duration: "1.5 hours" },
+  "Hedge Trimming": { default: 60, duration: "1.5–2 hours" },
+  "Pressure Washing": { default: 150, duration: "2–3 hours" },
+  "Driveway Pressure Washing": { default: 120, duration: "1.5–2 hours" },
+  "House Pressure Washing": { default: 180, duration: "2.5–4 hours" },
+  "Shrub Trimming": { default: 65, duration: "1–1.5 hours" },
+  "Gutter Cleaning": { default: 90, duration: "2 hours" }
+};
+
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
@@ -135,22 +145,9 @@ firebase.auth().onAuthStateChanged(async user => {
     loadQuotes();
     loadInvoices();
   } else {
-    alert("Access denied.");
-    location.href = "login.html";
+    alert("Access denied."); location.href = "login.html";
   }
 });
-
-// Base Rates (realistic for New Orleans)
-const baseRates = {
-  "Lawn Mowing": { default: 45, duration: "1 hour" },
-  "Leaf Raking": { default: 55, duration: "1.5 hours" },
-  "Hedge Trimming": { default: 60, duration: "1.5–2 hours" },
-  "Pressure Washing": { default: 150, duration: "2–3 hours" },
-  "Driveway Pressure Washing": { default: 120, duration: "1.5–2 hours" },
-  "House Pressure Washing": { default: 180, duration: "2.5–4 hours" },
-  "Shrub Trimming": { default: 65, duration: "1–1.5 hours" },
-  "Gutter Cleaning": { default: 90, duration: "2 hours" }
-};
 
 function fetchInvoiceSequence() {
   db.collection("meta").doc("counters").get().then(doc => {
@@ -203,187 +200,45 @@ function createInvoice(e) {
   const email = document.getElementById("invoiceEmail").value;
   const number = document.getElementById("invoiceNumber").value;
   const due = document.getElementById("invoiceDueDate").value;
-  if (!due) return alert("⚠️ Please select a valid due date.");
-  const services = [...document.querySelectorAll("#serviceList .service-row")].map(row => ({
-    description: row.children[1].value,
-    amount: parseFloat(row.children[2].value || 0)
-  }));
-  const amountDue = services.reduce((sum, s) => sum + s.amount, 0);
-  const data = {
-    customerEmail: email,
-    invoiceNumber: number,
-    dueDate: new Date(due).toISOString(),
-    services,
-    amountDue,
-    paid: false,
-    archived: false,
+  if (!due) return alert("⚠️ Please select a due date.");
+
+  const services = [];
+  document.querySelectorAll("#serviceList .service-row").forEach(row => {
+    const desc = row.querySelector("input[type=text]").value;
+    const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+    if (desc && amt) services.push({ description: desc, amount: amt });
+  });
+
+  const total = services.reduce((sum, s) => sum + s.amount, 0);
+  const address = {
     street: document.getElementById("street").value,
     city: document.getElementById("city").value,
     state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value,
-    miles: parseFloat(document.getElementById("milesInput").value || 0),
-    laborers: parseInt(document.getElementById("laborInput").value || 1),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    zip: document.getElementById("zip").value
   };
-  db.collection("invoices").add(data).then(() => {
-    alert("✅ Invoice created");
+  const mileage = parseFloat(document.getElementById("milesInput").value || 0);
+  const labor = parseInt(document.getElementById("laborInput").value || 1);
+
+  db.collection("invoices").add({
+    customerEmail: email,
+    invoiceNumber: number,
+    services,
+    amountDue: total,
+    dueDate: due,
+    ...address,
+    mileage,
+    laborers: labor,
+    paid: false,
+    archived: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
     invoiceSequence++;
     db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+    alert("✅ Invoice Created");
     document.getElementById("invoiceForm").reset();
-    document.getElementById("totalAmount").innerText = "0.00";
+    document.getElementById("serviceList").innerHTML = "";
+    addServiceRow();
     loadInvoices();
   });
 }
-
-function loadInvoices() {
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
-    dueBody.innerHTML = paidBody.innerHTML = "";
-    let unpaidCount = 0;
-    let paidTotal = 0;
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      if (d.archived) return;
-      const row = `
-        <tr>
-          <td>${d.customerEmail}</td>
-          <td>${d.invoiceNumber}</td>
-          <td>$${d.amountDue.toFixed(2)}</td>
-          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
-          <td>${d.paid ? "Paid" : "Unpaid"}</td>
-          <td>
-            ${d.paid ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>` :
-              `<button onclick="archiveInvoice('${doc.id}')">Archive</button>`}
-          </td>
-        </tr>`;
-      if (d.paid) {
-        paidTotal += d.amountDue;
-        paidBody.innerHTML += row;
-      } else {
-        unpaidCount++;
-        dueBody.innerHTML += row;
-      }
-    });
-    document.getElementById("invoiceCount").innerText = unpaidCount;
-    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
-  });
-}
-
-function archiveInvoice(id) {
-  if (confirm("Archive this unpaid invoice?")) {
-    db.collection("invoices").doc(id).update({ archived: true });
-  }
-}
-
-function loadServiceRequests() {
-  const tbody = document.querySelector("#serviceRequestsTable tbody");
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.fullName || ""}</td>
-          <td>${d.email}</td>
-          <td>${d.street}, ${d.city}, ${d.state} ${d.zip}</td>
-          <td>${d.serviceType || ""}</td>
-          <td>${d.status}</td>
-          <td>${d.notes || "—"}</td>
-          <td>
-            <select onchange="updateRequestStatus('${doc.id}', this.value)">
-              <option value="Pending" ${d.status === "Pending" ? "selected" : ""}>Pending</option>
-              <option value="In Progress" ${d.status === "In Progress" ? "selected" : ""}>In Progress</option>
-              <option value="Completed" ${d.status === "Completed" ? "selected" : ""}>Completed</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-function updateRequestStatus(id, status) {
-  db.collection("service_requests").doc(id).update({ status }).then(() => {
-    if (status === "Completed") {
-      db.collection("service_requests").doc(id).get().then(doc => {
-        const d = doc.data();
-        if (confirm("Convert to quote?")) {
-          const amount = estimateRate(d.serviceType, d.zip);
-          const base = baseRates[d.serviceType]?.default || amount;
-          const duration = estimateDuration(d.serviceType);
-          const gas = (d.miles || 10) * 0.65;
-          const labor = (d.laborers || 2) * 20;
-          const profit = amount - gas - labor;
-          if (profit < 0) return alert(`⚠️ This quote would result in a LOSS.\nProfit: $${profit.toFixed(2)}`);
-          db.collection("quotes").add({
-            fullName: d.fullName,
-            email: d.email,
-            serviceType: d.serviceType,
-            amount,
-            baseRate: base,
-            estimatedDuration: duration,
-            address: {
-              street: d.street,
-              city: d.city,
-              state: d.state,
-              zip: d.zip
-            },
-            notes: d.notes || "",
-            archived: false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).then(() => loadQuotes());
-        }
-      });
-    }
-  });
-}
-
-function estimateRate(service, zip) {
-  const base = baseRates[service]?.default || 100;
-  const zipAdj = zip ? ((parseInt(zip[0]) % 5) * 5) : 0;
-  return base + zipAdj;
-}
-
-function estimateDuration(service) {
-  return baseRates[service]?.duration || "1–2 hours";
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("archived", "==", false).orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    let count = 0;
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const isLow = q.amount < (q.baseRate || 0);
-      tbody.innerHTML += `
-        <tr data-search="${(q.fullName + q.email + q.serviceType).toLowerCase()}">
-          <td>${q.fullName}</td>
-          <td>${q.email}</td>
-          <td>${q.serviceType}</td>
-          <td>$${q.amount.toFixed(2)}</td>
-          <td${isLow ? ' class="base-rate-warning"' : ''}>$${(q.baseRate || 0).toFixed(2)}</td>
-          <td>${q.estimatedDuration || "—"}</td>
-          <td>Active</td>
-          <td><button onclick="createInvoiceFromQuote('${doc.id}')">Convert</button></td>
-        </tr>`;
-      count++;
-    });
-    document.getElementById("quoteCount").innerText = count;
-  });
-}
-
-function filterQuotes() {
-  const term = document.getElementById("quoteSearch").value.toLowerCase();
-  document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-    const match = row.getAttribute("data-search").includes(term);
-    row.style.display = match ? "" : "none";
-  });
-}
-
-function logout() {
-  firebase.auth().signOut().then(() => location.href = "login.html");
-}
 </script>
-</body>
-</html>
