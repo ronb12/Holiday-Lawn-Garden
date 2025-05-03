@@ -63,7 +63,7 @@
     <tbody></tbody>
   </table>
 
-  <!-- Create Invoice -->
+  <!-- Invoice Form -->
   <h2>Create Invoice</h2>
   <form id="invoiceForm" onsubmit="createInvoice(event)">
     <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -74,11 +74,10 @@
       <input id="zip" placeholder="ZIP Code" />
     </div>
     <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-    <input type="date" id="invoiceDueDate" required />
+    <input type="date" id="invoiceDueDate" required oninvalid="this.setCustomValidity('Please select a valid due date')" oninput="this.setCustomValidity('')" />
     <div id="serviceList"></div>
     <button type="button" onclick="addServiceRow()">+ Add Service</button>
 
-    <!-- Profit Breakdown -->
     <div id="profitBreakdown" class="collapse-section" style="display: none;">
       <strong>💡 Auto Profit Breakdown</strong><br/>
       Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
@@ -98,7 +97,7 @@
     <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid (CSV)</button>
   </div>
   <table id="invoicesDueTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody></tbody>
   </table>
 
@@ -108,7 +107,7 @@
     <button onclick="exportInvoicesCSV(true)">📤 Export Paid (CSV)</button>
   </div>
   <table id="invoicesPaidTable">
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+    <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
     <tbody></tbody>
   </table>
 
@@ -124,6 +123,7 @@ const db = firebase.firestore();
 let currentUser, invoiceSequence = 1000;
 const MIN_PROFIT = 30;
 
+// Role & Auth
 firebase.auth().onAuthStateChanged(async user => {
   if (!user) return location.href = "login.html";
   currentUser = user;
@@ -140,7 +140,7 @@ firebase.auth().onAuthStateChanged(async user => {
   }
 });
 
-// Services with base rates and durations (New Orleans realistic)
+// Base Rates (realistic for New Orleans)
 const baseRates = {
   "Lawn Mowing": { default: 45, duration: "1 hour" },
   "Leaf Raking": { default: 55, duration: "1.5 hours" },
@@ -198,14 +198,82 @@ function calcProfit() {
   document.getElementById("profitMargin").innerText = `$${profit}`;
 }
 
-function estimateRate(service, zip) {
-  const base = baseRates[service]?.default || 100;
-  const zipAdj = zip ? ((parseInt(zip[0]) % 5) * 5) : 0;
-  return base + zipAdj;
+function createInvoice(e) {
+  e.preventDefault();
+  const email = document.getElementById("invoiceEmail").value;
+  const number = document.getElementById("invoiceNumber").value;
+  const due = document.getElementById("invoiceDueDate").value;
+  if (!due) return alert("⚠️ Please select a valid due date.");
+  const services = [...document.querySelectorAll("#serviceList .service-row")].map(row => ({
+    description: row.children[1].value,
+    amount: parseFloat(row.children[2].value || 0)
+  }));
+  const amountDue = services.reduce((sum, s) => sum + s.amount, 0);
+  const data = {
+    customerEmail: email,
+    invoiceNumber: number,
+    dueDate: new Date(due).toISOString(),
+    services,
+    amountDue,
+    paid: false,
+    archived: false,
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value,
+    miles: parseFloat(document.getElementById("milesInput").value || 0),
+    laborers: parseInt(document.getElementById("laborInput").value || 1),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection("invoices").add(data).then(() => {
+    alert("✅ Invoice created");
+    invoiceSequence++;
+    db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+    document.getElementById("invoiceForm").reset();
+    document.getElementById("totalAmount").innerText = "0.00";
+    loadInvoices();
+  });
 }
 
-function estimateDuration(service) {
-  return baseRates[service]?.duration || "1–2 hours";
+function loadInvoices() {
+  const dueBody = document.querySelector("#invoicesDueTable tbody");
+  const paidBody = document.querySelector("#invoicesPaidTable tbody");
+  db.collection("invoices").orderBy("dueDate", "asc").onSnapshot(snapshot => {
+    dueBody.innerHTML = paidBody.innerHTML = "";
+    let unpaidCount = 0;
+    let paidTotal = 0;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      if (d.archived) return;
+      const row = `
+        <tr>
+          <td>${d.customerEmail}</td>
+          <td>${d.invoiceNumber}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td>
+            ${d.paid ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>Receipt</button>` :
+              `<button onclick="archiveInvoice('${doc.id}')">Archive</button>`}
+          </td>
+        </tr>`;
+      if (d.paid) {
+        paidTotal += d.amountDue;
+        paidBody.innerHTML += row;
+      } else {
+        unpaidCount++;
+        dueBody.innerHTML += row;
+      }
+    });
+    document.getElementById("invoiceCount").innerText = unpaidCount;
+    document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+  });
+}
+
+function archiveInvoice(id) {
+  if (confirm("Archive this unpaid invoice?")) {
+    db.collection("invoices").doc(id).update({ archived: true });
+  }
 }
 
 function loadServiceRequests() {
@@ -268,6 +336,16 @@ function updateRequestStatus(id, status) {
       });
     }
   });
+}
+
+function estimateRate(service, zip) {
+  const base = baseRates[service]?.default || 100;
+  const zipAdj = zip ? ((parseInt(zip[0]) % 5) * 5) : 0;
+  return base + zipAdj;
+}
+
+function estimateDuration(service) {
+  return baseRates[service]?.duration || "1–2 hours";
 }
 
 function loadQuotes() {
