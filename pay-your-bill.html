@@ -1,4 +1,4 @@
-<!-- PART 1: HEADER + PAYPAL ONLY VERSION -->
+<!-- PART 1: HEADER + PAYPAL LAYOUT -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,9 +11,10 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- PayPal JS SDK (replace with your client ID) -->
+  <!-- PayPal SDK (replace with real client ID) -->
   <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 
   <style>
@@ -36,18 +37,16 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-    button {
-      background-color: #228B22;
-      color: white;
-      padding: 0.7em 2em;
-      border: none;
-      border-radius: 5px;
-      font-size: 1em;
-      cursor: pointer;
-      margin-top: 10px;
+    #thank-you {
+      display: none;
+      margin-top: 2em;
+      color: green;
     }
-    button:hover { background-color: #006400; }
-    #thank-you { display: none; margin-top: 2em; color: green; }
+    #payment-confirmation {
+      display: none;
+      text-align: left;
+      margin-top: 2em;
+    }
   </style>
 </head>
 <body>
@@ -71,9 +70,17 @@
 
     <input type="number" id="paypalAmount" placeholder="Amount ($)" min="1" step="0.01" required>
     <div id="paypal-button-container" style="margin-top: 1em;"></div>
+
     <div id="thank-you">
       <h3>✅ Thank you for your payment!</h3>
-      <p>We appreciate your business and look forward to serving you again!</p>
+    </div>
+
+    <div id="payment-confirmation">
+      <h3>📄 Payment Receipt</h3>
+      <p><strong>Invoice:</strong> <span id="confirm-invoice">N/A</span></p>
+      <p><strong>Amount Paid:</strong> $<span id="confirm-amount">0.00</span></p>
+      <p><strong>Date:</strong> <span id="confirm-date">-</span></p>
+      <p><strong>Paid By:</strong> <span id="confirm-email">-</span></p>
     </div>
 
     <div style="margin-top: 3em;">
@@ -84,7 +91,6 @@
     </div>
   </div>
 </main>
-
 <footer>
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
@@ -93,14 +99,6 @@
   function showThankYou() {
     document.getElementById('thank-you').style.display = 'block';
   }
-
-  // Auto-fill PayPal amount from saved email (optional)
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      // Optionally: pre-fill any fields or log usage
-      console.log("User logged in:", user.email);
-    }
-  });
 
   paypal.Buttons({
     style: {
@@ -119,14 +117,70 @@
       });
     },
     onApprove: function(data, actions) {
-      return actions.order.capture().then(function(details) {
+      return actions.order.capture().then(async function(details) {
+        const amount = parseFloat(details.purchase_units[0].amount.value);
+        const payerEmail = details.payer.email_address;
+        const paidAt = new Date().toLocaleString();
+
         showThankYou();
-        alert('✅ Payment completed by ' + details.payer.name.given_name);
+        document.getElementById('payment-confirmation').style.display = 'block';
+        document.getElementById('confirm-amount').innerText = amount.toFixed(2);
+        document.getElementById('confirm-date').innerText = paidAt;
+        document.getElementById('confirm-email').innerText = payerEmail;
+
+        try {
+          const db = firebase.firestore();
+          const user = firebase.auth().currentUser;
+
+          if (!user) {
+            alert("⚠️ You're not logged in. Invoice matching unavailable.");
+            return;
+          }
+
+          const invoiceSnap = await db.collection("invoices")
+            .where("customerEmail", "==", user.email)
+            .where("paid", "==", false)
+            .orderBy("dueDate", "asc")
+            .limit(1)
+            .get();
+
+          if (!invoiceSnap.empty) {
+            const doc = invoiceSnap.docs[0];
+            const docRef = doc.ref;
+            const invoiceData = doc.data();
+
+            await docRef.update({
+              paid: true,
+              paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+              paymentMethod: "PayPal",
+              paidAmount: amount,
+              paypalPayer: payerEmail
+            });
+
+            document.getElementById('confirm-invoice').innerText = invoiceData.invoiceNumber;
+
+            // Admin notification
+            await db.collection("notifications").add({
+              type: "payment",
+              message: `💰 $${amount.toFixed(2)} received for invoice #${invoiceData.invoiceNumber}`,
+              customer: user.email,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              status: "unread"
+            });
+
+            console.log("✅ Payment logged and admin notified.");
+          } else {
+            alert("⚠️ No unpaid invoice found for your account.");
+          }
+        } catch (err) {
+          console.error("❌ Firestore error:", err);
+          alert("❌ Failed to log payment. Contact support.");
+        }
       });
     },
     onError: function(err) {
-      console.error(err);
-      alert('❌ PayPal error: ' + err.message);
+      console.error("❌ PayPal error:", err);
+      alert("❌ PayPal Checkout failed.");
     }
   }).render('#paypal-button-container');
 </script>
