@@ -395,7 +395,42 @@
     }
 
     function updateRequestStatus(id, newStatus) {
-      db.collection("service_requests").doc(id).update({ status: newStatus });
+  db.collection("service_requests").doc(id).update({ status: newStatus });
+
+  // Auto-generate quote if marked as Completed
+  if (newStatus === "Completed") {
+    db.collection("service_requests").doc(id).get().then(doc => {
+      const r = doc.data();
+      // Check if a quote already exists for this email and service type
+      db.collection("quotes")
+        .where("email", "==", r.email)
+        .where("serviceType", "==", r.serviceType)
+        .get()
+        .then(snapshot => {
+          if (!snapshot.empty) return; // Already exists
+
+          // Create the quote
+          db.collection("quotes").add({
+            fullName: r.fullName || "",
+            email: r.email,
+            serviceType: r.serviceType,
+            amount: 0,
+            baseRate: 0,
+            estimatedTime: "1 hour",
+            mileage: 0,
+            laborers: 1,
+            street: r.street,
+            city: r.city,
+            state: r.state,
+            zip: r.zip,
+            notes: r.notes || "",
+            status: "Pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+    });
+  }
+}
     }
 
     function exportInvoicesCSV(isPaid) {
