@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
 /* General Styles */
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background: #f4f9f4;
   margin: 0;
   padding: 0;
@@ -85,7 +83,8 @@ footer {
 }
 
 /* Form Styles */
-form input, form textarea {
+form input,
+form textarea {
   width: 80%;
   padding: 0.5em;
   margin-bottom: 1em;
