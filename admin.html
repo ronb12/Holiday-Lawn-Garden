@@ -14,29 +14,18 @@
       text-align: center; position: relative;
     }
     nav.tabs {
-      display: flex;
-      background: #d8f0d8;
-      justify-content: space-around;
-      padding: 1em 0;
-      position: sticky;
-      top: 0;
-      z-index: 999;
+      display: flex; background: #d8f0d8;
+      justify-content: space-around; padding: 1em 0;
+      position: sticky; top: 0; z-index: 999;
     }
     nav.tabs button {
       background: #228B22; color: white;
       border: none; padding: 0.7em 1.2em;
       border-radius: 6px; cursor: pointer;
     }
-    nav.tabs button:hover {
-      background: #006400;
-    }
-    .tab-section {
-      display: none;
-      padding: 1em 2em;
-    }
-    .tab-section.active {
-      display: block;
-    }
+    nav.tabs button:hover { background: #006400; }
+    .tab-section { display: none; padding: 1em 2em; }
+    .tab-section.active { display: block; }
     .summary-row {
       display: flex; justify-content: space-around;
       flex-wrap: wrap; background: #e8f5e9;
@@ -45,8 +34,8 @@
     .summary-row .tile {
       flex: 1 1 30%; background: #fff;
       margin: 0.5em; padding: 1em;
-      border: 2px solid #228B22;
-      border-radius: 8px; text-align: center;
+      border: 2px solid #228B22; border-radius: 8px;
+      text-align: center;
     }
     h2 { color: #228B22; margin-top: 0; }
     table {
@@ -66,15 +55,7 @@
       border: none; padding: 0.4em 0.8em;
       border-radius: 4px; cursor: pointer;
     }
-    button.action:hover {
-      background: #006400;
-    }
-    .service-row {
-      display: flex; gap: 10px; margin-bottom: 10px;
-    }
-    .service-row input, .service-row select {
-      flex: 1;
-    }
+    button.action:hover { background: #006400; }
     .collapse-section {
       background: #f0fff0; padding: 1em;
       border-left: 5px solid #228B22;
@@ -102,6 +83,7 @@
     <button onclick="showTab('invoices')">🧾 Invoices</button>
   </nav>
 
+  <!-- 📊 DASHBOARD -->
   <section id="dashboard" class="tab-section active">
     <div class="summary-row">
       <div class="tile"><strong>📄 Quotes Pending:</strong><br><span id="quoteCount">0</span></div>
@@ -116,28 +98,33 @@
     </div>
   </section>
 
+  <!-- 📋 SERVICE REQUESTS -->
   <section id="requests" class="tab-section">
     <h2>Service Requests</h2>
     <table id="serviceRequestsTable">
       <thead>
         <tr>
-          <th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Actions</th>
+          <th>Name</th><th>Email</th><th>Address</th>
+          <th>Request</th><th>Status</th><th>Notes</th><th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </section>
 
+  <!-- 💬 QUOTES -->
   <section id="quotes" class="tab-section">
     <h2>Quotes</h2>
     <table id="quotesTable">
       <thead>
         <tr>
-          <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th>
+          <th>Name</th><th>Email</th><th>Service</th>
+          <th>Amount</th><th>Status</th><th>Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
+
     <h3>Create Quote</h3>
     <form id="quoteForm" onsubmit="createQuote(event)">
       <input type="text" id="quoteName" placeholder="Full Name" required />
@@ -152,9 +139,10 @@
         <option>Custom</option>
       </select>
       <input type="number" id="quoteAmount" placeholder="Quote Amount" required />
+
       <div class="collapse-section">
         <label>Mileage:
-          <select id="quoteMiles">
+          <select id="quoteMiles" onchange="updateQuoteProfit()">
             <option value="0">0 mi</option>
             <option value="5">5 mi</option>
             <option value="10">10 mi</option>
@@ -162,7 +150,7 @@
           </select>
         </label>
         <label>Laborers:
-          <select id="quoteLabor">
+          <select id="quoteLabor" onchange="updateQuoteProfit()">
             <option value="1">1 person</option>
             <option value="2">2 people</option>
             <option value="3">3 people</option>
@@ -174,11 +162,11 @@
           Profit: <span id="quoteProfit">$0.00</span>
         </p>
       </div>
+
       <button type="submit">Create Quote</button>
     </form>
   </section>
-  </section>
-
+  <!-- 🧾 INVOICES -->
   <section id="invoices" class="tab-section">
     <h2>Invoices</h2>
     <form id="invoiceForm" onsubmit="createInvoice(event)">
@@ -210,9 +198,11 @@
             <option value="3">3</option>
           </select>
         </label>
-        <p>Gas: <span id="gasCost">$0.00</span> |
-           Labor: <span id="laborCost">$0.00</span> |
-           Profit: <span id="profitMargin">$0.00</span></p>
+        <p>
+          Gas: <span id="gasCost">$0.00</span> |
+          Labor: <span id="laborCost">$0.00</span> |
+          Profit: <span id="profitMargin">$0.00</span>
+        </p>
       </div>
 
       <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
@@ -221,24 +211,25 @@
 
     <h3>Invoices Due</h3>
     <table id="invoicesDueTable">
-      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>Action</th></tr></thead>
       <tbody></tbody>
     </table>
 
     <h3>Paid Invoices</h3>
     <table id="invoicesPaidTable">
-      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+      <thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
       <tbody></tbody>
     </table>
   </section>
 
   <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-  <!-- ✅ Firebase & Scripts -->
+  <!-- ✅ Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
+
   <script>
     const db = firebase.firestore();
     let currentUser;
@@ -254,7 +245,8 @@
         loadQuotes();
         loadInvoices();
       } else {
-        alert("Access denied."); location.href = "login.html";
+        alert("Access denied.");
+        location.href = "login.html";
       }
     });
 
@@ -281,7 +273,7 @@
 
     function calcTotal() {
       let total = 0;
-      document.querySelectorAll("#serviceList .service-row input[type=number]").forEach(input => {
+      document.querySelectorAll("#serviceList input[type=number]").forEach(input => {
         total += parseFloat(input.value || 0);
       });
       document.getElementById("totalAmount").innerText = total.toFixed(2);
@@ -298,6 +290,18 @@
       document.getElementById("gasCost").innerText = `$${gas}`;
       document.getElementById("laborCost").innerText = `$${labor}`;
       document.getElementById("profitMargin").innerText = `$${profit}`;
+    }
+
+    function updateQuoteProfit() {
+      const amount = parseFloat(document.getElementById("quoteAmount").value || 0);
+      const miles = parseFloat(document.getElementById("quoteMiles").value || 0);
+      const laborers = parseInt(document.getElementById("quoteLabor").value || 1);
+      const gas = (miles * 0.65).toFixed(2);
+      const labor = (laborers * 20).toFixed(2);
+      const profit = Math.max(30, amount - gas - labor).toFixed(2);
+      document.getElementById("quoteGas").innerText = `$${gas}`;
+      document.getElementById("quoteLaborCost").innerText = `$${labor}`;
+      document.getElementById("quoteProfit").innerText = `$${profit}`;
     }
 
     function createInvoice(e) {
@@ -375,66 +379,6 @@
       });
     }
 
-    function loadQuotes() {
-      const tbody = document.querySelector("#quotesTable tbody");
-      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-        let count = 0;
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          if (d.status === "Archived") return;
-          const row = `
-            <tr>
-              <td>${d.fullName}</td>
-              <td>${d.email}</td>
-              <td>${d.serviceType}</td>
-              <td>$${d.amount.toFixed(2)}</td>
-              <td>${d.status}</td>
-              <td><button class="action" onclick="generateQuotePDF('${doc.id}')">📄 View</button></td>
-            </tr>`;
-          tbody.innerHTML += row;
-          if (d.status === "Pending") count++;
-        });
-        document.getElementById("quoteCount").innerText = count;
-      });
-    }
-
-    function loadInvoices() {
-      const dueBody = document.querySelector("#invoicesDueTable tbody");
-      const paidBody = document.querySelector("#invoicesPaidTable tbody");
-      db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
-        dueBody.innerHTML = "";
-        paidBody.innerHTML = "";
-        let dueCount = 0;
-        let totalPaid = 0;
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const row = `
-            <tr>
-              <td>${d.customerEmail}</td>
-              <td>${d.invoiceNumber}</td>
-              <td>$${d.amountDue.toFixed(2)}</td>
-              <td>${d.dueDate}</td>
-              <td>${d.paid ? "Paid" : "Unpaid"}</td>
-              <td>${d.paid ? "✅" : `<button class="action" onclick="markPaid('${doc.id}')">Mark Paid</button>`}</td>
-            </tr>`;
-          if (d.paid) {
-            totalPaid += d.amountDue;
-            paidBody.innerHTML += row;
-          } else {
-            dueCount++;
-            dueBody.innerHTML += row;
-          }
-        });
-        document.getElementById("invoiceCount").innerText = dueCount;
-        document.getElementById("totalPaid").innerText = totalPaid.toFixed(2);
-      });
-    }
-
-    function markPaid(id) {
-      db.collection("invoices").doc(id).update({ paid: true });
-    }
-
     function loadServiceRequests() {
       const tbody = document.querySelector("#serviceRequestsTable tbody");
       db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
@@ -468,6 +412,84 @@
       db.collection("service_requests").doc(id).update({ status: newStatus });
     }
 
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        let count = 0;
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          if (d.status === "Archived") return;
+          const row = `
+            <tr>
+              <td>${d.fullName}</td>
+              <td>${d.email}</td>
+              <td>${d.serviceType}</td>
+              <td>$${d.amount.toFixed(2)}</td>
+              <td>${d.status}</td>
+              <td><button class="action" onclick="generateQuotePDF('${doc.id}')">📄 View</button></td>
+            </tr>`;
+          tbody.innerHTML += row;
+          if (d.status === "Pending") count++;
+        });
+        document.getElementById("quoteCount").innerText = count;
+      });
+    }
+
+    function loadInvoices() {
+      const dueBody = document.querySelector("#invoicesDueTable tbody");
+      const paidBody = document.querySelector("#invoicesPaidTable tbody");
+      db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
+        dueBody.innerHTML = "";
+        paidBody.innerHTML = "";
+        let dueCount = 0, paidTotal = 0;
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const row = `
+            <tr>
+              <td>${d.customerEmail}</td>
+              <td>${d.invoiceNumber}</td>
+              <td>$${d.amountDue.toFixed(2)}</td>
+              <td>${d.dueDate}</td>
+              <td>${d.paid ? "Paid" : "Unpaid"}</td>
+              <td>${d.paid ? "<button onclick='viewPDF(\"" + doc.id + "\")'>📄</button>" : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}</td>
+            </tr>`;
+          if (d.paid) {
+            paidBody.innerHTML += row;
+            paidTotal += d.amountDue;
+          } else {
+            dueBody.innerHTML += row;
+            dueCount++;
+          }
+        });
+        document.getElementById("invoiceCount").innerText = dueCount;
+        document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+      });
+    }
+
+    function viewPDF(id) {
+      db.collection("invoices").doc(id).get().then(doc => {
+        const d = doc.data();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        pdf.text("Invoice - Holliday's Lawn & Garden", 10, 10);
+        pdf.text("Customer: " + d.customerEmail, 10, 20);
+        pdf.text("Invoice #: " + d.invoiceNumber, 10, 30);
+        pdf.text("Due Date: " + d.dueDate, 10, 40);
+        let y = 50;
+        d.services.forEach(s => {
+          pdf.text(`${s.description}: $${s.amount.toFixed(2)}`, 10, y);
+          y += 10;
+        });
+        pdf.text("Total: $" + d.amountDue.toFixed(2), 10, y);
+        pdf.output("dataurlnewwindow");
+      });
+    }
+
+    function markPaid(id) {
+      db.collection("invoices").doc(id).update({ paid: true });
+    }
+
     function fetchInvoiceSequence() {
       db.collection("meta").doc("counters").get().then(doc => {
         invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
@@ -486,7 +508,6 @@
         pdf.text(`Customer: ${d.fullName}`, 10, 20);
         pdf.text(`Service: ${d.serviceType}`, 10, 30);
         pdf.text(`Amount: $${d.amount.toFixed(2)}`, 10, 40);
-        pdf.text(`Status: ${d.status}`, 10, 50);
         pdf.output("dataurlnewwindow");
       });
     }
