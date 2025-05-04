@@ -137,7 +137,6 @@
       <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
       <button type="submit">Create Invoice</button>
     </form>
-
     <!-- ✅ INVOICES -->
     <h2>Invoices Due</h2>
     <div class="export-buttons">
@@ -159,6 +158,7 @@
   </main>
 
   <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
+
   <!-- ✅ Firebase & App Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -167,15 +167,12 @@
   <script>
     const db = firebase.firestore();
     let currentUser;
-    let invoiceSequence = 1000;
-    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAA..."; // shortened for brevity
 
     firebase.auth().onAuthStateChanged(async user => {
       if (!user) return location.href = "login.html";
       currentUser = user;
       const roleDoc = await db.collection("users").doc(user.uid).get();
       if (roleDoc.exists && roleDoc.data().role === "admin") {
-        fetchInvoiceSequence();
         loadServiceRequests();
         loadQuotes();
         loadInvoices();
@@ -188,191 +185,14 @@
       firebase.auth().signOut().then(() => location.href = "login.html");
     }
 
-    function fetchInvoiceSequence() {
-      db.collection("meta").doc("counters").get().then(doc => {
-        invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
-        document.getElementById("invoiceNumber").value = invoiceSequence;
-      });
-    }
-
-    function addServiceRow() {
-      const container = document.getElementById("serviceList");
-      const row = document.createElement("div");
-      row.className = "service-row";
-      row.innerHTML = `
-        <select onchange="this.nextElementSibling.value = this.value === 'Custom' ? '' : this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
-          <option value="">Select Service</option>
-          <option value="Lawn Mowing">Lawn Mowing</option>
-          <option value="Leaf Removal">Leaf Removal</option>
-          <option value="Hedge Trimming">Hedge Trimming</option>
-          <option value="Driveway Pressure Washing">Driveway Pressure Washing</option>
-          <option value="House Pressure Washing">House Pressure Washing</option>
-          <option value="Mulch Installation">Mulch Installation</option>
-          <option value="Garden Bed Cleanup">Garden Bed Cleanup</option>
-          <option value="Shrub Trimming">Shrub Trimming</option>
-          <option value="Pressure Washing">Pressure Washing</option>
-          <option value="Custom">Custom</option>
-        </select>
-        <input type="text" placeholder="Description" />
-        <input type="number" placeholder="Amount" step="0.01" oninput="calcTotal()" />
-        <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-      `;
-      container.appendChild(row);
-    }
-
-    function calcTotal() {
-      let total = 0;
-      document.querySelectorAll("#serviceList .service-row").forEach(row => {
-        total += parseFloat(row.querySelector("input[type=number]").value || 0);
-      });
-      document.getElementById("totalAmount").innerText = total.toFixed(2);
-      calcProfit();
-    }
-
-    function calcProfit() {
-      const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
-      const miles = parseFloat(document.getElementById("milesInput").value || "0");
-      const laborers = parseInt(document.getElementById("laborInput").value || "1");
-      const gas = (miles * 0.65).toFixed(2);
-      const labor = (laborers * 20).toFixed(2);
-      const profit = Math.max(30, total - gas - labor).toFixed(2);
-      document.getElementById("gasCost").innerText = `$${gas}`;
-      document.getElementById("laborCost").innerText = `$${labor}`;
-      document.getElementById("profitMargin").innerText = `$${profit}`;
-    }
-
-    function createInvoice(e) {
-      e.preventDefault();
-      const email = document.getElementById("invoiceEmail").value;
-      const number = document.getElementById("invoiceNumber").value;
-      const due = document.getElementById("invoiceDueDate").value;
-      const services = [];
-      document.querySelectorAll("#serviceList .service-row").forEach(row => {
-        const desc = row.querySelector("input[type=text]").value;
-        const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
-        if (desc && amt) services.push({ description: desc, amount: amt });
-      });
-      const total = services.reduce((sum, s) => sum + s.amount, 0);
-      const address = {
-        street: document.getElementById("street").value,
-        city: document.getElementById("city").value,
-        state: document.getElementById("state").value,
-        zip: document.getElementById("zip").value
-      };
-      const mileage = parseFloat(document.getElementById("milesInput").value || 0);
-      const labor = parseInt(document.getElementById("laborInput").value || 1);
-
-      db.collection("invoices").add({
-        customerEmail: email,
-        invoiceNumber: number,
-        services,
-        amountDue: total,
-        dueDate: due,
-        ...address,
-        mileage,
-        laborers: labor,
-        paid: false,
-        archived: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        invoiceSequence++;
-        db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
-        alert("✅ Invoice Created");
-        document.getElementById("invoiceForm").reset();
-        document.getElementById("serviceList").innerHTML = "";
-        addServiceRow();
-        loadInvoices();
-      });
-    }
-
-    function loadQuotes() {
-      const tbody = document.querySelector("#quotesTable tbody");
-      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-        let count = 0;
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const q = doc.data();
-          if (q.status === "Accepted") {
-            autoCreateInvoiceFromQuote(doc);
-          }
-          if (q.status === "Archived") return;
-          const timeEst = q.estimatedTime || "N/A";
-          const baseRate = q.baseRate ? `$${q.baseRate.toFixed(2)}` : "N/A";
-          tbody.innerHTML += `
-            <tr>
-              <td>${q.fullName || "N/A"}</td>
-              <td>${q.email}</td>
-              <td>${q.serviceType}</td>
-              <td>$${q.amount.toFixed(2)}</td>
-              <td>${baseRate}</td>
-              <td>${timeEst}</td>
-              <td>${q.status}</td>
-              <td><button onclick="generateQuotePDF('${doc.id}')">📄</button></td>
-            </tr>`;
-          if (q.status === "Pending") count++;
-        });
-        document.getElementById("quoteCount").innerText = count;
-      });
-    }
-
-    function autoCreateInvoiceFromQuote(doc) {
-      const q = doc.data();
-      const invoiceData = {
-        customerEmail: q.email,
-        invoiceNumber: "INV-" + Math.floor(Math.random() * 9000 + 1000),
-        services: [{ description: q.serviceType, amount: q.amount }],
-        amountDue: q.amount,
-        dueDate: new Date().toISOString().split("T")[0],
-        street: q.street || "",
-        city: q.city || "",
-        state: q.state || "",
-        zip: q.zip || "",
-        mileage: q.mileage || 0,
-        laborers: q.laborers || 1,
-        paid: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      db.collection("invoices").where("customerEmail", "==", q.email)
-        .where("invoiceNumber", "==", invoiceData.invoiceNumber).get().then(snap => {
-          if (snap.empty) {
-            db.collection("invoices").add(invoiceData);
-            db.collection("quotes").doc(doc.id).update({ status: "Archived" });
-          }
-        });
-    }
-
-    function generateQuotePDF(id) {
-      db.collection("quotes").doc(id).get().then(doc => {
-        const d = doc.data();
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF();
-        pdf.addImage(logoBase64, 'PNG', 10, 10, 30, 30);
-        pdf.setFontSize(16);
-        pdf.text("Holliday's Lawn & Garden", 50, 20);
-        pdf.setFontSize(12);
-        pdf.text("Karl Holliday | 504-717-1887", 50, 28);
-        pdf.text("7holliday@gmail.com", 50, 34);
-        pdf.line(10, 45, 200, 45);
-        pdf.setFontSize(14);
-        pdf.text("QUOTE", 10, 55);
-        pdf.setFontSize(12);
-        pdf.text(`Customer: ${d.fullName || "N/A"}`, 10, 65);
-        pdf.text(`Service: ${d.serviceType}`, 10, 72);
-        pdf.text(`Total: $${d.amount.toFixed(2)}`, 10, 79);
-        pdf.text(`Status: ${d.status}`, 10, 86);
-        pdf.save(`quote-${d.quote || d.serviceType}.pdf`);
-      });
-    }
-
     function loadServiceRequests() {
       const tbody = document.querySelector("#serviceRequestsTable tbody");
       db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
         tbody.innerHTML = "";
-        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='7'>No requests found</td></tr>";
         snapshot.forEach(doc => {
           const r = doc.data();
           const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-          const row = `
+          tbody.innerHTML += `
             <tr>
               <td>${r.fullName || "N/A"}</td>
               <td>${r.email}</td>
@@ -389,70 +209,196 @@
                 </select>
               </td>
             </tr>`;
-          tbody.innerHTML += row;
         });
       });
     }
 
-    function updateRequestStatus(id, newStatus) {
-  db.collection("service_requests").doc(id).update({ status: newStatus });
-
-  // Auto-generate quote if marked as Completed
-  if (newStatus === "Completed") {
-    db.collection("service_requests").doc(id).get().then(doc => {
-      const r = doc.data();
-      // Check if a quote already exists for this email and service type
-      db.collection("quotes")
-        .where("email", "==", r.email)
-        .where("serviceType", "==", r.serviceType)
-        .get()
-        .then(snapshot => {
-          if (!snapshot.empty) return; // Already exists
-
-          // Create the quote
-          db.collection("quotes").add({
-            fullName: r.fullName || "",
-            email: r.email,
-            serviceType: r.serviceType,
-            amount: 0,
-            baseRate: 0,
-            estimatedTime: "1 hour",
-            mileage: 0,
-            laborers: 1,
-            street: r.street,
-            city: r.city,
-            state: r.state,
-            zip: r.zip,
-            notes: r.notes || "",
-            status: "Pending",
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    function updateRequestStatus(id, status) {
+      db.collection("service_requests").doc(id).update({ status });
+      if (status === "Completed") {
+        db.collection("service_requests").doc(id).get().then(doc => {
+          const r = doc.data();
+          db.collection("quotes").where("email", "==", r.email).where("serviceType", "==", r.serviceType).get()
+          .then(snapshot => {
+            if (!snapshot.empty) return;
+            db.collection("quotes").add({
+              fullName: r.fullName || "",
+              email: r.email,
+              serviceType: r.serviceType,
+              amount: 0,
+              baseRate: 0,
+              estimatedTime: "1 hour",
+              mileage: 0,
+              laborers: 1,
+              street: r.street,
+              city: r.city,
+              state: r.state,
+              zip: r.zip,
+              notes: r.notes || "",
+              status: "Pending",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
           });
         });
-    });
-  }
-}
+      }
     }
 
-    function exportInvoicesCSV(isPaid) {
-      db.collection("invoices").where("paid", "==", isPaid).get().then(snapshot => {
-        const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        let pendingCount = 0;
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          if (q.status === "Accepted") autoConvertToInvoice(doc);
+          if (q.status === "Archived") return;
+          tbody.innerHTML += `
+            <tr>
+              <td>${q.fullName}</td>
+              <td>${q.email}</td>
+              <td>${q.serviceType}</td>
+              <td>$${q.amount.toFixed(2)}</td>
+              <td>${q.baseRate ? `$${q.baseRate.toFixed(2)}` : "N/A"}</td>
+              <td>${q.estimatedTime || "N/A"}</td>
+              <td>${q.status}</td>
+              <td><button onclick="generateQuotePDF('${doc.id}')">📄</button></td>
+            </tr>`;
+          if (q.status === "Pending") pendingCount++;
+        });
+        document.getElementById("quoteCount").innerText = pendingCount;
+      });
+    }
+
+    function autoConvertToInvoice(doc) {
+      const q = doc.data();
+      const number = "INV-" + Math.floor(1000 + Math.random() * 9000);
+      db.collection("invoices").where("invoiceNumber", "==", number).get().then(snapshot => {
+        if (!snapshot.empty) return;
+        db.collection("invoices").add({
+          customerEmail: q.email,
+          invoiceNumber: number,
+          services: [{ description: q.serviceType, amount: q.amount }],
+          amountDue: q.amount,
+          dueDate: new Date().toISOString().split("T")[0],
+          street: q.street || "",
+          city: q.city || "",
+          state: q.state || "",
+          zip: q.zip || "",
+          mileage: q.mileage || 0,
+          laborers: q.laborers || 1,
+          paid: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        db.collection("quotes").doc(doc.id).update({ status: "Archived" });
+      });
+    }
+
+    function generateQuotePDF(id) {
+      db.collection("quotes").doc(id).get().then(doc => {
+        const d = doc.data();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        pdf.text("Holliday's Lawn & Garden", 20, 20);
+        pdf.text("Karl Holliday | 504-717-1887", 20, 30);
+        pdf.text("7holliday@gmail.com", 20, 40);
+        pdf.line(10, 45, 200, 45);
+        pdf.setFontSize(14);
+        pdf.text("QUOTE", 10, 55);
+        pdf.setFontSize(12);
+        pdf.text(`Customer: ${d.fullName}`, 10, 65);
+        pdf.text(`Service: ${d.serviceType}`, 10, 72);
+        pdf.text(`Amount: $${d.amount.toFixed(2)}`, 10, 79);
+        pdf.text(`Status: ${d.status}`, 10, 86);
+        pdf.save(`quote-${id}.pdf`);
+      });
+    }
+
+    function loadInvoices() {
+      const dueBody = document.querySelector("#invoicesDueTable tbody");
+      const paidBody = document.querySelector("#invoicesPaidTable tbody");
+      let unpaidCount = 0, paidTotal = 0, thisMonth = 0, thisYear = 0, outstanding = 0, inProgress = 0;
+
+      db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        dueBody.innerHTML = "";
+        paidBody.innerHTML = "";
+        const now = new Date();
         snapshot.forEach(doc => {
           const d = doc.data();
-          rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
+          const date = d.dueDate || "N/A";
+          const row = `
+            <tr>
+              <td>${d.customerEmail}</td>
+              <td>${d.invoiceNumber}</td>
+              <td>$${d.amountDue.toFixed(2)}</td>
+              <td>${date}</td>
+              <td>${d.paid ? "Paid" : "Due"}</td>
+              <td><button onclick="generateInvoicePDF('${doc.id}', ${d.paid})">📄</button></td>
+            </tr>`;
+          const isThisMonth = new Date(date).getMonth() === now.getMonth() && new Date(date).getFullYear() === now.getFullYear();
+          const isThisYear = new Date(date).getFullYear() === now.getFullYear();
+
+          if (d.paid) {
+            paidTotal += d.amountDue;
+            if (isThisYear) thisYear += d.amountDue;
+            if (isThisMonth) thisMonth += d.amountDue;
+            paidBody.innerHTML += row;
+          } else {
+            unpaidCount++;
+            outstanding += d.amountDue;
+            if (d.status === "In Progress") inProgress++;
+            dueBody.innerHTML += row;
+          }
+        });
+        document.getElementById("invoiceCount").innerText = unpaidCount;
+        document.getElementById("totalPaid").innerText = paidTotal.toFixed(2);
+        document.getElementById("revenueMonth").innerText = thisMonth.toFixed(2);
+        document.getElementById("revenueYear").innerText = thisYear.toFixed(2);
+        document.getElementById("totalOutstanding").innerText = outstanding.toFixed(2);
+        document.getElementById("inProgressCount").innerText = inProgress;
+      });
+    }
+
+    function generateInvoicePDF(id, isPaid) {
+      db.collection("invoices").doc(id).get().then(doc => {
+        const d = doc.data();
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        pdf.text("Holliday's Lawn & Garden", 20, 20);
+        pdf.text("Karl Holliday | 504-717-1887", 20, 30);
+        pdf.text("7holliday@gmail.com", 20, 40);
+        pdf.line(10, 45, 200, 45);
+        pdf.setFontSize(14);
+        pdf.text("INVOICE", 10, 55);
+        pdf.setFontSize(12);
+        pdf.text(`Customer: ${d.customerEmail}`, 10, 65);
+        pdf.text(`Invoice #: ${d.invoiceNumber}`, 10, 72);
+        pdf.text(`Amount Due: $${d.amountDue.toFixed(2)}`, 10, 79);
+        pdf.text(`Due Date: ${d.dueDate}`, 10, 86);
+        if (isPaid) {
+          pdf.setTextColor(200, 0, 0);
+          pdf.setFontSize(40);
+          pdf.text("PAID", 130, 60, { angle: 45 });
+        }
+        pdf.save(`invoice-${d.invoiceNumber}.pdf`);
+      });
+    }
+
+    function exportInvoicesCSV(paidStatus) {
+      db.collection("invoices").where("paid", "==", paidStatus).get().then(snapshot => {
+        const rows = [["Email", "Invoice #", "Amount", "Due", "Status"]];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Paid" : "Due"]);
         });
         const csv = Papa.unparse(rows);
         const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = isPaid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+        link.href = url;
+        link.download = paidStatus ? "paid_invoices.csv" : "unpaid_invoices.csv";
         link.click();
       });
     }
-    function loadInvoices() {
-  const dueBody = document.querySelector("#invoicesDueTable tbody");
-  const paidBody = document.querySelector("#invoicesPaidTable tbody");
-  // ...rest of the logic
-}
 
     function filterQuotes() {
       const term = document.getElementById("quoteSearch").value.toLowerCase();
@@ -463,4 +409,3 @@
   </script>
 </body>
 </html>
-
