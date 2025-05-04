@@ -175,7 +175,7 @@
   <button id="newJobBtn" onclick="scrollToForm()">➕</button>
   <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-  <!-- Firebase -->
+  <!-- ✅ Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -338,78 +338,7 @@
     }
 
     function viewInvoice(id) {
-      // Could open PDF or new tab, placeholder for now
       alert("📄 Invoice preview for: " + id);
-    }
-
-    function loadServiceRequests() {
-      const tbody = document.querySelector("#serviceRequestsTable tbody");
-      db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const r = doc.data();
-          const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
-          tbody.innerHTML += `
-            <tr>
-              <td>${r.fullName || "N/A"}</td>
-              <td>${r.email}</td>
-              <td>${address}</td>
-              <td>${r.serviceType}</td>
-              <td>${r.status}</td>
-              <td>${r.notes || ""}</td>
-              <td>
-                <select onchange="updateRequestStatus('${doc.id}', this.value)">
-                  <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
-                  <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
-                  <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
-                  <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
-                </select>
-              </td>
-            </tr>`;
-        });
-      });
-    }
-
-    function updateRequestStatus(id, status) {
-      db.collection("service_requests").doc(id).update({ status });
-    }
-
-    function loadQuotes() {
-      const tbody = document.querySelector("#quotesTable tbody");
-      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-        let count = 0;
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const q = doc.data();
-          if (q.status === "Archived") return;
-          tbody.innerHTML += `
-            <tr>
-              <td>${q.fullName || "N/A"}</td>
-              <td>${q.email}</td>
-              <td>${q.serviceType}</td>
-              <td>$${q.amount.toFixed(2)}</td>
-              <td>$${(q.baseRate || 0).toFixed(2)}</td>
-              <td>${q.estimatedTime || "1 hr"}</td>
-              <td>${q.status}</td>
-              <td><button onclick="generateQuotePDF('${doc.id}')">📄</button></td>
-            </tr>`;
-          if (q.status === "Pending") count++;
-        });
-        document.getElementById("quoteCount").innerText = count;
-      });
-    }
-
-    function generateQuotePDF(id) {
-      const { jsPDF } = window.jspdf;
-      db.collection("quotes").doc(id).get().then(doc => {
-        const d = doc.data();
-        const pdf = new jsPDF();
-        pdf.text("Holliday's Lawn & Garden", 10, 10);
-        pdf.text("Customer: " + d.fullName, 10, 20);
-        pdf.text("Service: " + d.serviceType, 10, 30);
-        pdf.text("Amount: $" + d.amount.toFixed(2), 10, 40);
-        pdf.save("quote.pdf");
-      });
     }
 
     function exportInvoicesCSV(paid) {
@@ -425,13 +354,6 @@
         link.href = URL.createObjectURL(blob);
         link.download = paid ? "paid_invoices.csv" : "unpaid_invoices.csv";
         link.click();
-      });
-    }
-
-    function filterQuotes() {
-      const term = document.getElementById("quoteSearch").value.toLowerCase();
-      document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(term) ? "" : "none";
       });
     }
   </script>
