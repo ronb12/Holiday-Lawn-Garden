@@ -26,7 +26,6 @@
     th, td { padding: 10px; border: 1px solid #ccc; }
     th { background-color: #228B22; color: white; }
     tr:nth-child(even) { background-color: #f0f9f0; }
-
     .modal {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6); display: none;
@@ -35,10 +34,6 @@
     .modal-content {
       background: white; padding: 20px; border-radius: 10px;
       width: 90%; max-width: 500px;
-    }
-    .modal img {
-      width: 80px; height: 80px; object-fit: cover;
-      border-radius: 50%; margin-bottom: 10px;
     }
     #helpBtn {
       position: fixed;
@@ -76,71 +71,258 @@
       <button onclick="closeModal(event)">Close</button>
     </div>
   </div>
+
+  <!-- ✅ Continue to Part 2 -->
+  <!-- Service Request Form -->
+  <form onsubmit="submitRequest(event)">
+    <h2>Submit Service Request</h2>
+    <select id="serviceTypeSelect" onchange="toggleCustomService()" required>
+      <option value="">Select a Service</option>
+      <option>Lawn Mowing</option>
+      <option>Leaf Removal</option>
+      <option>Hedge Trimming</option>
+      <option>Driveway Pressure Washing</option>
+      <option>House Pressure Washing</option>
+      <option>Mulch Installation</option>
+      <option>Garden Bed Cleanup</option>
+      <option>Shrub Trimming</option>
+      <option>Pressure Washing</option>
+      <option value="Custom">Other (Custom)</option>
+    </select>
+    <input id="serviceType" placeholder="Enter custom service..." style="display:none;" />
+    <input type="date" id="preferredDate" required />
+    <textarea id="requestNotes" placeholder="Notes"></textarea>
+    <input id="street" placeholder="Street" />
+    <input id="city" placeholder="City" />
+    <input id="state" placeholder="State" />
+    <input id="zip" placeholder="ZIP Code" />
+    <button type="submit">Submit</button>
+  </form>
+
+  <h2>Your Service Requests</h2>
+  <table id="requestsTable">
+    <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Address</th><th>Delete</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Your Quotes</h2>
+  <table id="quotesTable">
+    <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Your Invoices</h2>
+  <table id="invoicesTable">
+    <thead><tr><th>#</th><th>Due</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Modal: Invoice Details -->
+  <div id="invoiceModal" class="modal">
+    <div class="modal-content">
+      <h3>Invoice Details</h3>
+      <div id="invoiceDetails"></div>
+      <button onclick="closeModal(event)">Close</button>
+    </div>
+  </div>
+
+  <!-- Modal: PayPal Checkout -->
+  <div id="paypalModal" class="modal">
+    <div class="modal-content">
+      <h3>Complete Payment</h3>
+      <div id="paypalButtons"></div>
+      <button onclick="closeModal(event)">Cancel</button>
+    </div>
+  </div>
+
 <script>
-  const db = firebase.firestore();
-  let currentUser;
-  let userProfile = {};
-  let selectedInvoice = null;
+const db = firebase.firestore();
+let currentUser, selectedInvoice = null, userProfile = {};
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
-      checkFirstLogin();
-      loadUserProfile();
-      loadRequests();
-      loadQuotes();
-      loadInvoices();
-    } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  function checkFirstLogin() {
-    const walkthroughShown = localStorage.getItem("walkthroughShown_" + currentUser.uid);
-    if (!walkthroughShown) {
-      document.getElementById("walkthroughModal").style.display = "flex";
-      localStorage.setItem("walkthroughShown_" + currentUser.uid, "true");
-    }
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById("greeting").innerText = `Welcome, ${user.email}`;
+    checkFirstLogin();
+    loadUserProfile();
+    loadRequests();
+    loadQuotes();
+    loadInvoices();
+  } else {
+    window.location.href = "login.html";
   }
+});
 
-  function showWalkthrough() {
+function checkFirstLogin() {
+  const walkthroughShown = localStorage.getItem("walkthroughShown_" + currentUser.uid);
+  if (!walkthroughShown) {
     document.getElementById("walkthroughModal").style.display = "flex";
+    localStorage.setItem("walkthroughShown_" + currentUser.uid, "true");
   }
+}
 
-  function closeModal(e) {
-    const target = e.target;
-    if (target && (target.classList.contains("modal") || target.classList.contains("close") || target.tagName === "BUTTON")) {
-      document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-    }
+function showWalkthrough() {
+  document.getElementById("walkthroughModal").style.display = "flex";
+}
+
+function closeModal(e) {
+  const target = e.target;
+  if (target && (target.classList.contains("modal") || target.tagName === "BUTTON")) {
+    document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
   }
+}
 
-  function logout() {
-    firebase.auth().signOut().then(() => location.href = "login.html");
-  }
+function logout() {
+  firebase.auth().signOut().then(() => location.href = "login.html");
+}
 
-  function openProfile() {
-    // your profile modal logic here (if needed)
-    alert("Profile modal coming soon!");
-  }
+function openProfile() {
+  alert("Profile editing coming soon.");
+}
 
-  function loadUserProfile() {
-    db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-      if (doc.exists) userProfile = doc.data();
+function toggleCustomService() {
+  const select = document.getElementById("serviceTypeSelect");
+  const custom = document.getElementById("serviceType");
+  custom.style.display = select.value === "Custom" ? "block" : "none";
+  custom.required = select.value === "Custom";
+}
+
+function submitRequest(e) {
+  e.preventDefault();
+  const type = document.getElementById("serviceTypeSelect").value === "Custom"
+    ? document.getElementById("serviceType").value
+    : document.getElementById("serviceTypeSelect").value;
+  const data = {
+    email: currentUser.email,
+    fullName: userProfile.fullName || "",
+    serviceType: type,
+    preferredDate: document.getElementById("preferredDate").value,
+    notes: document.getElementById("requestNotes").value,
+    street: document.getElementById("street").value,
+    city: document.getElementById("city").value,
+    state: document.getElementById("state").value,
+    zip: document.getElementById("zip").value,
+    status: "Pending",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection("service_requests").add(data).then(() => {
+    alert("✅ Request submitted");
+    e.target.reset();
+    loadRequests();
+  });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("timestamp", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+      const date = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A";
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.serviceType}</td>
+          <td>${date}</td>
+          <td>${r.status}</td>
+          <td>${address}</td>
+          <td><button onclick="deleteRequest('${doc.id}')">❌</button></td>
+        </tr>`;
     });
-  }
+  });
+}
 
-  function loadRequests() {
-    // your existing logic to load service_requests
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
   }
+}
 
-  function loadQuotes() {
-    // your existing logic to load quotes
-  }
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      if (q.status === "Archived") return;
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.serviceType}</td>
+          <td>$${q.amount?.toFixed(2) || "0.00"}</td>
+          <td>${q.status || "Pending"}</td>
+          <td>${q.status === "Accepted" ? "✅ Accepted" : `<button onclick="acceptQuote('${doc.id}')">Accept</button>`}</td>
+        </tr>`;
+    });
+  });
+}
 
-  function loadInvoices() {
-    // your existing logic to load invoices
-  }
+function acceptQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "Accepted" }).then(() => {
+    alert("✅ Quote accepted!");
+    loadQuotes();
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("dueDate", "asc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const action = d.paid
+        ? `<button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>`
+        : `<button onclick="initiatePay('${doc.id}', ${d.amountDue})">Pay Now</button>`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.invoiceNumber}</td>
+          <td>${new Date(d.dueDate).toLocaleDateString()}</td>
+          <td>$${d.amountDue.toFixed(2)}</td>
+          <td>${d.paid ? "Paid" : "Unpaid"}</td>
+          <td>${action}</td>
+        </tr>`;
+    });
+  });
+}
+
+function initiatePay(id, amount) {
+  selectedInvoice = id;
+  document.getElementById("paypalModal").style.display = "flex";
+  document.getElementById("paypalButtons").innerHTML = "";
+  paypal.Buttons({
+    createOrder: (data, actions) => actions.order.create({
+      purchase_units: [{ amount: { value: amount.toFixed(2) } }]
+    }),
+    onApprove: (data, actions) => actions.order.capture().then(() => {
+      db.collection("invoices").doc(selectedInvoice).update({ paid: true }).then(() => {
+        alert("✅ Payment successful!");
+        closeModal({ target: document.createElement("div") });
+        loadInvoices();
+      });
+    })
+  }).render("#paypalButtons");
+}
+
+function viewInvoice(data) {
+  const address = `${data.street}, ${data.city}, ${data.state} ${data.zip}`;
+  const html = `
+    <p><strong>Invoice #:</strong> ${data.invoiceNumber}</p>
+    <p><strong>Due:</strong> ${new Date(data.dueDate).toLocaleDateString()}</p>
+    <p><strong>Amount:</strong> $${data.amountDue.toFixed(2)}</p>
+    <hr>
+    <p><strong>Services:</strong></p>
+    <ul>${(data.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join("")}</ul>
+    <p><strong>Billing Address:</strong> ${address}</p>
+    <p><strong>Status:</strong> Paid</p>
+    <p style="text-align:center;">Thank you for your business!</p>`;
+  document.getElementById("invoiceDetails").innerHTML = html;
+  document.getElementById("invoiceModal").style.display = "flex";
+}
+
+function loadUserProfile() {
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    if (doc.exists) userProfile = doc.data();
+  });
+}
 </script>
 </body>
 </html>
