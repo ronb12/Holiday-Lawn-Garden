@@ -246,7 +246,6 @@
     <div id="pdfContent"></div>
   </div>
 <script>
-  // Firebase Initialization
   const firebaseConfig = {
     apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
     authDomain: "mobile-debt-tracker.firebaseapp.com",
@@ -260,22 +259,25 @@
   const auth = firebase.auth();
   let currentUser;
 
-  auth.onAuthStateChanged(user => {
-    if (!user) return (window.location.href = "login.html");
-    currentUser = user;
-    loadDashboard();
-    loadServiceRequests();
-    loadQuotes();
-    loadInvoices();
-  });
+  // ✅ Ensure persistent login across reloads/tabs
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
+    auth.onAuthStateChanged(user => {
+      if (!user) return (window.location.href = "login.html");
+      currentUser = user;
+      loadDashboard();
+      loadServiceRequests();
+      loadQuotes();
+      loadInvoices();
+    });
+  }).catch(err => console.error("Persistence error:", err));
 
   function logout() {
     auth.signOut();
   }
 
   function showTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
     [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(tabId)).classList.add('active');
   }
@@ -293,8 +295,12 @@
           paid += d.total;
           const paidDate = d.paidDate?.toDate();
           if (paidDate) {
-            if (paidDate.getMonth() == now.getMonth() && paidDate.getFullYear() == now.getFullYear()) month += d.total;
-            if (paidDate.getFullYear() == now.getFullYear()) year += d.total;
+            if (paidDate.getMonth() === now.getMonth() && paidDate.getFullYear() === now.getFullYear()) {
+              month += d.total;
+            }
+            if (paidDate.getFullYear() === now.getFullYear()) {
+              year += d.total;
+            }
           }
         } else {
           outstanding += d.total;
@@ -308,7 +314,7 @@
       document.getElementById("totalOutstanding").textContent = "$" + outstanding.toFixed(2);
     });
     db.collection("requests").get().then(snap => {
-      const inProgress = snap.docs.filter(d => d.data().status == "In Progress").length;
+      const inProgress = snap.docs.filter(d => d.data().status === "In Progress").length;
       document.getElementById("jobsInProgress").textContent = inProgress;
     });
   }
@@ -358,7 +364,7 @@
     const gas = mileage * 0.6;
     const labor = laborers * 25;
     const base = baseRates[serviceType] || 100;
-    const total = base + gas + labor + 40; // Profit buffer
+    const total = base + gas + labor + 40;
     const quoteNumberRef = db.doc("meta/counters");
     db.runTransaction(t => {
       return t.get(quoteNumberRef).then(doc => {
@@ -376,7 +382,7 @@
         zip,
         serviceType,
         status: "Pending",
-        total: total,
+        total,
         createdAt: new Date(),
         mileage,
         laborers,
@@ -435,7 +441,7 @@
           total: q.total,
           paid: false,
           createdAt: new Date(),
-          dueDate: new Date(Date.now() + 7 * 86400000) // due in 7 days
+          dueDate: new Date(Date.now() + 7 * 86400000)
         });
         alert(`Invoice ${invId} created.`);
       });
@@ -469,36 +475,6 @@
 
   function markPaid(id) {
     db.collection("invoices").doc(id).update({ paid: true, paidDate: new Date() });
-  }
-
-  function exportQuotesCSV() {
-    db.collection("quotes").get().then(snap => {
-      const data = snap.docs.map(doc => doc.data());
-      const csv = Papa.unparse(data);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "quotes.csv";
-      a.click();
-    });
-  }
-
-  function exportInvoicesCSV() {
-    db.collection("invoices").get().then(snap => {
-      const data = snap.docs.map(doc => doc.data());
-      const csv = Papa.unparse(data);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoices.csv";
-      a.click();
-    });
-  }
-
-  function viewNotifications() {
-    alert("Notifications feature coming soon.");
   }
 
   function previewInvoice(id) {
@@ -535,9 +511,42 @@
   }
 
   function createNewJob() {
-    alert("Coming soon: Full New Job Wizard.");
+    alert("Coming soon: full New Job Wizard.");
   }
 
+  function viewNotifications() {
+    alert("Notifications are under construction.");
+  }
+
+  function exportQuotesCSV() {
+    db.collection("quotes").get().then(snap => {
+      const data = snap.docs.map(doc => doc.data());
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "quotes.csv";
+      a.click();
+    });
+  }
+
+  function exportInvoicesCSV() {
+    db.collection("invoices").get().then(snap => {
+      const data = snap.docs.map(doc => doc.data());
+      const csv = Papa.unparse(data);
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "invoices.csv";
+      a.click();
+    });
+  }
+
+  function archiveQuote(id) {
+    db.collection("quotes").doc(id).update({ status: "Archived" });
+  }
 </script>
 </body>
 </html>
