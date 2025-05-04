@@ -11,80 +11,100 @@
     img-src 'self' data:;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css" />
   <link rel="manifest" href="manifest.json" />
+
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f9f4;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #228B22;
+      color: white;
+      padding: 1rem;
+    }
+    header img {
+      max-height: 80px;
+      margin-bottom: 0.5rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
     .login-container {
       max-width: 400px;
       margin: 3rem auto;
-      background: white;
       padding: 2rem;
+      background: white;
       border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: left;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     .login-container h2 {
-      text-align: center;
+      margin-bottom: 1.5rem;
     }
-    label {
+    .form-group {
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .form-group label {
       display: block;
+      margin-bottom: 0.3rem;
       font-weight: bold;
-      margin-top: 1em;
     }
     input[type="email"],
     input[type="password"] {
       width: 100%;
-      padding: 0.6em;
-      margin-top: 0.3em;
+      max-width: 300px;
+      padding: 0.6rem;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 4px;
+      font-size: 1rem;
     }
     button {
-      margin-top: 1.5em;
       width: 100%;
+      max-width: 300px;
+      padding: 0.7rem;
       background-color: #228B22;
       color: white;
-      padding: 0.7em;
       border: none;
       border-radius: 5px;
-      font-size: 1em;
+      font-size: 1rem;
       cursor: pointer;
     }
     button:hover {
       background-color: #006400;
     }
     .login-links {
-      text-align: center;
-      margin-top: 1.2em;
-      font-size: 0.9em;
+      margin-top: 1rem;
+      font-size: 0.9rem;
     }
     .login-links a {
       color: #228B22;
       text-decoration: none;
     }
+    .login-links a:hover {
+      text-decoration: underline;
+    }
     footer {
       margin-top: 2rem;
-      padding: 1rem;
       background: #e0f0e0;
       color: #333;
-      font-size: 0.9em;
-      text-align: center;
-    }
-    header nav {
-      text-align: center;
-      margin-top: 1rem;
-    }
-    header nav a {
-      margin: 0 10px;
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
+      padding: 1rem;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
   <header>
-    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px;" />
+    <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" />
     <nav>
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
@@ -94,21 +114,24 @@
       <a href="gallery.html">Gallery</a>
       <a href="login.html">Login</a>
     </nav>
-    <p style="color: white; margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
+    <p>Professional Lawn Care & Landscaping Services</p>
   </header>
-
   <main>
     <div class="login-container">
       <h2>Customer Login</h2>
-      <form onsubmit="event.preventDefault(); emailPasswordLogin();">
+
+      <div class="form-group">
         <label for="loginEmail">Email Address</label>
-        <input type="email" id="loginEmail" required>
+        <input type="email" id="loginEmail" placeholder="e.g. ronellbradley@bradleyvs.com" required>
+      </div>
 
+      <div class="form-group">
         <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" required>
+        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+      </div>
 
-        <button type="submit" id="loginBtn">Login</button>
-      </form>
+      <button id="loginBtn" onclick="emailPasswordLogin()">Login</button>
+
       <div class="login-links">
         <p><a href="forgot-password.html">Forgot Password?</a></p>
         <p>Don't have an account? <a href="create-account.html">Create one here</a>.</p>
@@ -123,7 +146,42 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="firebase-init.js"></script>
-  <script src="login.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+      authDomain: "mobile-debt-tracker.firebaseapp.com",
+      projectId: "mobile-debt-tracker",
+      storageBucket: "mobile-debt-tracker.appspot.com",
+      messagingSenderId: "153601029964",
+      appId: "1:153601029964:web:ddd1880ba21bce2e9041e9"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function emailPasswordLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+
+      if (!email || !password) {
+        alert("Please enter both email and password.");
+        return;
+      }
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const userEmail = userCredential.user.email;
+          const isAdmin = ["ronellbradley@bradleyvs.com", "ronellbradley@gmail.com"].includes(userEmail);
+
+          if (isAdmin) {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "customer-dashboard.html";
+          }
+        })
+        .catch(error => {
+          console.error("Login error:", error);
+          alert("Login failed: " + error.message);
+        });
+    }
+  </script>
 </body>
 </html>
