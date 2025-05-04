@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com https://www.googleapis.com; style-src 'self' 'unsafe-inline';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
-
+  
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
-
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     .login-container {
@@ -52,10 +50,11 @@
       color: #228B22;
       text-decoration: none;
     }
-    .g_id_signin {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
+    .error-message {
+      color: red;
+      font-size: 0.9em;
+      margin-top: 0.5em;
+      display: none;
     }
   </style>
 </head>
@@ -79,21 +78,12 @@
   <div class="login-container fade-in">
     <h2>Customer Login</h2>
 
-    <!-- Email/Password Login -->
-    <input type="email" id="loginEmail" placeholder="Email Address" required><br>
-    <input type="password" id="loginPassword" placeholder="Password" required><br>
-    <button onclick="emailPasswordLogin()">Login</button>
-
-    <!-- Google Sign In Button -->
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-size="large"
-         data-logo_alignment="left"
-         data-width="250">
-    </div>
+    <form id="loginForm" onsubmit="return emailPasswordLogin(event)">
+      <input type="email" id="loginEmail" placeholder="Email Address" required autocomplete="email"><br>
+      <input type="password" id="loginPassword" placeholder="Password" required autocomplete="off"><br>
+      <button type="submit">Login</button>
+      <div id="errorMsg" class="error-message"></div>
+    </form>
 
     <div class="login-links">
       <p><a href="forgot-password.html">Forgot Password?</a></p>
@@ -106,19 +96,22 @@
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
 
-<!-- Login Script -->
 <script>
-  // Email/Password Login with role-based redirect
-  function emailPasswordLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+  function emailPasswordLogin(event) {
+    event.preventDefault();
+    const email = document.getElementById('loginEmail');
+    const password = document.getElementById('loginPassword');
+    const errorMsg = document.getElementById('errorMsg');
 
-    if (!email || !password) {
-      alert("Please enter both email and password.");
-      return;
+    errorMsg.style.display = 'none';
+
+    if (!email.validity.valid || !password.validity.valid) {
+      errorMsg.textContent = "Please enter a valid email and password.";
+      errorMsg.style.display = 'block';
+      return false;
     }
 
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    firebase.auth().signInWithEmailAndPassword(email.value.trim(), password.value)
       .then((userCredential) => {
         const userEmail = userCredential.user.email;
         const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail);
@@ -130,11 +123,14 @@
         }
       })
       .catch((error) => {
-        alert("Login failed: " + error.message);
+        errorMsg.textContent = "Login failed: " + error.message;
+        errorMsg.style.display = 'block';
       });
+
+    return false;
   }
 
-  // Fade-in animation
+  // Fade-in effect
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -148,37 +144,5 @@
   });
 </script>
 
-<!-- Google Sign-In Handler -->
-<script>
-  window.onload = function () {
-    google.accounts.id.initialize({
-      client_id: '153601029964-4m90vhqes34v8vrba5h4r8va5mpu2ldk.apps.googleusercontent.com',
-      callback: handleCredentialResponse
-    });
-
-    google.accounts.id.prompt(); // Optional: one-tap
-  };
-
-  function handleCredentialResponse(response) {
-    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-    firebase.auth().signInWithCredential(credential)
-      .then((result) => {
-        const email = result.user.email;
-        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(email);
-
-        if (isAdmin) {
-          window.location.href = "admin.html";
-        } else {
-          window.location.href = "customer-dashboard.html";
-        }
-      })
-      .catch((error) => {
-        console.error("Google sign-in failed:", error);
-        alert("Google Sign-In failed. Please try again.");
-      });
-  }
-</script>
-
 </body>
 </html>
-
