@@ -259,7 +259,6 @@
   const auth = firebase.auth();
   let currentUser;
 
-  // ✅ Ensure persistent login across reloads/tabs
   auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(() => {
     auth.onAuthStateChanged(user => {
       if (!user) return (window.location.href = "login.html");
