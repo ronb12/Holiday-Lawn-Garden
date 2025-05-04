@@ -108,13 +108,58 @@
     #newJobBtn:hover {
       background-color: #1c731c;
     }
+    #pdfPopup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      z-index: 1000;
+      overflow: auto;
+      padding: 20px;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #228B22;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: bold;
+      display: none;
+      z-index: 2000;
+    }
+    #newJobModal {
+      display: none;
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #228B22;
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 1001;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
   </style>
 </head>
 <body>
   <header>
     <h1>Holliday's Lawn & Garden</h1>
     <div>
-      <button onclick="viewNotifications()">🔔</button>
+      <button onclick="viewNotifications()" title="View Notifications">🔔</button>
       <button onclick="logout()">Logout</button>
     </div>
   </header>
@@ -161,69 +206,30 @@
         </div>
       </div>
     </section>
-    <section id="requests" class="tab-content">
-      <h2>Service Requests</h2>
-      <table id="requestsTable" border="1" cellpadding="5" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Customer</th>
-            <th>Service</th>
-            <th>Address</th>
-            <th>Status</th>
-            <th>Notes</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
 
-    <section id="quotes" class="tab-content">
-      <h2>Quotes</h2>
-      <button onclick="exportQuotesCSV()">Export CSV</button>
-      <table id="quotesTable" border="1" cellpadding="5" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Quote #</th>
-            <th>Customer</th>
-            <th>Service</th>
-            <th>Price</th>
-            <th>ZIP</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
-
-    <section id="invoices" class="tab-content">
-      <h2>Invoices</h2>
-      <button onclick="exportInvoicesCSV()">Export CSV</button>
-      <table id="invoicesTable" border="1" cellpadding="5" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Invoice #</th>
-            <th>Customer</th>
-            <th>Service(s)</th>
-            <th>Total</th>
-            <th>Status</th>
-            <th>Due Date</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </section>
+    <!-- Tabs 2–4 will appear in Part 2 -->
   </main>
 
-  <button id="newJobBtn" onclick="createNewJob()">➕</button>
+  <button id="newJobBtn" onclick="openNewJobModal()">➕</button>
 
-  <div id="pdfPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:white;z-index:1000;overflow:auto;padding:20px;">
+  <!-- PDF Preview Popup -->
+  <div id="pdfPopup">
     <button onclick="window.print()">🖨️ Print</button>
     <button onclick="closePdfPopup()">Close</button>
+    <div id="pdfLoader" style="text-align:center;display:none;">Loading preview...</div>
     <div id="pdfContent"></div>
   </div>
+
+  <!-- New Job Modal -->
+  <div id="newJobModal">
+    <h3>New Job Wizard (Coming Soon)</h3>
+    <p>This tool will help you generate a service request, quote, and invoice all at once.</p>
+    <button onclick="closeNewJobModal()">Close</button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
@@ -238,7 +244,6 @@
   const auth = firebase.auth();
   let currentUser;
 
-  // ✅ Reverted login check — stable version
   auth.onAuthStateChanged(user => {
     if (user) {
       currentUser = user;
@@ -262,43 +267,86 @@
     [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(tabId)).classList.add('active');
   }
 
-  function loadDashboard() {
-    db.collection("quotes").get().then(snap => {
-      document.getElementById("quoteCount").textContent = snap.docs.filter(d => d.data().status == "Pending").length;
-    });
-    db.collection("invoices").get().then(snap => {
-      let due = 0, paid = 0, outstanding = 0, month = 0, year = 0;
-      const now = new Date();
-      snap.forEach(doc => {
-        const d = doc.data();
-        if (d.paid) {
-          paid += d.total;
-          const paidDate = d.paidDate?.toDate();
-          if (paidDate) {
-            if (paidDate.getMonth() === now.getMonth() && paidDate.getFullYear() === now.getFullYear()) {
-              month += d.total;
-            }
-            if (paidDate.getFullYear() === now.getFullYear()) {
-              year += d.total;
-            }
-          }
-        } else {
-          outstanding += d.total;
-          due++;
-        }
-      });
-      document.getElementById("invoiceDueCount").textContent = due;
-      document.getElementById("totalPaid").textContent = "$" + paid.toFixed(2);
-      document.getElementById("monthlyRevenue").textContent = "$" + month.toFixed(2);
-      document.getElementById("yearlyRevenue").textContent = "$" + year.toFixed(2);
-      document.getElementById("totalOutstanding").textContent = "$" + outstanding.toFixed(2);
-    });
-    db.collection("requests").get().then(snap => {
-      const inProgress = snap.docs.filter(d => d.data().status === "In Progress").length;
-      document.getElementById("jobsInProgress").textContent = inProgress;
-    });
+  function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.style.display = "block";
+    setTimeout(() => {
+      toast.style.display = "none";
+    }, 3000);
   }
 
+  function openNewJobModal() {
+    document.getElementById("newJobModal").style.display = "block";
+  }
+
+  function closeNewJobModal() {
+    document.getElementById("newJobModal").style.display = "none";
+  }
+
+  function viewNotifications() {
+    alert("Notifications are under construction.");
+  }
+</script>
+<!-- === Service Requests Section === -->
+<section id="requests" class="tab-content">
+  <h2>Service Requests</h2>
+  <table id="requestsTable" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Service</th>
+        <th>Address</th>
+        <th>Status</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- === Quotes Section === -->
+<section id="quotes" class="tab-content">
+  <h2>Quotes</h2>
+  <button onclick="exportQuotesCSV()">Export CSV</button>
+  <table id="quotesTable" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Quote #</th>
+        <th>Customer</th>
+        <th>Service</th>
+        <th>Price</th>
+        <th>ZIP</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- === Invoices Section === -->
+<section id="invoices" class="tab-content">
+  <h2>Invoices</h2>
+  <button onclick="exportInvoicesCSV()">Export CSV</button>
+  <table id="invoicesTable" border="1" cellpadding="5" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Invoice #</th>
+        <th>Customer</th>
+        <th>Service(s)</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<script>
   function loadServiceRequests() {
     const tbody = document.querySelector("#requestsTable tbody");
     db.collection("requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
@@ -313,10 +361,10 @@
           <td>${d.status}</td>
           <td>${d.notes || "—"}</td>
           <td>
-            <button onclick="updateRequestStatus('${doc.id}', 'Approved')">Approve</button>
-            <button onclick="updateRequestStatus('${doc.id}', 'In Progress')">Start</button>
-            <button onclick="updateRequestStatus('${doc.id}', 'Completed')">Complete</button>
-            <button onclick="convertToQuote('${doc.id}', '${d.serviceType}', '${d.zip || ""}', '${d.email || ""}', '${d.fullName || ""}')">Quote</button>
+            <button onclick="updateRequestStatus('${doc.id}', 'Approved')">✔️ Approve</button>
+            <button onclick="updateRequestStatus('${doc.id}', 'In Progress')">🚧 Start</button>
+            <button onclick="updateRequestStatus('${doc.id}', 'Completed')">✅ Complete</button>
+            <button onclick="convertToQuote('${doc.id}', '${d.serviceType}', '${d.zip || ""}', '${d.email || ""}', '${d.fullName || ""}')">💬 Quote</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -325,7 +373,9 @@
   }
 
   function updateRequestStatus(id, status) {
-    db.collection("requests").doc(id).update({ status });
+    db.collection("requests").doc(id).update({ status }).then(() => {
+      showToast(`Request marked as "${status}"`);
+    });
   }
 
   function convertToQuote(requestId, serviceType, zip, email, fullName) {
@@ -346,6 +396,7 @@
     const base = baseRates[serviceType] || 100;
     const total = base + gas + labor + 40;
     const quoteNumberRef = db.doc("meta/counters");
+
     db.runTransaction(t => {
       return t.get(quoteNumberRef).then(doc => {
         const current = doc.exists ? (doc.data().quote || 1000) : 1000;
@@ -371,7 +422,7 @@
         laborCost: labor,
         profitMargin: 40
       });
-      alert(`Quote ${quoteId} created successfully.`);
+      showToast(`Quote ${quoteId} created`);
     });
   }
 
@@ -423,9 +474,14 @@
           createdAt: new Date(),
           dueDate: new Date(Date.now() + 7 * 86400000)
         });
-        alert(`Invoice ${invId} created.`);
+        showToast(`Invoice ${invId} created`);
       });
     });
+  }
+
+  function archiveQuote(id) {
+    db.collection("quotes").doc(id).update({ status: "Archived" });
+    showToast("Quote archived");
   }
 
   function loadInvoices() {
@@ -455,16 +511,25 @@
 
   function markPaid(id) {
     db.collection("invoices").doc(id).update({ paid: true, paidDate: new Date() });
+    showToast("Invoice marked as paid");
   }
-
+</script>
+<script>
   function previewInvoice(id) {
     db.collection("invoices").doc(id).get().then(doc => {
       const d = doc.data();
       const html = `
-        <h2>${d.invoiceNumber}</h2>
-        <p><strong>Customer:</strong> ${d.fullName}</p>
-        <p><strong>Total:</strong> $${d.total.toFixed(2)}</p>
-        <p><strong>Status:</strong> ${d.paid ? 'Paid' : 'Due'}</p>
+        <div style="max-width: 600px; margin: auto;">
+          <h2 style="color:#228B22;">${d.invoiceNumber}</h2>
+          <p><strong>Customer:</strong> ${d.fullName}</p>
+          <p><strong>Total:</strong> $${d.total.toFixed(2)}</p>
+          <p><strong>Status:</strong> ${d.paid ? '✅ Paid' : '⏳ Due'}</p>
+          <hr>
+          <p><strong>Service(s):</strong></p>
+          <ul>
+            ${(d.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join('')}
+          </ul>
+        </div>
       `;
       document.getElementById("pdfContent").innerHTML = html;
       document.getElementById("pdfPopup").style.display = "block";
@@ -475,11 +540,13 @@
     db.collection("quotes").doc(id).get().then(doc => {
       const q = doc.data();
       const html = `
-        <h2>${q.quoteNumber}</h2>
-        <p><strong>Customer:</strong> ${q.fullName}</p>
-        <p><strong>Service:</strong> ${q.serviceType}</p>
-        <p><strong>Total:</strong> $${q.total.toFixed(2)}</p>
-        <p><strong>Status:</strong> ${q.status}</p>
+        <div style="max-width: 600px; margin: auto;">
+          <h2 style="color:#228B22;">${q.quoteNumber}</h2>
+          <p><strong>Customer:</strong> ${q.fullName}</p>
+          <p><strong>Service:</strong> ${q.serviceType}</p>
+          <p><strong>Total Estimate:</strong> $${q.total.toFixed(2)}</p>
+          <p><strong>Status:</strong> ${q.status}</p>
+        </div>
       `;
       document.getElementById("pdfContent").innerHTML = html;
       document.getElementById("pdfPopup").style.display = "block";
@@ -491,11 +558,11 @@
   }
 
   function createNewJob() {
-    alert("Coming soon: full New Job Wizard.");
+    alert("🛠️ Job Wizard Coming Soon!");
   }
 
   function viewNotifications() {
-    alert("Notifications are under construction.");
+    alert("🔔 Notifications under development.");
   }
 
   function exportQuotesCSV() {
@@ -524,8 +591,21 @@
     });
   }
 
-  function archiveQuote(id) {
-    db.collection("quotes").doc(id).update({ status: "Archived" });
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.position = "fixed";
+    toast.style.bottom = "20px";
+    toast.style.left = "50%";
+    toast.style.transform = "translateX(-50%)";
+    toast.style.backgroundColor = "#228B22";
+    toast.style.color = "white";
+    toast.style.padding = "10px 20px";
+    toast.style.borderRadius = "6px";
+    toast.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+    toast.style.zIndex = "10000";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
   }
 </script>
 </body>
