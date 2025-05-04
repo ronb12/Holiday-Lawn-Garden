@@ -12,7 +12,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Google Identity Services (optional for future use) -->
+  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
@@ -84,7 +84,7 @@
     <input type="password" id="loginPassword" placeholder="Password" required><br>
     <button onclick="emailPasswordLogin()">Login</button>
 
-    <!-- Google Sign In (optional) -->
+    <!-- Google Sign In Button -->
     <div class="g_id_signin"
          data-type="standard"
          data-shape="rectangular"
@@ -106,6 +106,7 @@
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
 
+<!-- Login Script -->
 <script>
   // Email/Password Login with role-based redirect
   function emailPasswordLogin() {
@@ -120,12 +121,12 @@
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
         const userEmail = userCredential.user.email;
-        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail); // ✅ Replace/add more admins as needed
+        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail);
 
         if (isAdmin) {
           window.location.href = "admin.html";
         } else {
-          window.location.href = "customer-dashboard.html"; // ✅ Make sure this page exists
+          window.location.href = "customer-dashboard.html";
         }
       })
       .catch((error) => {
@@ -147,5 +148,37 @@
   });
 </script>
 
+<!-- Google Sign-In Handler -->
+<script>
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: '153601029964-4m90vhqes34v8vrba5h4r8va5mpu2ldk.apps.googleusercontent.com',
+      callback: handleCredentialResponse
+    });
+
+    google.accounts.id.prompt(); // Optional: one-tap
+  };
+
+  function handleCredentialResponse(response) {
+    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+    firebase.auth().signInWithCredential(credential)
+      .then((result) => {
+        const email = result.user.email;
+        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(email);
+
+        if (isAdmin) {
+          window.location.href = "admin.html";
+        } else {
+          window.location.href = "customer-dashboard.html";
+        }
+      })
+      .catch((error) => {
+        console.error("Google sign-in failed:", error);
+        alert("Google Sign-In failed. Please try again.");
+      });
+  }
+</script>
+
 </body>
 </html>
+
