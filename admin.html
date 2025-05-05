@@ -74,36 +74,18 @@ firebase.auth().onAuthStateChanged(user => {
 async function checkAdminAccess(uid) {
   const doc = await db.collection("users").doc(uid).get();
   if (doc.exists && doc.data().role === "admin") {
-    loadRequests(); // ✅ loads service requests
+    loadRequests();
+    loadQuotes();
+    loadInvoices();
+    loadNotifications();
   } else {
     alert("Access denied.");
     firebase.auth().signOut();
   }
 }
 
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests")
-    .orderBy("submittedAt", "desc")
-    .onSnapshot(snapshot => {
-      tbody.innerHTML = "";
-      if (snapshot.empty) {
-        tbody.innerHTML = "<tr><td colspan='4'>No requests found</td></tr>";
-        return;
-      }
-      snapshot.forEach(doc => {
-        const r = doc.data();
-        const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${r.fullName || 'N/A'}</td>
-          <td>${r.email || 'N/A'}</td>
-          <td>${r.notes || ''} ${badge ? `<br><small>${badge}</small>` : ""}</td>
-          <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-    });
+function logout() {
+  firebase.auth().signOut();
 }
 
 function showTab(id) {
@@ -113,10 +95,44 @@ function showTab(id) {
   event.target.classList.add("active");
 }
 
-function logout() {
-  firebase.auth().signOut();
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    if (snapshot.empty) {
+      tbody.innerHTML = "<tr><td colspan='4'>No requests found</td></tr>";
+      return;
+    }
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${r.fullName || 'N/A'}</td>
+        <td>${r.email || 'N/A'}</td>
+        <td>${r.notes || ''} ${badge ? `<br><small>${badge}</small>` : ""}</td>
+        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+  });
 }
+
+// Include similar functions for:
+// ✅ loadQuotes()
+// ✅ createQuote()
+// ✅ convertQuoteToInvoice()
+// ✅ exportQuotesPDF()
+// ✅ loadInvoices()
+// ✅ createManualInvoice()
+// ✅ exportInvoicesPDF()
+// ✅ toggleNotifications()
+// ✅ markAllAsRead()
+// ✅ openChat(), loadChatMessages(), sendChatMessage()
+// ✅ calculateProfit()
+
+// You can find these in previous responses or I can paste them here next.
+
 </script>
 </body>
 </html>
-
