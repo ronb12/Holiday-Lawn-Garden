@@ -14,45 +14,45 @@
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
     header, footer { background: #228B22; color: white; padding: 1em; }
     .tabs { display: flex; justify-content: center; background: #228B22; }
-    .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
+    .tab {
+      padding: 1em;
+      color: white;
+      cursor: pointer;
+      background: #228B22;
+      border: none;
+      font-weight: bold;
+    }
     .tab:hover, .tab.active { background: #1a6b1a; }
     .tab-content { display: none; padding: 1.5em; }
     .tab-content.active { display: block; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
     th { background-color: #228B22; color: white; }
-    input, textarea { width: 100%; padding: 0.5em; }
+    input, textarea, select { width: 100%; padding: 0.5em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    #chatModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; }
-    #chatModal .chat-container { background-color: white; width: 90%; max-width: 600px; height: 80%; margin: 5% auto; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-    #chatModal .header { background-color: #228B22; color: white; padding: 1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    #chatModal #chatMessages { flex: 1; padding: 1em; overflow-y: auto; background: #f9f9f9; }
-    .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
-    .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
-    .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
-    #chatModal .footer { padding: 1em; border-top: 1px solid #ddd; }
-    #chatModal input { width: 80%; padding: 0.5em; }
   </style>
 </head>
 <body>
 
 <header style="display:flex; justify-content:space-between; align-items:center;">
   <h1 style="margin: 0 1em;">Admin Dashboard</h1>
-  <div style="position:relative; margin-right: 1em;">
-    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
-      🔔 Messages
-      <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
-    </button>
-    <div id="notifDropdown" style="display:none; position:absolute; right:0; top:2em; background:white; color:black; width:300px; max-height:400px; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:10;">
-      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
-      <div id="notifList"></div>
-      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
-        <button onclick="markAllAsRead()">Mark All as Read</button>
+  <div style="display:flex; gap:1em; align-items:center;">
+    <div style="position:relative;">
+      <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
+        🔔 Messages
+        <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
+      </button>
+      <div id="notifDropdown" style="display:none; position:absolute; right:0; top:2em; background:white; color:black; width:300px; max-height:400px; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:10;">
+        <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
+        <div id="notifList"></div>
+        <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
+          <button onclick="markAllAsRead()">Mark All as Read</button>
+        </div>
       </div>
     </div>
+    <button onclick="firebase.auth().signOut()" style="background:none; color:white; border:1px solid white; padding:0.4em 0.8em;">Logout</button>
   </div>
-  <button onclick="logout()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">Logout</button>
 </header>
 
 <div class="tabs">
@@ -70,19 +70,31 @@
       <thead>
         <tr><th>Name</th><th>Email</th><th>Request</th><th>Actions</th></tr>
       </thead>
-      <tbody>
-        <tr><td colspan="4">Loading...</td></tr>
-      </tbody>
+      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
 
   <!-- Quotes -->
   <section id="quotesTab" class="tab-content">
     <h2>Create Quote</h2>
+    <select id="quoteServiceType">
+      <option value="Lawn Cut (Basic)|25|5">Lawn Cut (Basic)</option>
+      <option value="Lawn Cut + Edging|30|5">Lawn Cut + Edging</option>
+      <option value="Hedge Trimming|35|10">Hedge Trimming</option>
+      <option value="Full Yard Cleanup|50|15">Full Yard Cleanup</option>
+      <option value="Flowerbed Weeding|30|5">Flowerbed Weeding</option>
+      <option value="Mulch Delivery & Install|40|15">Mulch Delivery & Install</option>
+      <option value="Garden Maintenance|35|10">Garden Maintenance</option>
+      <option value="Seasonal Service (Spring/Fall)|50|15">Seasonal Service (Spring/Fall)</option>
+      <option value="Pressure Washing|60|15">Pressure Washing</option>
+    </select><br><br>
     <input id="quoteName" placeholder="Customer Name"><br><br>
     <input id="quoteEmail" placeholder="Customer Email"><br><br>
-    <textarea id="quoteService" placeholder="Service Description"></textarea><br><br>
-    <input id="quoteAmount" type="number" placeholder="Amount ($)"><br><br>
+    <select id="quoteProfit">
+      <option value="30">Profit: $30</option>
+      <option value="50">Profit: $50</option>
+      <option value="70">Profit: $70</option>
+    </select><br><br>
     <button onclick="createQuote()">Create Quote</button>
     <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
     <table id="quotesTable">
@@ -90,7 +102,6 @@
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
-
   <!-- Invoices -->
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
@@ -103,27 +114,39 @@
 
   <!-- Profit Calculator -->
   <section id="profitTab" class="tab-content">
-    <h2>Profit Calculator</h2>
-    <input id="price" placeholder="Service Price ($)"><br><br>
-    <input id="labor" placeholder="Labor Cost ($)"><br><br>
-    <input id="gas" placeholder="Gas ($)"><br><br>
-    <input id="materials" placeholder="Materials ($)"><br><br>
-    <button onclick="calculateProfit()">Calculate</button>
+    <h2>Auto Profit Calculator</h2>
+    <select id="profitServiceType">
+      <option value="25|5">Lawn Cut (Basic)</option>
+      <option value="30|5">Lawn Cut + Edging</option>
+      <option value="35|10">Hedge Trimming</option>
+      <option value="50|15">Full Yard Cleanup</option>
+      <option value="30|5">Flowerbed Weeding</option>
+      <option value="40|15">Mulch Delivery & Install</option>
+      <option value="35|10">Garden Maintenance</option>
+      <option value="50|15">Seasonal Service</option>
+      <option value="60|15">Pressure Washing</option>
+    </select><br><br>
+    <select id="profitTarget">
+      <option value="30">Target Profit: $30</option>
+      <option value="50">Target Profit: $50</option>
+      <option value="70">Target Profit: $70</option>
+    </select><br><br>
+    <button onclick="calculateProfit()">Suggest Price</button>
     <h3 id="profitResult"></h3>
   </section>
 </main>
 
 <!-- Chat Modal -->
-<div id="chatModal" style="display:none;">
-  <div class="chat-container">
-    <div class="header">
+<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
+  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
+    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
       Chat with Customer
       <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
     </div>
-    <div id="chatMessages"></div>
-    <div class="footer">
-      <input id="chatInput" type="text" placeholder="Type your message..." />
-      <button onclick="sendChatMessage()">Send</button>
+    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
+    <div style="padding:1em; border-top:1px solid #ddd;">
+      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
+      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
     </div>
   </div>
 </div>
@@ -133,228 +156,226 @@
 </footer>
 
 <script>
-  const db = firebase.firestore();
-  let currentUser, currentChatRequestId = null;
+const db = firebase.firestore();
+let currentUser, currentChatRequestId = null;
 
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      checkAdminAccess(user.uid);
-    } else {
-      window.location.href = "login.html";
-    }
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    checkAdminAccess(user.uid);
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+async function checkAdminAccess(uid) {
+  const doc = await db.collection("users").doc(uid).get();
+  if (doc.exists && doc.data().role === "admin") {
+    loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
+  } else {
+    alert("Access denied."); firebase.auth().signOut();
+  }
+}
+
+function showTab(id) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  event.target.classList.add("active");
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${r.fullName}</td>
+        <td>${r.email}</td>
+        <td>${r.notes} ${badge ? `<br><small>${badge}</small>` : ""}</td>
+        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
+      `;
+      tbody.appendChild(row);
+    });
   });
+}
 
-  // Admin Authentication
-  async function checkAdminAccess(uid) {
-    const doc = await db.collection("users").doc(uid).get();
-    if (doc.exists && doc.data().role === "admin") {
-      loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
-    } else {
-      alert("Access denied.");
-      firebase.auth().signOut();
-    }
-  }
+function createQuote() {
+  const [service, labor, gas] = document.getElementById("quoteServiceType").value.split("|");
+  const profit = parseFloat(document.getElementById("quoteProfit").value);
+  const name = quoteName.value, email = quoteEmail.value;
+  const amount = parseFloat(labor) + parseFloat(gas) + profit;
 
-  // Show Tab Content
-  function showTab(id) {
-    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    event.target.classList.add("active");
-  }
+  db.collection("quotes").add({
+    name, email, service, amount,
+    labor: parseFloat(labor),
+    gas: parseFloat(gas),
+    profit,
+    status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("Quote created!"); loadQuotes();
+  });
+}
 
-  // Logout Function
-  function logout() {
-    firebase.auth().signOut().then(() => {
-      window.location.href = "login.html";
-    }).catch(error => {
-      console.error("Error during logout:", error);
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.name}</td>
+        <td>${q.service}</td>
+        <td>$${q.amount.toFixed(2)}</td>
+        <td><button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
+      `;
+      tbody.appendChild(row);
     });
-  }
+  });
+}
 
-  // Load Service Requests
-  function loadRequests() {
-    const tbody = document.querySelector("#requestsTable tbody");
-    db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
-      tbody.innerHTML = "";
+function convertQuoteToInvoice(id, name, email, service, amount) {
+  db.collection("invoices").add({
+    name, customerEmail: email, service, amount,
+    paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    db.collection("quotes").doc(id).update({ status: "converted" });
+    alert("Converted to invoice."); loadInvoices(); loadQuotes();
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const i = doc.data();
+      tbody.innerHTML += `
+        <tr><td>${i.name}</td><td>${i.service}</td><td>$${i.amount.toFixed(2)}</td><td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>
+      `;
+    });
+  });
+}
+
+function calculateProfit() {
+  const [labor, gas] = document.getElementById("profitServiceType").value.split("|");
+  const profit = document.getElementById("profitTarget").value;
+  const suggested = parseFloat(labor) + parseFloat(gas) + parseFloat(profit);
+  profitResult.innerText = `💰 Suggested Price: $${suggested.toFixed(2)} (Labor $${labor}, Gas $${gas}, Profit $${profit})`;
+}
+
+function toggleNotifications() {
+  const d = notifDropdown;
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+function markAllAsRead() {
+  db.collection("service_requests").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+    });
+    notifBadge.style.display = "none";
+    notifList.innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+  });
+}
+
+function loadNotifications() {
+  notifList.innerHTML = "";
+  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+    let unread = 0;
+    notifList.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data(), isUnread = !d.adminRead;
+      if (isUnread) unread++;
+      const preview = (d.notes || "").slice(0, 40);
+      const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
+      const div = document.createElement("div");
+      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
+      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
+      div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
+      notifList.appendChild(div);
+    });
+    notifBadge.innerText = unread;
+    notifBadge.style.display = unread > 0 ? "inline-block" : "none";
+  });
+}
+
+function openChat(id) {
+  currentChatRequestId = id;
+  chatModal.style.display = "block";
+  loadChatMessages(id);
+  db.collection("service_requests").doc(id).update({ hasUnreadFromCustomer: false });
+}
+
+function closeChat() {
+  chatModal.style.display = "none";
+  chatMessages.innerHTML = "";
+  currentChatRequestId = null;
+}
+
+function loadChatMessages(id) {
+  const box = document.getElementById("chatMessages");
+  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      box.innerHTML = "";
       snapshot.forEach(doc => {
-        const r = doc.data();
-        const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${r.fullName}</td>
-          <td>${r.email}</td>
-          <td>${r.notes} ${badge ? `<br><small>${badge}</small>` : ""}</td>
-          <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
-        `;
-        tbody.appendChild(row);
+        const msg = doc.data();
+        const isAdmin = msg.sender === "admin";
+        const div = document.createElement("div");
+        div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${isAdmin ? "#d1f7c4" : "#e5e5ea"}; align-self:${isAdmin ? "flex-end" : "flex-start"};`;
+        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${msg.timestamp?.toDate().toLocaleTimeString()}</small>`;
+        box.appendChild(div);
       });
+      box.scrollTop = box.scrollHeight;
     });
-  }
+}
 
-  // Create Quote
-  function createQuote() {
-    const name = quoteName.value, email = quoteEmail.value;
-    const service = quoteService.value, amount = parseFloat(quoteAmount.value);
-    db.collection("quotes").add({
-      name, email, service, amount,
-      status: "pending",
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      alert("Quote created!"); loadQuotes();
-    });
-  }
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !currentChatRequestId) return;
+  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+    text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  chatInput.value = "";
+}
 
-  // Load Quotes
-  function loadQuotes() {
-    const tbody = document.querySelector("#quotesTable tbody");
-    db.collection("quotes").orderBy("createdAt", "desc").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const q = doc.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${q.name}</td>
-          <td>${q.service}</td>
-          <td>$${q.amount.toFixed(2)}</td>
-          <td><button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
-        `;
-        tbody.appendChild(row);
-      });
-    });
-  }
+async function exportQuotesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Quotes (Customer View)", 10, 10);
+  const quotes = await db.collection("quotes").get();
+  let y = 20;
+  quotes.forEach((q, i) => {
+    const d = q.data();
+    doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount}`, 10, y += 10);
+  });
+  doc.addPage();
+  doc.text("Quotes (Admin Breakdown)", 10, 10);
+  y = 20;
+  quotes.forEach((q, i) => {
+    const d = q.data();
+    doc.text(`${i + 1}. ${d.name} - ${d.service} - Labor: $${d.labor} + Gas: $${d.gas} + Profit: $${d.profit} = $${d.amount}`, 10, y += 10);
+  });
+  doc.save("Quotes.pdf");
+}
 
-  // Convert Quote to Invoice
-  function convertQuoteToInvoice(id, name, email, service, amount) {
-    db.collection("invoices").add({
-      name, customerEmail: email, service, amount,
-      paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      db.collection("quotes").doc(id).update({ status: "converted" });
-      alert("Converted to invoice."); loadInvoices(); loadQuotes();
-    });
-  }
-
-  // Load Invoices
-  function loadInvoices() {
-    const tbody = document.querySelector("#invoicesTable tbody");
-    db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const i = doc.data();
-        tbody.innerHTML += `
-          <tr><td>${i.name}</td><td>${i.service}</td><td>$${i.amount.toFixed(2)}</td><td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>
-        `;
-      });
-    });
-  }
-
-  // Profit Calculator
-  function calculateProfit() {
-    const p = parseFloat(price.value) || 0, l = parseFloat(labor.value) || 0;
-    const g = parseFloat(gas.value) || 0, m = parseFloat(materials.value) || 0;
-    const profit = p - (l + g + m);
-    profitResult.innerText = profit >= 0 ? `✅ Profit: $${profit.toFixed(2)}` : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
-  }
-
-  // Load Notifications
-  function loadNotifications() {
-    const notifList = document.getElementById("notifList");
-    const badge = document.getElementById("notifBadge");
-
-    db.collection("service_requests")
-      .orderBy("submittedAt", "desc")
-      .limit(5)
-      .onSnapshot(snapshot => {
-        let unreadCount = 0;
-        notifList.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const isUnread = !data.adminRead;
-          if (isUnread) unreadCount++;
-
-          const preview = (data.notes || "").substring(0, 40);
-          const time = data.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
-
-          const entry = document.createElement("div");
-          entry.style = `padding: 0.75em; border-bottom: 1px solid #eee; background: ${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
-          entry.innerHTML = `<strong>${data.fullName}</strong><br><small>${preview} • ${time}</small>`;
-          entry.onclick = () => {
-            showTab('requestsTab');
-            openChat(doc.id);
-          };
-          notifList.appendChild(entry);
-        });
-
-        badge.innerText = unreadCount;
-        badge.style.display = unreadCount > 0 ? "inline-block" : "none";
-      });
-  }
-
-  // Chat Modal and Message Functions
-  function openChat(id) {
-    currentChatRequestId = id;
-    chatModal.style.display = "block";
-    loadChatMessages(id);
-    db.collection("service_requests").doc(id).update({ hasUnreadFromCustomer: false });
-  }
-
-  function closeChat() {
-    chatModal.style.display = "none";
-    chatMessages.innerHTML = "";
-    currentChatRequestId = null;
-  }
-
-  function loadChatMessages(id) {
-    const box = chatMessages;
-    db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
-      .onSnapshot(snapshot => {
-        box.innerHTML = "";
-        snapshot.forEach(doc => {
-          const msg = doc.data(), isAdmin = msg.sender === "admin";
-          const div = document.createElement("div");
-          div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${isAdmin ? "#d1f7c4" : "#e5e5ea"}; align-self:${isAdmin ? "flex-end" : "flex-start"};`;
-          div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-          box.appendChild(div);
-        });
-        box.scrollTop = box.scrollHeight;
-      });
-  }
-
-  function sendChatMessage() {
-    const text = chatInput.value.trim();
-    if (!text || !currentChatRequestId) return;
-    db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-      text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    chatInput.value = "";
-  }
-
-  // Export Quotes PDF
-  async function exportQuotesPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Quotes", 10, 10);
-    const quotes = await db.collection("quotes").orderBy("createdAt", "desc").get();
-    let y = 20;
-    quotes.forEach((q, i) => doc.text(`${i + 1}. ${q.data().name} - ${q.data().service} - $${q.data().amount}`, 10, y += 10));
-    doc.save("Quotes.pdf");
-  }
-
-  // Export Invoices PDF
-  async function exportInvoicesPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("Invoices", 10, 10);
-    const invs = await db.collection("invoices").orderBy("createdAt", "desc").get();
-    let y = 20;
-    invs.forEach((i, idx) => {
-      const d = i.data(), paid = d.paid ? "Paid" : "Unpaid";
-      doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount} - ${paid}`, 10, y += 10);
-    });
-    doc.save("Invoices.pdf");
-  }
+async function exportInvoicesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Invoices", 10, 10);
+  const invs = await db.collection("invoices").get();
+  let y = 20;
+  invs.forEach((i, idx) => {
+    const d = i.data(), paid = d.paid ? "Paid" : "Unpaid";
+    doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount} - ${paid}`, 10, y += 10);
+  });
+  doc.save("Invoices.pdf");
+}
 </script>
 
 </body>
