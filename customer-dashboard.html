@@ -17,6 +17,15 @@
     input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; margin-top: 1em; cursor: pointer; }
     button:hover { background: #1a6b1a; }
+    .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
+    .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
+    .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
+    #chatModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; }
+    #chatModal .chat-container { background-color: white; width: 90%; max-width: 600px; height: 80%; margin: 5% auto; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+    #chatModal .header { background-color: #228B22; color: white; padding: 1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #chatModal #chatMessages { flex: 1; padding: 1em; overflow-y: auto; background: #f9f9f9; }
+    #chatModal .footer { padding: 1em; border-top: 1px solid #ddd; }
+    #chatModal input { width: 80%; padding: 0.5em; }
   </style>
 </head>
 <body>
@@ -41,19 +50,23 @@
   </table>
 
   <!-- Chat Modal -->
-  <div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
-    <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
-      <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
+  <div id="chatModal" style="display:none;">
+    <div class="chat-container">
+      <div class="header">
         Chat with Admin
-        <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
+        <button onclick="closeChat()">✖</button>
       </div>
-      <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
-      <div style="padding:1em; border-top:1px solid #ddd;">
-        <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
-        <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
+      <div id="chatMessages"></div>
+      <div class="footer">
+        <input id="chatInput" type="text" placeholder="Type your message..." />
+        <button onclick="sendChatMessage()">Send</button>
       </div>
     </div>
   </div>
+
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
 
   <script>
     const db = firebase.firestore();
@@ -101,12 +114,12 @@
             return;
           }
           snapshot.forEach(doc => {
-            const d = doc.data();
+            const r = doc.data();
             const tr = document.createElement("tr");
-            const date = new Date(d.submittedAt.toDate()).toLocaleString();
+            const date = new Date(r.submittedAt.toDate()).toLocaleString();
             tr.innerHTML = `
               <td>${date}</td>
-              <td>${d.notes}</td>
+              <td>${r.notes}</td>
               <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
             `;
             tbody.appendChild(tr);
@@ -139,23 +152,19 @@
           chatBox.innerHTML = "";
           snapshot.forEach(doc => {
             const msg = doc.data();
-            const isCustomer = msg.sender === "customer";
+            const isAdmin = msg.sender === "admin";
             const bubble = document.createElement("div");
-            bubble.style = `
-              max-width: 75%;
-              margin: 0.5em 0;
-              padding: 0.6em 1em;
-              border-radius: 1em;
-              background: ${isCustomer ? "#d1f7c4" : "#e5e5ea"};
-              align-self: ${isCustomer ? "flex-end" : "flex-start"};
-            `;
+            bubble.classList.add("chat-bubble");
+            bubble.classList.add(isAdmin ? "admin" : "customer");
             bubble.innerHTML = `
               <div>${msg.text}</div>
-              <small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>
+              <small style="font-size:0.7em; color:gray;">
+                ${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}
+              </small>
             `;
             chatBox.appendChild(bubble);
           });
-          chatBox.scrollTop = chatBox.scrollHeight;
+          chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll
         });
     }
 
@@ -175,7 +184,7 @@
         hasUnreadFromCustomer: true
       });
 
-      chatInput.value = "";
+      chatInput.value = ""; // Clear input box
     }
   </script>
 
