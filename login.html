@@ -139,28 +139,19 @@
         return;
       }
 
-    function emailPasswordLogin() {
-  const email = document.getElementById('loginEmail').value;
-  const password = document.getElementById('loginPassword').value;
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(userCredential => {
+          const userEmail = userCredential.user.email;
+          console.log("Logged in as:", userEmail);
+          const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail.toLowerCase());
+          window.location.href = isAdmin ? "admin.html" : "customer-dashboard.html";
+        })
+        .catch(error => {
+          alert("Login failed: " + error.message);
+        });
+    }
 
-  if (!email || !password) {
-    alert("Please enter both email and password.");
-    return;
-  }
-
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      const userEmail = userCredential.user.email;
-      console.log("Logged in as:", userEmail); // ✅ Debug log
-      const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail);
-      window.location.href = isAdmin ? "admin.html" : "customer-dashboard.html";
-    })
-    .catch(error => {
-      alert("Login failed: " + error.message);
-    });
-}
-
-    // Optional fade-in (clean, harmless)
+    // Optional fade-in animation
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('visible');
