@@ -50,6 +50,23 @@
     <button type="submit">Create Invoice</button>
   </form>
 
+  <!-- QUOTES SECTION -->
+<h2>Create Quote</h2>
+<form id="quoteForm" onsubmit="createQuote(event)">
+  <input type="email" id="quoteEmail" placeholder="Customer Email" required>
+  <input type="text" id="quoteNumber" placeholder="Quote ID / Description" required>
+  <input type="number" id="quoteAmount" placeholder="Quote Amount ($)" required>
+  <button type="submit">Create Quote</button>
+</form>
+
+<h3>All Quotes</h3>
+<table id="quotesTable">
+  <thead>
+    <tr><th>Customer</th><th>Email</th><th>Quote</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
   <h2>Service Requests <span id="requestCount" class="badge"></span></h2>
   <table id="requestsTable">
     <thead>
@@ -250,7 +267,107 @@ function loadRequests() {
     });
   });
 }
+  // CREATE QUOTE
+function createQuote(e) {
+  e.preventDefault();
+  const email = document.getElementById("quoteEmail").value;
+  const quote = document.getElementById("quoteNumber").value;
+  const amount = parseFloat(document.getElementById("quoteAmount").value);
 
+  db.collection("quotes").add({
+    email,
+    quote,
+    amount,
+    status: "Pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Quote created!");
+    e.target.reset();
+    loadQuotes();
+  });
+}
+
+// LOAD QUOTES
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const row = `
+        <tr>
+          <td>${d.email.split('@')[0]}</td>
+          <td>${d.email}</td>
+          <td>${d.quote}</td>
+          <td>$${parseFloat(d.amount).toFixed(2)}</td>
+          <td>${d.status}</td>
+          <td>
+            <select onchange="updateQuote('${doc.id}', this.value)">
+              <option ${d.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${d.status === "Approved" ? "selected" : ""}>Approved</option>
+              <option ${d.status === "Accepted" ? "selected" : ""}>Accepted</option>
+              <option ${d.status === "Archived" ? "selected" : ""}>Archived</option>
+            </select>
+          </td>
+        </tr>`;
+      tbody.innerHTML += row;
+    });
+  });
+}
+
+// CREATE QUOTE
+function createQuote(e) {
+  e.preventDefault();
+  const email = document.getElementById("quoteEmail").value;
+  const quote = document.getElementById("quoteNumber").value;
+  const amount = parseFloat(document.getElementById("quoteAmount").value);
+
+  db.collection("quotes").add({
+    email,
+    quote,
+    amount,
+    status: "Pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Quote created!");
+    e.target.reset();
+    loadQuotes();
+  });
+}
+
+// LOAD QUOTES
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const row = `
+        <tr>
+          <td>${d.email.split('@')[0]}</td>
+          <td>${d.email}</td>
+          <td>${d.quote}</td>
+          <td>$${parseFloat(d.amount).toFixed(2)}</td>
+          <td>${d.status}</td>
+          <td>
+            <select onchange="updateQuote('${doc.id}', this.value)">
+              <option ${d.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${d.status === "Approved" ? "selected" : ""}>Approved</option>
+              <option ${d.status === "Accepted" ? "selected" : ""}>Accepted</option>
+              <option ${d.status === "Archived" ? "selected" : ""}>Archived</option>
+            </select>
+          </td>
+        </tr>`;
+      tbody.innerHTML += row;
+    });
+  });
+}
+
+// UPDATE QUOTE STATUS
+function updateQuote(id, status) {
+  db.collection("quotes").doc(id).update({ status });
+}
+  
 function updateRequest(id, status) {
   db.collection("service_requests").doc(id).update({ status });
 }
