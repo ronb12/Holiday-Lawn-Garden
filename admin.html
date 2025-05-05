@@ -230,10 +230,10 @@ function loadRequests() {
       const r = doc.data();
       const row = `
         <tr>
-          <td>${r.name}</td>
-          <td>${r.email}</td>
-          <td>${r.details}</td>
-          <td>${r.status || "Pending"}</td>
+         <td>${r.name || 'N/A'}</td>
+       <td>${r.email || 'N/A'}</td>
+      <td>${r.details || 'N/A'}</td>
+       <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateRequest('${doc.id}', this.value)">
               <option>Pending</option>
