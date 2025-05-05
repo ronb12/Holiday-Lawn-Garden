@@ -228,18 +228,20 @@ function loadRequests() {
     document.getElementById("requestCount").innerText = snapshot.size || "";
     snapshot.forEach(doc => {
       const r = doc.data();
+      const name = r.fullName || r.name || "N/A";
+      const request = r.details || r.serviceType || "N/A";
       const row = `
         <tr>
-          <td>${r.name}</td>
+          <td>${name}</td>
           <td>${r.email}</td>
-          <td>${r.details}</td>
+          <td>${request}</td>
           <td>${r.status || "Pending"}</td>
           <td>
             <select onchange="updateRequest('${doc.id}', this.value)">
-              <option>Pending</option>
-              <option>Approved</option>
-              <option>In Progress</option>
-              <option>Completed</option>
+              <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
+              <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
+              <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
+              <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
             </select>
           </td>
         </tr>
