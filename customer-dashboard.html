@@ -1,199 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Dashboard – Holliday's Lawn & Garden</title>
-  <link rel="icon" href="icons/icon-192.png" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script> <!-- PayPal Sandbox -->
+  <link rel="icon" href="icons/icon-192.png">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 2em; }
     header { background: #228B22; color: white; padding: 1em; text-align: center; }
-    section { padding: 1em; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { border: 1px solid #ccc; padding: 0.5em; }
-    button { padding: 0.4em 1em; }
+    section { background: white; padding: 1.5em; margin-bottom: 2em; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    input, textarea, select, button {
+      width: 100%; padding: 0.75em; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px;
+    }
+    button { background: #228B22; color: white; cursor: pointer; border: none; }
+    button:hover { background: #1a6e1a; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75em; border: 1px solid #ccc; text-align: left; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
 
-<header>
-  <h1>Welcome, <span id="customerName">Customer</span></h1>
-</header>
+  <section>
+    <h2>Submit a New Service Request</h2>
+    <form id="requestForm">
+      <input name="customer" placeholder="Your Name" required />
+      <input name="email" type="email" placeholder="Your Email" required />
+      <textarea name="description" placeholder="Describe your request..." required></textarea>
+      <button type="submit">Submit Request</button>
+    </form>
+  </section>
 
-<section>
-  <h2>Your Service Requests</h2>
-  <table id="requestsTable">
-    <thead><tr><th>Description</th><th>Status</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</section>
+  <section>
+    <h2>My Service Requests</h2>
+    <table id="requestsTable">
+      <thead><tr><th>Description</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-<section>
-  <h2>Your Quotes</h2>
-  <table id="quotesTable">
-    <thead><tr><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</section>
+  <section>
+    <h2>My PayPal Invoices</h2>
+    <table id="invoicesTable">
+      <thead><tr><th>PayPal ID</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-<section>
-  <h2>Your Invoices</h2>
-  <table id="invoicesTable">
-    <thead><tr><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</section>
+  <section>
+    <h2>Export My History</h2>
+    <button onclick="exportHistory('requests')">Download Requests CSV</button>
+    <button onclick="exportHistory('paypalInvoices')">Download Invoices CSV</button>
+  </section>
 
-<section>
-  <h2>🧾 Payment History</h2>
-  <table id="paymentsTable">
-    <thead><tr><th>Amount</th><th>Paid On</th><th>Download</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</section>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+      authDomain: "mobile-debt-crusher.firebaseapp.com",
+      projectId: "mobile-debt-crusher"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-<script>
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  let currentUser;
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      currentUser = user;
-      document.getElementById("customerName").innerText = user.email;
-      loadRequests();
-      loadQuotes();
-      loadInvoices();
-      loadPayments();
-    } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  function loadRequests() {
-    const tbody = document.querySelector("#requestsTable tbody");
-    db.collection("customers").doc(currentUser.uid).collection("requests").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `<tr><td>${d.description}</td><td>${d.status}</td></tr>`;
-      });
-    });
-  }
-
-  function loadQuotes() {
-    const tbody = document.querySelector("#quotesTable tbody");
-    db.collection("customers").doc(currentUser.uid).collection("quotes").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const status = d.status || "Pending";
-        const action = (status === "Pending") ? `
-          <button onclick="respondToQuote('${doc.id}', 'Accepted')">Accept</button>
-          <button onclick="respondToQuote('${doc.id}', 'Rejected')">Reject</button>` : "";
-        tbody.innerHTML += `<tr><td>$${d.amount}</td><td>${status}</td><td>${action}</td></tr>`;
-      });
-    });
-  }
-
-  function respondToQuote(id, response) {
-    db.collection("customers").doc(currentUser.uid).collection("quotes").doc(id).update({ status: response })
-      .then(() => loadQuotes());
-  }
-
-  function loadInvoices() {
-    const tbody = document.querySelector("#invoicesTable tbody");
-    db.collection("customers").doc(currentUser.uid).collection("invoices").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const status = d.paid ? "Paid" : "Unpaid";
-        const rowId = `paypal-${doc.id}`;
-        let actionHTML = `<button onclick="downloadInvoice('${d.customer}', ${d.amount}, '${d.dueDate}')">PDF</button>`;
-        if (!d.paid) {
-          actionHTML += `<div id="${rowId}" style="margin-top: 8px;"></div>`;
-        }
-        tbody.innerHTML += `<tr><td>$${d.amount}</td><td>${d.dueDate}</td><td>${status}</td><td>${actionHTML}</td></tr>`;
-        if (!d.paid) {
-          setTimeout(() => {
-            renderPayPalButton(rowId, d.amount, doc.id);
-          }, 0);
-        }
-      });
-    });
-  }
-
-  function renderPayPalButton(containerId, amount, invoiceId) {
-    paypal.Buttons({
-      style: { layout: 'horizontal' },
-      createOrder: function(data, actions) {
-        return actions.order.create({
-          purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-        });
-      },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(() => {
-          db.collection("customers").doc(currentUser.uid)
-            .collection("invoices").doc(invoiceId)
-            .update({ paid: true, paidAt: new Date() })
-            .then(() => {
-              alert("✅ Payment successful! Your invoice has been marked as paid.");
-              loadInvoices();
-              loadPayments();
-            });
-        });
-      },
-      onError: function(err) {
-        alert("❌ Payment failed. Please try again.");
-        console.error(err);
+    const requestForm = document.getElementById("requestForm");
+    requestForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(requestForm));
+      data.createdAt = new Date();
+      data.status = "Pending";
+      try {
+        await db.collection("requests").add(data);
+        alert("Request submitted!");
+        requestForm.reset();
+        loadRequests(data.email);
+      } catch (err) {
+        console.error("Error submitting request:", err);
       }
-    }).render(`#${containerId}`);
-  }
+    });
 
-  function loadPayments() {
-    const tbody = document.querySelector("#paymentsTable tbody");
-    tbody.innerHTML = "";
-    db.collection("customers").doc(currentUser.uid).collection("invoices")
-      .where("paid", "==", true).orderBy("paidAt", "desc").get()
-      .then(snapshot => {
-        if (snapshot.empty) {
-          tbody.innerHTML = "<tr><td colspan='3'>No payments found.</td></tr>";
-          return;
-        }
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          const paidOn = new Date(d.paidAt?.toDate?.() || d.paidAt).toLocaleDateString();
-          const amount = `$${parseFloat(d.amount).toFixed(2)}`;
-          const download = `<button onclick="downloadInvoice('${d.customer}', ${d.amount}, '${d.dueDate}')">PDF</button>`;
-          tbody.innerHTML += `<tr><td>${amount}</td><td>${paidOn}</td><td>${download}</td></tr>`;
-        });
+    async function loadRequests(email) {
+      const table = document.querySelector("#requestsTable tbody");
+      table.innerHTML = "";
+      const snapshot = await db.collection("requests").where("email", "==", email).get();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `<tr><td>${d.description}</td><td>${d.status}</td><td>${new Date(d.createdAt.toDate()).toLocaleDateString()}</td></tr>`;
       });
-  }
+    }
 
-  function downloadInvoice(customer, amount, dueDate) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Invoice – Holliday's Lawn & Garden", 14, 20);
-    doc.setFontSize(12);
-    doc.text(`Customer: ${customer}`, 14, 35);
-    doc.text(`Amount: $${amount}`, 14, 45);
-    doc.text(`Due Date: ${dueDate}`, 14, 55);
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 65);
-    doc.save("Invoice.pdf");
-  }
-</script>
+    async function loadInvoices(email) {
+      const table = document.querySelector("#invoicesTable tbody");
+      table.innerHTML = "";
+      const snapshot = await db.collection("paypalInvoices").where("email", "==", email).get();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `<tr><td>${d.paypalId}</td><td>${d.status}</td><td>${d.notes || ""}</td></tr>`;
+      });
+    }
 
+    async function exportHistory(collection) {
+      const email = document.querySelector("input[name='email']").value;
+      const snapshot = await db.collection(collection).where("email", "==", email).get();
+      const rows = [];
+      snapshot.forEach(doc => rows.push(doc.data()));
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${collection}.csv`;
+      link.click();
+    }
+
+    document.querySelector("input[name='email']").addEventListener("blur", (e) => {
+      const email = e.target.value;
+      if (email) {
+        loadRequests(email);
+        loadInvoices(email);
+      }
+    });
+  </script>
 </body>
 </html>
