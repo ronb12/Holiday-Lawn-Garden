@@ -14,14 +14,7 @@
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
     header, footer { background: #228B22; color: white; padding: 1em; }
     .tabs { display: flex; justify-content: center; background: #228B22; }
-    .tab {
-      padding: 1em;
-      color: white;
-      cursor: pointer;
-      background: #228B22;
-      border: none;
-      font-weight: bold;
-    }
+    .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
     .tab:hover, .tab.active { background: #1a6b1a; }
     .tab-content { display: none; padding: 1.5em; }
     .tab-content.active { display: block; }
@@ -31,6 +24,15 @@
     input, textarea { width: 100%; padding: 0.5em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
+    #chatModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; }
+    #chatModal .chat-container { background-color: white; width: 90%; max-width: 600px; height: 80%; margin: 5% auto; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+    #chatModal .header { background-color: #228B22; color: white; padding: 1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+    #chatModal #chatMessages { flex: 1; padding: 1em; overflow-y: auto; background: #f9f9f9; }
+    .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
+    .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
+    .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
+    #chatModal .footer { padding: 1em; border-top: 1px solid #ddd; }
+    #chatModal input { width: 80%; padding: 0.5em; }
   </style>
 </head>
 <body>
@@ -87,6 +89,7 @@
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
+
   <!-- Invoices -->
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
@@ -146,7 +149,8 @@
     if (doc.exists && doc.data().role === "admin") {
       loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
     } else {
-      alert("Access denied."); firebase.auth().signOut();
+      alert("Access denied.");
+      firebase.auth().signOut();
     }
   }
 
