@@ -3,147 +3,141 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard – Holliday's Lawn & Garden</title>
+  <title>Admin Panel – Holliday's Lawn & Garden</title>
   <link rel="icon" href="icons/icon-192.png" />
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f9f4; padding: 2em; color: #333; }
+    h1, h2 { color: #228B22; }
+    form { margin-bottom: 3em; background: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); max-width: 700px; }
+    input, select, textarea, button {
+      width: 100%; padding: 0.75em; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px;
+    }
+    button { background: #228B22; color: white; border: none; cursor: pointer; }
+    button:hover { background: #1a6e1a; }
+    .success { color: green; font-weight: bold; text-align: center; margin-bottom: 1em; }
+  </style>
+
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; transition: background 0.3s, color 0.3s; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
-    nav { text-align: center; margin: 1em 0; }
-    nav button { margin: 0.5em; padding: 0.5em 1em; cursor: pointer; background: #eee; border: 1px solid #ccc; }
-    .active-tab { background: #228B22; color: white; }
-    .tab-content { display: none; padding: 1em; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { padding: 0.5em; border: 1px solid #ccc; }
-    .statBox { background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 120px; text-align: center; }
-    .status-badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 0.8em; }
-    .pending { background-color: #FFA500; }
-    .completed, .paid { background-color: #28a745; }
-    .unpaid { background-color: #dc3545; }
-    body.dark { background: #121212; color: #e0e0e0; }
-    body.dark table, body.dark th, body.dark td, body.dark .statBox { background: #1e1e1e; color: #e0e0e0; }
-    #loadingOverlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 999; justify-content: center; align-items: center; font-size: 1.5em; }
-  </style>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+      authDomain: "mobile-debt-crusher.firebaseapp.com",
+      projectId: "mobile-debt-crusher"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function submitForm(event, type) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = Object.fromEntries(new FormData(form).entries());
+      formData.createdAt = new Date();
+
+      try {
+        await db.collection(type).add(formData);
+        form.reset();
+        document.getElementById(`${type}Message`).innerText = `✅ ${type.charAt(0).toUpperCase() + type.slice(1)} submitted.`;
+      } catch (err) {
+        console.error(`❌ Failed to submit ${type}:`, err);
+        alert("Something went wrong. Check console for details.");
+      }
+    }
+
+    async function exportCollection(type, format) {
+      const snapshot = await db.collection(type).get();
+      const rows = [];
+      snapshot.forEach(doc => rows.push(doc.data()));
+
+      if (format === 'csv') {
+        const csv = Papa.unparse(rows);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `${type}.csv`;
+        link.click();
+      } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(12);
+        doc.text(`${type.charAt(0).toUpperCase() + type.slice(1)} Export`, 14, 16);
+        let y = 24;
+        rows.forEach((item) => {
+          const line = Object.entries(item).map(([k, v]) => `${k}: ${v}`).join(' | ');
+          doc.text(line, 14, y);
+          y += 8;
+          if (y > 270) { doc.addPage(); y = 20; }
+        });
+        doc.save(`${type}.pdf`);
+      }
+    }
+  </script>
 </head>
 <body>
+  <h1>Admin Panel – Holliday's Lawn & Garden</h1>
 
-<header>
-  <h1>Admin Dashboard – Holliday's Lawn & Garden</h1>
-  <button onclick="toggleDarkMode()" style="position: absolute; right: 1em; top: 1em;">🌓</button>
-</header>
-
-<nav>
-  <button onclick="showTab('requests')">Service Requests</button>
-  <button onclick="showTab('quotes')">Quotes</button>
-  <button onclick="showTab('invoices')">Invoices</button>
-  <button onclick="showTab('expenses')">Expenses</button>
-</nav>
-
-<div id="dashboardStats" style="display: flex; flex-wrap: wrap; gap: 1em; justify-content: center; margin: 1em;">
-  <div class="statBox" id="statRequests">📝 Requests: 0</div>
-  <div class="statBox" id="statQuotes">💬 Quotes: 0</div>
-  <div class="statBox" id="statInvoices">💰 Invoices: 0</div>
-  <div class="statBox" id="statTotalDue">📉 Total Due: $0</div>
-  <div class="statBox" id="statMonthlyProfit">📆 This Month: $0</div>
-  <div class="statBox" id="statYearlyProfit">📈 This Year: $0</div>
-</div>
-
-<section id="requests" class="tab-content">
-  <h2>Service Requests</h2>
-  <form onsubmit="submitRequest(event)">
-    <select id="requestCustomer" required><option value="">Select Customer</option></select>
-    <input type="text" id="requestDescription" placeholder="Description" required />
-    <button type="submit">Add Request</button>
+  <form onsubmit="submitForm(event, 'requests')">
+    <h2>New Service Request</h2>
+    <input name="customer" placeholder="Customer Name" required />
+    <input name="email" placeholder="Customer Email" required />
+    <textarea name="description" placeholder="Service Description" required></textarea>
+    <select name="status">
+      <option value="Pending">Pending</option>
+      <option value="Completed">Completed</option>
+    </select>
+    <button type="submit">Submit Request</button>
+    <div id="requestsMessage" class="success"></div>
   </form>
-  <input type="text" placeholder="Search..." oninput="filterTable('requestsTable', this.value)" />
-  <div>
-    <button onclick="exportTableToCSV('requestsTable', 'requests.csv')">CSV</button>
-    <button onclick="exportTableToPDF('requestsTable', 'Service Requests')">PDF</button>
-  </div>
-  <table id="requestsTable"><thead><tr>
-    <th onclick="sortTable('requestsTable', 0)">Customer ⬍</th>
-    <th onclick="sortTable('requestsTable', 1)">Description ⬍</th>
-    <th onclick="sortTable('requestsTable', 2)">Status ⬍</th>
-    <th>Action</th></tr></thead><tbody></tbody></table>
-</section>
 
-<section id="quotes" class="tab-content">
-  <h2>Quotes</h2>
-  <h3>Smart Quote Calculator</h3>
-  <form onsubmit="calculateQuote(event)">
-    <input type="text" id="jobDesc" placeholder="Job Description" required />
-    <input type="number" id="materialCost" placeholder="Material Cost ($)" required />
-    <input type="number" id="laborHours" placeholder="Labor Hours" required />
-    <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" value="25" required />
-    <input type="number" id="fuelCost" placeholder="Fuel / Gas Cost ($)" required />
-    <input type="number" id="profitMargin" placeholder="Profit Margin (%)" value="30" required />
-    <button type="submit">Calculate & Save Quote</button>
+  <form onsubmit="submitForm(event, 'quotes')">
+    <h2>Create Quote</h2>
+    <input name="customer" placeholder="Customer Name" required />
+    <input name="amount" type="number" placeholder="Quote Amount ($)" required />
+    <select name="status">
+      <option value="Pending">Pending</option>
+      <option value="Approved">Approved</option>
+    </select>
+    <button type="submit">Submit Quote</button>
+    <div id="quotesMessage" class="success"></div>
   </form>
-  <div id="quoteResult" style="font-weight:bold;"></div>
-  <h4>🕒 Recent Smart Quotes</h4>
-  <table id="recentSmartQuotes"><thead><tr><th>Job</th><th>Base</th><th>Quote</th><th>Margin</th><th>Date</th></tr></thead><tbody></tbody></table>
 
-  <form onsubmit="submitQuote(event)">
-    <select id="quoteCustomer" required><option value="">Select Customer</option></select>
-    <input type="number" id="quoteAmount" placeholder="Amount ($)" required />
-    <button type="submit">Create Quote</button>
+  <form onsubmit="submitForm(event, 'invoices')">
+    <h2>Create Invoice</h2>
+    <input name="customer" placeholder="Customer Name" required />
+    <input name="amount" type="number" placeholder="Invoice Amount ($)" required />
+    <input name="dueDate" type="date" required />
+    <select name="paid">
+      <option value="false">Unpaid</option>
+      <option value="true">Paid</option>
+    </select>
+    <button type="submit">Submit Invoice</button>
+    <div id="invoicesMessage" class="success"></div>
   </form>
-  <input type="text" placeholder="Search..." oninput="filterTable('quotesTable', this.value)" />
-  <div>
-    <button onclick="exportTableToCSV('quotesTable', 'quotes.csv')">CSV</button>
-    <button onclick="exportTableToPDF('quotesTable', 'Quotes')">PDF</button>
-  </div>
-  <table id="quotesTable"><thead><tr>
-    <th onclick="sortTable('quotesTable', 0)">Customer ⬍</th>
-    <th onclick="sortTable('quotesTable', 1)">Amount ⬍</th>
-    <th onclick="sortTable('quotesTable', 2)">Status ⬍</th>
-    <th>Action</th></tr></thead><tbody></tbody></table>
-</section>
 
-<section id="invoices" class="tab-content">
-  <h2>Invoices</h2>
-  <form onsubmit="submitInvoice(event)">
-    <select id="invoiceCustomer" required><option value="">Select Customer</option></select>
-    <input type="number" id="invoiceAmount" placeholder="Amount ($)" required />
-    <input type="date" id="invoiceDueDate" required />
-    <button type="submit">Create Invoice</button>
-  </form>
-  <input type="text" placeholder="Search..." oninput="filterTable('invoicesTable', this.value)" />
-  <div>
-    <button onclick="exportTableToCSV('invoicesTable', 'invoices.csv')">CSV</button>
-    <button onclick="exportTableToPDF('invoicesTable', 'Invoices')">PDF</button>
-  </div>
-  <table id="invoicesTable"><thead><tr>
-    <th onclick="sortTable('invoicesTable', 0)">Customer ⬍</th>
-    <th onclick="sortTable('invoicesTable', 1)">Amount ⬍</th>
-    <th onclick="sortTable('invoicesTable', 2)">Due Date ⬍</th>
-    <th onclick="sortTable('invoicesTable', 3)">Status ⬍</th>
-    <th>Action</th></tr></thead><tbody></tbody></table>
-</section>
-
-<section id="expenses" class="tab-content">
-  <h2>Expenses</h2>
-  <form onsubmit="submitExpense(event)">
-    <input type="text" id="expenseDesc" placeholder="Description" required />
-    <input type="number" id="expenseAmount" placeholder="Amount ($)" required />
-    <input type="date" id="expenseDate" required />
+  <form onsubmit="submitForm(event, 'expenses')">
+    <h2>Log Expense</h2>
+    <input name="description" placeholder="Expense Description" required />
+    <input name="amount" type="number" placeholder="Amount ($)" required />
+    <input name="date" type="date" required />
     <button type="submit">Add Expense</button>
+    <div id="expensesMessage" class="success"></div>
   </form>
-  <table id="expensesTable"><thead><tr><th>Description</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody></table>
-</section>
 
-<div id="loadingOverlay"><div>Loading...</div></div>
-
-<footer><p>&copy; 2025 Holliday's Lawn & Garden</p></footer>
-
-<script src="admin-functions.js"></script>
-<script src="main.js"></script>
-
+  <div style="text-align:center; margin-top: 2em;">
+    <h2>📤 Export Records</h2>
+    <select id="exportType">
+      <option value="requests">Service Requests</option>
+      <option value="quotes">Quotes</option>
+      <option value="invoices">Invoices</option>
+      <option value="expenses">Expenses</option>
+    </select>
+    <button onclick="exportCollection(document.getElementById('exportType').value, 'csv')">Export CSV</button>
+    <button onclick="exportCollection(document.getElementById('exportType').value, 'pdf')">Export PDF</button>
+  </div>
 </body>
 </html>
+
+
