@@ -5,608 +5,435 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="icon" href="icons/icon-192.png" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background-color: #f4f9f4;
+    body { font-family: Arial; background: #f4f9f4; margin: 0; }
+    header, footer {
+      background: #228B22; color: white; padding: 1em;
+      text-align: center; position: relative;
     }
-    header {
-      background-color: #228B22;
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .admin-container {
+      max-width: 1100px; margin: auto; padding: 2em;
+      background: white; border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
-    header h1 {
-      margin: 0;
+    h2 { color: #228B22; }
+    table {
+      width: 100%; border-collapse: collapse; margin: 1em 0;
     }
-    #tabs {
-      display: flex;
-      background: #e0f0e0;
-      border-bottom: 2px solid #ccc;
-      position: sticky;
-      top: 0;
-      z-index: 99;
+    th, td {
+      border: 1px solid #ccc; padding: 10px; text-align: left;
     }
-    .tab {
-      flex: 1;
-      padding: 1rem;
-      text-align: center;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .tab.active {
-      background-color: #d0ead0;
-      border-bottom: 3px solid #228B22;
-    }
-    .tab-content {
-      display: none;
-      padding: 1rem 2rem;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    .summary-row {
-      display: flex;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .summary-box {
-      flex: 1;
-      min-width: 200px;
-      background: #fff;
-      margin: 0.5rem;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .summary-title {
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #444;
-    }
-    .summary-value {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #228B22;
+    th { background: #228B22; color: white; }
+    input, select, textarea {
+      padding: 0.5em; width: 100%; margin-top: 0.3em;
     }
     button {
-      background-color: #228B22;
-      color: white;
-      padding: 0.5rem 1rem;
-      margin: 0.25rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      background: #228B22; color: white; border: none;
+      padding: 0.5em 1em; border-radius: 5px; cursor: pointer;
     }
-    button:hover {
-      background-color: #1a6b1a;
+    button:hover { background: #006400; }
+    .service-row {
+      display: flex; gap: 10px; margin-bottom: 10px;
     }
+    .service-row input, .service-row select { flex: 1; }
+    .summary {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      background: #e8f5e9; padding: 1em; border-radius: 8px; margin-top: 1em;
+    }
+    .summary div {
+      margin-bottom: 0.5em; flex: 1 1 30%; min-width: 220px;
+    }
+    .export-buttons {
+      display: flex; justify-content: flex-end;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .collapse-section {
+      background: #f0fff0; padding: 1em; margin-top: 1em;
+      border-left: 5px solid #228B22; border-radius: 5px;
+    }
+    .base-rate-warning { color: red; font-weight: bold; }
+    #logoutBtn, #notificationBell {
+      position: absolute; top: 15px; font-size: 1em;
+    }
+    #logoutBtn { right: 15px; }
+    #notificationBell { right: 60px; cursor: pointer; }
     #newJobBtn {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      background-color: #228B22;
+      background: #32CD32;
       color: white;
-      font-size: 1.5rem;
-      width: 48px;
-      height: 48px;
       border: none;
+      padding: 1em;
+      font-size: 1.2em;
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       cursor: pointer;
-      z-index: 999;
-    }
-    #newJobBtn:hover {
-      background-color: #1c731c;
-    }
-    #pdfPopup {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: white;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
       z-index: 1000;
-      overflow: auto;
-      padding: 20px;
-      animation: fadeIn 0.4s ease;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #228B22;
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      font-weight: bold;
-      display: none;
-      z-index: 2000;
-    }
-    #newJobModal {
-      display: none;
-      position: fixed;
-      top: 15%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: white;
-      border: 2px solid #228B22;
-      padding: 20px;
-      border-radius: 8px;
-      z-index: 1001;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Holliday's Lawn & Garden</h1>
-    <div>
-      <button onclick="viewNotifications()" title="View Notifications">🔔</button>
-      <button onclick="logout()">Logout</button>
-    </div>
+    <h1>Admin Dashboard</h1>
+    <span id="notificationBell" onclick="window.location.href='notifications.html'">🔔</span>
+    <button id="logoutBtn" onclick="logout()">Logout</button>
   </header>
 
-  <div id="tabs">
-    <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
-    <div class="tab" onclick="showTab('requests')">Service Requests</div>
-    <div class="tab" onclick="showTab('quotes')">Quotes</div>
-    <div class="tab" onclick="showTab('invoices')">Invoices</div>
-  </div>
+  <main class="admin-container">
+    <nav>
+      <a href="admin.html">🏠 Dashboard</a> |
+      <a href="notifications.html">🔔 Notifications</a>
+    </nav>
 
-  <main>
-    <section id="dashboard" class="tab-content active">
-      <div class="summary-row">
-        <div class="summary-box">
-          <div class="summary-title">Quotes Pending</div>
-          <div id="quoteCount" class="summary-value">0</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-title">Invoices Due</div>
-          <div id="invoiceDueCount" class="summary-value">0</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-title">Jobs In Progress</div>
-          <div id="jobsInProgress" class="summary-value">0</div>
-        </div>
-      </div>
-      <div class="summary-row">
-        <div class="summary-box">
-          <div class="summary-title">Total Paid (All-Time)</div>
-          <div id="totalPaid" class="summary-value">$0</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-title">Revenue This Month</div>
-          <div id="monthlyRevenue" class="summary-value">$0</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-title">Revenue This Year</div>
-          <div id="yearlyRevenue" class="summary-value">$0</div>
-        </div>
-        <div class="summary-box">
-          <div class="summary-title">Total Outstanding</div>
-          <div id="totalOutstanding" class="summary-value">$0</div>
-        </div>
-      </div>
-    </section>
+    <div class="summary">
+      <div><strong>📄 Quotes Pending:</strong> <span id="quoteCount">0</span></div>
+      <div><strong>🧾 Invoices Due:</strong> <span id="invoiceCount">0</span></div>
+      <div><strong>💵 Total Paid:</strong> $<span id="totalPaid">0.00</span></div>
+      <div><strong>📌 Jobs In Progress:</strong> <span id="inProgressCount">0</span></div>
+      <div><strong>📆 Revenue This Month:</strong> $<span id="revenueMonth">0.00</span></div>
+      <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
+      <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
+    </div>
 
-    <!-- Tabs 2–4 will appear in Part 2 -->
+    <!-- ✅ SERVICE REQUESTS -->
+    <h2>Service Requests</h2>
+    <table id="serviceRequestsTable">
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Address</th><th>Request</th><th>Status</th><th>Notes</th><th>Update</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- ✅ QUOTES -->
+    <h2>Quotes</h2>
+    <div class="search-bar">
+      <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
+    </div>
+    <table id="quotesTable">
+      <thead>
+        <tr>
+          <th>Name</th><th>Email</th><th>Service</th><th>Amount</th><th>Base Rate</th><th>Est. Time</th><th>Status</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <!-- ✅ INVOICE SECTION -->
+    <h2>Create Invoice</h2>
+    <form id="invoiceForm" onsubmit="createInvoice(event)">
+      <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
+      <div class="service-row">
+        <input id="street" placeholder="Street Address" />
+        <input id="city" placeholder="City" />
+        <input id="state" placeholder="State" />
+        <input id="zip" placeholder="ZIP Code" />
+      </div>
+      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
+      <input type="date" id="invoiceDueDate" required />
+      <div id="serviceList"></div>
+      <button type="button" onclick="addServiceRow()">+ Add Service</button>
+
+      <div id="profitBreakdown" class="collapse-section" style="display:none;">
+        <strong>💡 Auto Profit Breakdown</strong><br/>
+        Distance (miles): <input id="milesInput" type="number" value="0" onchange="calcProfit()" /><br/>
+        Laborers (1–5): <input id="laborInput" type="number" value="1" min="1" max="5" onchange="calcProfit()" />
+        <p>Estimated Gas: <span id="gasCost">$0.00</span><br/>
+        Labor Cost: <span id="laborCost">$0.00</span><br/>
+        Profit Margin: <span id="profitMargin">$0.00</span></p>
+      </div>
+
+      <p><strong>Total: $<span id="totalAmount">0.00</span></strong></p>
+      <button type="submit">Create Invoice</button>
+    </form>
+
+    <!-- ✅ INVOICES DUE -->
+    <h2>Invoices Due</h2>
+    <div class="export-buttons">
+      <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid</button>
+    </div>
+    <table id="invoicesDueTable">
+      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <!-- ✅ PAID INVOICES -->
+    <h2>Paid Invoices</h2>
+    <div class="export-buttons">
+      <button onclick="exportInvoicesCSV(true)">📤 Export Paid</button>
+    </div>
+    <table id="invoicesPaidTable">
+      <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Due</th><th>Status</th><th>View</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </main>
 
-  <button id="newJobBtn" onclick="openNewJobModal()">➕</button>
+  <button id="newJobBtn" onclick="scrollToForm()">➕</button>
+  <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-  <!-- PDF Preview Popup -->
-  <div id="pdfPopup">
-    <button onclick="window.print()">🖨️ Print</button>
-    <button onclick="closePdfPopup()">Close</button>
-    <div id="pdfLoader" style="text-align:center;display:none;">Loading preview...</div>
-    <div id="pdfContent"></div>
-  </div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script>
+    const db = firebase.firestore();
+    let currentUser;
+    let invoiceSequence = 1000;
 
-  <!-- New Job Modal -->
-  <div id="newJobModal">
-    <h3>New Job Wizard (Coming Soon)</h3>
-    <p>This tool will help you generate a service request, quote, and invoice all at once.</p>
-    <button onclick="closeNewJobModal()">Close</button>
-  </div>
-
-  <!-- Toast Notification -->
-  <div id="toast"></div>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
-    authDomain: "mobile-debt-tracker.firebaseapp.com",
-    projectId: "mobile-debt-tracker",
-    storageBucket: "mobile-debt-tracker.appspot.com",
-    messagingSenderId: "153601029964",
-    appId: "1:153601029964:web:ddd1880ba21bce2e9041e9"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const auth = firebase.auth();
-  let currentUser;
-
-  auth.onAuthStateChanged(user => {
-    if (user) {
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) return location.href = "login.html";
       currentUser = user;
-      loadDashboard();
-      loadServiceRequests();
-      loadQuotes();
-      loadInvoices();
-    } else {
-      window.location.href = "login.html";
+      const roleDoc = await db.collection("users").doc(user.uid).get();
+      if (roleDoc.exists && roleDoc.data().role === "admin") {
+        fetchInvoiceSequence();
+        loadServiceRequests();
+        loadQuotes();
+        loadInvoices();
+      } else {
+        alert("Access denied."); location.href = "login.html";
+      }
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => location.href = "login.html");
     }
-  });
 
-  function logout() {
-    auth.signOut();
-  }
+    function scrollToForm() {
+      document.getElementById("invoiceForm").scrollIntoView({ behavior: 'smooth' });
+    }
 
-  function showTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(tabId)).classList.add('active');
-  }
-
-  function showToast(message) {
-    const toast = document.getElementById("toast");
-    toast.textContent = message;
-    toast.style.display = "block";
-    setTimeout(() => {
-      toast.style.display = "none";
-    }, 3000);
-  }
-
-  function openNewJobModal() {
-    document.getElementById("newJobModal").style.display = "block";
-  }
-
-  function closeNewJobModal() {
-    document.getElementById("newJobModal").style.display = "none";
-  }
-
-  function viewNotifications() {
-    alert("Notifications are under construction.");
-  }
-</script>
-<!-- === Service Requests Section === -->
-<section id="requests" class="tab-content">
-  <h2>Service Requests</h2>
-  <table id="requestsTable" border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Customer</th>
-        <th>Service</th>
-        <th>Address</th>
-        <th>Status</th>
-        <th>Notes</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
-
-<!-- === Quotes Section === -->
-<section id="quotes" class="tab-content">
-  <h2>Quotes</h2>
-  <button onclick="exportQuotesCSV()">Export CSV</button>
-  <table id="quotesTable" border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Quote #</th>
-        <th>Customer</th>
-        <th>Service</th>
-        <th>Price</th>
-        <th>ZIP</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
-
-<!-- === Invoices Section === -->
-<section id="invoices" class="tab-content">
-  <h2>Invoices</h2>
-  <button onclick="exportInvoicesCSV()">Export CSV</button>
-  <table id="invoicesTable" border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Invoice #</th>
-        <th>Customer</th>
-        <th>Service(s)</th>
-        <th>Total</th>
-        <th>Status</th>
-        <th>Due Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</section>
-
-<script>
-  function loadServiceRequests() {
-    const tbody = document.querySelector("#requestsTable tbody");
-    db.collection("requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${d.fullName || "—"}</td>
-          <td>${d.serviceType}</td>
-          <td>${d.street || ""}, ${d.city || ""}, ${d.state || ""} ${d.zip || ""}</td>
-          <td>${d.status}</td>
-          <td>${d.notes || "—"}</td>
-          <td>
-            <button onclick="updateRequestStatus('${doc.id}', 'Approved')">✔️ Approve</button>
-            <button onclick="updateRequestStatus('${doc.id}', 'In Progress')">🚧 Start</button>
-            <button onclick="updateRequestStatus('${doc.id}', 'Completed')">✅ Complete</button>
-            <button onclick="convertToQuote('${doc.id}', '${d.serviceType}', '${d.zip || ""}', '${d.email || ""}', '${d.fullName || ""}')">💬 Quote</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+    function fetchInvoiceSequence() {
+      db.collection("meta").doc("counters").get().then(doc => {
+        invoiceSequence = doc.exists ? (doc.data().invoice || 1000) : 1000;
+        document.getElementById("invoiceNumber").value = invoiceSequence;
       });
-    });
-  }
+    }
 
-  function updateRequestStatus(id, status) {
-    db.collection("requests").doc(id).update({ status }).then(() => {
-      showToast(`Request marked as "${status}"`);
-    });
-  }
+    function addServiceRow() {
+      const container = document.getElementById("serviceList");
+      const row = document.createElement("div");
+      row.className = "service-row";
+      row.innerHTML = `
+        <select onchange="this.nextElementSibling.value = this.value === 'Custom' ? '' : this.value; calcTotal(); document.getElementById('profitBreakdown').style.display='block';">
+          <option value="">Select Service</option>
+          <option value="Lawn Mowing">Lawn Mowing</option>
+          <option value="Leaf Removal">Leaf Removal</option>
+          <option value="Hedge Trimming">Hedge Trimming</option>
+          <option value="Driveway Pressure Washing">Driveway Pressure Washing</option>
+          <option value="House Pressure Washing">House Pressure Washing</option>
+          <option value="Mulch Installation">Mulch Installation</option>
+          <option value="Garden Bed Cleanup">Garden Bed Cleanup</option>
+          <option value="Shrub Trimming">Shrub Trimming</option>
+          <option value="Pressure Washing">Pressure Washing</option>
+          <option value="Custom">Custom</option>
+        </select>
+        <input type="text" placeholder="Description" />
+        <input type="number" placeholder="Amount" step="0.01" oninput="calcTotal()" />
+        <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
+      `;
+      container.appendChild(row);
+    }
 
-  function convertToQuote(requestId, serviceType, zip, email, fullName) {
-    const baseRates = {
-      "Lawn Mowing": 50,
-      "Leaf Removal": 70,
-      "Driveway Pressure Washing": 100,
-      "House Pressure Washing": 150,
-      "Mulch Installation": 90,
-      "Garden Bed Cleanup": 85,
-      "Shrub Trimming": 75,
-      "Custom": 120
-    };
-    const mileage = 10;
-    const laborers = 1;
-    const gas = mileage * 0.6;
-    const labor = laborers * 25;
-    const base = baseRates[serviceType] || 100;
-    const total = base + gas + labor + 40;
-    const quoteNumberRef = db.doc("meta/counters");
-
-    db.runTransaction(t => {
-      return t.get(quoteNumberRef).then(doc => {
-        const current = doc.exists ? (doc.data().quote || 1000) : 1000;
-        const next = current + 1;
-        t.set(quoteNumberRef, { quote: next }, { merge: true });
-        return next;
+    function calcTotal() {
+      let total = 0;
+      document.querySelectorAll("#serviceList .service-row").forEach(row => {
+        total += parseFloat(row.querySelector("input[type=number]").value || 0);
       });
-    }).then(quoteNum => {
-      const quoteId = "Q-" + quoteNum;
-      db.collection("quotes").add({
-        quoteNumber: quoteId,
-        email,
-        fullName,
-        zip,
-        serviceType,
-        status: "Pending",
-        total,
-        createdAt: new Date(),
+      document.getElementById("totalAmount").innerText = total.toFixed(2);
+      calcProfit();
+    }
+
+    function calcProfit() {
+      const total = parseFloat(document.getElementById("totalAmount").innerText || "0");
+      const miles = parseFloat(document.getElementById("milesInput").value || "0");
+      const laborers = parseInt(document.getElementById("laborInput").value || "1");
+      const gas = (miles * 0.65).toFixed(2);
+      const labor = (laborers * 20).toFixed(2);
+      const profit = Math.max(30, total - gas - labor).toFixed(2);
+      document.getElementById("gasCost").innerText = `$${gas}`;
+      document.getElementById("laborCost").innerText = `$${labor}`;
+      document.getElementById("profitMargin").innerText = `$${profit}`;
+    }
+
+    function createInvoice(e) {
+      e.preventDefault();
+      const email = document.getElementById("invoiceEmail").value;
+      const number = document.getElementById("invoiceNumber").value;
+      const due = document.getElementById("invoiceDueDate").value;
+      const services = [];
+      document.querySelectorAll("#serviceList .service-row").forEach(row => {
+        const desc = row.querySelector("input[type=text]").value;
+        const amt = parseFloat(row.querySelector("input[type=number]").value || 0);
+        if (desc && amt) services.push({ description: desc, amount: amt });
+      });
+      const total = services.reduce((sum, s) => sum + s.amount, 0);
+      const address = {
+        street: document.getElementById("street").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value
+      };
+      const mileage = parseFloat(document.getElementById("milesInput").value || 0);
+      const labor = parseInt(document.getElementById("laborInput").value || 1);
+
+      db.collection("invoices").add({
+        customerEmail: email,
+        invoiceNumber: number,
+        services,
+        amountDue: total,
+        dueDate: due,
+        ...address,
         mileage,
-        laborers,
-        baseRate: base,
-        gasCost: gas,
-        laborCost: labor,
-        profitMargin: 40
+        laborers: labor,
+        paid: false,
+        archived: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        invoiceSequence++;
+        db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+        alert("✅ Invoice Created");
+        document.getElementById("invoiceForm").reset();
+        document.getElementById("serviceList").innerHTML = "";
+        addServiceRow();
+        loadInvoices();
       });
-      showToast(`Quote ${quoteId} created`);
-    });
-  }
+    }
 
-  function loadQuotes() {
-    const tbody = document.querySelector("#quotesTable tbody");
-    db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${d.quoteNumber}</td>
-          <td>${d.fullName}</td>
-          <td>${d.serviceType}</td>
-          <td>$${d.total.toFixed(2)}</td>
-          <td>${d.zip}</td>
-          <td>${d.status}</td>
-          <td>
-            <button onclick="previewQuote('${doc.id}')">📄</button>
-            <button onclick="convertToInvoice('${doc.id}')">💵</button>
-            <button onclick="archiveQuote('${doc.id}')">🗂️</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    });
-  }
-
-  function convertToInvoice(quoteId) {
-    db.collection("quotes").doc(quoteId).get().then(doc => {
-      const q = doc.data();
-      const invoiceRef = db.doc("meta/counters");
-      db.runTransaction(t => {
-        return t.get(invoiceRef).then(data => {
-          const current = data.exists ? (data.data().invoice || 1000) : 1000;
-          const next = current + 1;
-          t.set(invoiceRef, { invoice: next }, { merge: true });
-          return next;
+    function loadInvoices() {
+      const dueBody = document.querySelector("#invoicesDueTable tbody");
+      const paidBody = document.querySelector("#invoicesPaidTable tbody");
+      db.collection("invoices").orderBy("dueDate", "desc").onSnapshot(snapshot => {
+        dueBody.innerHTML = "";
+        paidBody.innerHTML = "";
+        let unpaidCount = 0;
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          const row = `
+            <tr>
+              <td>${d.customerEmail}</td>
+              <td>${d.invoiceNumber}</td>
+              <td>$${d.amountDue.toFixed(2)}</td>
+              <td>${d.dueDate}</td>
+              <td>${d.paid ? "Paid" : "Unpaid"}</td>
+              <td>${d.paid ? "<button onclick='viewInvoice(\"" + doc.id + "\")'>View</button>" :
+                             "<button onclick='markPaid(\"" + doc.id + "\")'>Mark Paid</button>"}</td>
+            </tr>`;
+          if (d.paid) paidBody.innerHTML += row;
+          else {
+            dueBody.innerHTML += row;
+            unpaidCount++;
+          }
         });
-      }).then(invNum => {
-        const invId = "INV-" + invNum;
-        db.collection("invoices").add({
-          invoiceNumber: invId,
-          customerEmail: q.email,
-          fullName: q.fullName,
-          services: [{ description: q.serviceType, amount: q.total }],
-          total: q.total,
-          paid: false,
-          createdAt: new Date(),
-          dueDate: new Date(Date.now() + 7 * 86400000)
+        document.getElementById("invoiceCount").innerText = unpaidCount;
+      });
+    }
+
+    function markPaid(id) {
+      db.collection("invoices").doc(id).update({ paid: true });
+    }
+
+    function viewInvoice(id) {
+      // Could open PDF or new tab, placeholder for now
+      alert("📄 Invoice preview for: " + id);
+    }
+
+    function loadServiceRequests() {
+      const tbody = document.querySelector("#serviceRequestsTable tbody");
+      db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const r = doc.data();
+          const address = `${r.street}, ${r.city}, ${r.state} ${r.zip}`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${r.fullName || "N/A"}</td>
+              <td>${r.email}</td>
+              <td>${address}</td>
+              <td>${r.serviceType}</td>
+              <td>${r.status}</td>
+              <td>${r.notes || ""}</td>
+              <td>
+                <select onchange="updateRequestStatus('${doc.id}', this.value)">
+                  <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
+                  <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
+                  <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
+                  <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
+                </select>
+              </td>
+            </tr>`;
         });
-        showToast(`Invoice ${invId} created`);
       });
-    });
-  }
+    }
 
-  function archiveQuote(id) {
-    db.collection("quotes").doc(id).update({ status: "Archived" });
-    showToast("Quote archived");
-  }
+    function updateRequestStatus(id, status) {
+      db.collection("service_requests").doc(id).update({ status });
+    }
 
-  function loadInvoices() {
-    const tbody = document.querySelector("#invoicesTable tbody");
-    db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+        let count = 0;
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          if (q.status === "Archived") return;
+          tbody.innerHTML += `
+            <tr>
+              <td>${q.fullName || "N/A"}</td>
+              <td>${q.email}</td>
+              <td>${q.serviceType}</td>
+              <td>$${q.amount.toFixed(2)}</td>
+              <td>$${(q.baseRate || 0).toFixed(2)}</td>
+              <td>${q.estimatedTime || "1 hr"}</td>
+              <td>${q.status}</td>
+              <td><button onclick="generateQuotePDF('${doc.id}')">📄</button></td>
+            </tr>`;
+          if (q.status === "Pending") count++;
+        });
+        document.getElementById("quoteCount").innerText = count;
+      });
+    }
+
+    function generateQuotePDF(id) {
+      const { jsPDF } = window.jspdf;
+      db.collection("quotes").doc(id).get().then(doc => {
         const d = doc.data();
-        const services = (d.services || []).map(s => s.description).join(", ");
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${d.invoiceNumber}</td>
-          <td>${d.fullName}</td>
-          <td>${services}</td>
-          <td>$${d.total.toFixed(2)}</td>
-          <td>${d.paid ? 'Paid' : 'Due'}</td>
-          <td>${d.dueDate?.toDate().toLocaleDateString()}</td>
-          <td>
-            <button onclick="previewInvoice('${doc.id}')">📄</button>
-            <button onclick="markPaid('${doc.id}')">✅</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+        const pdf = new jsPDF();
+        pdf.text("Holliday's Lawn & Garden", 10, 10);
+        pdf.text("Customer: " + d.fullName, 10, 20);
+        pdf.text("Service: " + d.serviceType, 10, 30);
+        pdf.text("Amount: $" + d.amount.toFixed(2), 10, 40);
+        pdf.save("quote.pdf");
       });
-    });
-  }
+    }
 
-  function markPaid(id) {
-    db.collection("invoices").doc(id).update({ paid: true, paidDate: new Date() });
-    showToast("Invoice marked as paid");
-  }
-</script>
-<script>
-  function previewInvoice(id) {
-    db.collection("invoices").doc(id).get().then(doc => {
-      const d = doc.data();
-      const html = `
-        <div style="max-width: 600px; margin: auto;">
-          <h2 style="color:#228B22;">${d.invoiceNumber}</h2>
-          <p><strong>Customer:</strong> ${d.fullName}</p>
-          <p><strong>Total:</strong> $${d.total.toFixed(2)}</p>
-          <p><strong>Status:</strong> ${d.paid ? '✅ Paid' : '⏳ Due'}</p>
-          <hr>
-          <p><strong>Service(s):</strong></p>
-          <ul>
-            ${(d.services || []).map(s => `<li>${s.description} - $${s.amount.toFixed(2)}</li>`).join('')}
-          </ul>
-        </div>
-      `;
-      document.getElementById("pdfContent").innerHTML = html;
-      document.getElementById("pdfPopup").style.display = "block";
-    });
-  }
+    function exportInvoicesCSV(paid) {
+      db.collection("invoices").where("paid", "==", paid).get().then(snapshot => {
+        const rows = [["Email", "Invoice #", "Amount", "Due", "Paid"]];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          rows.push([d.customerEmail, d.invoiceNumber, d.amountDue, d.dueDate, d.paid ? "Yes" : "No"]);
+        });
+        const csv = Papa.unparse(rows);
+        const blob = new Blob([csv], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = paid ? "paid_invoices.csv" : "unpaid_invoices.csv";
+        link.click();
+      });
+    }
 
-  function previewQuote(id) {
-    db.collection("quotes").doc(id).get().then(doc => {
-      const q = doc.data();
-      const html = `
-        <div style="max-width: 600px; margin: auto;">
-          <h2 style="color:#228B22;">${q.quoteNumber}</h2>
-          <p><strong>Customer:</strong> ${q.fullName}</p>
-          <p><strong>Service:</strong> ${q.serviceType}</p>
-          <p><strong>Total Estimate:</strong> $${q.total.toFixed(2)}</p>
-          <p><strong>Status:</strong> ${q.status}</p>
-        </div>
-      `;
-      document.getElementById("pdfContent").innerHTML = html;
-      document.getElementById("pdfPopup").style.display = "block";
-    });
-  }
-
-  function closePdfPopup() {
-    document.getElementById("pdfPopup").style.display = "none";
-  }
-
-  function createNewJob() {
-    alert("🛠️ Job Wizard Coming Soon!");
-  }
-
-  function viewNotifications() {
-    alert("🔔 Notifications under development.");
-  }
-
-  function exportQuotesCSV() {
-    db.collection("quotes").get().then(snap => {
-      const data = snap.docs.map(doc => doc.data());
-      const csv = Papa.unparse(data);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "quotes.csv";
-      a.click();
-    });
-  }
-
-  function exportInvoicesCSV() {
-    db.collection("invoices").get().then(snap => {
-      const data = snap.docs.map(doc => doc.data());
-      const csv = Papa.unparse(data);
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoices.csv";
-      a.click();
-    });
-  }
-
-  function showToast(message) {
-    const toast = document.createElement("div");
-    toast.textContent = message;
-    toast.style.position = "fixed";
-    toast.style.bottom = "20px";
-    toast.style.left = "50%";
-    toast.style.transform = "translateX(-50%)";
-    toast.style.backgroundColor = "#228B22";
-    toast.style.color = "white";
-    toast.style.padding = "10px 20px";
-    toast.style.borderRadius = "6px";
-    toast.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
-    toast.style.zIndex = "10000";
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-  }
-</script>
+    function filterQuotes() {
+      const term = document.getElementById("quoteSearch").value.toLowerCase();
+      document.querySelectorAll("#quotesTable tbody tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(term) ? "" : "none";
+      });
+    }
+  </script>
 </body>
 </html>
