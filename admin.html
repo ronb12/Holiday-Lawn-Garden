@@ -12,181 +12,136 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; transition: background 0.3s, color 0.3s; }
+    header, footer { background: #228B22; color: white; padding: 1em; text-align: center; position: relative; }
+    nav { text-align: center; margin: 1em 0; }
     nav button { margin: 0.5em; padding: 0.5em 1em; cursor: pointer; background: #eee; border: 1px solid #ccc; }
     .active-tab { background: #228B22; color: white; }
     .tab-content { display: none; padding: 1em; }
     .tab-content.active { display: block; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { padding: 0.5em; border: 1px solid #ccc; }
-    button { cursor: pointer; }
+    .statBox { background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 120px; text-align: center; }
+    .status-badge { padding: 4px 8px; border-radius: 4px; color: white; font-size: 0.8em; }
+    .pending { background-color: #FFA500; }
+    .completed, .paid { background-color: #28a745; }
+    .unpaid { background-color: #dc3545; }
+    body.dark { background: #121212; color: #e0e0e0; }
+    body.dark table, body.dark th, body.dark td, body.dark .statBox { background: #1e1e1e; color: #e0e0e0; }
+    #loadingOverlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.7); z-index: 999; justify-content: center; align-items: center; font-size: 1.5em; }
   </style>
 </head>
 <body>
 
 <header>
   <h1>Admin Dashboard – Holliday's Lawn & Garden</h1>
+  <button onclick="toggleDarkMode()" style="position: absolute; right: 1em; top: 1em;">🌓</button>
 </header>
 
 <nav>
   <button onclick="showTab('requests')">Service Requests</button>
   <button onclick="showTab('quotes')">Quotes</button>
   <button onclick="showTab('invoices')">Invoices</button>
+  <button onclick="showTab('expenses')">Expenses</button>
 </nav>
 
-<main>
-  <!-- Service Requests Tab -->
-  <section id="requests" class="tab-content">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead><tr><th>Customer</th><th>Description</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
+<div id="dashboardStats" style="display: flex; flex-wrap: wrap; gap: 1em; justify-content: center; margin: 1em;">
+  <div class="statBox" id="statRequests">📝 Requests: 0</div>
+  <div class="statBox" id="statQuotes">💬 Quotes: 0</div>
+  <div class="statBox" id="statInvoices">💰 Invoices: 0</div>
+  <div class="statBox" id="statTotalDue">📉 Total Due: $0</div>
+  <div class="statBox" id="statMonthlyProfit">📆 This Month: $0</div>
+  <div class="statBox" id="statYearlyProfit">📈 This Year: $0</div>
+</div>
 
-  <!-- Quotes Tab -->
-  <section id="quotes" class="tab-content">
-    <h2>Quotes</h2>
-    <table id="quotesTable">
-      <thead><tr><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
+<section id="requests" class="tab-content">
+  <h2>Service Requests</h2>
+  <form onsubmit="submitRequest(event)">
+    <select id="requestCustomer" required><option value="">Select Customer</option></select>
+    <input type="text" id="requestDescription" placeholder="Description" required />
+    <button type="submit">Add Request</button>
+  </form>
+  <input type="text" placeholder="Search..." oninput="filterTable('requestsTable', this.value)" />
+  <div>
+    <button onclick="exportTableToCSV('requestsTable', 'requests.csv')">CSV</button>
+    <button onclick="exportTableToPDF('requestsTable', 'Service Requests')">PDF</button>
+  </div>
+  <table id="requestsTable"><thead><tr>
+    <th onclick="sortTable('requestsTable', 0)">Customer ⬍</th>
+    <th onclick="sortTable('requestsTable', 1)">Description ⬍</th>
+    <th onclick="sortTable('requestsTable', 2)">Status ⬍</th>
+    <th>Action</th></tr></thead><tbody></tbody></table>
+</section>
 
-  <!-- Invoices Tab -->
-  <section id="invoices" class="tab-content">
-    <h2>Invoices</h2>
-    <table id="invoicesTable">
-      <thead><tr><th>Customer</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody></tbody>
-    </table>
-  </section>
-</main>
+<section id="quotes" class="tab-content">
+  <h2>Quotes</h2>
+  <h3>Smart Quote Calculator</h3>
+  <form onsubmit="calculateQuote(event)">
+    <input type="text" id="jobDesc" placeholder="Job Description" required />
+    <input type="number" id="materialCost" placeholder="Material Cost ($)" required />
+    <input type="number" id="laborHours" placeholder="Labor Hours" required />
+    <input type="number" id="hourlyRate" placeholder="Hourly Rate ($)" value="25" required />
+    <input type="number" id="fuelCost" placeholder="Fuel / Gas Cost ($)" required />
+    <input type="number" id="profitMargin" placeholder="Profit Margin (%)" value="30" required />
+    <button type="submit">Calculate & Save Quote</button>
+  </form>
+  <div id="quoteResult" style="font-weight:bold;"></div>
+  <h4>🕒 Recent Smart Quotes</h4>
+  <table id="recentSmartQuotes"><thead><tr><th>Job</th><th>Base</th><th>Quote</th><th>Margin</th><th>Date</th></tr></thead><tbody></tbody></table>
 
-<footer>
-  <p>&copy; 2025 Holliday's Lawn & Garden</p>
-</footer>
+  <form onsubmit="submitQuote(event)">
+    <select id="quoteCustomer" required><option value="">Select Customer</option></select>
+    <input type="number" id="quoteAmount" placeholder="Amount ($)" required />
+    <button type="submit">Create Quote</button>
+  </form>
+  <input type="text" placeholder="Search..." oninput="filterTable('quotesTable', this.value)" />
+  <div>
+    <button onclick="exportTableToCSV('quotesTable', 'quotes.csv')">CSV</button>
+    <button onclick="exportTableToPDF('quotesTable', 'Quotes')">PDF</button>
+  </div>
+  <table id="quotesTable"><thead><tr>
+    <th onclick="sortTable('quotesTable', 0)">Customer ⬍</th>
+    <th onclick="sortTable('quotesTable', 1)">Amount ⬍</th>
+    <th onclick="sortTable('quotesTable', 2)">Status ⬍</th>
+    <th>Action</th></tr></thead><tbody></tbody></table>
+</section>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+<section id="invoices" class="tab-content">
+  <h2>Invoices</h2>
+  <form onsubmit="submitInvoice(event)">
+    <select id="invoiceCustomer" required><option value="">Select Customer</option></select>
+    <input type="number" id="invoiceAmount" placeholder="Amount ($)" required />
+    <input type="date" id="invoiceDueDate" required />
+    <button type="submit">Create Invoice</button>
+  </form>
+  <input type="text" placeholder="Search..." oninput="filterTable('invoicesTable', this.value)" />
+  <div>
+    <button onclick="exportTableToCSV('invoicesTable', 'invoices.csv')">CSV</button>
+    <button onclick="exportTableToPDF('invoicesTable', 'Invoices')">PDF</button>
+  </div>
+  <table id="invoicesTable"><thead><tr>
+    <th onclick="sortTable('invoicesTable', 0)">Customer ⬍</th>
+    <th onclick="sortTable('invoicesTable', 1)">Amount ⬍</th>
+    <th onclick="sortTable('invoicesTable', 2)">Due Date ⬍</th>
+    <th onclick="sortTable('invoicesTable', 3)">Status ⬍</th>
+    <th>Action</th></tr></thead><tbody></tbody></table>
+</section>
 
-  function showTab(id) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    if (id === 'requests') loadRequests();
-    if (id === 'quotes') loadQuotes();
-    if (id === 'invoices') loadInvoices();
-  }
+<section id="expenses" class="tab-content">
+  <h2>Expenses</h2>
+  <form onsubmit="submitExpense(event)">
+    <input type="text" id="expenseDesc" placeholder="Description" required />
+    <input type="number" id="expenseAmount" placeholder="Amount ($)" required />
+    <input type="date" id="expenseDate" required />
+    <button type="submit">Add Expense</button>
+  </form>
+  <table id="expensesTable"><thead><tr><th>Description</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead><tbody></tbody></table>
+</section>
 
-  function loadRequests() {
-    const tbody = document.querySelector("#requestsTable tbody");
-    db.collection("requests").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.customer}</td>
-            <td>${d.description}</td>
-            <td>${d.status}</td>
-            <td>
-              <button onclick="markRequestCompleted('${doc.id}')">Complete</button>
-              <button onclick="createQuoteFromRequest('${doc.id}')">Quote</button>
-            </td>
-          </tr>`;
-      });
-    });
-  }
+<div id="loadingOverlay"><div>Loading...</div></div>
 
-  function loadQuotes() {
-    const tbody = document.querySelector("#quotesTable tbody");
-    db.collection("quotes").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.customer}</td>
-            <td>$${d.amount}</td>
-            <td>${d.status}</td>
-            <td>
-              <button onclick="convertQuoteToInvoice('${doc.id}')">Convert</button>
-              <button onclick="deleteQuote('${doc.id}')">Delete</button>
-            </td>
-          </tr>`;
-      });
-    });
-  }
+<footer><p>&copy; 2025 Holliday's Lawn & Garden</p></footer>
 
-  function loadInvoices() {
-    const tbody = document.querySelector("#invoicesTable tbody");
-    db.collection("invoices").get().then(snapshot => {
-      tbody.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        tbody.innerHTML += `
-          <tr>
-            <td>${d.customer}</td>
-            <td>$${d.amount}</td>
-            <td>${d.dueDate}</td>
-            <td>${d.paid ? "Paid" : "Unpaid"}</td>
-            <td>
-              <button onclick="markInvoicePaid('${doc.id}')">Mark Paid</button>
-            </td>
-          </tr>`;
-      });
-    });
-  }
-
-  function markRequestCompleted(id) {
-    db.collection("requests").doc(id).update({ status: "Completed" }).then(loadRequests);
-  }
-
-  function createQuoteFromRequest(id) {
-    db.collection("requests").doc(id).get().then(doc => {
-      const data = doc.data();
-      db.collection("quotes").add({
-        customer: data.customer,
-        amount: 0,
-        status: "Pending"
-      }).then(() => alert("Quote created"));
-    });
-  }
-
-  function convertQuoteToInvoice(id) {
-    db.collection("quotes").doc(id).get().then(doc => {
-      const data = doc.data();
-      db.collection("invoices").add({
-        customer: data.customer,
-        amount: data.amount,
-        dueDate: new Date().toISOString().split("T")[0],
-        paid: false
-      });
-      db.collection("quotes").doc(id).delete().then(loadQuotes);
-    });
-  }
-
-  function deleteQuote(id) {
-    db.collection("quotes").doc(id).delete().then(loadQuotes);
-  }
-
-  function markInvoicePaid(id) {
-    db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-  }
-
-  // Default tab
-  showTab('requests');
-</script>
-
+<script src="admin-functions.js"></script>
 </body>
 </html>
