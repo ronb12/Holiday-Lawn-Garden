@@ -1,143 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Customer Dashboard</title>
-
-  <!-- Firebase + PayPal SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
-  <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
-
-  <!-- Green Theme Style -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard – Holliday's Lawn & Garden</title>
+  <link rel="icon" href="icons/icon-192.png">
   <style>
-    body {
-      background: #f4f9f4;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 2em; }
+    header { background: #228B22; color: white; padding: 1em; text-align: center; }
+    section { background: white; padding: 1.5em; margin-bottom: 2em; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    input, textarea, select, button {
+      width: 100%; padding: 0.75em; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px;
     }
-    h1, h2, h3 { color: #228B22; }
-    input, select, textarea {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin: 6px 0;
-      font-size: 14px;
-      width: 100%;
-      max-width: 400px;
-    }
-    button {
-      background-color: #228B22;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      cursor: pointer;
-    }
-    button:hover { background-color: #1a5f1a; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
-    }
-    th { background-color: #228B22; color: white; }
-    tr:nth-child(even) { background-color: #f0f9f0; }
-    .modal {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: none; align-items: center; justify-content: center;
-      z-index: 1000;
-    }
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 500px;
-    }
-    .modal img {
-      width: 80px; height: 80px; object-fit: cover;
-      border-radius: 50%; margin-bottom: 10px;
-    }
+    button { background: #228B22; color: white; cursor: pointer; border: none; }
+    button:hover { background: #1a6e1a; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75em; border: 1px solid #ccc; text-align: left; }
   </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <h1 id="greeting">Welcome</h1>
+  <header>
+    <h1>Welcome to Your Dashboard</h1>
+  </header>
 
-  <!-- Profile Modal -->
-  <div id="profileModal" class="modal">
-    <div class="modal-content">
-      <h3>Edit Profile</h3>
-      <input id="profileFullName" placeholder="Full Name" />
-      <input id="profileStreet" placeholder="Street" />
-      <input id="profileCity" placeholder="City" />
-      <input id="profileState" placeholder="State" />
-      <input id="profileZip" placeholder="ZIP Code" />
-      <input type="file" onchange="previewAvatar(event)" />
-      <img id="avatarImg" src="assets/default-avatar.png" alt="Avatar" />
-      <button onclick="saveProfile()">Save</button>
-      <button onclick="closeModal(event)" class="close">Close</button>
-    </div>
-  </div>
+  <section>
+    <h2>Submit a New Service Request</h2>
+    <form id="requestForm">
+      <input name="customer" placeholder="Your Name" required />
+      <input name="email" type="email" placeholder="Your Email" required />
+      <textarea name="description" placeholder="Describe your request..." required></textarea>
+      <button type="submit">Submit Request</button>
+    </form>
+  </section>
 
-  <!-- Submit Request -->
-  <form onsubmit="submitRequest(event)">
-    <h2>Submit Service Request</h2>
-    <label for="serviceTypeSelect">Service Type</label>
-    <select id="serviceTypeSelect" onchange="toggleCustomService()">
-      <option value="">Select a Service</option>
-      <option value="Lawn Mowing">Lawn Mowing</option>
-      <option value="Leaf Removal">Leaf Removal</option>
-      <option value="Mulch Installation">Mulch Installation</option>
-      <option value="Pressure Washing">Pressure Washing</option>
-      <option value="Other">Other (Custom Work)</option>
-    </select>
-    <input id="serviceType" placeholder="Enter custom service..." style="display:none;" />
-    <input type="date" id="preferredDate" required />
-    <textarea id="requestNotes" placeholder="Notes"></textarea>
-    <input id="street" placeholder="Street" />
-    <input id="city" placeholder="City" />
-    <input id="state" placeholder="State" />
-    <input id="zip" placeholder="ZIP" />
-    <button type="submit">Submit</button>
-  </form>
+  <section>
+    <h2>My Service Requests</h2>
+    <table id="requestsTable">
+      <thead><tr><th>Description</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-<script>
-function submitRequest(e) {
-  e.preventDefault();
-  const serviceSelect = document.getElementById("serviceTypeSelect");
-  const serviceInput = document.getElementById("serviceType");
-  const finalService = serviceSelect.value === "Other" ? serviceInput.value : serviceSelect.value;
+  <section>
+    <h2>My PayPal Invoices</h2>
+    <table id="invoicesTable">
+      <thead><tr><th>PayPal ID</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
 
-  const data = {
-    email: currentUser.email,
-    name: userProfile.fullName || "Unnamed Customer",
-    details: finalService,
-    preferredDate: document.getElementById("preferredDate").value,
-    notes: document.getElementById("requestNotes").value,
-    street: document.getElementById("street").value,
-    city: document.getElementById("city").value,
-    state: document.getElementById("state").value,
-    zip: document.getElementById("zip").value,
-    status: "Pending",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  };
+  <section>
+    <h2>Export My History</h2>
+    <button onclick="exportHistory('requests')">Download Requests CSV</button>
+    <button onclick="exportHistory('paypalInvoices')">Download Invoices CSV</button>
+  </section>
 
-  db.collection("service_requests").add(data).then(() => {
-    alert("✅ Request submitted.");
-    e.target.reset();
-    loadRequests();
-  });
-}
-</script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+      authDomain: "mobile-debt-crusher.firebaseapp.com",
+      projectId: "mobile-debt-crusher"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const requestForm = document.getElementById("requestForm");
+    requestForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(requestForm));
+      data.createdAt = new Date();
+      data.status = "Pending";
+      try {
+        await db.collection("requests").add(data);
+        alert("Request submitted!");
+        requestForm.reset();
+        loadRequests(data.email);
+      } catch (err) {
+        console.error("Error submitting request:", err);
+      }
+    });
+
+    async function loadRequests(email) {
+      const table = document.querySelector("#requestsTable tbody");
+      table.innerHTML = "";
+      const snapshot = await db.collection("requests").where("email", "==", email).get();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `<tr><td>${d.description}</td><td>${d.status}</td><td>${new Date(d.createdAt.toDate()).toLocaleDateString()}</td></tr>`;
+      });
+    }
+
+    async function loadInvoices(email) {
+      const table = document.querySelector("#invoicesTable tbody");
+      table.innerHTML = "";
+      const snapshot = await db.collection("paypalInvoices").where("email", "==", email).get();
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `<tr><td>${d.paypalId}</td><td>${d.status}</td><td>${d.notes || ""}</td></tr>`;
+      });
+    }
+
+    async function exportHistory(collection) {
+      const email = document.querySelector("input[name='email']").value;
+      const snapshot = await db.collection(collection).where("email", "==", email).get();
+      const rows = [];
+      snapshot.forEach(doc => rows.push(doc.data()));
+      const csv = Papa.unparse(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `${collection}.csv`;
+      link.click();
+    }
+
+    document.querySelector("input[name='email']").addEventListener("blur", (e) => {
+      const email = e.target.value;
+      if (email) {
+        loadRequests(email);
+        loadInvoices(email);
+      }
+    });
+  </script>
 </body>
 </html>
