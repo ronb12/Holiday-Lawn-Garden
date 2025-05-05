@@ -129,6 +129,30 @@
     <div id="requestsMessage" class="success"></div>
   </form>
 
+  <form onsubmit="submitForm(event, 'expenses')">
+    <h2>Log Expense</h2>
+    <input name="description" placeholder="Expense Description" required />
+    <input name="amount" type="number" placeholder="Amount ($)" required />
+    <input name="date" type="date" required />
+    <button type="submit">Add Expense</button>
+    <div id="expensesMessage" class="success"></div>
+  </form>
+
+  <form onsubmit="submitForm(event, 'paypalInvoices')">
+    <h2>Log PayPal Invoice</h2>
+    <input name="customer" placeholder="Customer Name" required />
+    <input name="email" placeholder="Customer Email" required />
+    <input name="paypalId" placeholder="PayPal Invoice ID" required />
+    <input name="amount" type="number" placeholder="Amount ($)" required />
+    <select name="status">
+      <option value="Paid">Paid</option>
+      <option value="Unpaid">Unpaid</option>
+    </select>
+    <textarea name="notes" placeholder="Optional Notes"></textarea>
+    <button type="submit">Log Transaction</button>
+    <div id="paypalInvoicesMessage" class="success"></div>
+  </form>
+
   <div class="table-section">
     <h2>📋 Service Requests Table</h2>
     <table id="requestTable">
