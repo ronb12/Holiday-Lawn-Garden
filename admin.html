@@ -21,7 +21,7 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
     th { background-color: #228B22; color: white; }
-    input, textarea { width: 100%; padding: 0.5em; }
+    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
   </style>
@@ -39,13 +39,14 @@
 </header>
 
 <div class="tabs">
-  <button class="tab active" onclick="showTab('requestsTab')">Requests</button>
-  <button class="tab" onclick="showTab('quotesTab')">Quotes</button>
-  <button class="tab" onclick="showTab('invoicesTab')">Invoices</button>
-  <button class="tab" onclick="showTab('profitTab')">Profit Calculator</button>
+  <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
+  <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
+  <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
+  <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
 </div>
 
 <main>
+  <!-- Service Requests -->
   <section id="requestsTab" class="tab-content active">
     <h2>Service Requests</h2>
     <table id="requestsTable">
@@ -53,14 +54,68 @@
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
-</main>
 
-<footer>
-  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-</footer>
+  <!-- Quote Creation -->
+  <section id="quotesTab" class="tab-content">
+    <h2>Create Quote</h2>
+    <input id="quoteName" placeholder="Customer Name">
+    <input id="quoteEmail" placeholder="Customer Email">
+    <textarea id="quoteService" placeholder="Service Description"></textarea>
+    <input id="quoteAmount" type="number" placeholder="Amount ($)">
+    <button onclick="createQuote()">Create Quote</button>
+    <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
+    <table id="quotesTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Action</th></tr></thead>
+      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- Invoices -->
+  <section id="invoicesTab" class="tab-content">
+    <h2>Invoices</h2>
+    <button onclick="exportInvoicesPDF()">📄 Export Invoices as PDF</button>
+    <table id="invoicesTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- Profit Calculator -->
+  <section id="profitTab" class="tab-content">
+    <h2>Profit Calculator</h2>
+    <select id="serviceType">
+      <option value="" disabled selected>Select Service</option>
+      <option value="lawn">Lawn Mowing</option>
+      <option value="mulch">Mulch Install</option>
+      <option value="hedge">Hedge Trimming</option>
+      <option value="powerwash">Pressure Washing</option>
+      <option value="custom">Custom Job</option>
+    </select>
+    <input id="price" placeholder="Customer Price ($)">
+    <input id="labor" placeholder="Labor Cost ($)">
+    <input id="gas" placeholder="Gas Cost ($)">
+    <button onclick="calculateProfit()">Calculate</button>
+    <h3 id="profitResult"></h3>
+  </section>
+</main>
+<!-- Chat Modal -->
+<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
+  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
+    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
+      Chat with Customer
+      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
+    </div>
+    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
+    <div style="padding:1em; border-top:1px solid #ddd;">
+      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
+      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const db = firebase.firestore();
-let currentUser;
+let currentUser, currentChatRequestId = null;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -79,8 +134,7 @@ async function checkAdminAccess(uid) {
     loadInvoices();
     loadNotifications();
   } else {
-    alert("Access denied.");
-    firebase.auth().signOut();
+    alert("Access denied."); firebase.auth().signOut();
   }
 }
 
@@ -88,21 +142,17 @@ function logout() {
   firebase.auth().signOut();
 }
 
-function showTab(id) {
+function showTab(id, event) {
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  event.target.classList.add("active");
+  if (event) event.target.classList.add("active");
 }
 
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
   db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
-    if (snapshot.empty) {
-      tbody.innerHTML = "<tr><td colspan='4'>No requests found</td></tr>";
-      return;
-    }
     snapshot.forEach(doc => {
       const r = doc.data();
       const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
@@ -118,21 +168,172 @@ function loadRequests() {
   });
 }
 
-// Include similar functions for:
-// ✅ loadQuotes()
-// ✅ createQuote()
-// ✅ convertQuoteToInvoice()
-// ✅ exportQuotesPDF()
-// ✅ loadInvoices()
-// ✅ createManualInvoice()
-// ✅ exportInvoicesPDF()
-// ✅ toggleNotifications()
-// ✅ markAllAsRead()
-// ✅ openChat(), loadChatMessages(), sendChatMessage()
-// ✅ calculateProfit()
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.name}</td>
+          <td>${q.service}</td>
+          <td>$${q.amount.toFixed(2)}</td>
+          <td><button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
+        </tr>
+      `;
+    });
+  });
+}
 
-// You can find these in previous responses or I can paste them here next.
+function createQuote() {
+  const name = quoteName.value.trim();
+  const email = quoteEmail.value.trim();
+  const service = quoteService.value.trim();
+  const amount = parseFloat(quoteAmount.value);
+  if (!name || !email || !service || isNaN(amount)) return alert("All fields required.");
+  db.collection("quotes").add({
+    name, email, service, amount,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Quote created.");
+    quoteName.value = quoteEmail.value = quoteService.value = quoteAmount.value = "";
+  });
+}
 
+function convertQuoteToInvoice(id, name, email, service, amount) {
+  db.collection("invoices").add({
+    name, customerEmail: email, service, amount,
+    paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    db.collection("quotes").doc(id).update({ status: "converted" });
+    alert("✅ Converted to invoice.");
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const i = doc.data();
+      tbody.innerHTML += `
+        <tr><td>${i.name}</td><td>${i.service}</td><td>$${i.amount.toFixed(2)}</td><td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>
+      `;
+    });
+  });
+}
+
+function calculateProfit() {
+  const p = parseFloat(price.value) || 0;
+  const l = parseFloat(labor.value) || 0;
+  const g = parseFloat(gas.value) || 0;
+  const profit = p - (l + g);
+  profitResult.innerText = profit >= 0
+    ? `✅ Profit: $${profit.toFixed(2)}`
+    : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
+}
+
+function toggleNotifications() {
+  const d = document.getElementById("notifDropdown");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+function markAllAsRead() {
+  db.collection("service_requests").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+    });
+    notifBadge.style.display = "none";
+    notifList.innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+  });
+}
+
+function loadNotifications() {
+  notifList.innerHTML = "";
+  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+    let unread = 0;
+    notifList.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data(), isUnread = !d.adminRead;
+      if (isUnread) unread++;
+      const preview = (d.notes || "").slice(0, 40);
+      const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
+      const div = document.createElement("div");
+      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
+      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
+      div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
+      notifList.appendChild(div);
+    });
+    notifBadge.innerText = unread;
+    notifBadge.style.display = unread > 0 ? "inline-block" : "none";
+  });
+}
+
+function openChat(id) {
+  currentChatRequestId = id;
+  chatModal.style.display = "block";
+  loadChatMessages(id);
+  db.collection("service_requests").doc(id).update({ hasUnreadFromCustomer: false });
+}
+
+function closeChat() {
+  chatModal.style.display = "none";
+  chatMessages.innerHTML = "";
+  currentChatRequestId = null;
+}
+
+function loadChatMessages(id) {
+  const box = chatMessages;
+  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      box.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data(), isAdmin = msg.sender === "admin";
+        const div = document.createElement("div");
+        div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${isAdmin ? "#d1f7c4" : "#e5e5ea"}; align-self:${isAdmin ? "flex-end" : "flex-start"};`;
+        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !currentChatRequestId) return;
+  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+    text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  chatInput.value = "";
+}
+
+async function exportQuotesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Quotes", 10, 10);
+  const quotes = await db.collection("quotes").orderBy("createdAt", "desc").get();
+  let y = 20;
+  quotes.forEach((q, i) => {
+    const d = q.data();
+    doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount}`, 10, y += 10);
+  });
+  doc.save("Quotes.pdf");
+}
+
+async function exportInvoicesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Invoices", 10, 10);
+  const invs = await db.collection("invoices").orderBy("createdAt", "desc").get();
+  let y = 20;
+  invs.forEach((i, idx) => {
+    const d = i.data(), paid = d.paid ? "Paid" : "Unpaid";
+    doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount} - ${paid}`, 10, y += 10);
+  });
+  doc.save("Invoices.pdf");
+}
 </script>
+
 </body>
 </html>
