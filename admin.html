@@ -52,6 +52,7 @@
       </div>
     </div>
   </div>
+  <button onclick="logout()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">Logout</button>
 </header>
 
 <div class="tabs">
@@ -113,16 +114,16 @@
 </main>
 
 <!-- Chat Modal -->
-<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
-  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
-    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
+<div id="chatModal" style="display:none;">
+  <div class="chat-container">
+    <div class="header">
       Chat with Customer
       <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
     </div>
-    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
-    <div style="padding:1em; border-top:1px solid #ddd;">
-      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
-      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
+    <div id="chatMessages"></div>
+    <div class="footer">
+      <input id="chatInput" type="text" placeholder="Type your message..." />
+      <button onclick="sendChatMessage()">Send</button>
     </div>
   </div>
 </div>
@@ -144,6 +145,7 @@
     }
   });
 
+  // Admin Authentication
   async function checkAdminAccess(uid) {
     const doc = await db.collection("users").doc(uid).get();
     if (doc.exists && doc.data().role === "admin") {
@@ -154,6 +156,7 @@
     }
   }
 
+  // Show Tab Content
   function showTab(id) {
     document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
     document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
@@ -161,6 +164,16 @@
     event.target.classList.add("active");
   }
 
+  // Logout Function
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      window.location.href = "login.html";
+    }).catch(error => {
+      console.error("Error during logout:", error);
+    });
+  }
+
+  // Load Service Requests
   function loadRequests() {
     const tbody = document.querySelector("#requestsTable tbody");
     db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
@@ -180,6 +193,7 @@
     });
   }
 
+  // Create Quote
   function createQuote() {
     const name = quoteName.value, email = quoteEmail.value;
     const service = quoteService.value, amount = parseFloat(quoteAmount.value);
@@ -192,6 +206,7 @@
     });
   }
 
+  // Load Quotes
   function loadQuotes() {
     const tbody = document.querySelector("#quotesTable tbody");
     db.collection("quotes").orderBy("createdAt", "desc").get().then(snapshot => {
@@ -210,6 +225,7 @@
     });
   }
 
+  // Convert Quote to Invoice
   function convertQuoteToInvoice(id, name, email, service, amount) {
     db.collection("invoices").add({
       name, customerEmail: email, service, amount,
@@ -220,6 +236,7 @@
     });
   }
 
+  // Load Invoices
   function loadInvoices() {
     const tbody = document.querySelector("#invoicesTable tbody");
     db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
@@ -233,6 +250,7 @@
     });
   }
 
+  // Profit Calculator
   function calculateProfit() {
     const p = parseFloat(price.value) || 0, l = parseFloat(labor.value) || 0;
     const g = parseFloat(gas.value) || 0, m = parseFloat(materials.value) || 0;
@@ -240,42 +258,41 @@
     profitResult.innerText = profit >= 0 ? `✅ Profit: $${profit.toFixed(2)}` : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
   }
 
-  function toggleNotifications() {
-    const d = notifDropdown;
-    d.style.display = d.style.display === "block" ? "none" : "block";
-  }
-
-  function markAllAsRead() {
-    db.collection("service_requests").get().then(snapshot => {
-      snapshot.forEach(doc => {
-        db.collection("service_requests").doc(doc.id).update({ adminRead: true });
-      });
-      notifBadge.style.display = "none";
-      notifList.innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
-    });
-  }
-
+  // Load Notifications
   function loadNotifications() {
-    notifList.innerHTML = "";
-    db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
-      let unread = 0;
-      notifList.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data(), isUnread = !d.adminRead;
-        if (isUnread) unread++;
-        const preview = (d.notes || "").slice(0, 40);
-        const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
-        const div = document.createElement("div");
-        div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
-        div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
-        div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
-        notifList.appendChild(div);
+    const notifList = document.getElementById("notifList");
+    const badge = document.getElementById("notifBadge");
+
+    db.collection("service_requests")
+      .orderBy("submittedAt", "desc")
+      .limit(5)
+      .onSnapshot(snapshot => {
+        let unreadCount = 0;
+        notifList.innerHTML = "";
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const isUnread = !data.adminRead;
+          if (isUnread) unreadCount++;
+
+          const preview = (data.notes || "").substring(0, 40);
+          const time = data.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
+
+          const entry = document.createElement("div");
+          entry.style = `padding: 0.75em; border-bottom: 1px solid #eee; background: ${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
+          entry.innerHTML = `<strong>${data.fullName}</strong><br><small>${preview} • ${time}</small>`;
+          entry.onclick = () => {
+            showTab('requestsTab');
+            openChat(doc.id);
+          };
+          notifList.appendChild(entry);
+        });
+
+        badge.innerText = unreadCount;
+        badge.style.display = unreadCount > 0 ? "inline-block" : "none";
       });
-      notifBadge.innerText = unread;
-      notifBadge.style.display = unread > 0 ? "inline-block" : "none";
-    });
   }
 
+  // Chat Modal and Message Functions
   function openChat(id) {
     currentChatRequestId = id;
     chatModal.style.display = "block";
@@ -314,6 +331,7 @@
     chatInput.value = "";
   }
 
+  // Export Quotes PDF
   async function exportQuotesPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -324,6 +342,7 @@
     doc.save("Quotes.pdf");
   }
 
+  // Export Invoices PDF
   async function exportInvoicesPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
