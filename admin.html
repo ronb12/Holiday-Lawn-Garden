@@ -97,16 +97,16 @@ function addServiceRow() {
   const container = document.getElementById("serviceList");
   const row = document.createElement("div");
   row.className = "service-row";
-  row.innerHTML = 
+  row.innerHTML = `
     <select onchange="calcTotal(this)">
       <option value="">Select Service</option>
-      ${preloadedServices.map(s => <option value="${s}">${s}</option>).join("")}
+      ${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}
       <option value="Custom">Other (manual entry)</option>
     </select>
     <input type="text" placeholder="Description" oninput="calcTotal(this)">
     <input type="number" placeholder="Amount ($)" min="0" step="0.01" oninput="calcTotal(this)">
     <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  ;
+  `;
   container.appendChild(row);
 }
 
@@ -164,7 +164,7 @@ function loadInvoices() {
     snapshot.forEach(doc => {
       const d = doc.data();
       const isOverdue = !d.paid && new Date(d.dueDate) < new Date();
-      const row = 
+      const row = `
         <tr class="${isOverdue ? "overdue" : ""}">
           <td>${d.customerEmail.split('@')[0]}</td>
           <td>${d.customerEmail}</td>
@@ -173,12 +173,12 @@ function loadInvoices() {
           <td>${d.dueDate}</td>
           <td>${d.paid ? "Paid" : "Unpaid"}</td>
           <td>
-            ${!d.paid ? <button onclick="markPaid('${doc.id}')">Mark Paid</button> : ""}
+            ${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}
             <button onclick='viewInvoice(${JSON.stringify(d)})'>View</button>
             <button onclick="deleteInvoice('${doc.id}')">Delete</button>
           </td>
         </tr>
-      ;
+      `;
       d.paid ? paidTbody.innerHTML += row : dueTbody.innerHTML += row;
     });
   });
@@ -186,7 +186,7 @@ function loadInvoices() {
 
 function viewInvoice(data) {
   const win = window.open("", "_blank");
-  win.document.write(
+  win.document.write(`
     <html><head><title>Invoice ${data.invoiceNumber}</title></head>
     <body style="font-family:Arial;padding:2em;">
       <img src="Hollidays_Lawn_Garden_Logo.png" style="height:60px"><br><br>
@@ -201,14 +201,14 @@ function viewInvoice(data) {
       <table style="width:100%;border-collapse:collapse;" border="1">
         <thead><tr><th>Description</th><th>Amount</th></tr></thead>
         <tbody>
-          ${data.services.map(s => <tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>).join("")}
+          ${data.services.map(s => `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`).join("")}
         </tbody>
       </table>
       <h3 style="text-align:right;">Total: $${data.amountDue.toFixed(2)}</h3>
       <p style="text-align:center;">Thank you for your business!</p>
       <button onclick="window.print()">🖨️ Print Invoice</button>
     </body></html>
-  );
+  `);
 }
 
 function markPaid(id) {
@@ -228,7 +228,7 @@ function loadRequests() {
     document.getElementById("requestCount").innerText = snapshot.size || "";
     snapshot.forEach(doc => {
       const r = doc.data();
-      const row = 
+      const row = `
         <tr>
           <td>${r.name}</td>
           <td>${r.email}</td>
@@ -243,7 +243,7 @@ function loadRequests() {
             </select>
           </td>
         </tr>
-      ;
+      `;
       tbody.innerHTML += row;
     });
   });
@@ -258,7 +258,7 @@ function logout() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("footer").innerHTML = &copy; ${new Date().getFullYear()} Holliday's Lawn & Garden. All rights reserved.;
+  document.getElementById("footer").innerHTML = `&copy; ${new Date().getFullYear()} Holliday's Lawn & Garden. All rights reserved.`;
 });
 </script>
 </body>
