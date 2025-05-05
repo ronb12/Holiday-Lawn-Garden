@@ -129,10 +129,10 @@
     &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
 
-  <!-- ✅ Working Inline Login Script -->
+  <!-- ✅ Inline Login Script (Only admin email gets dashboard access) -->
   <script>
     function emailPasswordLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
       const password = document.getElementById('loginPassword').value.trim();
 
       if (!email || !password) {
@@ -141,22 +141,12 @@
       }
 
       firebase.auth().signInWithEmailAndPassword(email, password)
-        .then(userCredential => {
-          const uid = userCredential.user.uid;
-
-          firebase.firestore().collection('users').doc(uid).get()
-            .then(doc => {
-              if (doc.exists && doc.data().role === "admin") {
-                window.location.href = "admin.html";
-              } else {
-                window.location.href = "customer-dashboard.html";
-              }
-            })
-            .catch(error => {
-              console.error("Firestore error:", error);
-              alert("Could not retrieve user role.");
-            });
-
+        .then(() => {
+          if (email === "ronellbradley@bradleyvs.com") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "customer-dashboard.html";
+          }
         })
         .catch(error => {
           console.error("Login failed:", error);
