@@ -42,6 +42,54 @@
       flex: 1 1 30%; min-width: 180px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+      background: white;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+    th {
+      background: #228B22;
+      color: white;
+    }
+    .service-row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      flex-wrap: wrap;
+    }
+    .service-row select, .service-row input {
+      flex: 1;
+      padding: 0.5em;
+    }
+    .collapse-section {
+      margin-top: 1em;
+      padding: 1em;
+      border-left: 5px solid #228B22;
+      background: #f0fff0;
+      border-radius: 5px;
+    }
+    .export-buttons {
+      margin-top: 1em;
+      text-align: right;
+    }
+    .export-buttons button {
+      padding: 0.5em 1em;
+      margin-left: 0.5em;
+      background: #228B22;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .export-buttons button:hover {
+      background: #006400;
+    }
   </style>
 </head>
 <body>
@@ -51,10 +99,10 @@
   </header>
 
   <nav>
-    <button id="tab1" class="active" onclick="showTab(1)">Service Requests</button>
-    <button id="tab2" onclick="showTab(2)">Quotes</button>
-    <button id="tab3" onclick="showTab(3)">Invoices</button>
-    <button id="tab4" onclick="showTab(4)">New Job</button>
+    <button id="tab1" class="active" onclick="showTab('section1')">Service Requests</button>
+    <button id="tab2" onclick="showTab('section2')">Quotes</button>
+    <button id="tab3" onclick="showTab('section3')">Invoices</button>
+    <button id="tab4" onclick="showTab('section4')">New Job</button>
   </nav>
 
   <main>
@@ -153,14 +201,14 @@
   <footer>
     &copy; 2025 Holliday's Lawn & Garden
   </footer>
-  <!-- Firebase SDKs & Scripts -->
+
+  <!-- Firebase SDKs and Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-
   <script>
     const db = firebase.firestore();
     let currentUser;
@@ -221,7 +269,7 @@
       `;
       container.appendChild(row);
     }
-
+  </script>
     function calcTotal() {
       let total = 0;
       document.querySelectorAll("#serviceList .service-row").forEach(row => {
@@ -418,6 +466,9 @@
         row.style.display = row.innerText.toLowerCase().includes(term) ? "" : "none";
       });
     }
+
+    // Default view on load
+    window.onload = () => showTab("section1");
   </script>
 </body>
 </html>
