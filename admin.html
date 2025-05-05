@@ -115,8 +115,7 @@
       <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
       <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
     </div>
-
-    <section id="section1">
+    <section id="section1"> <!-- Service Requests -->
       <h2>Service Requests</h2>
       <table id="serviceRequestsTable">
         <thead>
@@ -127,7 +126,8 @@
         <tbody></tbody>
       </table>
     </section>
-    <section id="section2">
+
+    <section id="section2"> <!-- Quotes -->
       <h2>Quotes</h2>
       <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
       <table id="quotesTable">
@@ -140,7 +140,7 @@
       </table>
     </section>
 
-    <section id="section3">
+    <section id="section3"> <!-- Invoices -->
       <h2>Invoices Due</h2>
       <div class="export-buttons">
         <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid</button>
@@ -168,7 +168,7 @@
       </table>
     </section>
 
-    <section id="section4">
+    <section id="section4"> <!-- New Job / Create Invoice -->
       <h2>Create Invoice</h2>
       <form id="invoiceForm" onsubmit="createInvoice(event)">
         <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -198,17 +198,8 @@
     </section>
   </main>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden
-  </footer>
+  <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
 
-  <!-- Firebase SDKs and Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script>
     const db = firebase.firestore();
     let currentUser;
@@ -269,7 +260,7 @@
       `;
       container.appendChild(row);
     }
-  </script>
+
     function calcTotal() {
       let total = 0;
       document.querySelectorAll("#serviceList .service-row").forEach(row => {
@@ -352,8 +343,8 @@
               <td>${d.dueDate}</td>
               <td>${d.paid ? "Paid" : "Unpaid"}</td>
               <td>${d.paid
-                  ? `<button onclick="viewInvoice('${doc.id}')">View</button>`
-                  : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
+                ? `<button onclick="viewInvoice('${doc.id}')">View</button>`
+                : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
               </td>
             </tr>`;
           if (d.paid) paidBody.innerHTML += row;
@@ -467,7 +458,6 @@
       });
     }
 
-    // Default view on load
     window.onload = () => showTab("section1");
   </script>
 </body>
