@@ -8,20 +8,22 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f4f9f4; padding: 2em; color: #333; }
     h1, h2 { color: #228B22; }
-    form { margin-bottom: 3em; background: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); max-width: 700px; }
+    form, .dashboard, .table-section { margin-bottom: 3em; background: #fff; padding: 1.5em; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); max-width: 1000px; margin-left: auto; margin-right: auto; }
     input, select, textarea, button {
       width: 100%; padding: 0.75em; margin-bottom: 1em; border: 1px solid #ccc; border-radius: 4px;
     }
     button { background: #228B22; color: white; border: none; cursor: pointer; }
     button:hover { background: #1a6e1a; }
     .success { color: green; font-weight: bold; text-align: center; margin-bottom: 1em; }
+    .stat { padding: 1em; background: #e9f6eb; border-left: 6px solid #228B22; margin-bottom: 1em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { padding: 0.5em; border: 1px solid #ccc; text-align: left; }
+    td input, td select, td textarea { width: 95%; }
+    .actions { display: flex; gap: 0.5em; }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
@@ -36,54 +38,89 @@
       const form = event.target;
       const formData = Object.fromEntries(new FormData(form).entries());
       formData.createdAt = new Date();
-
       try {
         await db.collection(type).add(formData);
         form.reset();
-        document.getElementById(`${type}Message`).innerText = `✅ ${type.charAt(0).toUpperCase() + type.slice(1)} submitted.`;
+        document.getElementById(`${type}Message`).innerText = `✅ ${type} submitted successfully.`;
+        loadStats();
+        loadTables();
       } catch (err) {
         console.error(`❌ Failed to submit ${type}:`, err);
-        alert("Something went wrong. Check console for details.");
+        alert("Something went wrong. Check the console.");
       }
     }
 
-    async function exportCollection(type, format) {
-      const snapshot = await db.collection(type).get();
-      const rows = [];
-      snapshot.forEach(doc => rows.push(doc.data()));
+    async function updateDoc(collection, id, updates) {
+      await db.collection(collection).doc(id).update(updates);
+      loadTables();
+    }
 
-      if (format === 'csv') {
-        const csv = Papa.unparse(rows);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `${type}.csv`;
-        link.click();
-      } else if (format === 'pdf') {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.setFontSize(12);
-        doc.text(`${type.charAt(0).toUpperCase() + type.slice(1)} Export`, 14, 16);
-        let y = 24;
-        rows.forEach((item) => {
-          const line = Object.entries(item).map(([k, v]) => `${k}: ${v}`).join(' | ');
-          doc.text(line, 14, y);
-          y += 8;
-          if (y > 270) { doc.addPage(); y = 20; }
-        });
-        doc.save(`${type}.pdf`);
+    async function deleteDoc(collection, id) {
+      if (confirm("Are you sure you want to delete this entry?")) {
+        await db.collection(collection).doc(id).delete();
+        loadStats();
+        loadTables();
       }
+    }
+
+    async function loadTables() {
+      const requests = await db.collection("requests").get();
+      const rBody = document.querySelector("#requestTable tbody");
+      rBody.innerHTML = "";
+      requests.forEach(doc => {
+        const d = doc.data();
+        const row = `<tr>
+          <td>${d.customer}</td>
+          <td><textarea onchange="updateDoc('requests', '${doc.id}', { description: this.value })">${d.description || ""}</textarea></td>
+          <td><textarea onchange="updateDoc('requests', '${doc.id}', { notes: this.value })">${d.notes || ""}</textarea></td>
+          <td>
+            <select onchange="updateDoc('requests', '${doc.id}', { status: this.value })">
+              <option ${d.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option ${d.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+          </td>
+          <td class="actions">
+            <button onclick="deleteDoc('requests', '${doc.id}')">❌</button>
+          </td>
+        </tr>`;
+        rBody.innerHTML += row;
+      });
+    }
+
+    async function loadStats() {
+      let revenue = 0, expenses = 0;
+      const paidInvoices = await db.collection("paypalInvoices").where("status", "==", "Paid").get();
+      paidInvoices.forEach(doc => revenue += parseFloat(doc.data().amount || 0));
+      const expenseEntries = await db.collection("expenses").get();
+      expenseEntries.forEach(doc => expenses += parseFloat(doc.data().amount || 0));
+      const profit = revenue - expenses;
+      document.getElementById("revenueStat").innerText = `💰 Total Revenue: $${revenue.toFixed(2)}`;
+      document.getElementById("expenseStat").innerText = `💸 Total Expenses: $${expenses.toFixed(2)}`;
+      document.getElementById("profitStat").innerText = `📊 Net Profit: $${profit.toFixed(2)}`;
+    }
+
+    window.onload = () => {
+      loadStats();
+      loadTables();
     }
   </script>
 </head>
 <body>
   <h1>Admin Panel – Holliday's Lawn & Garden</h1>
 
+  <div class="dashboard">
+    <h2>📈 Financial Overview</h2>
+    <div class="stat" id="revenueStat">💰 Total Revenue: $0.00</div>
+    <div class="stat" id="expenseStat">💸 Total Expenses: $0.00</div>
+    <div class="stat" id="profitStat">📊 Net Profit: $0.00</div>
+  </div>
+
   <form onsubmit="submitForm(event, 'requests')">
     <h2>New Service Request</h2>
     <input name="customer" placeholder="Customer Name" required />
     <input name="email" placeholder="Customer Email" required />
     <textarea name="description" placeholder="Service Description" required></textarea>
+    <input name="notes" placeholder="Job Notes / Schedule (optional)" />
     <select name="status">
       <option value="Pending">Pending</option>
       <option value="Completed">Completed</option>
@@ -92,52 +129,12 @@
     <div id="requestsMessage" class="success"></div>
   </form>
 
-  <form onsubmit="submitForm(event, 'quotes')">
-    <h2>Create Quote</h2>
-    <input name="customer" placeholder="Customer Name" required />
-    <input name="amount" type="number" placeholder="Quote Amount ($)" required />
-    <select name="status">
-      <option value="Pending">Pending</option>
-      <option value="Approved">Approved</option>
-    </select>
-    <button type="submit">Submit Quote</button>
-    <div id="quotesMessage" class="success"></div>
-  </form>
-
-  <form onsubmit="submitForm(event, 'invoices')">
-    <h2>Create Invoice</h2>
-    <input name="customer" placeholder="Customer Name" required />
-    <input name="amount" type="number" placeholder="Invoice Amount ($)" required />
-    <input name="dueDate" type="date" required />
-    <select name="paid">
-      <option value="false">Unpaid</option>
-      <option value="true">Paid</option>
-    </select>
-    <button type="submit">Submit Invoice</button>
-    <div id="invoicesMessage" class="success"></div>
-  </form>
-
-  <form onsubmit="submitForm(event, 'expenses')">
-    <h2>Log Expense</h2>
-    <input name="description" placeholder="Expense Description" required />
-    <input name="amount" type="number" placeholder="Amount ($)" required />
-    <input name="date" type="date" required />
-    <button type="submit">Add Expense</button>
-    <div id="expensesMessage" class="success"></div>
-  </form>
-
-  <div style="text-align:center; margin-top: 2em;">
-    <h2>📤 Export Records</h2>
-    <select id="exportType">
-      <option value="requests">Service Requests</option>
-      <option value="quotes">Quotes</option>
-      <option value="invoices">Invoices</option>
-      <option value="expenses">Expenses</option>
-    </select>
-    <button onclick="exportCollection(document.getElementById('exportType').value, 'csv')">Export CSV</button>
-    <button onclick="exportCollection(document.getElementById('exportType').value, 'pdf')">Export PDF</button>
+  <div class="table-section">
+    <h2>📋 Service Requests Table</h2>
+    <table id="requestTable">
+      <thead><tr><th>Customer</th><th>Description</th><th>Notes</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
 </body>
 </html>
-
-
