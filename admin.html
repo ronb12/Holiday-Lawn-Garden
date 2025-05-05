@@ -8,24 +8,12 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f9f4;
-    }
-    header, footer {
-      background: #228B22;
-      color: white;
-      text-align: center;
-      padding: 1em;
-    }
-    .tabs {
-      display: flex;
-      justify-content: center;
-      background: #228B22;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
+    header, footer { background: #228B22; color: white; padding: 1em; }
+    .tabs { display: flex; justify-content: center; background: #228B22; }
     .tab {
       padding: 1em;
       color: white;
@@ -34,293 +22,317 @@
       border: none;
       font-weight: bold;
     }
-    .tab:hover, .tab.active {
-      background: #1a6b1a;
-    }
-    .tab-content {
-      display: none;
-      padding: 1.5em;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1em;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 0.75em;
-      text-align: left;
-    }
-    th {
-      background-color: #228B22;
-      color: white;
-    }
-    .form-row {
-      margin-bottom: 1em;
-    }
-    input, select, textarea {
-      padding: 0.5em;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    button {
-      background: #228B22;
-      color: white;
-      padding: 0.5em 1.5em;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #1a6b1a;
-    }
+    .tab:hover, .tab.active { background: #1a6b1a; }
+    .tab-content { display: none; padding: 1.5em; }
+    .tab-content.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
+    th { background-color: #228B22; color: white; }
+    input, textarea { width: 100%; padding: 0.5em; }
+    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
+    button:hover { background: #1a6b1a; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Admin Dashboard</h1>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('requestsTab')">Requests</button>
-    <button class="tab" onclick="showTab('quotesTab')">Quotes</button>
-    <button class="tab" onclick="showTab('invoicesTab')">Invoices</button>
-    <button class="tab" onclick="showTab('profitTab')">Profit Calculator</button>
+<header style="display:flex; justify-content:space-between; align-items:center;">
+  <h1 style="margin: 0 1em;">Admin Dashboard</h1>
+  <div style="position:relative; margin-right: 1em;">
+    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
+      🔔 Messages
+      <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
+    </button>
+    <div id="notifDropdown" style="display:none; position:absolute; right:0; top:2em; background:white; color:black; width:300px; max-height:400px; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:10;">
+      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
+      <div id="notifList"></div>
+      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
+        <button onclick="markAllAsRead()">Mark All as Read</button>
+      </div>
+    </div>
   </div>
+</header>
 
-  <main>
-    <!-- ✅ Service Requests Tab -->
-    <section id="requestsTab" class="tab-content active">
-      <h2>Service Requests</h2>
-      <table id="requestsTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Request</th>
-            <th>Convert</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="4">Loading...</td></tr>
-        </tbody>
-      </table>
-    </section>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('requestsTab')">Requests</button>
+  <button class="tab" onclick="showTab('quotesTab')">Quotes</button>
+  <button class="tab" onclick="showTab('invoicesTab')">Invoices</button>
+  <button class="tab" onclick="showTab('profitTab')">Profit Calculator</button>
+</div>
 
-    <!-- ✅ Quotes Tab -->
-    <section id="quotesTab" class="tab-content">
-      <h2>Create Quote</h2>
-      <div class="form-row">
-        <label>Customer Name</label>
-        <input id="quoteName" type="text" required>
-      </div>
-      <div class="form-row">
-        <label>Email</label>
-        <input id="quoteEmail" type="email" required>
-      </div>
-      <div class="form-row">
-        <label>Service Description</label>
-        <textarea id="quoteService" rows="2" required></textarea>
-      </div>
-      <div class="form-row">
-        <label>Amount ($)</label>
-        <input id="quoteAmount" type="number" required>
-      </div>
-      <button onclick="createQuote()">Create Quote</button>
+<main>
+  <!-- Service Requests -->
+  <section id="requestsTab" class="tab-content active">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Request</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="4">Loading...</td></tr>
+      </tbody>
+    </table>
+  </section>
 
-      <h2 style="margin-top:2em;">Quotes</h2>
-      <table id="quotesTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Service</th>
-            <th>Amount</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="4">Loading...</td></tr>
-        </tbody>
-      </table>
-    </section>
-    <!-- ✅ Invoices Tab -->
-    <section id="invoicesTab" class="tab-content">
-      <h2>Invoices</h2>
-      <table id="invoicesTable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Service</th>
-            <th>Amount</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="4">Loading...</td></tr>
-        </tbody>
-      </table>
-    </section>
+  <!-- Quotes -->
+  <section id="quotesTab" class="tab-content">
+    <h2>Create Quote</h2>
+    <input id="quoteName" placeholder="Customer Name"><br><br>
+    <input id="quoteEmail" placeholder="Customer Email"><br><br>
+    <textarea id="quoteService" placeholder="Service Description"></textarea><br><br>
+    <input id="quoteAmount" type="number" placeholder="Amount ($)"><br><br>
+    <button onclick="createQuote()">Create Quote</button>
+    <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
+    <table id="quotesTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Action</th></tr></thead>
+      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+    </table>
+  </section>
+  <!-- Invoices -->
+  <section id="invoicesTab" class="tab-content">
+    <h2>Invoices</h2>
+    <button onclick="exportInvoicesPDF()">📄 Export Invoices as PDF</button>
+    <table id="invoicesTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
+      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+    </table>
+  </section>
 
-    <!-- ✅ Profit Calculator Tab -->
-    <section id="profitTab" class="tab-content">
-      <h2>Auto Profit Calculator</h2>
-      <div class="form-row"><label>Service Price ($)</label><input id="price" type="number"></div>
-      <div class="form-row"><label>Labor Cost ($)</label><input id="labor" type="number"></div>
-      <div class="form-row"><label>Gas Mileage ($)</label><input id="gas" type="number"></div>
-      <div class="form-row"><label>Materials/Supplies ($)</label><input id="materials" type="number"></div>
-      <button onclick="calculateProfit()">Calculate Profit</button>
-      <h3 id="profitResult"></h3>
-    </section>
-  </main>
+  <!-- Profit Calculator -->
+  <section id="profitTab" class="tab-content">
+    <h2>Profit Calculator</h2>
+    <input id="price" placeholder="Service Price ($)"><br><br>
+    <input id="labor" placeholder="Labor Cost ($)"><br><br>
+    <input id="gas" placeholder="Gas ($)"><br><br>
+    <input id="materials" placeholder="Materials ($)"><br><br>
+    <button onclick="calculateProfit()">Calculate</button>
+    <h3 id="profitResult"></h3>
+  </section>
+</main>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-  </footer>
+<!-- Chat Modal -->
+<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
+  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
+    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
+      Chat with Customer
+      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
+    </div>
+    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
+    <div style="padding:1em; border-top:1px solid #ddd;">
+      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
+      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const db = firebase.firestore();
-    let currentUser;
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        checkAdminAccess(user.uid);
-      } else {
-        window.location.href = "login.html";
-      }
+<script>
+  const db = firebase.firestore();
+  let currentUser, currentChatRequestId = null;
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      currentUser = user;
+      checkAdminAccess(user.uid);
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  async function checkAdminAccess(uid) {
+    const doc = await db.collection("users").doc(uid).get();
+    if (doc.exists && doc.data().role === "admin") {
+      loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
+    } else {
+      alert("Access denied."); firebase.auth().signOut();
+    }
+  }
+
+  function showTab(id) {
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    event.target.classList.add("active");
+  }
+
+  function loadRequests() {
+    const tbody = document.querySelector("#requestsTable tbody");
+    db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const r = doc.data();
+        const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${r.fullName}</td>
+          <td>${r.email}</td>
+          <td>${r.notes} ${badge ? `<br><small>${badge}</small>` : ""}</td>
+          <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
+        `;
+        tbody.appendChild(row);
+      });
     });
+  }
 
-    async function checkAdminAccess(uid) {
-      const doc = await db.collection("users").doc(uid).get();
-      if (doc.exists && doc.data().role === "admin") {
-        loadRequests();
-        loadQuotes();
-        loadInvoices();
-      } else {
-        alert("Access denied.");
-        firebase.auth().signOut();
-      }
-    }
+  function createQuote() {
+    const name = quoteName.value, email = quoteEmail.value;
+    const service = quoteService.value, amount = parseFloat(quoteAmount.value);
+    db.collection("quotes").add({
+      name, email, service, amount,
+      status: "pending",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      alert("Quote created!"); loadQuotes();
+    });
+  }
 
-    function showTab(id) {
-      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      event.target.classList.add("active");
-    }
+  function loadQuotes() {
+    const tbody = document.querySelector("#quotesTable tbody");
+    db.collection("quotes").orderBy("createdAt", "desc").get().then(snapshot => {
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const q = doc.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${q.name}</td>
+          <td>${q.service}</td>
+          <td>$${q.amount.toFixed(2)}</td>
+          <td><button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    });
+  }
 
-    function loadRequests() {
-      const tbody = document.querySelector("#requestsTable tbody");
-      db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
-        tbody.innerHTML = "";
-        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No requests.</td></tr>";
+  function convertQuoteToInvoice(id, name, email, service, amount) {
+    db.collection("invoices").add({
+      name, customerEmail: email, service, amount,
+      paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      db.collection("quotes").doc(id).update({ status: "converted" });
+      alert("Converted to invoice."); loadInvoices(); loadQuotes();
+    });
+  }
+
+  function loadInvoices() {
+    const tbody = document.querySelector("#invoicesTable tbody");
+    db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
+      tbody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const i = doc.data();
+        tbody.innerHTML += `
+          <tr><td>${i.name}</td><td>${i.service}</td><td>$${i.amount.toFixed(2)}</td><td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>
+        `;
+      });
+    });
+  }
+
+  function calculateProfit() {
+    const p = parseFloat(price.value) || 0, l = parseFloat(labor.value) || 0;
+    const g = parseFloat(gas.value) || 0, m = parseFloat(materials.value) || 0;
+    const profit = p - (l + g + m);
+    profitResult.innerText = profit >= 0 ? `✅ Profit: $${profit.toFixed(2)}` : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
+  }
+
+  function toggleNotifications() {
+    const d = notifDropdown;
+    d.style.display = d.style.display === "block" ? "none" : "block";
+  }
+
+  function markAllAsRead() {
+    db.collection("service_requests").get().then(snapshot => {
+      snapshot.forEach(doc => {
+        db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+      });
+      notifBadge.style.display = "none";
+      notifList.innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+    });
+  }
+
+  function loadNotifications() {
+    notifList.innerHTML = "";
+    db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+      let unread = 0;
+      notifList.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data(), isUnread = !d.adminRead;
+        if (isUnread) unread++;
+        const preview = (d.notes || "").slice(0, 40);
+        const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
+        const div = document.createElement("div");
+        div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
+        div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
+        div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
+        notifList.appendChild(div);
+      });
+      notifBadge.innerText = unread;
+      notifBadge.style.display = unread > 0 ? "inline-block" : "none";
+    });
+  }
+
+  function openChat(id) {
+    currentChatRequestId = id;
+    chatModal.style.display = "block";
+    loadChatMessages(id);
+    db.collection("service_requests").doc(id).update({ hasUnreadFromCustomer: false });
+  }
+
+  function closeChat() {
+    chatModal.style.display = "none";
+    chatMessages.innerHTML = "";
+    currentChatRequestId = null;
+  }
+
+  function loadChatMessages(id) {
+    const box = chatMessages;
+    db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        box.innerHTML = "";
         snapshot.forEach(doc => {
-          const r = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${r.fullName}</td>
-            <td>${r.email}</td>
-            <td>${r.notes}</td>
-            <td><button onclick="convertToQuote('${r.fullName}', '${r.email}', \`${r.notes}\`)">Quote</button></td>
-          `;
-          tbody.appendChild(row);
+          const msg = doc.data(), isAdmin = msg.sender === "admin";
+          const div = document.createElement("div");
+          div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${isAdmin ? "#d1f7c4" : "#e5e5ea"}; align-self:${isAdmin ? "flex-end" : "flex-start"};`;
+          div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+          box.appendChild(div);
         });
+        box.scrollTop = box.scrollHeight;
       });
-    }
+  }
 
-    function convertToQuote(name, email, notes) {
-      document.getElementById("quoteName").value = name;
-      document.getElementById("quoteEmail").value = email;
-      document.getElementById("quoteService").value = notes;
-      showTab('quotesTab');
-    }
+  function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text || !currentChatRequestId) return;
+    db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+      text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    chatInput.value = "";
+  }
 
-    function createQuote() {
-      const name = document.getElementById("quoteName").value;
-      const email = document.getElementById("quoteEmail").value;
-      const service = document.getElementById("quoteService").value;
-      const amount = parseFloat(document.getElementById("quoteAmount").value);
+  async function exportQuotesPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Quotes", 10, 10);
+    const quotes = await db.collection("quotes").orderBy("createdAt", "desc").get();
+    let y = 20;
+    quotes.forEach((q, i) => doc.text(`${i + 1}. ${q.data().name} - ${q.data().service} - $${q.data().amount}`, 10, y += 10));
+    doc.save("Quotes.pdf");
+  }
 
-      db.collection("quotes").add({
-        name, email, service, amount,
-        status: "pending",
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        alert("Quote created!");
-        loadQuotes();
-      });
-    }
-
-    function loadQuotes() {
-      const tbody = document.querySelector("#quotesTable tbody");
-      db.collection("quotes").orderBy("createdAt", "desc").get().then(snapshot => {
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const q = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${q.name}</td>
-            <td>${q.service}</td>
-            <td>$${q.amount.toFixed(2)}</td>
-            <td>
-              <button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button>
-            </td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
-    }
-
-    function convertQuoteToInvoice(id, name, email, service, amount) {
-      db.collection("invoices").add({
-        name, customerEmail: email, service, amount,
-        paid: false,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        db.collection("quotes").doc(id).update({ status: "converted" });
-        alert("Quote converted to invoice!");
-        loadInvoices();
-        loadQuotes();
-      });
-    }
-
-    function loadInvoices() {
-      const tbody = document.querySelector("#invoicesTable tbody");
-      db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
-        tbody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const i = doc.data();
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${i.name}</td>
-            <td>${i.service}</td>
-            <td>$${i.amount.toFixed(2)}</td>
-            <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      });
-    }
-
-    function calculateProfit() {
-      const price = parseFloat(document.getElementById("price").value) || 0;
-      const labor = parseFloat(document.getElementById("labor").value) || 0;
-      const gas = parseFloat(document.getElementById("gas").value) || 0;
-      const materials = parseFloat(document.getElementById("materials").value) || 0;
-
-      const cost = labor + gas + materials;
-      const profit = price - cost;
-
-      const result = profit >= 0
-        ? `✅ Profit: $${profit.toFixed(2)}`
-        : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
-
-      document.getElementById("profitResult").innerText = result;
-    }
-  </script>
+  async function exportInvoicesPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Invoices", 10, 10);
+    const invs = await db.collection("invoices").orderBy("createdAt", "desc").get();
+    let y = 20;
+    invs.forEach((i, idx) => {
+      const d = i.data(), paid = d.paid ? "Paid" : "Unpaid";
+      doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount} - ${paid}`, 10, y += 10);
+    });
+    doc.save("Invoices.pdf");
+  }
+</script>
 
 </body>
 </html>
