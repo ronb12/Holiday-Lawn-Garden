@@ -5,136 +5,322 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
-    header img { max-height: 60px; display: block; margin: auto; }
-    .tabs { display: flex; justify-content: center; gap: 20px; margin-top: 10px; }
-    .tabs button { padding: 10px 20px; border: none; background: #228B22; color: white; cursor: pointer; }
-    .tabs button.active { background: #006400; }
-    .tab-content { display: none; padding: 20px; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { padding: 10px; border: 1px solid #ccc; }
-    th { background: #228B22; color: white; }
-    input, select, button { margin-top: 10px; padding: 8px; width: 100%; max-width: 400px; }
-    .profit-summary { background: #e8f5e9; padding: 10px; border-radius: 5px; margin-top: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f9f4;
+    }
+    header, footer {
+      background: #228B22;
+      color: white;
+      text-align: center;
+      padding: 1em;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: #228B22;
+    }
+    .tab {
+      padding: 1em;
+      color: white;
+      cursor: pointer;
+      background: #228B22;
+      border: none;
+      font-weight: bold;
+    }
+    .tab:hover, .tab.active {
+      background: #1a6b1a;
+    }
+    .tab-content {
+      display: none;
+      padding: 1.5em;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75em;
+      text-align: left;
+    }
+    th {
+      background-color: #228B22;
+      color: white;
+    }
+    .form-row {
+      margin-bottom: 1em;
+    }
+    input, select, textarea {
+      padding: 0.5em;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      background: #228B22;
+      color: white;
+      padding: 0.5em 1.5em;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1a6b1a;
+    }
   </style>
 </head>
 <body>
-<header>
-  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" />
-  <h1>Admin Dashboard</h1>
-</header>
 
-<div class="tabs">
-  <button class="tablink active" onclick="openTab('requests')">Requests</button>
-  <button class="tablink" onclick="openTab('quotes')">Quotes</button>
-  <button class="tablink" onclick="openTab('invoices')">Invoices</button>
-  <button class="tablink" onclick="openTab('profit')">Profit Calculator</button>
-</div>
+  <header>
+    <h1>Admin Dashboard</h1>
+  </header>
 
-<div id="requests" class="tab-content active">
-  <h2>Service Requests</h2>
-  <table>
-    <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th></tr></thead>
-    <tbody id="requestsTable"><tr><td colspan="4">Loading...</td></tr></tbody>
-  </table>
-</div>
-
-<div id="quotes" class="tab-content">
-  <h2>Create Quote</h2>
-  <form onsubmit="createQuote(event)">
-    <input type="email" id="quoteEmail" placeholder="Customer Email" required />
-    <input type="text" id="quoteDescription" placeholder="Quote Description" required />
-    <input type="number" id="quoteAmount" placeholder="Quote Amount ($)" required />
-    <button type="submit">Create Quote</button>
-  </form>
-
-  <h3>All Quotes</h3>
-  <table>
-    <thead><tr><th>Email</th><th>Description</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody id="quotesTable"><tr><td colspan="5">Loading...</td></tr></tbody>
-  </table>
-</div>
-
-<div id="invoices" class="tab-content">
-  <h2>Invoices</h2>
-  <table>
-    <thead><tr><th>Email</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-    <tbody id="invoicesTable"><tr><td colspan="5">Loading...</td></tr></tbody>
-  </table>
-</div>
-
-<div id="profit" class="tab-content">
-  <h2>Auto Profit Calculator</h2>
-  <form oninput="calculateProfit()">
-    <input type="number" id="labor" placeholder="Labor Cost ($)" required />
-    <input type="number" id="materials" placeholder="Material Cost ($)" required />
-    <input type="number" id="gas" placeholder="Gas Cost ($)" required />
-    <input type="number" id="margin" placeholder="Desired Profit Margin (%)" required />
-  </form>
-  <div class="profit-summary" id="profitOutput">
-    <p><strong>Total Cost:</strong> $0.00</p>
-    <p><strong>Suggested Price:</strong> $0.00</p>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('requestsTab')">Requests</button>
+    <button class="tab" onclick="showTab('quotesTab')">Quotes</button>
+    <button class="tab" onclick="showTab('invoicesTab')">Invoices</button>
+    <button class="tab" onclick="showTab('profitTab')">Profit Calculator</button>
   </div>
-  <button onclick="exportProfitPDF()">Export to PDF</button>
-</div>
 
-<footer>
-  <p>&copy; 2025 Holliday's Lawn & Garden</p>
-</footer>
+  <main>
+    <!-- ✅ Service Requests Tab -->
+    <section id="requestsTab" class="tab-content active">
+      <h2>Service Requests</h2>
+      <table id="requestsTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Request</th>
+            <th>Convert</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
 
-<script>
-  function openTab(tabId) {
-    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-    document.querySelectorAll(".tablink").forEach(btn => btn.classList.remove("active"));
-    document.getElementById(tabId).classList.add("active");
-    document.querySelector(`.tablink[onclick="openTab('${tabId}')"]`).classList.add("active");
-  }
+    <!-- ✅ Quotes Tab -->
+    <section id="quotesTab" class="tab-content">
+      <h2>Create Quote</h2>
+      <div class="form-row">
+        <label>Customer Name</label>
+        <input id="quoteName" type="text" required>
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="quoteEmail" type="email" required>
+      </div>
+      <div class="form-row">
+        <label>Service Description</label>
+        <textarea id="quoteService" rows="2" required></textarea>
+      </div>
+      <div class="form-row">
+        <label>Amount ($)</label>
+        <input id="quoteAmount" type="number" required>
+      </div>
+      <button onclick="createQuote()">Create Quote</button>
 
-  function calculateProfit() {
-    const labor = parseFloat(document.getElementById("labor").value || 0);
-    const materials = parseFloat(document.getElementById("materials").value || 0);
-    const gas = parseFloat(document.getElementById("gas").value || 0);
-    const margin = parseFloat(document.getElementById("margin").value || 0);
+      <h2 style="margin-top:2em;">Quotes</h2>
+      <table id="quotesTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Service</th>
+            <th>Amount</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <!-- ✅ Invoices Tab -->
+    <section id="invoicesTab" class="tab-content">
+      <h2>Invoices</h2>
+      <table id="invoicesTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Service</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </section>
 
-    const cost = labor + materials + gas;
-    const suggested = cost + (cost * (margin / 100));
+    <!-- ✅ Profit Calculator Tab -->
+    <section id="profitTab" class="tab-content">
+      <h2>Auto Profit Calculator</h2>
+      <div class="form-row"><label>Service Price ($)</label><input id="price" type="number"></div>
+      <div class="form-row"><label>Labor Cost ($)</label><input id="labor" type="number"></div>
+      <div class="form-row"><label>Gas Mileage ($)</label><input id="gas" type="number"></div>
+      <div class="form-row"><label>Materials/Supplies ($)</label><input id="materials" type="number"></div>
+      <button onclick="calculateProfit()">Calculate Profit</button>
+      <h3 id="profitResult"></h3>
+    </section>
+  </main>
 
-    document.getElementById("profitOutput").innerHTML = `
-      <p><strong>Total Cost:</strong> $${cost.toFixed(2)}</p>
-      <p><strong>Suggested Price:</strong> $${suggested.toFixed(2)}</p>
-    `;
-  }
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
 
-  function exportProfitPDF() {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    const labor = document.getElementById("labor").value;
-    const materials = document.getElementById("materials").value;
-    const gas = document.getElementById("gas").value;
-    const margin = document.getElementById("margin").value;
-    const output = document.getElementById("profitOutput").innerText;
+  <script>
+    const db = firebase.firestore();
+    let currentUser;
 
-    pdf.text("Auto Profit Calculator", 10, 10);
-    pdf.text(`Labor: $${labor}`, 10, 20);
-    pdf.text(`Materials: $${materials}`, 10, 30);
-    pdf.text(`Gas: $${gas}`, 10, 40);
-    pdf.text(`Margin: ${margin}%`, 10, 50);
-    pdf.text(output, 10, 60);
-    pdf.save("profit-estimate.pdf");
-  }
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        checkAdminAccess(user.uid);
+      } else {
+        window.location.href = "login.html";
+      }
+    });
 
-  function createQuote(e) {
-    e.preventDefault();
-    const email = document.getElementById("quoteEmail").value;
-    const desc = document.getElementById("quoteDescription").value;
-    const amt = parseFloat(document.getElementById("quoteAmount").value);
-    // Save to Firestore...
-    alert(`Quote created for ${email} - $${amt}`);
-  }
-</script>
+    async function checkAdminAccess(uid) {
+      const doc = await db.collection("users").doc(uid).get();
+      if (doc.exists && doc.data().role === "admin") {
+        loadRequests();
+        loadQuotes();
+        loadInvoices();
+      } else {
+        alert("Access denied.");
+        firebase.auth().signOut();
+      }
+    }
+
+    function showTab(id) {
+      document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      event.target.classList.add("active");
+    }
+
+    function loadRequests() {
+      const tbody = document.querySelector("#requestsTable tbody");
+      db.collection("service_requests").orderBy("submittedAt", "desc").get().then(snapshot => {
+        tbody.innerHTML = "";
+        if (snapshot.empty) return tbody.innerHTML = "<tr><td colspan='4'>No requests.</td></tr>";
+        snapshot.forEach(doc => {
+          const r = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${r.fullName}</td>
+            <td>${r.email}</td>
+            <td>${r.notes}</td>
+            <td><button onclick="convertToQuote('${r.fullName}', '${r.email}', \`${r.notes}\`)">Quote</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    function convertToQuote(name, email, notes) {
+      document.getElementById("quoteName").value = name;
+      document.getElementById("quoteEmail").value = email;
+      document.getElementById("quoteService").value = notes;
+      showTab('quotesTab');
+    }
+
+    function createQuote() {
+      const name = document.getElementById("quoteName").value;
+      const email = document.getElementById("quoteEmail").value;
+      const service = document.getElementById("quoteService").value;
+      const amount = parseFloat(document.getElementById("quoteAmount").value);
+
+      db.collection("quotes").add({
+        name, email, service, amount,
+        status: "pending",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        alert("Quote created!");
+        loadQuotes();
+      });
+    }
+
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").orderBy("createdAt", "desc").get().then(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${q.name}</td>
+            <td>${q.service}</td>
+            <td>$${q.amount.toFixed(2)}</td>
+            <td>
+              <button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    function convertQuoteToInvoice(id, name, email, service, amount) {
+      db.collection("invoices").add({
+        name, customerEmail: email, service, amount,
+        paid: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        db.collection("quotes").doc(id).update({ status: "converted" });
+        alert("Quote converted to invoice!");
+        loadInvoices();
+        loadQuotes();
+      });
+    }
+
+    function loadInvoices() {
+      const tbody = document.querySelector("#invoicesTable tbody");
+      db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const i = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${i.name}</td>
+            <td>${i.service}</td>
+            <td>$${i.amount.toFixed(2)}</td>
+            <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    function calculateProfit() {
+      const price = parseFloat(document.getElementById("price").value) || 0;
+      const labor = parseFloat(document.getElementById("labor").value) || 0;
+      const gas = parseFloat(document.getElementById("gas").value) || 0;
+      const materials = parseFloat(document.getElementById("materials").value) || 0;
+
+      const cost = labor + gas + materials;
+      const profit = price - cost;
+
+      const result = profit >= 0
+        ? `✅ Profit: $${profit.toFixed(2)}`
+        : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
+
+      document.getElementById("profitResult").innerText = result;
+    }
+  </script>
+
 </body>
 </html>
