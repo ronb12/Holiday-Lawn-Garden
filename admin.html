@@ -8,8 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
     body { font-family: Arial; margin: 0; background: #f4f9f4; }
@@ -18,7 +16,11 @@
       display: flex; justify-content: space-between; align-items: center;
     }
     header h1 { margin: 0; font-size: 1.5em; }
-    header button { background: white; color: #228B22; border: none; padding: 0.5em 1em; border-radius: 5px; cursor: pointer; }
+    header button {
+      background: white; color: #228B22;
+      border: none; padding: 0.5em 1em;
+      border-radius: 5px; cursor: pointer;
+    }
     nav {
       background: #f0f0f0; padding: 1em; text-align: center;
     }
@@ -26,13 +28,11 @@
       margin: 0 0.5em; padding: 0.6em 1.2em; border-radius: 5px;
       border: none; cursor: pointer;
     }
-    nav button.active {
-      background: #228B22; color: white;
-    }
+    nav button.active { background: #228B22; color: white; }
     section { display: none; padding: 1em; }
     footer {
-      background: #228B22; color: white; text-align: center; padding: 1em;
-      position: fixed; width: 100%; bottom: 0;
+      background: #228B22; color: white; text-align: center;
+      padding: 1em; position: fixed; bottom: 0; width: 100%;
     }
     .summary {
       display: flex; flex-wrap: wrap; gap: 1em; margin-top: 1em;
@@ -43,49 +43,32 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1em;
-      background: white;
+      width: 100%; border-collapse: collapse;
+      margin-top: 1em; background: white;
     }
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
+      padding: 10px; border: 1px solid #ccc;
       text-align: left;
     }
-    th {
-      background: #228B22;
-      color: white;
-    }
+    th { background: #228B22; color: white; }
     .service-row {
-      display: flex;
-      gap: 10px;
-      margin: 10px 0;
-      flex-wrap: wrap;
+      display: flex; gap: 10px; margin: 10px 0; flex-wrap: wrap;
     }
     .service-row select, .service-row input {
-      flex: 1;
-      padding: 0.5em;
+      flex: 1; padding: 0.5em;
     }
     .collapse-section {
-      margin-top: 1em;
-      padding: 1em;
+      margin-top: 1em; padding: 1em;
       border-left: 5px solid #228B22;
-      background: #f0fff0;
-      border-radius: 5px;
+      background: #f0fff0; border-radius: 5px;
     }
     .export-buttons {
-      margin-top: 1em;
-      text-align: right;
+      margin-top: 1em; text-align: right;
     }
     .export-buttons button {
-      padding: 0.5em 1em;
-      margin-left: 0.5em;
-      background: #228B22;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+      padding: 0.5em 1em; margin-left: 0.5em;
+      background: #228B22; color: white;
+      border: none; border-radius: 4px; cursor: pointer;
     }
     .export-buttons button:hover {
       background: #006400;
@@ -115,7 +98,7 @@
       <div><strong>📅 Revenue This Year:</strong> $<span id="revenueYear">0.00</span></div>
       <div><strong>📉 Total Outstanding:</strong> $<span id="totalOutstanding">0.00</span></div>
     </div>
-    <section id="section1"> <!-- Service Requests -->
+    <section id="section1">
       <h2>Service Requests</h2>
       <table id="serviceRequestsTable">
         <thead>
@@ -127,7 +110,7 @@
       </table>
     </section>
 
-    <section id="section2"> <!-- Quotes -->
+    <section id="section2">
       <h2>Quotes</h2>
       <input type="text" id="quoteSearch" placeholder="Search quotes..." oninput="filterQuotes()" />
       <table id="quotesTable">
@@ -140,7 +123,7 @@
       </table>
     </section>
 
-    <section id="section3"> <!-- Invoices -->
+    <section id="section3">
       <h2>Invoices Due</h2>
       <div class="export-buttons">
         <button onclick="exportInvoicesCSV(false)">📤 Export Unpaid</button>
@@ -168,7 +151,7 @@
       </table>
     </section>
 
-    <section id="section4"> <!-- New Job / Create Invoice -->
+    <section id="section4">
       <h2>Create Invoice</h2>
       <form id="invoiceForm" onsubmit="createInvoice(event)">
         <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
@@ -198,8 +181,10 @@
     </section>
   </main>
 
-  <footer>&copy; 2025 Holliday's Lawn & Garden</footer>
-
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden
+  </footer>
+  <!-- Firebase Scripts -->
   <script>
     const db = firebase.firestore();
     let currentUser;
@@ -343,8 +328,8 @@
               <td>${d.dueDate}</td>
               <td>${d.paid ? "Paid" : "Unpaid"}</td>
               <td>${d.paid
-                ? `<button onclick="viewInvoice('${doc.id}')">View</button>`
-                : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
+                  ? `<button onclick="viewInvoice('${doc.id}')">View</button>`
+                  : `<button onclick="markPaid('${doc.id}')">Mark Paid</button>`}
               </td>
             </tr>`;
           if (d.paid) paidBody.innerHTML += row;
@@ -405,6 +390,12 @@
         snapshot.forEach(doc => {
           const q = doc.data();
           if (q.status === "Archived") return;
+
+          // 🔁 Auto convert quote to invoice when accepted
+          if (q.status === "Accepted") {
+            createInvoiceFromQuote(doc.id, q);
+          }
+
           tbody.innerHTML += `
             <tr>
               <td>${q.fullName || "N/A"}</td>
@@ -419,6 +410,29 @@
           if (q.status === "Pending") count++;
         });
         document.getElementById("quoteCount").innerText = count;
+      });
+    }
+
+    function createInvoiceFromQuote(id, data) {
+      db.collection("invoices").where("quoteId", "==", id).get().then(snapshot => {
+        if (!snapshot.empty) return; // already invoiced
+        db.collection("invoices").add({
+          quoteId: id,
+          customerEmail: data.email,
+          invoiceNumber: "INV" + invoiceSequence++,
+          services: [{ description: data.serviceType, amount: data.amount }],
+          amountDue: data.amount,
+          dueDate: new Date().toISOString().substring(0, 10),
+          street: data.street, city: data.city, state: data.state, zip: data.zip,
+          mileage: data.mileage || 0,
+          laborers: data.laborers || 1,
+          paid: false,
+          archived: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+          db.collection("meta").doc("counters").set({ invoice: invoiceSequence }, { merge: true });
+          console.log("✅ Quote converted to invoice:", id);
+        });
       });
     }
 
@@ -458,7 +472,11 @@
       });
     }
 
-    window.onload = () => showTab("section1");
+    // Default tab
+    window.onload = () => {
+      showTab("section1");
+      addServiceRow();
+    };
   </script>
 </body>
 </html>
