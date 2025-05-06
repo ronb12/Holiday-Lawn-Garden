@@ -152,7 +152,7 @@ function loadQuotes() {
     snapshot.forEach(doc => {
       const q = doc.data();
       const row = document.createElement("tr");
-      row.innerHTML = `
+      row.innerHTML = \`
         <td>\${q.service}</td>
         <td>$\${q.amount.toFixed(2)}</td>
         <td>\${q.status || 'pending'}</td>
@@ -255,4 +255,3 @@ async function exportInvoicesPDF() {
 </script>
 </body>
 </html>
-
