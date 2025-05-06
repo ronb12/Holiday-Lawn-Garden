@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +13,7 @@
   <script src="firebase-init.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; padding: 1em; }
+    header, footer { background: #228B22; color: white; padding: 1em; position: relative; }
     .tabs { display: flex; justify-content: center; background: #228B22; }
     .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
     .tab:hover, .tab.active { background: #1a6b1a; }
@@ -24,6 +25,11 @@
     input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
+    #notifDropdown {
+      display: none; position: absolute; right: 1em; top: 4em;
+      background: white; color: black; width: 300px; max-height: 400px;
+      overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 10;
+    }
   </style>
 </head>
 <body>
@@ -34,19 +40,27 @@
     <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
       🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
     </button>
+    <div id="notifDropdown">
+      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
+      <div id="notifList"></div>
+      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
+        <button onclick="markAllAsRead()">Mark All as Read</button>
+      </div>
+    </div>
     <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
   </div>
 </header>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
-  <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
-  <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
-  <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
-</div>
-
 <main>
-  <!-- Service Requests -->
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
+    <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
+    <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
+    <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
+  </div>
+
+  <!-- Requests Tab -->
   <section id="requestsTab" class="tab-content active">
     <h2>Service Requests</h2>
     <table id="requestsTable">
@@ -55,13 +69,13 @@
     </table>
   </section>
 
-  <!-- Quote Creation -->
+  <!-- Quotes Tab -->
   <section id="quotesTab" class="tab-content">
     <h2>Create Quote</h2>
-    <input id="quoteName" placeholder="Customer Name">
-    <input id="quoteEmail" placeholder="Customer Email">
+    <input id="quoteName" placeholder="Customer Name" />
+    <input id="quoteEmail" placeholder="Customer Email" />
     <textarea id="quoteService" placeholder="Service Description"></textarea>
-    <input id="quoteAmount" type="number" placeholder="Amount ($)">
+    <input id="quoteAmount" type="number" placeholder="Amount ($)" />
     <button onclick="createQuote()">Create Quote</button>
     <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
     <table id="quotesTable">
@@ -70,7 +84,7 @@
     </table>
   </section>
 
-  <!-- Invoices -->
+  <!-- Invoices Tab -->
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
     <button onclick="exportInvoicesPDF()">📄 Export Invoices as PDF</button>
@@ -91,13 +105,14 @@
       <option value="powerwash">Pressure Washing</option>
       <option value="custom">Custom Job</option>
     </select>
-    <input id="price" placeholder="Customer Price ($)">
-    <input id="labor" placeholder="Labor Cost ($)">
-    <input id="gas" placeholder="Gas Cost ($)">
+    <input id="price" placeholder="Customer Price ($)" />
+    <input id="labor" placeholder="Labor Cost ($)" />
+    <input id="gas" placeholder="Gas Cost ($)" />
     <button onclick="calculateProfit()">Calculate</button>
     <h3 id="profitResult"></h3>
   </section>
 </main>
+
 <!-- Chat Modal -->
 <div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
   <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
@@ -112,6 +127,10 @@
     </div>
   </div>
 </div>
+
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
 
 <script>
 const db = firebase.firestore();
@@ -129,17 +148,16 @@ firebase.auth().onAuthStateChanged(user => {
 async function checkAdminAccess(uid) {
   const doc = await db.collection("users").doc(uid).get();
   if (doc.exists && doc.data().role === "admin") {
-    loadRequests();
-    loadQuotes();
-    loadInvoices();
-    loadNotifications();
+    loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
   } else {
     alert("Access denied."); firebase.auth().signOut();
   }
 }
 
 function logout() {
-  firebase.auth().signOut();
+  firebase.auth().signOut().then(() => {
+    window.location.href = "login.html";
+  });
 }
 
 function showTab(id, event) {
@@ -149,6 +167,47 @@ function showTab(id, event) {
   if (event) event.target.classList.add("active");
 }
 
+function toggleNotifications() {
+  const d = document.getElementById("notifDropdown");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+function markAllAsRead() {
+  db.collection("service_requests").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+    });
+    document.getElementById("notifBadge").style.display = "none";
+    document.getElementById("notifList").innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+  });
+}
+
+function loadNotifications() {
+  const notifList = document.getElementById("notifList");
+  const notifBadge = document.getElementById("notifBadge");
+  notifList.innerHTML = "";
+  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+    let unread = 0;
+    notifList.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const isUnread = !d.adminRead;
+      if (isUnread) unread++;
+      const preview = (d.notes || "").slice(0, 40);
+      const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
+      const div = document.createElement("div");
+      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
+      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
+      div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
+      notifList.appendChild(div);
+    });
+    notifBadge.innerText = unread;
+    notifBadge.style.display = unread > 0 ? "inline-block" : "none";
+  });
+}
+</script>
+
+<script>
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
   db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
@@ -161,8 +220,7 @@ function loadRequests() {
         <td>${r.fullName || 'N/A'}</td>
         <td>${r.email || 'N/A'}</td>
         <td>${r.notes || ''} ${badge ? `<br><small>${badge}</small>` : ""}</td>
-        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
-      `;
+        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>`;
       tbody.appendChild(row);
     });
   });
@@ -234,42 +292,6 @@ function calculateProfit() {
     : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
 }
 
-function toggleNotifications() {
-  const d = document.getElementById("notifDropdown");
-  d.style.display = d.style.display === "block" ? "none" : "block";
-}
-
-function markAllAsRead() {
-  db.collection("service_requests").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
-    });
-    notifBadge.style.display = "none";
-    notifList.innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
-  });
-}
-
-function loadNotifications() {
-  notifList.innerHTML = "";
-  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
-    let unread = 0;
-    notifList.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data(), isUnread = !d.adminRead;
-      if (isUnread) unread++;
-      const preview = (d.notes || "").slice(0, 40);
-      const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
-      const div = document.createElement("div");
-      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
-      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
-      div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
-      notifList.appendChild(div);
-    });
-    notifBadge.innerText = unread;
-    notifBadge.style.display = unread > 0 ? "inline-block" : "none";
-  });
-}
-
 function openChat(id) {
   currentChatRequestId = id;
   chatModal.style.display = "block";
@@ -334,6 +356,3 @@ async function exportInvoicesPDF() {
   doc.save("Invoices.pdf");
 }
 </script>
-
-</body>
-</html>
