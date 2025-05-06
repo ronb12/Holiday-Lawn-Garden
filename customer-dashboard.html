@@ -89,10 +89,8 @@
     <label>Email:</label><div id="displayEmail">-</div>
     <label>Phone:</label><div id="displayPhone">-</div>
     <label>Address:</label>
-    <div id="displayAddress">
-      <div id="displayStreet">-</div>
-      <div><span id="displayCity">-</span>, <span id="displayState">-</span> <span id="displayZip">-</span></div>
-    </div>
+    <div id="displayStreet">-</div>
+    <div><span id="displayCity">-</span>, <span id="displayState">-</span> <span id="displayZip">-</span></div>
   </div>
   <hr>
   <form id="editProfileForm">
@@ -106,41 +104,64 @@
     <button type="submit">Save Profile</button>
   </form>
 </div>
+<h2>New Service Request</h2>
+<form id="requestForm">
+  <input type="text" id="fullName" placeholder="Your Name" required>
+  <input type="email" id="email" placeholder="Your Email" required>
+  <select id="serviceType" required>
+    <option value="">-- Select a Service --</option>
+    <option value="🌿 Mowing & Trimming">🌿 Mowing & Trimming</option>
+    <option value="🌸 Landscape Design">🌸 Landscape Design</option>
+    <option value="🍂 Leaf Removal">🍂 Leaf Removal</option>
+    <option value="🌾 Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+    <option value="🧹 Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+    <option value="🚜 Mulching & Edging">🚜 Mulching & Edging</option>
+    <option value="🏡 Commercial Lawn Care">🏡 Commercial Lawn Care</option>
+    <option value="💦 Pressure Washing">💦 Pressure Washing</option>
+    <option value="🛠️ Custom Job">🛠️ Custom Job</option>
+  </select>
+  <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
+  <button type="submit">Send Request</button>
+</form>
 
-<!-- Continue to Part 2... -->
+<h2>Your Service Requests</h2>
+<select id="requestSelector" onchange="loadChatMessages(this.value)">
+  <option value="">-- Select a Service Request to Chat --</option>
+</select>
+<div id="chatBox" style="margin-top:1em; display:none;">
+  <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto;"></div>
+  <input type="text" id="chatInput" placeholder="Type your message...">
+  <button onclick="sendChatMessage()">Send</button>
+</div>
+
+<h2>Your Quotes</h2>
+<button onclick="exportQuotesPDF()">📄 Download Quotes PDF</button>
+<table id="quotesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
+
+<h2>Your Invoices</h2>
+<button onclick="exportInvoicesPDF()">📄 Download Invoices PDF</button>
+<table id="invoicesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
+
+<footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 <script>
 const db = firebase.firestore();
 let currentUser = null;
+let currentChatRequestId = null;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-
-    db.collection("profiles").doc(user.uid).get().then(doc => {
-      const d = doc.exists ? doc.data() : {};
-      const addr = d.address || {};
-      // Display profile data
-      document.getElementById("displayName").innerText = d.name || "-";
-      document.getElementById("displayEmail").innerText = d.email || user.email;
-      document.getElementById("displayPhone").innerText = d.phone || "-";
-      document.getElementById("displayStreet").innerText = addr.street || "-";
-      document.getElementById("displayCity").innerText = addr.city || "-";
-      document.getElementById("displayState").innerText = addr.state || "-";
-      document.getElementById("displayZip").innerText = addr.zip || "-";
-
-      // Prefill edit form
-      document.getElementById("editName").value = d.name || "";
-      document.getElementById("editEmail").value = d.email || user.email;
-      document.getElementById("editPhone").value = d.phone || "";
-      document.getElementById("editStreet").value = addr.street || "";
-      document.getElementById("editCity").value = addr.city || "";
-      document.getElementById("editState").value = addr.state || "";
-      document.getElementById("editZip").value = addr.zip || "";
-    });
-
-    document.getElementById("email").value = user.email;
+    documElementById("email").value = user.email;
     document.getElementById("fullName").value = user.displayName || "";
 
+    loadProfile();
+    loadServiceRequests();
     loadQuotes();
     loadInvoices();
   } else {
@@ -149,7 +170,7 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 function logout() {
-  if (confirm("Are you sure you want to logout?")) firebase.auth().signOut();
+  firebase.auth().signOut();
 }
 
 function toggleProfileModal() {
@@ -160,26 +181,48 @@ function toggleProfileModal() {
   overlay.style.display = show ? "block" : "none";
 }
 
-document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
+function loadProfile() {
+  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
+    const d = doc.exists ? doc.data() : {};
+    const a = d.address || {};
+    document.getElementById("displayName").innerText = d.name || "-";
+    document.getElementById("displayEmail").innerText = d.email || currentUser.email;
+    document.getElementById("displayPhone").innerText = d.phone || "-";
+    document.getElementById("displayStreet").innerText = a.street || "-";
+    document.getElementById("displayCity").innerText = a.city || "-";
+    document.getElementById("displayState").innerText = a.state || "-";
+    document.getElementById("displayZip").innerText = a.zip || "-";
+
+    document.getElementById("editName").value = d.name || "";
+    document.getElementById("editEmail").value = d.email || currentUser.email;
+    document.getElementById("editPhone").value = d.phone || "";
+    document.getElementById("editStreet").value = a.street || "";
+    document.getElementById("editCity").value = a.city || "";
+    document.getElementById("editState").value = a.state || "";
+    document.getElementById("editZip").value = a.zip || "";
+  });
+}
+
+document.getElementById("editProfileForm").addEventListener("submit", async e => {
   e.preventDefault();
   const profile = {
-    name: document.getElementById("editName").value,
-    email: document.getElementById("editEmail").value,
-    phone: document.getElementById("editPhone").value,
+    name: editName.value,
+    email: editEmail.value,
+    phone: editPhone.value,
     address: {
-      street: document.getElementById("editStreet").value,
-      city: document.getElementById("editCity").value,
-      state: document.getElementById("editState").value,
-      zip: document.getElementById("editZip").value
+      street: editStreet.value,
+      city: editCity.value,
+      state: editState.value,
+      zip: editZip.value
     }
   };
   await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
   alert("✅ Profile updated!");
   toggleProfileModal();
-  location.reload();
+  loadProfile();
 });
 
-document.getElementById("requestForm").addEventListener("submit", async function(e) {
+document.getElementById("requestForm").addEventListener("submit", async e => {
   e.preventDefault();
   await db.collection("service_requests").add({
     fullName: fullName.value,
@@ -192,7 +235,53 @@ document.getElementById("requestForm").addEventListener("submit", async function
   });
   alert("✅ Request sent!");
   requestForm.reset();
+  loadServiceRequests();
 });
+
+function loadServiceRequests() {
+  const dropdown = document.getElementById("requestSelector");
+  dropdown.innerHTML = '<option value="">-- Select a Service Request to Chat --</option>';
+  db.collection("service_requests").where("email", "==", currentUser.email).get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const submitted = r.submittedAt?.toDate?.() || new Date();
+      const option = document.createElement("option");
+      option.value = doc.id;
+      option.textContent = `${submitted.toLocaleString()} - ${r.notes?.slice(0, 30)}`;
+      dropdown.appendChild(option);
+    });
+  });
+}
+
+function loadChatMessages(requestId) {
+  currentChatRequestId = requestId;
+  chatBox.style.display = "block";
+  const box = chatMessages;
+  db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      box.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const div = document.createElement("div");
+        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
+        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+}
+
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !currentChatRequestId) return;
+  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+    text,
+    sender: "customer",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  db.collection("service_requests").doc(currentChatRequestId).update({ hasUnreadFromCustomer: true });
+  chatInput.value = "";
+}
 
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
@@ -208,7 +297,8 @@ function loadQuotes() {
         <td>
           <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
           <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>`;
+        </td>
+      `;
       tbody.appendChild(row);
     });
   });
@@ -246,7 +336,8 @@ function loadInvoices() {
         <td>${i.service}</td>
         <td>$${i.amount.toFixed(2)}</td>
         <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>`;
+        <td><div id="paypal-${id}"></div></td>
+      `;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
@@ -295,6 +386,5 @@ async function exportInvoicesPDF() {
   doc.save("invoices.pdf");
 }
 </script>
-
 </body>
 </html>
