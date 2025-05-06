@@ -34,6 +34,20 @@
       border: none;
       cursor: pointer;
     }
+    #profileSection {
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 1em;
+    }
+    #profileSection img {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 1em;
+    }
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr { display: block; width: 100%; }
       th { text-align: left; }
@@ -47,7 +61,17 @@
   <button class="logout-btn" onclick="logout()">Logout</button>
 </h1>
 
-<div id="profileBox" style="margin-bottom: 1em; font-size: 0.95em; color: #333;"></div>
+<div id="profileSection" style="display: none;">
+  <div style="display: flex; align-items: center;">
+    <img id="avatar" src="https://via.placeholder.com/60" alt="Avatar">
+    <div>
+      <strong id="profileName">Name</strong><br>
+      <span id="profileEmail">Email</span><br>
+      <span id="profilePhone">Phone</span><br>
+      <span id="profileAddress">Address</span>
+    </div>
+  </div>
+</div>
 
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -96,7 +120,24 @@ firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById("email").value = user.email;
     document.getElementById("fullName").value = user.displayName || "";
-    document.getElementById("profileBox").innerText = `👤 Logged in as: ${user.displayName || 'Unknown'} (${user.email})`;
+
+    // Load profile
+    db.collection("profiles").doc(user.uid).get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        document.getElementById("profileName").innerText = data.name || "Unknown";
+        document.getElementById("profileEmail").innerText = data.email || user.email;
+        document.getElementById("profilePhone").innerText = data.phone || "";
+        document.getElementById("profileAddress").innerText = data.address || "";
+        document.getElementById("avatar").src = data.avatarUrl || "https://via.placeholder.com/60";
+      } else {
+        document.getElementById("profileName").innerText = "Unknown";
+        document.getElementById("profileEmail").innerText = user.email;
+        document.getElementById("avatar").src = "https://via.placeholder.com/60";
+      }
+      document.getElementById("profileSection").style.display = "block";
+    });
+
     loadQuotes();
     loadInvoices();
   } else {
