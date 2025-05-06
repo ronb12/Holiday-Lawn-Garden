@@ -1,4 +1,4 @@
-<!-- customer_dashboard.html - Full Version -->
+<!-- customer_dashboard.html - Enhanced -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,13 +17,15 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
     th { background: #228B22; color: white; }
-    input, textarea, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    input, textarea, button, select {
+      width: 100%; padding: 0.5em; margin-top: 0.5em; box-sizing: border-box;
+    }
     button { background: #228B22; color: white; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    select { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
     .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
     .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
+    #chatBox { margin-top:1em; display:none; flex-direction: column; }
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr { display: block; width: 100%; }
       th { text-align: left; }
@@ -32,12 +34,12 @@
 </head>
 <body>
   <h1>Welcome to Your Dashboard</h1>
-  <button onclick="firebase.auth().signOut()">🚪 Logout</button>
+  <button onclick="confirmLogout()">🚪 Logout</button>
 
   <h2>Start New Service Request</h2>
   <form id="requestForm">
     <input type="text" id="fullName" placeholder="Your Name" required>
-    <input type="email" id="email" placeholder="Your Email" required>
+    <input type="email" id="email" placeholder="Your Email" required readonly>
     <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
     <button type="submit">Submit Request</button>
   </form>
@@ -46,9 +48,9 @@
   <select id="requestSelector" onchange="loadChatMessages(this.value)">
     <option value="">-- Select a Service Request to Chat --</option>
   </select>
-  <div id="chatBox" style="margin-top:1em; display:none;">
-    <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto;"></div>
-    <input type="text" id="chatInput" placeholder="Type your message...">
+  <div id="chatBox" style="display:flex;">
+    <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto; margin-top:1em;"></div>
+    <input type="text" id="chatInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter'){sendChatMessage()}">
     <button onclick="sendChatMessage()">Send</button>
   </div>
 
@@ -58,7 +60,6 @@
     <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
     <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
   </table>
-
   <h2>Your Invoices</h2>
   <button onclick="exportInvoicesPDF()">📄 Download Invoices PDF</button>
   <table id="invoicesTable">
@@ -77,6 +78,7 @@ firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
     email.value = user.email;
+    fullName.value = user.displayName || "";
     loadServiceRequests();
     loadQuotes();
     loadInvoices();
@@ -84,6 +86,12 @@ firebase.auth().onAuthStateChanged(user => {
     window.location.href = "login.html";
   }
 });
+
+function confirmLogout() {
+  if (confirm("Are you sure you want to logout?")) {
+    firebase.auth().signOut();
+  }
+}
 
 document.getElementById("requestForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -117,7 +125,7 @@ function loadServiceRequests() {
 
 function loadChatMessages(requestId) {
   currentChatRequestId = requestId;
-  chatBox.style.display = "block";
+  chatBox.style.display = "flex";
   const box = chatMessages;
   db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
     .onSnapshot(snapshot => {
@@ -185,9 +193,11 @@ function approveQuote(quoteId, amount, service) {
 }
 
 function rejectQuote(quoteId) {
-  db.collection("quotes").doc(quoteId).update({ status: "rejected" }).then(() => {
-    alert("❌ Quote rejected.");
-  });
+  if (confirm("Are you sure you want to reject this quote?")) {
+    db.collection("quotes").doc(quoteId).update({ status: "rejected" }).then(() => {
+      alert("❌ Quote rejected.");
+    });
+  }
 }
 
 function loadInvoices() {
@@ -211,6 +221,8 @@ function loadInvoices() {
 }
 
 function renderPaypalButton(invoiceId, amount) {
+  const container = document.getElementById("paypal-" + invoiceId);
+  if (container.children.length) return; // Prevent re-render
   paypal.Buttons({
     createOrder: (data, actions) => {
       return actions.order.create({
@@ -222,8 +234,9 @@ function renderPaypalButton(invoiceId, amount) {
         db.collection("invoices").doc(invoiceId).update({ paid: true });
         alert("✅ Payment successful.");
       });
-    }
-  }).render("#paypal-" + invoiceId);
+    },
+    onError: err => alert("⚠️ Payment error: " + err.message)
+  }).render(container);
 }
 
 async function exportQuotesPDF() {
@@ -234,7 +247,7 @@ async function exportQuotesPDF() {
   let y = 20;
   quotes.forEach((q, i) => {
     const d = q.data();
-    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${d.status || 'pending'}`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $${d.amount.toFixed(2)} - ${d.status || 'pending'}`, 10, y += 10);
   });
   doc.save("quotes.pdf");
 }
@@ -248,7 +261,7 @@ async function exportInvoicesPDF() {
   invs.forEach((inv, i) => {
     const d = inv.data();
     const status = d.paid ? "Paid" : "Unpaid";
-    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${status}`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $${d.amount.toFixed(2)} - ${status}`, 10, y += 10);
   });
   doc.save("invoices.pdf");
 }
