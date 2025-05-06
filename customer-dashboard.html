@@ -43,7 +43,7 @@
       cursor: pointer;
       margin-right: 12px;
     }
-    #profileModal {
+    #profileModal, #paypalModal {
       display: none;
       position: fixed;
       top: 10%;
@@ -82,7 +82,8 @@
 </div>
 
 <!-- Profile Modal -->
-<div id="modalOverlay" onclick="toggleProfileModal()"></div>
+<div id="modalOverlay" onclick="toggleProfileModal(); togglePaypalModal(true)"></div>
+
 <div id="profileModal">
   <div class="profile-info" id="profileDisplay">
     <label>Name:</label><div id="displayName">-</div>
@@ -103,6 +104,13 @@
     <input type="text" id="editZip" placeholder="ZIP Code">
     <button type="submit">Save Profile</button>
   </form>
+</div>
+
+<!-- PayPal Modal -->
+<div id="paypalModal">
+  <h3>Invoice Payment</h3>
+  <div id="paypalButtonContainer" style="margin: 1em 0;"></div>
+  <button onclick="togglePaypalModal()">Close</button>
 </div>
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -153,13 +161,14 @@
 const db = firebase.firestore();
 let currentUser = null;
 let currentChatRequestId = null;
+let selectedInvoiceId = null;
+let selectedInvoiceAmount = null;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById("email").value = user.email;
-    document.getElementById("fullName").value = user.displayName || "";
-
+    email.value = user.email;
+    fullName.value = user.displayName || "";
     loadProfile();
     loadServiceRequests();
     loadQuotes();
@@ -176,10 +185,60 @@ function logout() {
 function toggleProfileModal() {
   const modal = document.getElementById("profileModal");
   const overlay = document.getElementById("modalOverlay");
-  const show = modal.style.display !== "block";
-  modal.style.display = show ? "block" : "none";
-  overlay.style.display = show ? "block" : "none";
+  const isVisible = modal.style.display === "block";
+  modal.style.display = isVisible ? "none" : "block";
+  overlay.style.display = isVisible ? "none" : "block";
 }
+
+function togglePaypalModal(closeOnly = false) {
+  const modal = document.getElementById("paypalModal");
+  const overlay = document.getElementById("modalOverlay");
+  if (closeOnly || modal.style.display === "block") {
+    modal.style.display = "none";
+    overlay.style.display = "none";
+    return;
+  }
+  modal.style.display = "block";
+  overlay.style.display = "block";
+  if (selectedInvoiceId && selectedInvoiceAmount) {
+    renderPaypalModal(selectedInvoiceId, selectedInvoiceAmount);
+  }
+}
+
+function renderPaypalModal(invoiceId, amount) {
+  const container = document.getElementById("paypalButtonContainer");
+  container.innerHTML = "";
+  paypal.Buttons({
+    createOrder: (data, actions) => actions.order.create({
+      purchase_units: [{ amount: { value: amount.toFixed(2) } }]
+    }),
+    onApprove: (data, actions) => actions.order.capture().then(() => {
+      db.collection("invoices").doc(invoiceId).update({ paid: true });
+      alert("✅ Payment successful.");
+      togglePaypalModal(true);
+    }),
+    onError: err => alert("⚠️ Payment error: " + err.message)
+  }).render(container);
+}
+
+editProfileForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const profile = {
+    name: editName.value,
+    email: editEmail.value,
+    phone: editPhone.value,
+    address: {
+      street: editStreet.value,
+      city: editCity.value,
+      state: editState.value,
+      zip: editZip.value
+    }
+  };
+  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
+  alert("✅ Profile updated!");
+  toggleProfileModal();
+  loadProfile();
+});
 
 function loadProfile() {
   db.collection("profiles").doc(currentUser.uid).get().then(doc => {
@@ -202,25 +261,6 @@ function loadProfile() {
     editZip.value = a.zip || "";
   });
 }
-
-editProfileForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const profile = {
-    name: editName.value,
-    email: editEmail.value,
-    phone: editPhone.value,
-    address: {
-      street: editStreet.value,
-      city: editCity.value,
-      state: editState.value,
-      zip: editZip.value
-    }
-  };
-  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
-  alert("✅ Profile updated!");
-  toggleProfileModal();
-  loadProfile();
-});
 
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -256,18 +296,17 @@ function loadServiceRequests() {
 function loadChatMessages(requestId) {
   currentChatRequestId = requestId;
   chatBox.style.display = "block";
-  const box = chatMessages;
   db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
     .onSnapshot(snapshot => {
-      box.innerHTML = "";
+      chatMessages.innerHTML = "";
       snapshot.forEach(doc => {
         const msg = doc.data();
         const div = document.createElement("div");
         div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
         div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-        box.appendChild(div);
+        chatMessages.appendChild(div);
       });
-      box.scrollTop = box.scrollHeight;
+      chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 }
 
@@ -343,26 +382,16 @@ function loadInvoices() {
         <td>${i.service}</td>
         <td>$${i.amount.toFixed(2)}</td>
         <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>`;
+        <td>${i.paid ? "Paid" : `<button onclick="openPaymentModal('${id}', ${i.amount})">Pay</button>`}</td>`;
       tbody.appendChild(row);
-      if (!i.paid) renderPaypalButton(id, i.amount);
     });
   });
 }
 
-function renderPaypalButton(invoiceId, amount) {
-  const container = document.getElementById("paypal-" + invoiceId);
-  if (container.children.length) return;
-  paypal.Buttons({
-    createOrder: (data, actions) => actions.order.create({
-      purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-    }),
-    onApprove: (data, actions) => actions.order.capture().then(() => {
-      db.collection("invoices").doc(invoiceId).update({ paid: true });
-      alert("✅ Payment successful.");
-    }),
-    onError: err => alert("⚠️ Payment error: " + err.message)
-  }).render(container);
+function openPaymentModal(id, amount) {
+  selectedInvoiceId = id;
+  selectedInvoiceAmount = amount;
+  togglePaypalModal();
 }
 
 async function exportQuotesPDF() {
