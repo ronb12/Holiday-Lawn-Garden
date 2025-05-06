@@ -250,8 +250,7 @@ async function exportInvoicesPDF() {
     const status = d.paid ? "Paid" : "Unpaid";
     doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${status}\`, 10, y += 10);
   });
-  doc.save("invoices.pdf");
-}
+
 </script>
 </body>
 </html>
