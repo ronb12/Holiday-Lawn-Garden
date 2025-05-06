@@ -157,7 +157,7 @@ let currentChatRequestId = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    documElementById("email").value = user.email;
+    document.getElementById("email").value = user.email;
     document.getElementById("fullName").value = user.displayName || "";
 
     loadProfile();
