@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
@@ -19,239 +19,197 @@
     input, textarea, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    select { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr { display: block; width: 100%; }
+      th { text-align: left; }
+    }
     .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
     .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
     .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
-    .paypal-button-container { margin-top: 10px; }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr { display: block; width: 100%; }
-    }
   </style>
 </head>
 <body>
+  <h1>Welcome to Your Dashboard</h1>
 
-<h1>Welcome to Your Dashboard</h1>
+  <h2>New Service Request</h2>
+  <form id="requestForm">
+    <input type="text" id="fullName" placeholder="Your Name" required>
+    <input type="email" id="email" placeholder="Your Email" required>
+    <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
+    <button type="submit">Send Request</button>
+  </form>
 
-<h2>Start New Service Request</h2>
-<form id="requestForm">
-  <input type="text" id="fullName" placeholder="Your Name" required>
-  <input type="email" id="email" placeholder="Your Email" required>
-  <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
-  <button type="submit">Submit Request</button>
-</form>
+  <h2>Your Quotes</h2>
+  <button onclick="exportQuotesPDF()">📄 Download Quotes as PDF</button>
+  <table id="quotesTable">
+    <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+  </table>
 
-<h2>Your Service Requests</h2>
-<select id="requestSelector" onchange="loadChatMessages(this.value)">
-  <option value="">-- Select a Service Request to Chat --</option>
-</select>
+  <h2>Your Invoices</h2>
+  <button onclick="exportInvoicesPDF()">📄 Download Invoices as PDF</button>
+  <table id="invoicesTable">
+    <thead><tr><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
+  </table>
 
-<div id="chatBox" style="margin-top:1em; display:none;">
-  <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto;"></div>
-  <input type="text" id="chatInput" placeholder="Type your message...">
+  <h2>Chat with Admin</h2>
+  <div id="chatBox" style="border: 1px solid #ccc; padding: 1em; max-height: 300px; overflow-y: auto;"></div>
+  <input id="chatInput" placeholder="Type your message...">
   <button onclick="sendChatMessage()">Send</button>
-</div>
 
-<h2>Your Quotes</h2>
-<button onclick="exportQuotesPDF()">📄 Download Quotes PDF</button>
-<table id="quotesTable">
-  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-</table>
+  <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-<h2>Your Invoices</h2>
-<button onclick="exportInvoicesPDF()">📄 Download Invoices PDF</button>
-<table id="invoicesTable">
-  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
-  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-</table>
+  <script>
+    const db = firebase.firestore();
+    let currentUser = null;
+    let currentChatRequestId = null;
 
-<footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
-
-<script>
-const db = firebase.firestore();
-let currentUser = null;
-let currentChatRequestId = null;
-
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    loadServiceRequests();
-    loadQuotes();
-    loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
-});
-
-document.getElementById("requestForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  await db.collection("service_requests").add({
-    fullName: fullName.value,
-    email: email.value,
-    notes: message.value,
-    submittedAt: new Date(),
-    hasUnreadFromCustomer: true,
-    adminRead: false
-  });
-  alert("✅ Request sent!");
-  requestForm.reset();
-  loadServiceRequests();
-});
-
-function loadServiceRequests() {
-  const dropdown = document.getElementById("requestSelector");
-  dropdown.innerHTML = '<option value="">-- Select a Service Request to Chat --</option>';
-  db.collection("service_requests").where("email", "==", currentUser.email).get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const submitted = r.submittedAt?.toDate?.() || new Date();
-      const option = document.createElement("option");
-      option.value = doc.id;
-      option.textContent = `${submitted.toLocaleString()} - ${r.notes?.slice(0, 30) || ''}`;
-      dropdown.appendChild(option);
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadQuotes();
+        loadInvoices();
+        findRequestThread();
+      } else {
+        window.location.href = "login.html";
+      }
     });
-  });
-}
 
-function loadChatMessages(requestId) {
-  currentChatRequestId = requestId;
-  chatBox.style.display = "block";
-  const box = chatMessages;
-  db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      box.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const div = document.createElement("div");
-        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
-        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-        box.appendChild(div);
-      });
-      box.scrollTop = box.scrollHeight;
+    async function findRequestThread() {
+      const snapshot = await db.collection("service_requests").where("email", "==", currentUser.email).limit(1).get();
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        currentChatRequestId = doc.id;
+        loadChatMessages(currentChatRequestId);
+      }
+    }
+
+    document.getElementById("requestForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = {
+        fullName: fullName.value,
+        email: email.value,
+        notes: message.value,
+        submittedAt: new Date(),
+        hasUnreadFromCustomer: true,
+        adminRead: false
+      };
+      await db.collection("service_requests").add(data);
+      alert("✅ Request sent!");
+      requestForm.reset();
     });
-}
 
-function sendChatMessage() {
-  const text = chatInput.value.trim();
-  if (!text || !currentChatRequestId) return;
-  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-    text,
-    sender: "customer",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  db.collection("service_requests").doc(currentChatRequestId).update({ hasUnreadFromCustomer: true });
-  chatInput.value = "";
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${q.service}</td>
-        <td>$${q.amount.toFixed(2)}</td>
-        <td>${q.status || 'pending'}</td>
-        <td>
-          <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
-          <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
-  });
-}
-
-function approveQuote(quoteId, amount, service) {
-  db.collection("quotes").doc(quoteId).get().then(doc => {
-    const q = doc.data();
-    return db.collection("invoices").add({
-      name: q.name,
-      customerEmail: q.email,
-      service,
-      amount,
-      paid: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      return db.collection("quotes").doc(quoteId).update({ status: "approved" });
-    });
-  }).then(() => {
-    alert("✅ Quote approved.");
-  });
-}
-
-function rejectQuote(quoteId) {
-  db.collection("quotes").doc(quoteId).update({ status: "rejected" }).then(() => {
-    alert("❌ Quote rejected.");
-  });
-}
-
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const i = doc.data();
-      const id = doc.id;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${i.service}</td>
-        <td>$${i.amount.toFixed(2)}</td>
-        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}" class="paypal-button-container"></div></td>
-      `;
-      tbody.appendChild(row);
-      if (!i.paid) renderPaypalButton(id, i.amount);
-    });
-  });
-}
-
-function renderPaypalButton(invoiceId, amount) {
-  paypal.Buttons({
-    createOrder: (data, actions) => {
-      return actions.order.create({
-        purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-      });
-    },
-    onApprove: (data, actions) => {
-      return actions.order.capture().then(() => {
-        db.collection("invoices").doc(invoiceId).update({ paid: true });
-        alert("✅ Payment successful.");
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").where("email", "==", currentUser.email).onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td>\${q.service}</td>
+            <td>$\${q.amount.toFixed(2)}</td>
+            <td>\${q.status || 'pending'}</td>
+            <td><button onclick="approveQuote('\${doc.id}', \${q.amount}, '\${q.service}')" \${q.status === 'approved' ? 'disabled' : ''}>Approve</button></td>
+          \`;
+          tbody.appendChild(row);
+        });
       });
     }
-  }).render("#paypal-" + invoiceId);
-}
 
-async function exportQuotesPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Quotes", 10, 10);
-  const quotes = await db.collection("quotes").where("email", "==", currentUser.email).get();
-  let y = 20;
-  quotes.forEach((q, i) => {
-    const d = q.data();
-    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${d.status || 'pending'}`, 10, y += 10);
-  });
-  doc.save("quotes.pdf");
-}
+    function approveQuote(quoteId, amount, service) {
+      db.collection("quotes").doc(quoteId).get().then(doc => {
+        const q = doc.data();
+        return db.collection("invoices").add({
+          name: q.name,
+          customerEmail: q.email,
+          service,
+          amount,
+          paid: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }).then(() => {
+        db.collection("quotes").doc(quoteId).update({ status: "approved" });
+        alert("✅ Quote approved.");
+      });
+    }
 
-async function exportInvoicesPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Invoices", 10, 10);
-  const invs = await db.collection("invoices").where("customerEmail", "==", currentUser.email).get();
-  let y = 20;
-  invs.forEach((inv, i) => {
-    const d = inv.data();
-    const status = d.paid ? "Paid" : "Unpaid";
-    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${status}`, 10, y += 10);
-  });
-  doc.save("invoices.pdf");
-}
-</script>
+    function loadInvoices() {
+      const tbody = document.querySelector("#invoicesTable tbody");
+      db.collection("invoices").where("customerEmail", "==", currentUser.email).onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const i = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td>\${i.service}</td>
+            <td>$\${i.amount.toFixed(2)}</td>
+            <td>\${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+          \`;
+          tbody.appendChild(row);
+        });
+      });
+    }
 
+    function loadChatMessages(id) {
+      const box = document.getElementById("chatBox");
+      db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
+        .onSnapshot(snapshot => {
+          box.innerHTML = "";
+          snapshot.forEach(doc => {
+            const msg = doc.data();
+            const bubble = document.createElement("div");
+            bubble.classList.add("chat-bubble");
+            bubble.classList.add(msg.sender === "admin" ? "admin" : "customer");
+            bubble.innerHTML = \`
+              <div>\${msg.text}</div>
+              <small style="font-size:0.7em; color:gray;">\${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>
+            \`;
+            box.appendChild(bubble);
+          });
+          box.scrollTop = box.scrollHeight;
+        });
+    }
+
+    function sendChatMessage() {
+      const text = chatInput.value.trim();
+      if (!text || !currentChatRequestId) return;
+      db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+        text,
+        sender: "customer",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      db.collection("service_requests").doc(currentChatRequestId).update({ hasUnreadFromCustomer: true });
+      chatInput.value = "";
+    }
+
+    async function exportQuotesPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Quotes", 10, 10);
+      const quotes = await db.collection("quotes").where("email", "==", currentUser.email).get();
+      let y = 20;
+      quotes.forEach((q, i) => {
+        const d = q.data();
+        doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount}\`, 10, y += 10);
+      });
+      doc.save("quotes.pdf");
+    }
+
+    async function exportInvoicesPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Invoices", 10, 10);
+      const invs = await db.collection("invoices").where("customerEmail", "==", currentUser.email).get();
+      let y = 20;
+      invs.forEach((inv, i) => {
+        const d = inv.data();
+        const status = d.paid ? "Paid" : "Unpaid";
+        doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${status}\`, 10, y += 10);
+      });
+      doc.save("invoices.pdf");
+    }
+  </script>
 </body>
 </html>
