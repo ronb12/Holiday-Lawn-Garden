@@ -48,6 +48,7 @@
       object-fit: cover;
       margin-right: 1em;
     }
+    #editProfileForm input { margin-top: 0.25em; }
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr { display: block; width: 100%; }
       th { text-align: left; }
@@ -72,6 +73,15 @@
     </div>
   </div>
 </div>
+
+<h2>Edit My Profile</h2>
+<form id="editProfileForm">
+  <input type="text" id="editName" placeholder="Full Name" required>
+  <input type="text" id="editPhone" placeholder="Phone Number">
+  <input type="text" id="editAddress" placeholder="Address">
+  <input type="url" id="editAvatarUrl" placeholder="Avatar Image URL">
+  <button type="submit">Save Profile</button>
+</form>
 
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -121,8 +131,12 @@ firebase.auth().onAuthStateChanged(user => {
     document.getElementById("email").value = user.email;
     document.getElementById("fullName").value = user.displayName || "";
 
-    // Load profile
     db.collection("profiles").doc(user.uid).get().then(doc => {
+      const editName = document.getElementById("editName");
+      const editPhone = document.getElementById("editPhone");
+      const editAddress = document.getElementById("editAddress");
+      const editAvatarUrl = document.getElementById("editAvatarUrl");
+
       if (doc.exists) {
         const data = doc.data();
         document.getElementById("profileName").innerText = data.name || "Unknown";
@@ -130,11 +144,22 @@ firebase.auth().onAuthStateChanged(user => {
         document.getElementById("profilePhone").innerText = data.phone || "";
         document.getElementById("profileAddress").innerText = data.address || "";
         document.getElementById("avatar").src = data.avatarUrl || "https://via.placeholder.com/60";
+
+        editName.value = data.name || "";
+        editPhone.value = data.phone || "";
+        editAddress.value = data.address || "";
+        editAvatarUrl.value = data.avatarUrl || "";
       } else {
         document.getElementById("profileName").innerText = "Unknown";
         document.getElementById("profileEmail").innerText = user.email;
         document.getElementById("avatar").src = "https://via.placeholder.com/60";
+
+        editName.value = "";
+        editPhone.value = "";
+        editAddress.value = "";
+        editAvatarUrl.value = "";
       }
+
       document.getElementById("profileSection").style.display = "block";
     });
 
@@ -143,6 +168,21 @@ firebase.auth().onAuthStateChanged(user => {
   } else {
     window.location.href = "login.html";
   }
+});
+
+document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const uid = currentUser.uid;
+  const profileData = {
+    name: document.getElementById("editName").value,
+    phone: document.getElementById("editPhone").value,
+    address: document.getElementById("editAddress").value,
+    avatarUrl: document.getElementById("editAvatarUrl").value,
+    email: currentUser.email
+  };
+  await db.collection("profiles").doc(uid).set(profileData, { merge: true });
+  alert("✅ Profile updated!");
+  location.reload();
 });
 
 function logout() {
