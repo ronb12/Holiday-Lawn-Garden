@@ -16,19 +16,23 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
     th { background: #228B22; color: white; }
-    input, textarea, select, button { width: 100%; padding: 0.5em; margin-top: 0.5em; box-sizing: border-box; }
-    button { background: #228B22; color: white; border: none; cursor: pointer; }
+    input, textarea, select, button {
+      width: 100%; padding: 0.5em; margin-top: 0.5em; box-sizing: border-box;
+    }
+    button {
+      background: #228B22; color: white; border: none; cursor: pointer;
+      padding: 6px 12px; border-radius: 6px;
+    }
     button:hover { background: #1a6b1a; }
     .logout-btn {
       float: right;
-      background: red;
+      background: #228B22;
       color: white;
-      padding: 4px 8px;
+      padding: 6px 12px;
       font-size: 14px;
-      border-radius: 50%;
+      border-radius: 6px;
       border: none;
       cursor: pointer;
-      line-height: 1;
     }
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr { display: block; width: 100%; }
@@ -40,8 +44,10 @@
 
 <h1>
   Welcome to Your Dashboard
-  <button class="logout-btn" onclick="logout()" title="Logout">🔒</button>
+  <button class="logout-btn" onclick="logout()">Logout</button>
 </h1>
+
+<div id="profileBox" style="margin-bottom: 1em; font-size: 0.95em; color: #333;"></div>
 
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -82,16 +88,6 @@
 <footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
 <script>
-const firebaseConfig = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "XXXXXX",
-  appId: "1:XXXX:web:XXXX"
-};
-
-firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentUser = null;
 
@@ -100,6 +96,7 @@ firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     document.getElementById("email").value = user.email;
     document.getElementById("fullName").value = user.displayName || "";
+    document.getElementById("profileBox").innerText = `👤 Logged in as: ${user.displayName || 'Unknown'} (${user.email})`;
     loadQuotes();
     loadInvoices();
   } else {
@@ -113,17 +110,15 @@ function logout() {
 
 document.getElementById("requestForm").addEventListener("submit", async function(e) {
   e.preventDefault();
-
   const data = {
-    fullName: document.getElementById("fullName").value,
-    email: document.getElementById("email").value,
-    serviceType: document.getElementById("serviceType").value,
-    notes: document.getElementById("message").value,
+    fullName: fullName.value,
+    email: email.value,
+    serviceType: serviceType.value,
+    notes: message.value,
     submittedAt: new Date(),
     hasUnreadFromCustomer: true,
     adminRead: false
   };
-
   await db.collection("service_requests").add(data);
   alert("✅ Request sent!");
   requestForm.reset();
