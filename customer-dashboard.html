@@ -25,7 +25,6 @@
     }
     button:hover { background: #1a6b1a; }
     .logout-btn {
-      float: right;
       background: #228B22;
       color: white;
       padding: 6px 12px;
@@ -34,60 +33,74 @@
       border: none;
       cursor: pointer;
     }
-    #profileSection {
-      background: #fff;
-      padding: 1em;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 1em;
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    #profileSection img {
+    .profile-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    #profileModal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 300px;
+    }
+    #profileModal img {
       width: 60px;
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 1em;
+      margin-bottom: 1em;
     }
-    #editProfileForm input { margin-top: 0.25em; }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr { display: block; width: 100%; }
-      th { text-align: left; }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
     }
   </style>
 </head>
 <body>
 
-<h1>
-  Welcome to Your Dashboard
-  <button class="logout-btn" onclick="logout()">Logout</button>
-</h1>
-
-<div id="profileSection" style="display: none;">
-  <div style="display: flex; align-items: center;">
-    <img id="avatar" src="https://via.placeholder.com/60" alt="Avatar">
-    <div>
-      <strong id="profileName">Name</strong><br>
-      <span id="profileEmail">Email</span><br>
-      <span id="profilePhone">Phone</span><br>
-      <span id="profileAddress">Address</span>
-    </div>
+<div class="header-bar">
+  <h1>Welcome to Your Dashboard</h1>
+  <div style="display: flex; gap: 1em; align-items: center;">
+    <img id="profileIcon" src="customer-dashboard-assets/default-avatar.png" class="profile-icon" alt="Profile Icon" onclick="toggleProfileModal()">
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </div>
 
-<h2>Edit My Profile</h2>
-<form id="editProfileForm">
-  <input type="text" id="editName" placeholder="Full Name" required>
-  <input type="text" id="editPhone" placeholder="Phone Number">
-  <input type="text" id="editAddress" placeholder="Address">
-  <input type="url" id="editAvatarUrl" placeholder="Avatar Image URL">
-  <button type="submit">Save Profile</button>
-</form>
+<!-- Profile Modal -->
+<div id="modalOverlay" onclick="toggleProfileModal()"></div>
+<div id="profileModal">
+  <form id="editProfileForm">
+    <center><img id="modalAvatar" src="customer-dashboard-assets/default-avatar.png" alt="Avatar"></center>
+    <input type="text" id="editName" placeholder="Full Name" required>
+    <input type="text" id="editPhone" placeholder="Phone Number">
+    <input type="text" id="editAddress" placeholder="Address">
+    <input type="url" id="editAvatarUrl" placeholder="Avatar Image URL">
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
 
 <h2>New Service Request</h2>
 <form id="requestForm">
   <input type="text" id="fullName" placeholder="Your Name" required>
   <input type="email" id="email" placeholder="Your Email" required>
-
   <select id="serviceType" required>
     <option value="">-- Select a Service --</option>
     <option value="🌿 Mowing & Trimming">🌿 Mowing & Trimming</option>
@@ -100,7 +113,6 @@
     <option value="💦 Pressure Washing">💦 Pressure Washing</option>
     <option value="🛠️ Custom Job">🛠️ Custom Job</option>
   </select>
-
   <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
   <button type="submit">Send Request</button>
 </form>
@@ -137,30 +149,21 @@ firebase.auth().onAuthStateChanged(user => {
       const editAddress = document.getElementById("editAddress");
       const editAvatarUrl = document.getElementById("editAvatarUrl");
 
+      const avatarSrc = "customer-dashboard-assets/default-avatar.png";
+
       if (doc.exists) {
         const data = doc.data();
-        document.getElementById("profileName").innerText = data.name || "Unknown";
-        document.getElementById("profileEmail").innerText = data.email || user.email;
-        document.getElementById("profilePhone").innerText = data.phone || "";
-        document.getElementById("profileAddress").innerText = data.address || "";
-        document.getElementById("avatar").src = data.avatarUrl || "https://via.placeholder.com/60";
+        document.getElementById("profileIcon").src = data.avatarUrl || avatarSrc;
+        document.getElementById("modalAvatar").src = data.avatarUrl || avatarSrc;
 
         editName.value = data.name || "";
         editPhone.value = data.phone || "";
         editAddress.value = data.address || "";
         editAvatarUrl.value = data.avatarUrl || "";
       } else {
-        document.getElementById("profileName").innerText = "Unknown";
-        document.getElementById("profileEmail").innerText = user.email;
-        document.getElementById("avatar").src = "https://via.placeholder.com/60";
-
-        editName.value = "";
-        editPhone.value = "";
-        editAddress.value = "";
-        editAvatarUrl.value = "";
+        document.getElementById("profileIcon").src = avatarSrc;
+        document.getElementById("modalAvatar").src = avatarSrc;
       }
-
-      document.getElementById("profileSection").style.display = "block";
     });
 
     loadQuotes();
@@ -170,24 +173,33 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
+function logout() {
+  if (confirm("Are you sure you want to logout?")) firebase.auth().signOut();
+}
+
+function toggleProfileModal() {
+  const modal = document.getElementById("profileModal");
+  const overlay = document.getElementById("modalOverlay");
+  const isVisible = modal.style.display === "block";
+  modal.style.display = isVisible ? "none" : "block";
+  overlay.style.display = isVisible ? "none" : "block";
+}
+
 document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
   e.preventDefault();
   const uid = currentUser.uid;
-  const profileData = {
+  const data = {
     name: document.getElementById("editName").value,
     phone: document.getElementById("editPhone").value,
     address: document.getElementById("editAddress").value,
     avatarUrl: document.getElementById("editAvatarUrl").value,
     email: currentUser.email
   };
-  await db.collection("profiles").doc(uid).set(profileData, { merge: true });
+  await db.collection("profiles").doc(uid).set(data, { merge: true });
   alert("✅ Profile updated!");
+  toggleProfileModal();
   location.reload();
 });
-
-function logout() {
-  if (confirm("Are you sure you want to logout?")) firebase.auth().signOut();
-}
 
 document.getElementById("requestForm").addEventListener("submit", async function(e) {
   e.preventDefault();
