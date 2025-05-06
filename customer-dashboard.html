@@ -107,9 +107,10 @@ function loadServiceRequests() {
   db.collection("service_requests").where("email", "==", currentUser.email).get().then(snapshot => {
     snapshot.forEach(doc => {
       const r = doc.data();
+      const submitted = r.submittedAt?.toDate?.() || new Date(); // Safe fallback
       const option = document.createElement("option");
       option.value = doc.id;
-      option.textContent = `${new Date(r.submittedAt.toDate()).toLocaleString()} - ${r.notes.slice(0, 30)}`;
+      option.textContent = `${submitted.toLocaleString()} - ${r.notes?.slice(0, 30) || ''}`;
       dropdown.appendChild(option);
     });
   });
