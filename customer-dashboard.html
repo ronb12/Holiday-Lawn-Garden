@@ -25,7 +25,6 @@
     }
     button:hover { background: #1a6b1a; }
     .logout-btn {
-      float: right;
       background: #228B22;
       color: white;
       padding: 6px 12px;
@@ -34,93 +33,81 @@
       border: none;
       cursor: pointer;
     }
-    #profileSection {
-      background: #fff;
-      padding: 1em;
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .profile-toggle {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 12px;
+    }
+    #profileModal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 1.5em;
       border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 1em;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 320px;
     }
-    #profileSection img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 1em;
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
     }
-    #editProfileForm input { margin-top: 0.25em; }
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr { display: block; width: 100%; }
-      th { text-align: left; }
+    .profile-info label {
+      font-weight: bold;
+      display: block;
+      margin-top: 0.5em;
     }
   </style>
 </head>
 <body>
 
-<h1>
-  Welcome to Your Dashboard
-  <button class="logout-btn" onclick="logout()">Logout</button>
-</h1>
-
-<div id="profileSection" style="display: none;">
-  <div style="display: flex; align-items: center;">
-    <img id="avatar" src="https://via.placeholder.com/60" alt="Avatar">
-    <div>
-      <strong id="profileName">Name</strong><br>
-      <span id="profileEmail">Email</span><br>
-      <span id="profilePhone">Phone</span><br>
-      <span id="profileAddress">Address</span>
-    </div>
+<div class="header-bar">
+  <h1>Welcome to Your Dashboard</h1>
+  <div style="display: flex; gap: 1em; align-items: center;">
+    <div class="profile-toggle" onclick="toggleProfileModal()">👤</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </div>
 
-<h2>Edit My Profile</h2>
-<form id="editProfileForm">
-  <input type="text" id="editName" placeholder="Full Name" required>
-  <input type="text" id="editPhone" placeholder="Phone Number">
-  <input type="text" id="editAddress" placeholder="Address">
-  <input type="url" id="editAvatarUrl" placeholder="Avatar Image URL">
-  <button type="submit">Save Profile</button>
-</form>
+<!-- Profile Modal -->
+<div id="modalOverlay" onclick="toggleProfileModal()"></div>
+<div id="profileModal">
+  <div class="profile-info" id="profileDisplay">
+    <label>Name:</label><div id="displayName">-</div>
+    <label>Email:</label><div id="displayEmail">-</div>
+    <label>Phone:</label><div id="displayPhone">-</div>
+    <label>Address:</label>
+    <div id="displayAddress">
+      <div id="displayStreet">-</div>
+      <div><span id="displayCity">-</span>, <span id="displayState">-</span> <span id="displayZip">-</span></div>
+    </div>
+  </div>
+  <hr>
+  <form id="editProfileForm">
+    <input type="text" id="editName" placeholder="Full Name" required>
+    <input type="text" id="editEmail" placeholder="Email" required>
+    <input type="text" id="editPhone" placeholder="Phone Number">
+    <input type="text" id="editStreet" placeholder="Street Address">
+    <input type="text" id="editCity" placeholder="City">
+    <input type="text" id="editState" placeholder="State">
+    <input type="text" id="editZip" placeholder="ZIP Code">
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
 
-<h2>New Service Request</h2>
-<form id="requestForm">
-  <input type="text" id="fullName" placeholder="Your Name" required>
-  <input type="email" id="email" placeholder="Your Email" required>
-
-  <select id="serviceType" required>
-    <option value="">-- Select a Service --</option>
-    <option value="🌿 Mowing & Trimming">🌿 Mowing & Trimming</option>
-    <option value="🌸 Landscape Design">🌸 Landscape Design</option>
-    <option value="🍂 Leaf Removal">🍂 Leaf Removal</option>
-    <option value="🌾 Fertilization & Seeding">🌾 Fertilization & Seeding</option>
-    <option value="🧹 Seasonal Cleanup">🧹 Seasonal Cleanup</option>
-    <option value="🚜 Mulching & Edging">🚜 Mulching & Edging</option>
-    <option value="🏡 Commercial Lawn Care">🏡 Commercial Lawn Care</option>
-    <option value="💦 Pressure Washing">💦 Pressure Washing</option>
-    <option value="🛠️ Custom Job">🛠️ Custom Job</option>
-  </select>
-
-  <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
-  <button type="submit">Send Request</button>
-</form>
-
-<h2>Your Quotes</h2>
-<button onclick="exportQuotesPDF()">📄 Download Quotes PDF</button>
-<table id="quotesTable">
-  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-</table>
-
-<h2>Your Invoices</h2>
-<button onclick="exportInvoicesPDF()">📄 Download Invoices PDF</button>
-<table id="invoicesTable">
-  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
-  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-</table>
-
-<footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
-
+<!-- Continue to Part 2... -->
 <script>
 const db = firebase.firestore();
 let currentUser = null;
@@ -128,40 +115,31 @@ let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    document.getElementById("email").value = user.email;
-    document.getElementById("fullName").value = user.displayName || "";
 
     db.collection("profiles").doc(user.uid).get().then(doc => {
-      const editName = document.getElementById("editName");
-      const editPhone = document.getElementById("editPhone");
-      const editAddress = document.getElementById("editAddress");
-      const editAvatarUrl = document.getElementById("editAvatarUrl");
+      const d = doc.exists ? doc.data() : {};
+      const addr = d.address || {};
+      // Display profile data
+      document.getElementById("displayName").innerText = d.name || "-";
+      document.getElementById("displayEmail").innerText = d.email || user.email;
+      document.getElementById("displayPhone").innerText = d.phone || "-";
+      document.getElementById("displayStreet").innerText = addr.street || "-";
+      document.getElementById("displayCity").innerText = addr.city || "-";
+      document.getElementById("displayState").innerText = addr.state || "-";
+      document.getElementById("displayZip").innerText = addr.zip || "-";
 
-      if (doc.exists) {
-        const data = doc.data();
-        document.getElementById("profileName").innerText = data.name || "Unknown";
-        document.getElementById("profileEmail").innerText = data.email || user.email;
-        document.getElementById("profilePhone").innerText = data.phone || "";
-        document.getElementById("profileAddress").innerText = data.address || "";
-        document.getElementById("avatar").src = data.avatarUrl || "https://via.placeholder.com/60";
-
-        editName.value = data.name || "";
-        editPhone.value = data.phone || "";
-        editAddress.value = data.address || "";
-        editAvatarUrl.value = data.avatarUrl || "";
-      } else {
-        document.getElementById("profileName").innerText = "Unknown";
-        document.getElementById("profileEmail").innerText = user.email;
-        document.getElementById("avatar").src = "https://via.placeholder.com/60";
-
-        editName.value = "";
-        editPhone.value = "";
-        editAddress.value = "";
-        editAvatarUrl.value = "";
-      }
-
-      document.getElementById("profileSection").style.display = "block";
+      // Prefill edit form
+      document.getElementById("editName").value = d.name || "";
+      document.getElementById("editEmail").value = d.email || user.email;
+      document.getElementById("editPhone").value = d.phone || "";
+      document.getElementById("editStreet").value = addr.street || "";
+      document.getElementById("editCity").value = addr.city || "";
+      document.getElementById("editState").value = addr.state || "";
+      document.getElementById("editZip").value = addr.zip || "";
     });
+
+    document.getElementById("email").value = user.email;
+    document.getElementById("fullName").value = user.displayName || "";
 
     loadQuotes();
     loadInvoices();
@@ -170,28 +148,40 @@ firebase.auth().onAuthStateChanged(user => {
   }
 });
 
-document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  const uid = currentUser.uid;
-  const profileData = {
-    name: document.getElementById("editName").value,
-    phone: document.getElementById("editPhone").value,
-    address: document.getElementById("editAddress").value,
-    avatarUrl: document.getElementById("editAvatarUrl").value,
-    email: currentUser.email
-  };
-  await db.collection("profiles").doc(uid).set(profileData, { merge: true });
-  alert("✅ Profile updated!");
-  location.reload();
-});
-
 function logout() {
   if (confirm("Are you sure you want to logout?")) firebase.auth().signOut();
 }
 
+function toggleProfileModal() {
+  const modal = document.getElementById("profileModal");
+  const overlay = document.getElementById("modalOverlay");
+  const show = modal.style.display !== "block";
+  modal.style.display = show ? "block" : "none";
+  overlay.style.display = show ? "block" : "none";
+}
+
+document.getElementById("editProfileForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  const profile = {
+    name: document.getElementById("editName").value,
+    email: document.getElementById("editEmail").value,
+    phone: document.getElementById("editPhone").value,
+    address: {
+      street: document.getElementById("editStreet").value,
+      city: document.getElementById("editCity").value,
+      state: document.getElementById("editState").value,
+      zip: document.getElementById("editZip").value
+    }
+  };
+  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
+  alert("✅ Profile updated!");
+  toggleProfileModal();
+  location.reload();
+});
+
 document.getElementById("requestForm").addEventListener("submit", async function(e) {
   e.preventDefault();
-  const data = {
+  await db.collection("service_requests").add({
     fullName: fullName.value,
     email: email.value,
     serviceType: serviceType.value,
@@ -199,8 +189,7 @@ document.getElementById("requestForm").addEventListener("submit", async function
     submittedAt: new Date(),
     hasUnreadFromCustomer: true,
     adminRead: false
-  };
-  await db.collection("service_requests").add(data);
+  });
   alert("✅ Request sent!");
   requestForm.reset();
 });
@@ -219,8 +208,7 @@ function loadQuotes() {
         <td>
           <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
           <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>
-      `;
+        </td>`;
       tbody.appendChild(row);
     });
   });
@@ -258,8 +246,7 @@ function loadInvoices() {
         <td>${i.service}</td>
         <td>$${i.amount.toFixed(2)}</td>
         <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>
-      `;
+        <td><div id="paypal-${id}"></div></td>`;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
