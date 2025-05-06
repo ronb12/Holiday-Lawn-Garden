@@ -1,4 +1,3 @@
-<!-- customer_dashboard.html - Full Enhanced Version -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +7,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_REAL_PAYPAL_CLIENT_ID&currency=USD"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="firebase-init.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
     h1, h2 { color: #228B22; }
@@ -48,8 +46,8 @@
   <select id="requestSelector" onchange="loadChatMessages(this.value)">
     <option value="">-- Select a Service Request to Chat --</option>
   </select>
-  <div id="chatBox" style="display:flex;">
-    <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto; margin-top:1em;"></div>
+  <div id="chatBox">
+    <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto;"></div>
     <input type="text" id="chatInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter'){sendChatMessage()}">
     <button onclick="sendChatMessage()">Send</button>
   </div>
@@ -71,6 +69,16 @@
   <footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
 <script>
+const firebaseConfig = {
+  apiKey: "YOUR_FIREBASE_API_KEY",
+  authDomain: "YOUR_FIREBASE_PROJECT.firebaseapp.com",
+  projectId: "YOUR_FIREBASE_PROJECT_ID",
+  storageBucket: "YOUR_FIREBASE_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 let currentUser = null;
 let currentChatRequestId = null;
@@ -89,12 +97,10 @@ firebase.auth().onAuthStateChanged(user => {
 });
 
 function confirmLogout() {
-  if (confirm("Are you sure you want to logout?")) {
-    firebase.auth().signOut();
-  }
+  if (confirm("Are you sure you want to logout?")) firebase.auth().signOut();
 }
 
-document.getElementById("requestForm").addEventListener("submit", async e => {
+requestForm.addEventListener("submit", async e => {
   e.preventDefault();
   await db.collection("service_requests").add({
     fullName: fullName.value,
@@ -168,8 +174,7 @@ function loadQuotes() {
         <td>
           <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
           <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>
-      `;
+        </td>`;
       tbody.appendChild(row);
     });
   });
@@ -185,12 +190,8 @@ function approveQuote(quoteId, amount, service) {
       amount,
       paid: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      return db.collection("quotes").doc(quoteId).update({ status: "approved" });
-    });
-  }).then(() => {
-    alert("✅ Quote approved.");
-  });
+    }).then(() => db.collection("quotes").doc(quoteId).update({ status: "approved" }));
+  }).then(() => alert("✅ Quote approved."));
 }
 
 function rejectQuote(quoteId) {
@@ -213,8 +214,7 @@ function loadInvoices() {
         <td>${i.service}</td>
         <td>$${i.amount.toFixed(2)}</td>
         <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>
-      `;
+        <td><div id="paypal-${id}"></div></td>`;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
@@ -223,19 +223,13 @@ function loadInvoices() {
 
 function renderPaypalButton(invoiceId, amount) {
   const container = document.getElementById("paypal-" + invoiceId);
-  if (container.children.length) return; // Prevent duplicate renders
+  if (container.children.length) return;
   paypal.Buttons({
-    createOrder: (data, actions) => {
-      return actions.order.create({
-        purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-      });
-    },
-    onApprove: (data, actions) => {
-      return actions.order.capture().then(() => {
-        db.collection("invoices").doc(invoiceId).update({ paid: true });
-        alert("✅ Payment successful.");
-      });
-    },
+    createOrder: (data, actions) => actions.order.create({ purchase_units: [{ amount: { value: amount.toFixed(2) } }] }),
+    onApprove: (data, actions) => actions.order.capture().then(() => {
+      db.collection("invoices").doc(invoiceId).update({ paid: true });
+      alert("✅ Payment successful.");
+    }),
     onError: err => alert("⚠️ Payment error: " + err.message)
   }).render(container);
 }
