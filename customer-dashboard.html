@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,179 +15,112 @@
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
     th { background: #228B22; color: white; }
-    input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    input, textarea, select { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; margin-top: 1em; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    .chat-bubble { max-width: 75%; margin: 0.5em 0; padding: 0.6em 1em; border-radius: 1em; }
-    .chat-bubble.customer { background: #e5e5ea; align-self: flex-start; }
-    .chat-bubble.admin { background: #d1f7c4; align-self: flex-end; }
-    #chatModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1000; }
-    #chatModal .chat-container { background-color: white; width: 90%; max-width: 600px; height: 80%; margin: 5% auto; display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-    #chatModal .header { background-color: #228B22; color: white; padding: 1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-    #chatModal #chatMessages { flex: 1; padding: 1em; overflow-y: auto; background: #f9f9f9; }
-    #chatModal .footer { padding: 1em; border-top: 1px solid #ddd; }
-    #chatModal input { width: 80%; padding: 0.5em; }
   </style>
 </head>
 <body>
 
   <h1>Welcome to Your Dashboard</h1>
+  <button onclick="firebase.auth().signOut()">Logout</button>
 
-  <!-- New Request Form -->
   <h2>New Service Request</h2>
   <form id="requestForm">
     <input type="text" id="fullName" placeholder="Your Name" required><br>
     <input type="email" id="email" placeholder="Your Email" required><br>
     <input type="text" id="phone" placeholder="Phone Number"><br>
+    <select id="serviceType" required>
+      <option value="" disabled selected>Select Service Type</option>
+      <option value="Lawn Care">Lawn Care</option>
+      <option value="Mulch Install">Mulch Install</option>
+      <option value="Hedge Trimming">Hedge Trimming</option>
+      <option value="Pressure Washing">Pressure Washing</option>
+      <option value="Other">Other</option>
+    </select><br>
     <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea><br>
     <button type="submit">Send Request</button>
   </form>
 
-  <!-- Past Requests -->
   <h2>Your Requests</h2>
-  <table id="requestsTable">
-    <thead><tr><th>Submitted</th><th>Service</th><th>Chat</th></tr></thead>
-    <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
-  </table>
+  <table id="requestsTable"><thead><tr><th>Submitted</th><th>Service</th></tr></thead><tbody></tbody></table>
 
-  <!-- Chat Modal -->
-  <div id="chatModal" style="display:none;">
-    <div class="chat-container">
-      <div class="header">
-        Chat with Admin
-        <button onclick="closeChat()">✖</button>
-      </div>
-      <div id="chatMessages"></div>
-      <div class="footer">
-        <input id="chatInput" type="text" placeholder="Type your message..." />
-        <button onclick="sendChatMessage()">Send</button>
-      </div>
-    </div>
-  </div>
+  <h2>Your Quotes</h2>
+  <table id="quotesTable"><thead><tr><th>Service</th><th>Amount</th></tr></thead><tbody></tbody></table>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-  </footer>
+  <h2>Your Invoices</h2>
+  <table id="invoicesTable"><thead><tr><th>Service</th><th>Amount</th><th>Status</th></tr></thead><tbody></tbody></table>
 
-  <script>
-    const db = firebase.firestore();
-    let currentUser = null;
-    let currentChatRequestId = null;
+  <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        loadRequests();
-      } else {
-        window.location.href = "login.html";
-      }
+<script>
+const db = firebase.firestore();
+let currentUser;
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    email.value = user.email;
+    loadRequests();
+    loadQuotes();
+    loadInvoices();
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+document.getElementById("requestForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const data = {
+    fullName: fullName.value,
+    email: email.value,
+    phone: phone.value,
+    notes: message.value,
+    serviceType: serviceType.value,
+    submittedAt: new Date(),
+    adminRead: false,
+    hasUnreadFromCustomer: true
+  };
+  await db.collection("service_requests").add(data);
+  alert("✅ Request sent!");
+  requestForm.reset();
+  loadRequests();
+});
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = new Date(d.submittedAt.toDate()).toLocaleString();
+      tbody.innerHTML += `<tr><td>${date}</td><td>${d.serviceType || 'N/A'} - ${d.notes}</td></tr>`;
     });
+  });
+}
 
-    // Submit new service request
-    document.getElementById("requestForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const data = {
-        fullName: fullName.value,
-        email: email.value,
-        phone: phone.value,
-        notes: message.value,
-        serviceType: "Customer Submission",
-        submittedAt: new Date(),
-        adminRead: false,
-        hasUnreadFromCustomer: true
-      };
-      await db.collection("service_requests").add(data);
-      alert("✅ Request sent!");
-      requestForm.reset();
-      loadRequests();
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td></tr>`;
     });
+  });
+}
 
-    // Load user's requests
-    function loadRequests() {
-      const tbody = document.querySelector("#requestsTable tbody");
-      db.collection("service_requests")
-        .where("email", "==", currentUser.email)
-        .orderBy("submittedAt", "desc")
-        .onSnapshot(snapshot => {
-          tbody.innerHTML = "";
-          if (snapshot.empty) {
-            tbody.innerHTML = "<tr><td colspan='3'>No requests yet.</td></tr>";
-            return;
-          }
-          snapshot.forEach(doc => {
-            const r = doc.data();
-            const tr = document.createElement("tr");
-            const date = new Date(r.submittedAt.toDate()).toLocaleString();
-            tr.innerHTML = `
-              <td>${date}</td>
-              <td>${r.notes}</td>
-              <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>
-            `;
-            tbody.appendChild(tr);
-          });
-        });
-    }
-
-    // Open chat modal
-    function openChat(id) {
-      currentChatRequestId = id;
-      chatModal.style.display = "block";
-      loadChatMessages(id);
-    }
-
-    // Close chat modal
-    function closeChat() {
-      chatModal.style.display = "none";
-      chatMessages.innerHTML = "";
-      currentChatRequestId = null;
-    }
-
-    // Load chat messages
-    function loadChatMessages(requestId) {
-      const chatBox = document.getElementById("chatMessages");
-      chatBox.innerHTML = "";
-      db.collection("service_requests").doc(requestId)
-        .collection("messages")
-        .orderBy("timestamp")
-        .onSnapshot(snapshot => {
-          chatBox.innerHTML = "";
-          snapshot.forEach(doc => {
-            const msg = doc.data();
-            const isAdmin = msg.sender === "admin";
-            const bubble = document.createElement("div");
-            bubble.classList.add("chat-bubble");
-            bubble.classList.add(isAdmin ? "admin" : "customer");
-            bubble.innerHTML = `
-              <div>${msg.text}</div>
-              <small style="font-size:0.7em; color:gray;">
-                ${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}
-              </small>
-            `;
-            chatBox.appendChild(bubble);
-          });
-          chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll
-        });
-    }
-
-    // Send customer chat message
-    function sendChatMessage() {
-      const text = chatInput.value.trim();
-      if (!text || !currentChatRequestId) return;
-
-      db.collection("service_requests").doc(currentChatRequestId)
-        .collection("messages").add({
-          text,
-          sender: "customer",
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-      db.collection("service_requests").doc(currentChatRequestId).update({
-        hasUnreadFromCustomer: true
-      });
-
-      chatInput.value = ""; // Clear input box
-    }
-  </script>
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td>${d.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>`;
+    });
+  });
+}
+</script>
 
 </body>
 </html>
