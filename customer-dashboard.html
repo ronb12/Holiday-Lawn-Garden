@@ -106,8 +106,6 @@
     <button type="submit">Save Profile</button>
   </form>
 </div>
-
-<!-- Continue to Part 2... -->
 <script>
 const db = firebase.firestore();
 let currentUser = null;
@@ -119,7 +117,8 @@ firebase.auth().onAuthStateChanged(user => {
     db.collection("profiles").doc(user.uid).get().then(doc => {
       const d = doc.exists ? doc.data() : {};
       const addr = d.address || {};
-      // Display profile data
+
+      // Display profile values
       document.getElementById("displayName").innerText = d.name || "-";
       document.getElementById("displayEmail").innerText = d.email || user.email;
       document.getElementById("displayPhone").innerText = d.phone || "-";
@@ -128,7 +127,7 @@ firebase.auth().onAuthStateChanged(user => {
       document.getElementById("displayState").innerText = addr.state || "-";
       document.getElementById("displayZip").innerText = addr.zip || "-";
 
-      // Prefill edit form
+      // Pre-fill edit form
       document.getElementById("editName").value = d.name || "";
       document.getElementById("editEmail").value = d.email || user.email;
       document.getElementById("editPhone").value = d.phone || "";
@@ -178,123 +177,6 @@ document.getElementById("editProfileForm").addEventListener("submit", async func
   toggleProfileModal();
   location.reload();
 });
-
-document.getElementById("requestForm").addEventListener("submit", async function(e) {
-  e.preventDefault();
-  await db.collection("service_requests").add({
-    fullName: fullName.value,
-    email: email.value,
-    serviceType: serviceType.value,
-    notes: message.value,
-    submittedAt: new Date(),
-    hasUnreadFromCustomer: true,
-    adminRead: false
-  });
-  alert("✅ Request sent!");
-  requestForm.reset();
-});
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const q = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${q.service}</td>
-        <td>$${q.amount.toFixed(2)}</td>
-        <td>${q.status || 'pending'}</td>
-        <td>
-          <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
-          <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>`;
-      tbody.appendChild(row);
-    });
-  });
-}
-
-function approveQuote(quoteId, amount, service) {
-  db.collection("quotes").doc(quoteId).get().then(doc => {
-    const q = doc.data();
-    return db.collection("invoices").add({
-      name: q.name,
-      customerEmail: q.email,
-      service,
-      amount,
-      paid: false,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => db.collection("quotes").doc(quoteId).update({ status: "approved" }));
-  }).then(() => alert("✅ Quote approved."));
-}
-
-function rejectQuote(quoteId) {
-  db.collection("quotes").doc(quoteId).update({ status: "rejected" }).then(() => {
-    alert("❌ Quote rejected.");
-  });
-}
-
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const i = doc.data();
-      const id = doc.id;
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${i.service}</td>
-        <td>$${i.amount.toFixed(2)}</td>
-        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>`;
-      tbody.appendChild(row);
-      if (!i.paid) renderPaypalButton(id, i.amount);
-    });
-  });
-}
-
-function renderPaypalButton(invoiceId, amount) {
-  const container = document.getElementById("paypal-" + invoiceId);
-  if (container.children.length) return;
-  paypal.Buttons({
-    createOrder: (data, actions) => actions.order.create({
-      purchase_units: [{ amount: { value: amount.toFixed(2) } }]
-    }),
-    onApprove: (data, actions) => actions.order.capture().then(() => {
-      db.collection("invoices").doc(invoiceId).update({ paid: true });
-      alert("✅ Payment successful.");
-    }),
-    onError: err => alert("⚠️ Payment error: " + err.message)
-  }).render(container);
-}
-
-async function exportQuotesPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Quotes", 10, 10);
-  const quotes = await db.collection("quotes").where("email", "==", currentUser.email).get();
-  let y = 20;
-  quotes.forEach((q, i) => {
-    const d = q.data();
-    doc.text(`${i + 1}. ${d.service} - $${d.amount} - ${d.status || 'pending'}`, 10, y += 10);
-  });
-  doc.save("quotes.pdf");
-}
-
-async function exportInvoicesPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Invoices", 10, 10);
-  const invs = await db.collection("invoices").where("customerEmail", "==", currentUser.email).get();
-  let y = 20;
-  invs.forEach((inv, i) => {
-    const d = inv.data();
-    const status = d.paid ? "Paid" : "Unpaid";
-    doc.text(`${i + 1}. ${d.service} - $${d.amount} - ${status}`, 10, y += 10);
-  });
-  doc.save("invoices.pdf");
-}
 </script>
-
 </body>
 </html>
