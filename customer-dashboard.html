@@ -5,190 +5,146 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
-function payInvoice(invoiceId) {
-  alert("Redirecting to payment for Invoice ID: " + invoiceId);
-  // In production: Redirect to Stripe/PayPal or handle payment logic here
-}
-</script>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js">
-function payInvoice(invoiceId) {
-  alert("Redirecting to payment for Invoice ID: " + invoiceId);
-  // In production: Redirect to Stripe/PayPal or handle payment logic here
-}
-</script>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js">
-function payInvoice(invoiceId) {
-  alert("Redirecting to payment for Invoice ID: " + invoiceId);
-  // In production: Redirect to Stripe/PayPal or handle payment logic here
-}
-</script>
-
-  <script src="firebase-init.js">
-function payInvoice(invoiceId) {
-  alert("Redirecting to payment for Invoice ID: " + invoiceId);
-  // In production: Redirect to Stripe/PayPal or handle payment logic here
-}
-</script>
-
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+  <script src="firebase-init.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
     h1, h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
     th { background: #228B22; color: white; }
-    input, textarea, select { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    input, textarea { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; margin-top: 1em; cursor: pointer; }
     button:hover { background: #1a6b1a; }
   </style>
 </head>
 <body>
-
   <h1>Welcome to Your Dashboard</h1>
-  <button onclick="firebase.auth().signOut()">Logout</button>
 
   <h2>New Service Request</h2>
   <form id="requestForm">
     <input type="text" id="fullName" placeholder="Your Name" required><br>
     <input type="email" id="email" placeholder="Your Email" required><br>
-    <input type="text" id="phone" placeholder="Phone Number"><br>
-    <select id="serviceType" required>
-      <option value="" disabled selected>Select Service Type</option>
-      <option value="Lawn Care">Lawn Care</option>
-      <option value="Mulch Install">Mulch Install</option>
-      <option value="Hedge Trimming">Hedge Trimming</option>
-      <option value="Pressure Washing">Pressure Washing</option>
-      <option value="Other">Other</option>
-    </select><br>
     <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea><br>
     <button type="submit">Send Request</button>
   </form>
 
-  <h2>Your Requests</h2>
-  <table id="requestsTable"><thead><tr><th>Submitted</th><th>Service</th></tr></thead><tbody></tbody></table>
-
-  <h2>Your Quotes</h2><p>Click 'Approve' to accept a quote and generate an invoice.</p>
-  <table id="quotesTable"><thead><tr><th>Service</th><th>Amount</th><th>Action</th></tr></thead><tbody></tbody></table>
+  <h2>Your Quotes</h2>
+  <table id="quotesTable">
+    <thead><tr><th>Service</th><th>Amount</th><th>Action</th></tr></thead>
+    <tbody><tr><td colspan="3">Loading...</td></tr></tbody>
+  </table>
 
   <h2>Your Invoices</h2>
-  <table id="invoicesTable"><thead><tr><th>Service</th><th>Amount</th><th>Status</th></tr></thead><tbody></tbody></table>
+  <table id="invoicesTable">
+    <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
+    <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+  </table>
 
-  <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+  <div id="paypal-button-container"></div>
 
-<script>
-const db = firebase.firestore();
-let currentUser;
+  <script>
+    const db = firebase.firestore();
+    let currentUserEmail = "";
 
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    email.value = user.email;
-    loadRequests();
-    loadQuotes();
-
-function approveQuote(id, name, email, service, amount) {
-  db.collection("invoices").add({
-    name, customerEmail: email, service, amount,
-    paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    db.collection("quotes").doc(id).update({ status: "approved" });
-    alert("✅ Quote approved and invoice created.");
-    loadInvoices();
-    loadQuotes();
-  });
-}
-
-    loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
-});
-
-document.getElementById("requestForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const data = {
-    fullName: fullName.value,
-    email: email.value,
-    phone: phone.value,
-    notes: message.value,
-    serviceType: serviceType.value,
-    submittedAt: new Date(),
-    adminRead: false,
-    hasUnreadFromCustomer: true
-  };
-  await db.collection("service_requests").add(data);
-  alert("✅ Request sent!");
-  requestForm.reset();
-  loadRequests();
-});
-
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").where("email", "==", currentUser.email).orderBy("submittedAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const date = new Date(d.submittedAt.toDate()).toLocaleString();
-      tbody.innerHTML += `<tr><td>${date}</td><td>${d.serviceType || 'N/A'} - ${d.notes}</td></tr>`;
-    });
-  });
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").where("email", "==", currentUser.email).orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td><button onclick=\"approveQuote(\'${doc.id}\', '${d.name}', '${d.email}', '${d.service}', ${d.amount})\">Approve</button></td></tr>`;
-    });
-  });
-}
-
-function loadInvoices() {
-  const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").where("customerEmail", "==", currentUser.email).orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td><button onclick=\"approveQuote(\'${doc.id}\', '${d.name}', '${d.email}', '${d.service}', ${d.amount})\">Approve</button></td><td>${d.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>`;
-    });
-  });
-}
-
-function payInvoice(invoiceId) {
-  alert("Redirecting to payment for Invoice ID: " + invoiceId);
-  // In production: Redirect to Stripe/PayPal or handle payment logic here
-}
-</script>
-
-
-
-<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
-<div id="paypal-button-container" style="display:none; margin-top: 1em;"></div>
-<script>
-function payInvoice(invoiceId) {
-  document.getElementById("paypal-button-container").style.display = "block";
-  paypal.Buttons({
-    createOrder: function(data, actions) {
-      return actions.order.create({
-        purchase_units: [{
-          amount: { value: '20.00' } // Replace with actual amount if needed
-        }]
-      });
-    },
-    onApprove: function(data, actions) {
-      return actions.order.capture().then(function(details) {
-        alert('✅ Payment completed by ' + details.payer.name.given_name);
-        db.collection("invoices").doc(invoiceId).update({ paid: true });
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        currentUserEmail = user.email;
+        loadQuotes();
         loadInvoices();
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    function loadQuotes() {
+      const tbody = document.querySelector("#quotesTable tbody");
+      db.collection("quotes").where("email", "==", currentUserEmail).onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const q = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td>\${q.service}</td>
+            <td>$\${q.amount.toFixed(2)}</td>
+            <td><button onclick="approveQuote('\${doc.id}', \${q.amount}, '\${q.service}')">Approve</button></td>
+          \`;
+          tbody.appendChild(row);
+        });
       });
     }
-  }).render('#paypal-button-container');
-}
-</script>
 
+    function approveQuote(quoteId, amount, service) {
+      db.collection("quotes").doc(quoteId).get().then(doc => {
+        const q = doc.data();
+        return db.collection("invoices").add({
+          name: q.name,
+          customerEmail: q.email,
+          service,
+          amount,
+          paid: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }).then(() => {
+        alert("✅ Quote approved and invoice generated.");
+      });
+    }
+
+    function loadInvoices() {
+      const tbody = document.querySelector("#invoicesTable tbody");
+      db.collection("invoices").where("customerEmail", "==", currentUserEmail).onSnapshot(snapshot => {
+        tbody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const inv = doc.data();
+          const row = document.createElement("tr");
+          row.innerHTML = \`
+            <td>\${inv.service}</td>
+            <td>$\${inv.amount.toFixed(2)}</td>
+            <td>\${inv.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+            <td>\${inv.paid ? "" : "<div id='paypal-button-" + doc.id + "'></div>"}</td>
+          \`;
+          tbody.appendChild(row);
+          if (!inv.paid) {
+            renderPayPalButton(doc.id, inv.amount);
+          }
+        });
+      });
+    }
+
+    function renderPayPalButton(invoiceId, amount) {
+      paypal.Buttons({
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{ amount: { value: amount.toFixed(2) } }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(() => {
+            db.collection("invoices").doc(invoiceId).update({ paid: true });
+            alert("✅ Payment completed!");
+          });
+        }
+      }).render("#paypal-button-" + invoiceId);
+    }
+
+    document.getElementById("requestForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const data = {
+        fullName: fullName.value,
+        email: email.value,
+        notes: message.value,
+        serviceType: "Customer Submission",
+        submittedAt: new Date(),
+        adminRead: false,
+        hasUnreadFromCustomer: true
+      };
+      await db.collection("service_requests").add(data);
+      alert("✅ Request sent!");
+      requestForm.reset();
+    });
+  </script>
 </body>
 </html>
