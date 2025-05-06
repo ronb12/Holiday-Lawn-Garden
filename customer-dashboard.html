@@ -185,25 +185,25 @@ function loadProfile() {
   db.collection("profiles").doc(currentUser.uid).get().then(doc => {
     const d = doc.exists ? doc.data() : {};
     const a = d.address || {};
-    document.getElementById("displayName").innerText = d.name || "-";
-    document.getElementById("displayEmail").innerText = d.email || currentUser.email;
-    document.getElementById("displayPhone").innerText = d.phone || "-";
-    document.getElementById("displayStreet").innerText = a.street || "-";
-    document.getElementById("displayCity").innerText = a.city || "-";
-    document.getElementById("displayState").innerText = a.state || "-";
-    document.getElementById("displayZip").innerText = a.zip || "-";
+    displayName.innerText = d.name || "-";
+    displayEmail.innerText = d.email || currentUser.email;
+    displayPhone.innerText = d.phone || "-";
+    displayStreet.innerText = a.street || "-";
+    displayCity.innerText = a.city || "-";
+    displayState.innerText = a.state || "-";
+    displayZip.innerText = a.zip || "-";
 
-    document.getElementById("editName").value = d.name || "";
-    document.getElementById("editEmail").value = d.email || currentUser.email;
-    document.getElementById("editPhone").value = d.phone || "";
-    document.getElementById("editStreet").value = a.street || "";
-    document.getElementById("editCity").value = a.city || "";
-    document.getElementById("editState").value = a.state || "";
-    document.getElementById("editZip").value = a.zip || "";
+    editName.value = d.name || "";
+    editEmail.value = d.email || currentUser.email;
+    editPhone.value = d.phone || "";
+    editStreet.value = a.street || "";
+    editCity.value = a.city || "";
+    editState.value = a.state || "";
+    editZip.value = a.zip || "";
   });
 }
 
-document.getElementById("editProfileForm").addEventListener("submit", async e => {
+editProfileForm.addEventListener("submit", async e => {
   e.preventDefault();
   const profile = {
     name: editName.value,
@@ -222,7 +222,7 @@ document.getElementById("editProfileForm").addEventListener("submit", async e =>
   loadProfile();
 });
 
-document.getElementById("requestForm").addEventListener("submit", async e => {
+requestForm.addEventListener("submit", async e => {
   e.preventDefault();
   await db.collection("service_requests").add({
     fullName: fullName.value,
@@ -297,8 +297,7 @@ function loadQuotes() {
         <td>
           <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
           <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
-        </td>
-      `;
+        </td>`;
       tbody.appendChild(row);
     });
   });
@@ -306,16 +305,24 @@ function loadQuotes() {
 
 function approveQuote(quoteId, amount, service) {
   db.collection("quotes").doc(quoteId).get().then(doc => {
+    if (!doc.exists) throw new Error("Quote not found");
     const q = doc.data();
     return db.collection("invoices").add({
-      name: q.name,
+      name: q.name || q.fullName || "Unnamed",
       customerEmail: q.email,
       service,
       amount,
       paid: false,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => db.collection("quotes").doc(quoteId).update({ status: "approved" }));
-  }).then(() => alert("✅ Quote approved."));
+    }).then(() => {
+      return db.collection("quotes").doc(quoteId).update({ status: "approved" });
+    });
+  }).then(() => {
+    alert("✅ Quote approved and invoice created.");
+  }).catch(err => {
+    console.error("⚠️ Error approving quote:", err);
+    alert("❌ Could not approve quote. See console.");
+  });
 }
 
 function rejectQuote(quoteId) {
@@ -336,8 +343,7 @@ function loadInvoices() {
         <td>${i.service}</td>
         <td>$${i.amount.toFixed(2)}</td>
         <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-${id}"></div></td>
-      `;
+        <td><div id="paypal-${id}"></div></td>`;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
