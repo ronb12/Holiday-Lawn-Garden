@@ -153,14 +153,14 @@ function loadQuotes() {
       const q = doc.data();
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>\${q.service}</td>
-        <td>$\${q.amount.toFixed(2)}</td>
-        <td>\${q.status || 'pending'}</td>
+        <td>${q.service}</td>
+        <td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status || 'pending'}</td>
         <td>
-          <button onclick="approveQuote('\${doc.id}', \${q.amount}, '\${q.service}')" \${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
-          <button onclick="rejectQuote('\${doc.id}')" \${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
+          <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
+          <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button>
         </td>
-      \`;
+      `;
       tbody.appendChild(row);
     });
   });
@@ -198,12 +198,12 @@ function loadInvoices() {
       const i = doc.data();
       const id = doc.id;
       const row = document.createElement("tr");
-      row.innerHTML = \`
-        <td>\${i.service}</td>
-        <td>$\${i.amount.toFixed(2)}</td>
-        <td>\${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-\${id}" class="paypal-button-container"></div></td>
-      \`;
+      row.innerHTML = `
+        <td>${i.service}</td>
+        <td>$${i.amount.toFixed(2)}</td>
+        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+        <td><div id="paypal-${id}" class="paypal-button-container"></div></td>
+      `;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
@@ -234,7 +234,7 @@ async function exportQuotesPDF() {
   let y = 20;
   quotes.forEach((q, i) => {
     const d = q.data();
-    doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${d.status || 'pending'}\`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${d.status || 'pending'}`, 10, y += 10);
   });
   doc.save("quotes.pdf");
 }
@@ -248,9 +248,10 @@ async function exportInvoicesPDF() {
   invs.forEach((inv, i) => {
     const d = inv.data();
     const status = d.paid ? "Paid" : "Unpaid";
-    doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${status}\`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $ ${d.amount} - ${status}`, 10, y += 10);
   });
-
+  doc.save("invoices.pdf");
+}
 </script>
 </body>
 </html>
