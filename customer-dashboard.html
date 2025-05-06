@@ -5,10 +5,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js">
+function payInvoice(invoiceId) {
+  alert("Redirecting to payment for Invoice ID: " + invoiceId);
+  // In production: Redirect to Stripe/PayPal or handle payment logic here
+}
+</script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js">
+function payInvoice(invoiceId) {
+  alert("Redirecting to payment for Invoice ID: " + invoiceId);
+  // In production: Redirect to Stripe/PayPal or handle payment logic here
+}
+</script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js">
+function payInvoice(invoiceId) {
+  alert("Redirecting to payment for Invoice ID: " + invoiceId);
+  // In production: Redirect to Stripe/PayPal or handle payment logic here
+}
+</script>
+
+  <script src="firebase-init.js">
+function payInvoice(invoiceId) {
+  alert("Redirecting to payment for Invoice ID: " + invoiceId);
+  // In production: Redirect to Stripe/PayPal or handle payment logic here
+}
+</script>
+
   <style>
     body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
     h1, h2 { color: #228B22; }
@@ -45,8 +69,8 @@
   <h2>Your Requests</h2>
   <table id="requestsTable"><thead><tr><th>Submitted</th><th>Service</th></tr></thead><tbody></tbody></table>
 
-  <h2>Your Quotes</h2>
-  <table id="quotesTable"><thead><tr><th>Service</th><th>Amount</th></tr></thead><tbody></tbody></table>
+  <h2>Your Quotes</h2><p>Click 'Approve' to accept a quote and generate an invoice.</p>
+  <table id="quotesTable"><thead><tr><th>Service</th><th>Amount</th><th>Action</th></tr></thead><tbody></tbody></table>
 
   <h2>Your Invoices</h2>
   <table id="invoicesTable"><thead><tr><th>Service</th><th>Amount</th><th>Status</th></tr></thead><tbody></tbody></table>
@@ -63,6 +87,19 @@ firebase.auth().onAuthStateChanged(user => {
     email.value = user.email;
     loadRequests();
     loadQuotes();
+
+function approveQuote(id, name, email, service, amount) {
+  db.collection("invoices").add({
+    name, customerEmail: email, service, amount,
+    paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    db.collection("quotes").doc(id).update({ status: "approved" });
+    alert("✅ Quote approved and invoice created.");
+    loadInvoices();
+    loadQuotes();
+  });
+}
+
     loadInvoices();
   } else {
     window.location.href = "login.html";
@@ -105,7 +142,7 @@ function loadQuotes() {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const d = doc.data();
-      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td></tr>`;
+      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td><button onclick=\"approveQuote(\'${doc.id}\', '${d.name}', '${d.email}', '${d.service}', ${d.amount})\">Approve</button></td></tr>`;
     });
   });
 }
@@ -116,9 +153,40 @@ function loadInvoices() {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const d = doc.data();
-      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td>${d.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>`;
+      tbody.innerHTML += `<tr><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td><button onclick=\"approveQuote(\'${doc.id}\', '${d.name}', '${d.email}', '${d.service}', ${d.amount})\">Approve</button></td><td>${d.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>`;
     });
   });
+}
+
+function payInvoice(invoiceId) {
+  alert("Redirecting to payment for Invoice ID: " + invoiceId);
+  // In production: Redirect to Stripe/PayPal or handle payment logic here
+}
+</script>
+
+
+
+<script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+<div id="paypal-button-container" style="display:none; margin-top: 1em;"></div>
+<script>
+function payInvoice(invoiceId) {
+  document.getElementById("paypal-button-container").style.display = "block";
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      return actions.order.create({
+        purchase_units: [{
+          amount: { value: '20.00' } // Replace with actual amount if needed
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(function(details) {
+        alert('✅ Payment completed by ' + details.payer.name.given_name);
+        db.collection("invoices").doc(invoiceId).update({ paid: true });
+        loadInvoices();
+      });
+    }
+  }).render('#paypal-button-container');
 }
 </script>
 
