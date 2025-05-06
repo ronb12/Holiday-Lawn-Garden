@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,16 +19,25 @@
     input, textarea, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
     button { background: #228B22; color: white; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
+    .paypal-button-container { margin-top: 10px; }
+    .logout-btn {
+      float: right;
+      background: red;
+      color: white;
+      padding: 0.4em 1em;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
     @media (max-width: 600px) {
       table, thead, tbody, th, td, tr { display: block; width: 100%; }
       th { text-align: left; }
     }
-    .paypal-button-container { margin-top: 10px; }
   </style>
 </head>
 <body>
 
-<h1>Welcome to Your Dashboard</h1>
+<h1>Welcome to Your Dashboard <button class="logout-btn" onclick="logout()">Logout</button></h1>
 
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -62,12 +70,22 @@ let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
+    document.getElementById("email").value = user.email;
+    if (user.displayName) {
+      document.getElementById("fullName").value = user.displayName;
+    }
     loadQuotes();
     loadInvoices();
   } else {
     window.location.href = "login.html";
   }
 });
+
+function logout() {
+  if (confirm("Are you sure you want to logout?")) {
+    firebase.auth().signOut();
+  }
+}
 
 document.getElementById("requestForm").addEventListener("submit", async function(e) {
   e.preventDefault();
@@ -91,12 +109,12 @@ function loadQuotes() {
     snapshot.forEach(doc => {
       const q = doc.data();
       const row = document.createElement("tr");
-      row.innerHTML = \`
-        <td>\${q.service}</td>
-        <td>$\${q.amount.toFixed(2)}</td>
-        <td>\${q.status || 'pending'}</td>
-        <td><button onclick="approveQuote('\${doc.id}', \${q.amount}, '\${q.service}')" \${q.status === 'approved' ? 'disabled' : ''}>Approve</button></td>
-      \`;
+      row.innerHTML = `
+        <td>${q.service}</td>
+        <td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status || 'pending'}</td>
+        <td><button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button></td>
+      `;
       tbody.appendChild(row);
     });
   });
@@ -128,12 +146,12 @@ function loadInvoices() {
       const i = doc.data();
       const id = doc.id;
       const row = document.createElement("tr");
-      row.innerHTML = \`
-        <td>\${i.service}</td>
-        <td>$\${i.amount.toFixed(2)}</td>
-        <td>\${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        <td><div id="paypal-\${id}" class="paypal-button-container"></div></td>
-      \`;
+      row.innerHTML = `
+        <td>${i.service}</td>
+        <td>$${i.amount.toFixed(2)}</td>
+        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+        <td><div id="paypal-${id}" class="paypal-button-container"></div></td>
+      `;
       tbody.appendChild(row);
       if (!i.paid) renderPaypalButton(id, i.amount);
     });
@@ -164,7 +182,7 @@ async function exportQuotesPDF() {
   let y = 20;
   quotes.forEach((q, i) => {
     const d = q.data();
-    doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${d.status || 'pending'}\`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $${d.amount} - ${d.status || 'pending'}`, 10, y += 10);
   });
   doc.save("quotes.pdf");
 }
@@ -178,7 +196,7 @@ async function exportInvoicesPDF() {
   invs.forEach((inv, i) => {
     const d = inv.data();
     const status = d.paid ? "Paid" : "Unpaid";
-    doc.text(\`\${i + 1}. \${d.service} - $ \${d.amount} - \${status}\`, 10, y += 10);
+    doc.text(`${i + 1}. ${d.service} - $${d.amount} - ${status}`, 10, y += 10);
   });
   doc.save("invoices.pdf");
 }
