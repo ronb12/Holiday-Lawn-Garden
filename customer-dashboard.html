@@ -38,11 +38,10 @@
       justify-content: space-between;
       align-items: center;
     }
-    .profile-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+    .profile-toggle {
+      font-size: 20px;
       cursor: pointer;
+      margin-right: 12px;
     }
     #profileModal {
       display: none;
@@ -56,13 +55,6 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       z-index: 1000;
       width: 300px;
-    }
-    #profileModal img {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 1em;
     }
     #modalOverlay {
       display: none;
@@ -79,7 +71,7 @@
 <div class="header-bar">
   <h1>Welcome to Your Dashboard</h1>
   <div style="display: flex; gap: 1em; align-items: center;">
-    <img id="profileIcon" src="customer-dashboard-assets/default-avatar.png" class="profile-icon" alt="Profile Icon" onclick="toggleProfileModal()">
+    <div class="profile-toggle" onclick="toggleProfileModal()">👤</div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </div>
@@ -88,11 +80,9 @@
 <div id="modalOverlay" onclick="toggleProfileModal()"></div>
 <div id="profileModal">
   <form id="editProfileForm">
-    <center><img id="modalAvatar" src="customer-dashboard-assets/default-avatar.png" alt="Avatar"></center>
     <input type="text" id="editName" placeholder="Full Name" required>
     <input type="text" id="editPhone" placeholder="Phone Number">
     <input type="text" id="editAddress" placeholder="Address">
-    <input type="url" id="editAvatarUrl" placeholder="Avatar Image URL">
     <button type="submit">Save Profile</button>
   </form>
 </div>
@@ -147,22 +137,16 @@ firebase.auth().onAuthStateChanged(user => {
       const editName = document.getElementById("editName");
       const editPhone = document.getElementById("editPhone");
       const editAddress = document.getElementById("editAddress");
-      const editAvatarUrl = document.getElementById("editAvatarUrl");
-
-      const avatarSrc = "customer-dashboard-assets/default-avatar.png";
 
       if (doc.exists) {
         const data = doc.data();
-        document.getElementById("profileIcon").src = data.avatarUrl || avatarSrc;
-        document.getElementById("modalAvatar").src = data.avatarUrl || avatarSrc;
-
         editName.value = data.name || "";
         editPhone.value = data.phone || "";
         editAddress.value = data.address || "";
-        editAvatarUrl.value = data.avatarUrl || "";
       } else {
-        document.getElementById("profileIcon").src = avatarSrc;
-        document.getElementById("modalAvatar").src = avatarSrc;
+        editName.value = "";
+        editPhone.value = "";
+        editAddress.value = "";
       }
     });
 
@@ -192,13 +176,11 @@ document.getElementById("editProfileForm").addEventListener("submit", async func
     name: document.getElementById("editName").value,
     phone: document.getElementById("editPhone").value,
     address: document.getElementById("editAddress").value,
-    avatarUrl: document.getElementById("editAvatarUrl").value,
     email: currentUser.email
   };
   await db.collection("profiles").doc(uid).set(data, { merge: true });
   alert("✅ Profile updated!");
   toggleProfileModal();
-  location.reload();
 });
 
 document.getElementById("requestForm").addEventListener("submit", async function(e) {
