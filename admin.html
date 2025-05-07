@@ -20,31 +20,20 @@
     .tab-content.active { display: block; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
-    th { background-color: #228B22; color: white; position: sticky; top: 0; z-index: 2; }
-    input, textarea, select {
-      width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box;
-    }
+    th { background-color: #228B22; color: white; }
+    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    #profitBar {
-      height: 10px;
-      background: #ccc;
-      margin-top: 10px;
+    #notifDropdown {
+      display: none; position: absolute; right: 1em; top: 4em;
+      background: white; color: black; width: 300px; max-height: 400px;
+      overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 10;
     }
-    #profitValue {
-      height: 100%;
-      width: 0%;
-      background: green;
-      transition: width 0.3s ease;
+    #autoProfitBar {
+      height: 10px; background: #ccc; margin-top: 10px;
     }
-    .search-box {
-      margin-bottom: 0.5em;
-      display: flex;
-      justify-content: flex-end;
-    }
-    .search-box input {
-      width: 300px;
-      padding: 0.4em;
+    #autoProfitFill {
+      height: 100%; width: 0%; background: green;
     }
   </style>
 </head>
@@ -52,13 +41,22 @@
 
 <header style="display:flex; justify-content:space-between; align-items:center;">
   <h1 style="margin: 0 1em;">Admin Dashboard</h1>
-  <div style="margin-right: 1em;">
-    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em;">Logout</button>
+  <div style="position:relative; margin-right: 1em;">
+    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
+      🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
+    </button>
+    <div id="notifDropdown">
+      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
+      <div id="notifList"></div>
+      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
+        <button onclick="markAllAsRead()">Mark All as Read</button>
+      </div>
+    </div>
+    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
   </div>
 </header>
 
 <main>
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
     <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
@@ -66,17 +64,14 @@
     <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
   </div>
 
-  <!-- Requests Tab -->
   <section id="requestsTab" class="tab-content active">
     <h2>Service Requests</h2>
-    <div class="search-box"><input type="text" placeholder="Search requests..." onkeyup="filterTable(this, 'requestsTable')"></div>
     <table id="requestsTable">
       <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
 
-  <!-- Quotes Tab -->
   <section id="quotesTab" class="tab-content">
     <h2>Create Quote</h2>
     <input id="quoteName" placeholder="Customer Name" />
@@ -84,81 +79,188 @@
     <textarea id="quoteService" placeholder="Service Description"></textarea>
     <input id="quoteAmount" type="number" placeholder="Amount ($)" />
     <button onclick="createQuote()">Create Quote</button>
-    <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
-    <button onclick="bulkConvertQuotes()">🔁 Convert Selected to Invoices</button>
-    <div class="search-box"><input type="text" placeholder="Search quotes..." onkeyup="filterTable(this, 'quotesTable')"></div>
+    <button onclick="exportQuotesPDF()">📄 Export Quotes PDF</button>
     <table id="quotesTable">
-      <thead><tr><th>Select</th><th>Name</th><th>Service</th><th>Amount</><th>Action</th></tr></thead>
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+    </table>
+  </section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="firebase-init.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
+    header, footer { background: #228B22; color: white; padding: 1em; position: relative; }
+    .tabs { display: flex; justify-content: center; background: #228B22; }
+    .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
+    .tab:hover, .tab.active { background: #1a6b1a; }
+    .tab-content { display: none; padding: 1.5em; }
+    .tab-content.active { display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
+    th { background-color: #228B22; color: white; }
+    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
+    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
+    button:hover { background: #1a6b1a; }
+    #notifDropdown {
+      display: none; position: absolute; right: 1em; top: 4em;
+      background: white; color: black; width: 300px; max-height: 400px;
+      overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 10;
+    }
+    #autoProfitBar {
+      height: 10px; background: #ccc; margin-top: 10px;
+    }
+    #autoProfitFill {
+      height: 100%; width: 0%; background: green;
+    }
+  </style>
+</head>
+<body>
+
+<header style="display:flex; justify-content:space-between; align-items:center;">
+  <h1 style="margin: 0 1em;">Admin Dashboard</h1>
+  <div style="position:relative; margin-right: 1em;">
+    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
+      🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
+    </button>
+    <div id="notifDropdown">
+      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
+      <div id="notifList"></div>
+      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
+        <button onclick="markAllAsRead()">Mark All as Read</button>
+      </div>
+    </div>
+    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
+  </div>
+</header>
+
+<main>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
+    <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
+    <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
+    <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
+  </div>
+
+  <section id="requestsTab" class="tab-content active">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
 
-  <!-- Invoices Tab -->
+  <section id="quotesTab" class="tab-content">
+    <h2>Create Quote</h2>
+    <input id="quoteName" placeholder="Customer Name" />
+    <input id="quoteEmail" placeholder="Customer Email" />
+    <textarea id="quoteService" placeholder="Service Description"></textarea>
+    <input id="quoteAmount" type="number" placeholder="Amount ($)" />
+    <button onclick="createQuote()">Create Quote</button>
+    <button onclick="exportQuotesPDF()">📄 Export Quotes PDF</button>
+    <table id="quotesTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+    </table>
+  </section>
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
-    <button onclick="exportInvoicesPDF()">📄 Export Invoice as PDF</button>
-    <div class="search-box"><input type="text" placeholder="Search invoices..." onkeyup="filterTable(this, 'invoicesTable')"></div>
+    <button onclick="exportInvoicesPDF()">📄 Export Invoices PDF</button>
     <table id="invoicesTable">
       <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
 
-  <!-- Profit Calculator -->
   <section id="profitTab" class="tab-content">
-    <h2>Profit Calculator</h2>
-    <select id="serviceType">
-      <option value="" disabled selected>Select Service</option>
-      <option value="lawn">Lawn Mowing</option>
-      <option value="mulch">Mulch Install</option>
-      <option value="hedge">Hedge Trimming</option>
-      <option value="powerwash">Pressure Washing</option>
-      <option value="custom">Custom Job</option>
+    <h2>Auto-Profit Calculator</h2>
+    <label>Service Type</label>
+    <select id="profitService" onchange="loadServiceDefaults()">
+      <option disabled selected value="">-- Select Service --</option>
+      <option value="mowing">🌿 Mowing & Trimming</option>
+      <option value="landscape">🌸 Landscape Design</option>
+      <option value="leaves">🍂 Leaf Removal</option>
+      <option value="fertilization">🌾 Fertilization & Seeding</option>
+      <option value="cleanup">🧹 Seasonal Cleanup</option>
+      <option value="mulch">🚜 Mulching & Edging</option>
+      <option value="commercial">🏡 Commercial Lawn Care</option>
+      <option value="pressure">💦 Pressure Washing</option>
     </select>
-    <input id="price" placeholder="Customer Price ($)" />
-    <input id="labor" placeholder="Labor Cost ($)" />
-    <input id="gas" placeholder="Gas Cost ($)" />
-    <input id="overhead" placeholder="Overhead Cost ($)" />
-    <button onclick="calculateProfit()">Calculate</button>
-    <h3 id="profitResult"></h3>
-    <div id="profitBar"><div id="profitValue"></div></div>
+
+    <label>Labor Cost ($)</label>
+    <input type="number" id="laborCost" step="0.01" />
+    <label>Gas/Equipment Cost ($)</label>
+    <input type="number" id="gasCost" step="0.01" />
+    <label>Overhead Cost ($)</label>
+    <input type="number" id="overheadCost" step="0.01" />
+    <label>Guaranteed Profit ($)</label>
+    <input type="number" id="guaranteedProfit" value="30" step="0.01" />
+
+    <button onclick="calculateAutoProfit()">Calculate</button>
+    <h3 id="autoProfitResult"></h3>
+    <div id="autoProfitBar"><div id="autoProfitFill"></div></div>
   </section>
 </main>
 
-<footer style="text-align:center; padding:1em; background:#228B22; color:white;">
+<footer>
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
+
 <script>
 const db = firebase.firestore();
-let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    currentUser = user;
-    loadRequests();
-    loadQuotes();
-    loadInvoices();
-  } else {
-    window.location.href = "login.html";
-  }
+  if (!user) return location.href = "login.html";
+  loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
 });
 
-function logout() {
-  firebase.auth().signOut().then(() => window.location.href = "login.html");
-}
+function logout() { firebase.auth().signOut(); }
 
-function showTab(id, event) {
+function showTab(id, e) {
   document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.getElementById(id).classList.add("active");
-  if (event) event.target.classList.add("active");
+  if (e) e.target.classList.add("active");
 }
 
-function filterTable(input, tableId) {
-  const val = input.value.toLowerCase();
-  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    row.style.display = text.includes(val) ? "" : "none";
+function toggleNotifications() {
+  const d = document.getElementById("notifDropdown");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+
+function markAllAsRead() {
+  db.collection("service_requests").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+    });
+    document.getElementById("notifBadge").style.display = "none";
+    document.getElementById("notifList").innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+  });
+}
+
+function loadNotifications() {
+  const list = document.getElementById("notifList");
+  const badge = document.getElementById("notifBadge");
+  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+    list.innerHTML = ""; let unread = 0;
+    snapshot.forEach(doc => {
+      const d = doc.data(); if (!d.adminRead) unread++;
+      const preview = (d.notes || "").slice(0, 40);
+      const div = document.createElement("div");
+      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${!d.adminRead ? "#f9f9f9" : "#fff"};`;
+      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview}</small>`;
+      list.appendChild(div);
+    });
+    badge.innerText = unread;
+    badge.style.display = unread > 0 ? "inline-block" : "none";
   });
 }
 
@@ -168,29 +270,29 @@ function loadRequests() {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
-      const id = doc.id;
-      const status = r.status || "New";
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${r.fullName || 'N/A'}</td>
-        <td>${r.email || 'N/A'}</td>
-        <td>${r.notes || ''}</td>
-        <td>
-          <select onchange="updateStatus('${id}', this.value)">
-            <option value="New" ${status === 'New' ? 'selected' : ''}>New</option>
-            <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-            <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
-          </select>
-        </td>
-        <td><button onclick="openChat('${id}')">💬 Chat</button></td>
-      `;
+        <td>${r.fullName}</td>
+        <td>${r.email}</td>
+        <td>${r.notes}</td>
+        <td>${r.adminRead ? "Read" : "Unread"}</td>
+        <td><button>💬 Chat</button></td>`;
       tbody.appendChild(row);
     });
   });
 }
 
-function updateStatus(id, value) {
-  db.collection("service_requests").doc(id).update({ status: value });
+function createQuote() {
+  const name = quoteName.value.trim(), email = quoteEmail.value.trim();
+  const service = quoteService.value.trim(), amount = parseFloat(quoteAmount.value);
+  if (!name || !email || !service || isNaN(amount)) return alert("Please complete all fields.");
+  db.collection("quotes").add({
+    name, email, service, amount, status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Quote created.");
+    quoteName.value = quoteEmail.value = quoteService.value = quoteAmount.value = "";
+  });
 }
 
 function loadQuotes() {
@@ -199,50 +301,22 @@ function loadQuotes() {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const q = doc.data();
-      const id = doc.id;
-      tbody.innerHTML += `
-        <tr>
-          <td><input type="checkbox" class="quoteCheck" data-id="${id}" data-name="${q.name}" data-email="${q.email}" data-service="${q.service}" data-amount="${q.amount}"></td>
-          <td>${q.name}</td>
-          <td>${q.service}</td>
-          <td>$${q.amount.toFixed(2)}</td>
-          <td><button onclick="convertQuoteToInvoice('${id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
-        </tr>
-      `;
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.name}</td><td>${q.service}</td><td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status}</td>
+        <td><button onclick="convertToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Convert</button></td>`;
+      tbody.appendChild(row);
     });
   });
 }
 
-function bulkConvertQuotes() {
-  const checks = document.querySelectorAll(".quoteCheck:checked");
-  if (checks.length === 0) return alert("Select at least one quote.");
-  checks.forEach(cb => {
-    const id = cb.dataset.id;
-    convertQuoteToInvoice(id, cb.dataset.name, cb.dataset.email, cb.dataset.service, parseFloat(cb.dataset.amount));
-  });
-}
-
-function createQuote() {
-  const name = quoteName.value.trim();
-  const email = quoteEmail.value.trim();
-  const service = quoteService.value.trim();
-  const amount = parseFloat(quoteAmount.value);
-  if (!name || !email || !service || isNaN(amount)) return alert("All fields required.");
-  db.collection("quotes").add({
-    name, email, service, amount,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Quote created.");
-    quoteName.value = quoteEmail.value = quoteService.value = quoteAmount.value = "";
-  });
-}
-
-function convertQuoteToInvoice(id, name, email, service, amount) {
+function convertToInvoice(id, name, email, service, amount) {
   db.collection("invoices").add({
     name, customerEmail: email, service, amount,
     paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp()
   }).then(() => {
-    db.collection("quotes").doc(id).update({ status: "converted" });
+    db.collection("quotes").doc(id).update({ status: "approved" });
     alert("✅ Converted to invoice.");
   });
 }
@@ -252,118 +326,76 @@ function loadInvoices() {
   db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
-      const i = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${i.name}</td>
-          <td>${i.service}</td>
-          <td>$${i.amount.toFixed(2)}</td>
-          <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
-        </tr>
-      `;
+      const d = doc.data();
+      const status = d.paid ? "✅ Paid" : "❌ Unpaid";
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${d.name}</td><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td>${status}</td>`;
+      tbody.appendChild(row);
     });
   });
 }
 
-function calculateProfit() {
-  const p = parseFloat(price.value) || 0;
-  const l = parseFloat(labor.value) || 0;
-  const g = parseFloat(gas.value) || 0;
-  const o = parseFloat(overhead.value) || 0;
-  const profit = p - (l + g + o);
-  profitResult.innerText = profit >= 0
-    ? `✅ Profit: $${profit.toFixed(2)}`
-    : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
-  const percent = p > 0 ? Math.min(100, (profit / p) * 100) : 0;
-  profitValue.style.width = `${Math.abs(percent)}%`;
-  profitValue.style.backgroundColor = profit >= 0 ? "green" : "red";
-}
-</script>
-<!-- Chat Modal -->
-<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
-  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
-    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
-      Chat with Customer
-      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
-    </div>
-    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
-    <div style="padding:1em; border-top:1px solid #ddd;">
-      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
-      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
-    </div>
-  </div>
-</div>
-
-<script>
-let currentChatRequestId = null;
-
-function openChat(id) {
-  currentChatRequestId = id;
-  document.getElementById("chatModal").style.display = "block";
-  loadChatMessages(id);
-}
-
-function closeChat() {
-  document.getElementById("chatModal").style.display = "none";
-  document.getElementById("chatMessages").innerHTML = "";
-  currentChatRequestId = null;
-}
-
-function loadChatMessages(id) {
-  const box = document.getElementById("chatMessages");
-  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      box.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const div = document.createElement("div");
-        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
-        div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${msg.sender === "admin" ? "#d1f7c4" : "#e5e5ea"}; align-self:${msg.sender === "admin" ? "flex-end" : "flex-start"};`;
-        const time = new Date(msg.timestamp?.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        div.innerHTML = `<div><strong>${msg.sender === "admin" ? "Admin" : "Customer"}</strong></div><div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${time}</small>`;
-        box.appendChild(div);
-      });
-      box.scrollTop = box.scrollHeight;
-    });
-}
-
-function sendChatMessage() {
-  const text = document.getElementById("chatInput").value.trim();
-  if (!text || !currentChatRequestId) return;
-  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-    text,
-    sender: "admin",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  document.getElementById("chatInput").value = "";
-}
-
-// Export Quotes as PDF
-async function exportQuotesPDF() {
+function exportQuotesPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   doc.text("Quotes", 10, 10);
-  const quotes = await db.collection("quotes").orderBy("createdAt", "desc").get();
-  let y = 20;
-  quotes.forEach((q, i) => {
-    const d = q.data();
-    doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount}`, 10, y += 10);
+  db.collection("quotes").get().then(snapshot => {
+    let y = 20;
+    snapshot.forEach((q, i) => {
+      const d = q.data();
+      doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.status}`, 10, y += 10);
+    });
+    doc.save("quotes.pdf");
   });
-  doc.save("Quotes.pdf");
 }
 
-// Export Invoices as PDF
-async function exportInvoicesPDF() {
+function exportInvoicesPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   doc.text("Invoices", 10, 10);
-  const invs = await db.collection("invoices").orderBy("createdAt", "desc").get();
-  let y = 20;
-  invs.forEach((i, idx) => {
-    const d = i.data(), paid = d.paid ? "Paid" : "Unpaid";
-    doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount} - ${paid}`, 10, y += 10);
+  db.collection("invoices").get().then(snapshot => {
+    let y = 20;
+    snapshot.forEach((i, idx) => {
+      const d = i.data();
+      doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.paid ? "Paid" : "Unpaid"}`, 10, y += 10);
+    });
+    doc.save("invoices.pdf");
   });
-  doc.save("Invoices.pdf");
+}
+
+const serviceDefaults = {
+  mowing:       { labor: 20, gas: 5, overhead: 5 },
+  landscape:    { labor: 80, gas: 10, overhead: 10 },
+  leaves:       { labor: 40, gas: 8, overhead: 5 },
+  fertilization:{ labor: 35, gas: 5, overhead: 5 },
+  cleanup:      { labor: 60, gas: 10, overhead: 10 },
+  mulch:        { labor: 50, gas: 10, overhead: 10 },
+  commercial:   { labor: 75, gas: 15, overhead: 15 },
+  pressure:     { labor: 45, gas: 10, overhead: 10 }
+};
+
+function loadServiceDefaults() {
+  const type = profitService.value;
+  const d = serviceDefaults[type] || { labor: 0, gas: 0, overhead: 0 };
+  laborCost.value = d.labor;
+  gasCost.value = d.gas;
+  overheadCost.value = d.overhead;
+}
+
+function calculateAutoProfit() {
+  const labor = parseFloat(laborCost.value) || 0;
+  const gas = parseFloat(gasCost.value) || 0;
+  const overhead = parseFloat(overheadCost.value) || 0;
+  const profit = parseFloat(guaranteedProfit.value) || 0;
+  const cost = labor + gas + overhead;
+  const total = cost + profit;
+  const percent = (profit / total) * 100;
+  autoProfitResult.innerHTML = `
+    💼 Cost: $${cost.toFixed(2)}<br>
+    ✅ Profit: $${profit.toFixed(2)}<br>
+    💰 Suggested Price: <strong>$${total.toFixed(2)}</strong> (${percent.toFixed(1)}% margin)
+  `;
+  autoProfitFill.style.width = `${Math.min(100, percent)}%`;
 }
 </script>
 </body>
