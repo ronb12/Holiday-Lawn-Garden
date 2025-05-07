@@ -112,7 +112,7 @@
   </div>
   <hr>
   <form id="editProfileForm">
-    <input type="text" id="editName" placeholde="Full Name" required>
+    <input type="text" id="editName" placeholder="Full Name" required>
     <input type="text" id="editEmail" placeholder="Email" required>
     <input type="text" id="editPhone" placeholder="Phone Number">
     <input type="text" id="editStreet" placeholder="Street Address">
@@ -178,6 +178,7 @@
 </table>
 
 <footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+
 <script>
 const db = firebase.firestore();
 let currentUser = null;
@@ -269,7 +270,8 @@ function loadChatMessages(requestId) {
         const msg = doc.data();
         const div = document.createElement("div");
         div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
-        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        const dateTime = msg.timestamp?.toDate?.().toLocaleString() || "";
+        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${dateTime}</small>`;
         chatMessages.appendChild(div);
       });
       chatMessages.scrollTop = chatMessages.scrollHeight;
