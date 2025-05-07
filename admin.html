@@ -85,93 +85,7 @@
       <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="firebase-init.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; padding: 1em; position: relative; }
-    .tabs { display: flex; justify-content: center; background: #228B22; }
-    .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
-    .tab:hover, .tab.active { background: #1a6b1a; }
-    .tab-content { display: none; padding: 1.5em; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
-    th { background-color: #228B22; color: white; }
-    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
-    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
-    button:hover { background: #1a6b1a; }
-    #notifDropdown {
-      display: none; position: absolute; right: 1em; top: 4em;
-      background: white; color: black; width: 300px; max-height: 400px;
-      overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 10;
-    }
-    #autoProfitBar {
-      height: 10px; background: #ccc; margin-top: 10px;
-    }
-    #autoProfitFill {
-      height: 100%; width: 0%; background: green;
-    }
-  </style>
-</head>
-<body>
 
-<header style="display:flex; justify-content:space-between; align-items:center;">
-  <h1 style="margin: 0 1em;">Admin Dashboard</h1>
-  <div style="position:relative; margin-right: 1em;">
-    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
-      🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
-    </button>
-    <div id="notifDropdown">
-      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
-      <div id="notifList"></div>
-      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
-        <button onclick="markAllAsRead()">Mark All as Read</button>
-      </div>
-    </div>
-    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
-  </div>
-</header>
-
-<main>
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
-    <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
-    <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
-    <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
-  </div>
-
-  <section id="requestsTab" class="tab-content active">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-    </table>
-  </section>
-
-  <section id="quotesTab" class="tab-content">
-    <h2>Create Quote</h2>
-    <input id="quoteName" placeholder="Customer Name" />
-    <input id="quoteEmail" placeholder="Customer Email" />
-    <textarea id="quoteService" placeholder="Service Description"></textarea>
-    <input id="quoteAmount" type="number" placeholder="Amount ($)" />
-    <button onclick="createQuote()">Create Quote</button>
-    <button onclick="exportQuotesPDF()">📄 Export Quotes PDF</button>
-    <table id="quotesTable">
-      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-    </table>
-  </section>
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
     <button onclick="exportInvoicesPDF()">📄 Export Invoices PDF</button>
@@ -180,7 +94,6 @@
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
     </table>
   </section>
-
   <section id="profitTab" class="tab-content">
     <h2>Auto-Profit Calculator</h2>
     <label>Service Type</label>
