@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,14 +20,31 @@
     .tab-content.active { display: block; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
-    th { background-color: #228B22; color: white; }
-    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
+    th { background-color: #228B22; color: white; position: sticky; top: 0; z-index: 2; }
+    input, textarea, select {
+      width: 100%; padding: 0.5em; margin-bottom: 1em; box-sizing: border-box;
+    }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    #notifDropdown {
-      display: none; position: absolute; right: 1em; top: 4em;
-      background: white; color: black; width: 300px; max-height: 400px;
-      overflow-y: auto; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index: 10;
+    #profitBar {
+      height: 10px;
+      background: #ccc;
+      margin-top: 10px;
+    }
+    #profitValue {
+      height: 100%;
+      width: 0%;
+      background: green;
+      transition: width 0.3s ease;
+    }
+    .search-box {
+      margin-bottom: 0.5em;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .search-box input {
+      width: 300px;
+      padding: 0.4em;
     }
   </style>
 </head>
@@ -36,18 +52,8 @@
 
 <header style="display:flex; justify-content:space-between; align-items:center;">
   <h1 style="margin: 0 1em;">Admin Dashboard</h1>
-  <div style="position:relative; margin-right: 1em;">
-    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
-      🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
-    </button>
-    <div id="notifDropdown">
-      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
-      <div id="notifList"></div>
-      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
-        <button onclick="markAllAsRead()">Mark All as Read</button>
-      </div>
-    </div>
-    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
+  <div style="margin-right: 1em;">
+    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em;">Logout</button>
   </div>
 </header>
 
@@ -63,9 +69,10 @@
   <!-- Requests Tab -->
   <section id="requestsTab" class="tab-content active">
     <h2>Service Requests</h2>
+    <div class="search-box"><input type="text" placeholder="Search requests..." onkeyup="filterTable(this, 'requestsTable')"></div>
     <table id="requestsTable">
-      <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Actions</th></tr></thead>
-      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+      <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
 
@@ -78,16 +85,19 @@
     <input id="quoteAmount" type="number" placeholder="Amount ($)" />
     <button onclick="createQuote()">Create Quote</button>
     <button onclick="exportQuotesPDF()">📄 Export Quotes as PDF</button>
+    <button onclick="bulkConvertQuotes()">🔁 Convert Selected to Invoices</button>
+    <div class="search-box"><input type="text" placeholder="Search quotes..." onkeyup="filterTable(this, 'quotesTable')"></div>
     <table id="quotesTable">
-      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Action</th></tr></thead>
-      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+      <thead><tr><th>Select</th><th>Name</th><th>Service</th><th>Amount</><th>Action</th></tr></thead>
+      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
 
   <!-- Invoices Tab -->
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
-    <button onclick="exportInvoicesPDF()">📄 Export Invoices as PDF</button>
+    <button onclick="exportInvoicesPDF()">📄 Export Invoice as PDF</button>
+    <div class="search-box"><input type="text" placeholder="Search invoices..." onkeyup="filterTable(this, 'invoicesTable')"></div>
     <table id="invoicesTable">
       <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
       <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
@@ -108,56 +118,32 @@
     <input id="price" placeholder="Customer Price ($)" />
     <input id="labor" placeholder="Labor Cost ($)" />
     <input id="gas" placeholder="Gas Cost ($)" />
+    <input id="overhead" placeholder="Overhead Cost ($)" />
     <button onclick="calculateProfit()">Calculate</button>
     <h3 id="profitResult"></h3>
+    <div id="profitBar"><div id="profitValue"></div></div>
   </section>
 </main>
 
-<!-- Chat Modal -->
-<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
-  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
-    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
-      Chat with Customer
-      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
-    </div>
-    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
-    <div style="padding:1em; border-top:1px solid #ddd;">
-      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
-      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
-    </div>
-  </div>
-</div>
-
-<footer>
+<footer style="text-align:center; padding:1em; background:#228B22; color:white;">
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
-
 <script>
 const db = firebase.firestore();
-let currentUser, currentChatRequestId = null;
-
+let currentUser = null;
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
-    checkAdminAccess(user.uid);
+    loadRequests();
+    loadQuotes();
+    loadInvoices();
   } else {
     window.location.href = "login.html";
   }
 });
 
-async function checkAdminAccess(uid) {
-  const doc = await db.collection("users").doc(uid).get();
-  if (doc.exists && doc.data().role === "admin") {
-    loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
-  } else {
-    alert("Access denied."); firebase.auth().signOut();
-  }
-}
-
 function logout() {
-  firebase.auth().signOut().then(() => {
-    window.location.href = "login.html";
-  });
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
 }
 
 function showTab(id, event) {
@@ -167,63 +153,44 @@ function showTab(id, event) {
   if (event) event.target.classList.add("active");
 }
 
-function toggleNotifications() {
-  const d = document.getElementById("notifDropdown");
-  d.style.display = d.style.display === "block" ? "none" : "block";
-}
-
-function markAllAsRead() {
-  db.collection("service_requests").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
-    });
-    document.getElementById("notifBadge").style.display = "none";
-    document.getElementById("notifList").innerHTML = "<div style='padding:1em;'>All caught up 🎉</div>";
+function filterTable(input, tableId) {
+  const val = input.value.toLowerCase();
+  const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(val) ? "" : "none";
   });
 }
 
-function loadNotifications() {
-  const notifList = document.getElementById("notifList");
-  const notifBadge = document.getElementById("notifBadge");
-  notifList.innerHTML = "";
-  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
-    let unread = 0;
-    notifList.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const isUnread = !d.adminRead;
-      if (isUnread) unread++;
-      const preview = (d.notes || "").slice(0, 40);
-      const time = d.submittedAt?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) || "—";
-      const div = document.createElement("div");
-      div.style = `padding:0.75em; border-bottom:1px solid #eee; background:${isUnread ? "#f9f9f9" : "#fff"}; cursor:pointer;`;
-      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${preview} • ${time}</small>`;
-      div.onclick = () => { showTab('requestsTab'); openChat(doc.id); };
-      notifList.appendChild(div);
-    });
-    notifBadge.innerText = unread;
-    notifBadge.style.display = unread > 0 ? "inline-block" : "none";
-  });
-}
-</script>
-
-<script>
 function loadRequests() {
   const tbody = document.querySelector("#requestsTable tbody");
   db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const r = doc.data();
-      const badge = r.hasUnreadFromCustomer ? "🔴 New Message" : "";
+      const id = doc.id;
+      const status = r.status || "New";
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${r.fullName || 'N/A'}</td>
         <td>${r.email || 'N/A'}</td>
-        <td>${r.notes || ''} ${badge ? `<br><small>${badge}</small>` : ""}</td>
-        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>`;
+        <td>${r.notes || ''}</td>
+        <td>
+          <select onchange="updateStatus('${id}', this.value)">
+            <option value="New" ${status === 'New' ? 'selected' : ''}>New</option>
+            <option value="In Progress" ${status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+            <option value="Completed" ${status === 'Completed' ? 'selected' : ''}>Completed</option>
+          </select>
+        </td>
+        <td><button onclick="openChat('${id}')">💬 Chat</button></td>
+      `;
       tbody.appendChild(row);
     });
   });
+}
+
+function updateStatus(id, value) {
+  db.collection("service_requests").doc(id).update({ status: value });
 }
 
 function loadQuotes() {
@@ -232,15 +199,26 @@ function loadQuotes() {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const q = doc.data();
+      const id = doc.id;
       tbody.innerHTML += `
         <tr>
+          <td><input type="checkbox" class="quoteCheck" data-id="${id}" data-name="${q.name}" data-email="${q.email}" data-service="${q.service}" data-amount="${q.amount}"></td>
           <td>${q.name}</td>
           <td>${q.service}</td>
           <td>$${q.amount.toFixed(2)}</td>
-          <td><button onclick="convertQuoteToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
+          <td><button onclick="convertQuoteToInvoice('${id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Invoice</button></td>
         </tr>
       `;
     });
+  });
+}
+
+function bulkConvertQuotes() {
+  const checks = document.querySelectorAll(".quoteCheck:checked");
+  if (checks.length === 0) return alert("Select at least one quote.");
+  checks.forEach(cb => {
+    const id = cb.dataset.id;
+    convertQuoteToInvoice(id, cb.dataset.name, cb.dataset.email, cb.dataset.service, parseFloat(cb.dataset.amount));
   });
 }
 
@@ -276,7 +254,12 @@ function loadInvoices() {
     snapshot.forEach(doc => {
       const i = doc.data();
       tbody.innerHTML += `
-        <tr><td>${i.name}</td><td>${i.service}</td><td>$${i.amount.toFixed(2)}</td><td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td></tr>
+        <tr>
+          <td>${i.name}</td>
+          <td>${i.service}</td>
+          <td>$${i.amount.toFixed(2)}</td>
+          <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+        </tr>
       `;
     });
   });
@@ -286,35 +269,58 @@ function calculateProfit() {
   const p = parseFloat(price.value) || 0;
   const l = parseFloat(labor.value) || 0;
   const g = parseFloat(gas.value) || 0;
-  const profit = p - (l + g);
+  const o = parseFloat(overhead.value) || 0;
+  const profit = p - (l + g + o);
   profitResult.innerText = profit >= 0
     ? `✅ Profit: $${profit.toFixed(2)}`
     : `❌ Loss: $${Math.abs(profit).toFixed(2)}`;
+  const percent = p > 0 ? Math.min(100, (profit / p) * 100) : 0;
+  profitValue.style.width = `${Math.abs(percent)}%`;
+  profitValue.style.backgroundColor = profit >= 0 ? "green" : "red";
 }
+</script>
+<!-- Chat Modal -->
+<div id="chatModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.6); z-index:1000;">
+  <div style="background:white; width:90%; max-width:600px; height:80%; margin:5% auto; display:flex; flex-direction:column; border-radius:8px; overflow:hidden;">
+    <div style="background:#228B22; color:white; padding:1em; font-weight:bold;">
+      Chat with Customer
+      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white; font-size:1.2em;">✖</button>
+    </div>
+    <div id="chatMessages" style="flex:1; padding:1em; overflow-y:auto; background:#f9f9f9;"></div>
+    <div style="padding:1em; border-top:1px solid #ddd;">
+      <input id="chatInput" type="text" placeholder="Type your message..." style="width:80%; padding:0.5em;" />
+      <button onclick="sendChatMessage()" style="padding:0.5em 1em;">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentChatRequestId = null;
 
 function openChat(id) {
   currentChatRequestId = id;
-  chatModal.style.display = "block";
+  document.getElementById("chatModal").style.display = "block";
   loadChatMessages(id);
-  db.collection("service_requests").doc(id).update({ hasUnreadFromCustomer: false });
 }
 
 function closeChat() {
-  chatModal.style.display = "none";
-  chatMessages.innerHTML = "";
+  document.getElementById("chatModal").style.display = "none";
+  document.getElementById("chatMessages").innerHTML = "";
   currentChatRequestId = null;
 }
 
 function loadChatMessages(id) {
-  const box = chatMessages;
+  const box = document.getElementById("chatMessages");
   db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
     .onSnapshot(snapshot => {
       box.innerHTML = "";
       snapshot.forEach(doc => {
-        const msg = doc.data(), isAdmin = msg.sender === "admin";
+        const msg = doc.data();
         const div = document.createElement("div");
-        div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${isAdmin ? "#d1f7c4" : "#e5e5ea"}; align-self:${isAdmin ? "flex-end" : "flex-start"};`;
-        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
+        div.style = `max-width:75%; margin:0.5em 0; padding:0.6em 1em; border-radius:1em; background:${msg.sender === "admin" ? "#d1f7c4" : "#e5e5ea"}; align-self:${msg.sender === "admin" ? "flex-end" : "flex-start"};`;
+        const time = new Date(msg.timestamp?.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        div.innerHTML = `<div><strong>${msg.sender === "admin" ? "Admin" : "Customer"}</strong></div><div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${time}</small>`;
         box.appendChild(div);
       });
       box.scrollTop = box.scrollHeight;
@@ -322,14 +328,17 @@ function loadChatMessages(id) {
 }
 
 function sendChatMessage() {
-  const text = chatInput.value.trim();
+  const text = document.getElementById("chatInput").value.trim();
   if (!text || !currentChatRequestId) return;
   db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-    text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    text,
+    sender: "admin",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
-  chatInput.value = "";
+  document.getElementById("chatInput").value = "";
 }
 
+// Export Quotes as PDF
 async function exportQuotesPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -343,6 +352,7 @@ async function exportQuotesPDF() {
   doc.save("Quotes.pdf");
 }
 
+// Export Invoices as PDF
 async function exportInvoicesPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
@@ -356,3 +366,5 @@ async function exportInvoicesPDF() {
   doc.save("Invoices.pdf");
 }
 </script>
+</body>
+</html>
