@@ -43,7 +43,7 @@
       cursor: pointer;
       margin-right: 12px;
     }
-    #profileModal, #paypalModal {
+    #profileModal, #paypalModal, #chatModal {
       display: none;
       position: fixed;
       top: 10%;
@@ -69,6 +69,22 @@
       display: block;
       margin-top: 0.5em;
     }
+    #chatMessages {
+      background: #f9f9f9;
+      height: 200px;
+      overflow-y: auto;
+      padding: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+    }
+    .chat-bubble {
+      max-width: 75%;
+      padding: 0.5em 1em;
+      border-radius: 1em;
+      margin-bottom: 0.5em;
+    }
+    .chat-bubble.customer { background: #e5e5ea; }
+    .chat-bubble.admin { background: #d1f7c4; text-align: right; }
   </style>
 </head>
 <body>
@@ -81,9 +97,10 @@
   </div>
 </div>
 
-<!-- Profile Modal -->
-<div id="modalOverlay" onclick="toggleProfileModal(); togglePaypalModal(true)"></div>
+<!-- Modal Overlay -->
+<div id="modalOverlay" onclick="toggleProfileModal(); togglePaypalModal(true); toggleChatModal(true)"></div>
 
+<!-- Profile Modal -->
 <div id="profileModal">
   <div class="profile-info" id="profileDisplay">
     <label>Name:</label><div id="displayName">-</div>
@@ -95,7 +112,7 @@
   </div>
   <hr>
   <form id="editProfileForm">
-    <input type="text" id="editName" placeholder="Full Name" required>
+    <input type="text" id="editName" placeholde="Full Name" required>
     <input type="text" id="editEmail" placeholder="Email" required>
     <input type="text" id="editPhone" placeholder="Phone Number">
     <input type="text" id="editStreet" placeholder="Street Address">
@@ -111,6 +128,15 @@
   <h3>Invoice Payment</h3>
   <div id="paypalButtonContainer" style="margin: 1em 0;"></div>
   <button onclick="togglePaypalModal()">Close</button>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal">
+  <h3>Service Request Chat</h3>
+  <div id="chatMessages"></div>
+  <input type="text" id="chatInput" placeholder="Type your message..." />
+  <button onclick="sendChatMessage()">Send</button>
+  <button onclick="toggleChatModal()">Close</button>
 </div>
 <h2>New Service Request</h2>
 <form id="requestForm">
@@ -133,14 +159,9 @@
 </form>
 
 <h2>Your Service Requests</h2>
-<select id="requestSelector" onchange="loadChatMessages(this.value)">
+<select id="requestSelector" onchange="onRequestSelect(this.value)">
   <option value="">-- Select a Service Request to Chat --</option>
 </select>
-<div id="chatBox" style="margin-top:1em; display:none;">
-  <div id="chatMessages" style="background:#f9f9f9; padding:1em; height:200px; overflow-y:auto;"></div>
-  <input type="text" id="chatInput" placeholder="Type your message...">
-  <button onclick="sendChatMessage()">Send</button>
-</div>
 
 <h2>Your Quotes</h2>
 <button onclick="exportQuotesPDF()">📄 Download Quotes PDF</button>
@@ -205,6 +226,18 @@ function togglePaypalModal(closeOnly = false) {
   }
 }
 
+function toggleChatModal(closeOnly = false) {
+  const modal = document.getElementById("chatModal");
+  const overlay = document.getElementById("modalOverlay");
+  if (closeOnly || modal.style.display === "block") {
+    modal.style.display = "none";
+    overlay.style.display = "none";
+    return;
+  }
+  modal.style.display = "block";
+  overlay.style.display = "block";
+}
+
 function renderPaypalModal(invoiceId, amount) {
   const container = document.getElementById("paypalButtonContainer");
   container.innerHTML = "";
@@ -221,24 +254,39 @@ function renderPaypalModal(invoiceId, amount) {
   }).render(container);
 }
 
-editProfileForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const profile = {
-    name: editName.value,
-    email: editEmail.value,
-    phone: editPhone.value,
-    address: {
-      street: editStreet.value,
-      city: editCity.value,
-      state: editState.value,
-      zip: editZip.value
-    }
-  };
-  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
-  alert("✅ Profile updated!");
-  toggleProfileModal();
-  loadProfile();
-});
+function onRequestSelect(requestId) {
+  if (!requestId) return;
+  currentChatRequestId = requestId;
+  toggleChatModal();
+  loadChatMessages(requestId);
+}
+
+function loadChatMessages(requestId) {
+  db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      chatMessages.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const div = document.createElement("div");
+        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
+        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        chatMessages.appendChild(div);
+      });
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+}
+
+function sendChatMessage() {
+  const text = chatInput.value.trim();
+  if (!text || !currentChatRequestId) return;
+  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+    text,
+    sender: "customer",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  db.collection("service_requests").doc(currentChatRequestId).update({ hasUnreadFromCustomer: true });
+  chatInput.value = "";
+}
 
 function loadProfile() {
   db.collection("profiles").doc(currentUser.uid).get().then(doc => {
@@ -261,6 +309,25 @@ function loadProfile() {
     editZip.value = a.zip || "";
   });
 }
+
+editProfileForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  const profile = {
+    name: editName.value,
+    email: editEmail.value,
+    phone: editPhone.value,
+    address: {
+      street: editStreet.value,
+      city: editCity.value,
+      state: editState.value,
+      zip: editZip.value
+    }
+  };
+  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
+  alert("✅ Profile updated!");
+  toggleProfileModal();
+  loadProfile();
+});
 
 requestForm.addEventListener("submit", async e => {
   e.preventDefault();
@@ -291,35 +358,6 @@ function loadServiceRequests() {
       dropdown.appendChild(option);
     });
   });
-}
-
-function loadChatMessages(requestId) {
-  currentChatRequestId = requestId;
-  chatBox.style.display = "block";
-  db.collection("service_requests").doc(requestId).collection("messages").orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      chatMessages.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const div = document.createElement("div");
-        div.className = "chat-bubble " + (msg.sender === "admin" ? "admin" : "customer");
-        div.innerHTML = `<div>${msg.text}</div><small style="font-size:0.7em; color:gray;">${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-        chatMessages.appendChild(div);
-      });
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    });
-}
-
-function sendChatMessage() {
-  const text = chatInput.value.trim();
-  if (!text || !currentChatRequestId) return;
-  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-    text,
-    sender: "customer",
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  db.collection("service_requests").doc(currentChatRequestId).update({ hasUnreadFromCustomer: true });
-  chatInput.value = "";
 }
 
 function loadQuotes() {
