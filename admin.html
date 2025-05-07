@@ -12,7 +12,7 @@
   <script src="firebase-init.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; padding: 1em; position: relative; }
+    header, footer { background: #228B22; color: white; padding: 1em; }
     .tabs { display: flex; justify-content: center; background: #228B22; }
     .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
     .tab:hover, .tab.active { background: #1a6b1a; }
@@ -24,42 +24,26 @@
     input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
     button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
     button:hover { background: #1a6b1a; }
-    #chatModal {
+    #notifModal, #chatModal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;
+      background-color: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center;
     }
-    #chatBox {
-      background: white; width: 90%; max-width: 600px; height: 80%; display: flex; flex-direction: column;
-      border-radius: 8px; overflow: hidden;
+    .modal-content {
+      background: white; padding: 1em; max-width: 600px; width: 90%; border-radius: 8px; max-height: 80%; overflow-y: auto;
     }
-    #chatMessages {
-      flex: 1; overflow-y: auto; padding: 1em; background: #f4f4f4;
-    }
-    .chat-msg { margin: 0.5em 0; padding: 0.75em; border-radius: 10px; max-width: 75%; }
-    .admin { background: #d1f7c4; align-self: flex-end; }
-    .customer { background: #e5e5ea; align-self: flex-start; }
+    #autoProfitBar { height: 10px; background: #ccc; margin-top: 10px; }
+    #autoProfitFill { height: 100%; width: 0%; background: green; }
   </style>
 </head>
 <body>
-
-<header style="display:flex; justify-content:space-between; align-items:center;">
-  <h1 style="margin: 0 1em;">Admin Dashboard</h1>
-  <div style="position:relative; margin-right: 1em;">
-    <button onclick="toggleNotifications()" style="background:none; border:none; color:white; font-size:1.2em; position:relative;">
-      🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; position:absolute; top:-5px; right:-10px; display:none;">0</span>
-    </button>
-    <div id="notifDropdown">
-      <div style="padding:0.5em; border-bottom:1px solid #ccc; font-weight:bold;">Recent Messages</div>
-      <div id="notifList"></div>
-      <div style="padding:0.5em; text-align:center; border-top:1px solid #ccc;">
-        <button onclick="markAllAsRead()">Mark All as Read</button>
-      </div>
+  <header style="display:flex; justify-content:space-between; align-items:center;">
+    <h1 style="margin-left: 1em;">Admin Dashboard</h1>
+    <div style="margin-right: 1em;">
+      <button onclick="openNotifModal()">🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; display:none;">0</span></button>
+      <button onclick="logout()">Logout</button>
     </div>
-    <button onclick="logout()" style="background-color:#ffffff22; color:white; border:1px solid white; padding:0.5em 1em; margin-left:1em;">Logout</button>
-  </div>
-</header>
+  </header>
 
-<main>
   <div class="tabs">
     <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
     <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
@@ -88,6 +72,7 @@
       <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
     </table>
   </section>
+
   <section id="invoicesTab" class="tab-content">
     <h2>Invoices</h2>
     <button onclick="exportInvoicesPDF()">📄 Export Invoices PDF</button>
@@ -112,78 +97,229 @@
       <option value="pressure">💦 Pressure Washing</option>
     </select>
 
-    <label>Labor Cost ($)</label>
-    <input type="number" id="laborCost" step="0.01" />
-    <label>Gas/Equipment Cost ($)</label>
-    <input type="number" id="gasCost" step="0.01" />
-    <label>Overhead Cost ($)</label>
-    <input type="number" id="overheadCost" step="0.01" />
-    <label>Guaranteed Profit ($)</label>
-    <input type="number" id="guaranteedProfit" value="30" step="0.01" />
+    <label>Labor Cost ($)</label><input type="number" id="laborCost" step="0.01" />
+    <label>Gas/Equipment Cost ($)</label><input type="number" id="gasCost" step="0.01" />
+    <label>Overhead Cost ($)</label><input type="number" id="overheadCost" step="0.01" />
+    <label>Guaranteed Profit ($)</label><input type="number" id="guaranteedProfit" value="30" step="0.01" />
     <button onclick="calculateAutoProfit()">Calculate</button>
     <h3 id="autoProfitResult"></h3>
     <div id="autoProfitBar"><div id="autoProfitFill"></div></div>
   </section>
-</main>
 
-<!-- Chat Modal -->
-<div id="chatModal">
-  <div id="chatBox">
-    <div style="background:#228B22; color:white; padding:1em;">
-      Chat with Customer
-      <button onclick="closeChat()" style="float:right; background:none; border:none; color:white;">✖</button>
-    </div>
-    <div id="chatMessages"></div>
-    <div style="padding:1em; border-top:1px solid #ccc;">
-      <input id="chatInput" placeholder="Type a message..." style="width:75%; padding:0.5em;" />
-      <button onclick="sendChatMessage()">Send</button>
+  <!-- Notification Modal -->
+  <div id="notifModal" onclick="closeNotifModal()">
+    <div class="modal-content" onclick="event.stopPropagation();">
+      <h3>Recent Messages</h3>
+      <div id="notifList">Loading...</div>
+      <div style="text-align: center;"><button onclick="markAllAsRead()">Mark All as Read</button></div>
     </div>
   </div>
-</div>
 
-<footer>
-  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-</footer>
-
+  <!-- Chat Modal -->
+  <div id="chatModal" onclick="closeChat()">
+    <div class="modal-content" style="display: flex; flex-direction: column;" onclick="event.stopPropagation();">
+      <h3>Chat with Customer</h3>
+      <div id="chatMessages" style="flex:1; height:200px; overflow-y:auto; background:#eee; padding:1em;"></div>
+      <div style="margin-top: 1em;">
+        <input type="text" id="chatInput" placeholder="Type message..." style="width:80%;" />
+        <button onclick="sendChatMessage()">Send</button>
+      </div>
+    </div>
+  </div>
 <script>
-let currentChatId = null;
+const db = firebase.firestore();
+let currentChatRequestId = null;
+
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) return location.href = "login.html";
+  loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
+});
+
+function logout() {
+  firebase.auth().signOut();
+}
+
+function showTab(id, e) {
+  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if (e) e.target.classList.add("active");
+}
+
+function openNotifModal() {
+  document.getElementById("notifModal").style.display = "flex";
+}
+function closeNotifModal() {
+  document.getElementById("notifModal").style.display = "none";
+}
 
 function openChat(id) {
-  currentChatId = id;
+  currentChatRequestId = id;
   document.getElementById("chatModal").style.display = "flex";
-  loadMessages(id);
+  loadChatMessages(id);
   db.collection("service_requests").doc(id).update({ adminRead: true });
 }
 
 function closeChat() {
   document.getElementById("chatModal").style.display = "none";
   document.getElementById("chatMessages").innerHTML = "";
-  currentChatId = null;
+  currentChatRequestId = null;
 }
 
-function loadMessages(id) {
+function loadChatMessages(id) {
   const box = document.getElementById("chatMessages");
-  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp").onSnapshot(snapshot => {
-    box.innerHTML = "";
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const div = document.createElement("div");
-      div.className = "chat-msg " + (d.sender === "admin" ? "admin" : "customer");
-      div.innerHTML = `${d.text}<br><small>${new Date(d.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-      box.appendChild(div);
+  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      box.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const div = document.createElement("div");
+        div.style = `margin-bottom: 0.5em; background: ${msg.sender === "admin" ? "#d1f7c4" : "#e0e0e0"}; padding: 0.5em; border-radius: 8px;`;
+        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}<br><small>${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
+        box.appendChild(div);
+      });
+      box.scrollTop = box.scrollHeight;
     });
-    box.scrollTop = box.scrollHeight;
-  });
 }
 
 function sendChatMessage() {
   const input = document.getElementById("chatInput");
   const text = input.value.trim();
-  if (!text || !currentChatId) return;
-  db.collection("service_requests").doc(currentChatId).collection("messages").add({
-    text, sender: "admin", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+  if (!text || !currentChatRequestId) return;
+  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
+    sender: "admin", text,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
   input.value = "";
+}
+
+function markAllAsRead() {
+  db.collection("service_requests").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
+    });
+    document.getElementById("notifBadge").style.display = "none";
+    document.getElementById("notifList").innerHTML = "<p>All caught up 🎉</p>";
+  });
+}
+
+function loadNotifications() {
+  const list = document.getElementById("notifList");
+  const badge = document.getElementById("notifBadge");
+  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
+    list.innerHTML = "";
+    let unread = 0;
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      if (!d.adminRead) unread++;
+      const div = document.createElement("div");
+      div.style = "padding: 0.5em; border-bottom: 1px solid #ddd; cursor:pointer;";
+      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${(d.notes || '').slice(0, 40)}</small>`;
+      div.onclick = () => { closeNotifModal(); openChat(doc.id); };
+      list.appendChild(div);
+    });
+    badge.innerText = unread;
+    badge.style.display = unread > 0 ? "inline-block" : "none";
+  });
+}
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const r = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${r.fullName}</td>
+        <td>${r.email}</td>
+        <td>${r.notes}</td>
+        <td>${r.adminRead ? "Read" : "Unread"}</td>
+        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>`;
+      tbody.appendChild(row);
+    });
+  });
+}
+
+function createQuote() {
+  const name = quoteName.value.trim(), email = quoteEmail.value.trim();
+  const service = quoteService.value.trim(), amount = parseFloat(quoteAmount.value);
+  if (!name || !email || !service || isNaN(amount)) return alert("All fields required.");
+  db.collection("quotes").add({
+    name, email, service, amount, status: "pending",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Quote created.");
+    quoteName.value = quoteEmail.value = quoteService.value = quoteAmount.value = "";
+  });
+}
+
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.name}</td><td>${q.service}</td><td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status}</td>
+        <td><button onclick="convertToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Convert</button></td>`;
+      tbody.appendChild(row);
+    });
+  });
+}
+
+function convertToInvoice(id, name, email, service, amount) {
+  db.collection("invoices").add({
+    name, customerEmail: email, service, amount, paid: false,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    db.collection("quotes").doc(id).update({ status: "approved" });
+    alert("✅ Converted to invoice.");
+  });
+}
+
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const status = d.paid ? "✅ Paid" : "❌ Unpaid";
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${d.name}</td><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td>${status}</td>`;
+      tbody.appendChild(row);
+    });
+  });
+}
+
+function exportQuotesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Quotes", 10, 10);
+  db.collection("quotes").get().then(snapshot => {
+    let y = 20;
+    snapshot.forEach((q, i) => {
+      const d = q.data();
+      doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.status}`, 10, y += 10);
+    });
+    doc.save("quotes.pdf");
+  });
+}
+
+function exportInvoicesPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.text("Invoices", 10, 10);
+  db.collection("invoices").get().then(snapshot => {
+    let y = 20;
+    snapshot.forEach((i, idx) => {
+      const d = i.data();
+      doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.paid ? "Paid" : "Unpaid"}`, 10, y += 10);
+    });
+    doc.save("invoices.pdf");
+  });
 }
 
 const serviceDefaults = {
@@ -198,8 +334,11 @@ const serviceDefaults = {
 };
 
 function loadServiceDefaults() {
-  const d = serviceDefaults[profitService.value] || { labor: 0, gas: 0, overhead: 0 };
-  laborCost.value = d.labor; gasCost.value = d.gas; overheadCost.value = d.overhead;
+  const type = profitService.value;
+  const d = serviceDefaults[type] || { labor: 0, gas: 0, overhead: 0 };
+  laborCost.value = d.labor;
+  gasCost.value = d.gas;
+  overheadCost.value = d.overhead;
 }
 
 function calculateAutoProfit() {
@@ -209,15 +348,14 @@ function calculateAutoProfit() {
   const profit = parseFloat(guaranteedProfit.value) || 0;
   const cost = labor + gas + overhead;
   const total = cost + profit;
-  const margin = (profit / total) * 100;
-  document.getElementById("autoProfitResult").innerHTML = `
+  const percent = (profit / total) * 100;
+  autoProfitResult.innerHTML = `
     💼 Cost: $${cost.toFixed(2)}<br>
     ✅ Profit: $${profit.toFixed(2)}<br>
-    💰 Suggested Price: <strong>$${total.toFixed(2)}</strong> (${margin.toFixed(1)}% margin)
+    💰 Suggested Price: <strong>$${total.toFixed(2)}</strong> (${percent.toFixed(1)}% margin)
   `;
-  document.getElementById("autoProfitFill").style.width = Math.min(margin, 100) + "%";
+  autoProfitFill.style.width = `${Math.min(100, percent)}%`;
 }
 </script>
-
 </body>
 </html>
