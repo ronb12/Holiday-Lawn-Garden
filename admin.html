@@ -3,358 +3,239 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; }
-    header, footer { background: #228B22; color: white; padding: 1em; }
-    .tabs { display: flex; justify-content: center; background: #228B22; }
-    .tab { padding: 1em; color: white; cursor: pointer; background: #228B22; border: none; font-weight: bold; }
-    .tab:hover, .tab.active { background: #1a6b1a; }
-    .tab-content { display: none; padding: 1.5em; }
-    .tab-content.active { display: block; }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
+    h1, h2 { color: #228B22; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
-    th, td { border: 1px solid #ddd; padding: 0.75em; text-align: left; }
-    th { background-color: #228B22; color: white; }
-    input, textarea, select { width: 100%; padding: 0.5em; margin-bottom: 1em; }
-    button { background: #228B22; color: white; padding: 0.5em 1em; border: none; cursor: pointer; }
+    th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
+    th { background: #228B22; color: white; }
+    input, textarea, select, button {
+      width: 100%; padding: 0.5em; margin-top: 0.5em; box-sizing: border-box;
+    }
+    button {
+      background: #228B22; color: white; border: none; cursor: pointer;
+      padding: 6px 12px; border-radius: 6px;
+    }
     button:hover { background: #1a6b1a; }
-    #notifModal, #chatModal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center;
+    .logout-btn {
+      background: #228B22;
+      color: white;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
     }
-    .modal-content {
-      background: white; padding: 1em; max-width: 600px; width: 90%; border-radius: 8px; max-height: 80%; overflow-y: auto;
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    #autoProfitBar { height: 10px; background: #ccc; margin-top: 10px; }
-    #autoProfitFill { height: 100%; width: 0%; background: green; }
+    .profile-toggle {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 12px;
+    }
+    #profileModal, #paypalModal, #chatModal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 320px;
+    }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .profile-info label {
+      font-weight: bold;
+      display: block;
+      margin-top: 0.5em;
+    }
+    #chatMessages {
+      background: #f9f9f9;
+      height: 200px;
+      overflow-y: auto;
+      padding: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+    }
+    .chat-bubble {
+      max-width: 75%;
+      padding: 0.5em 1em;
+      border-radius: 1em;
+      margin-bottom: 0.5em;
+    }
+    .chat-bubble.customer { background: #e5e5ea; }
+    .chat-bubble.admin { background: #d1f7c4; text-align: right; }
+    .pdf-btn { margin-top: 5px; font-size: 0.8em; background: #555; }
   </style>
 </head>
 <body>
-  <header style="display:flex; justify-content:space-between; align-items:center;">
-    <h1 style="margin-left: 1em;">Admin Dashboard</h1>
-    <div style="margin-right: 1em;">
-      <button onclick="openNotifModal()">🔔 Messages <span id="notifBadge" style="background:red; color:white; font-size:0.75em; border-radius:50%; padding:2px 6px; display:none;">0</span></button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </header>
-
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('requestsTab', event)">Requests</button>
-    <button class="tab" onclick="showTab('quotesTab', event)">Quotes</button>
-    <button class="tab" onclick="showTab('invoicesTab', event)">Invoices</button>
-    <button class="tab" onclick="showTab('profitTab', event)">Profit Calculator</button>
+<div class="header-bar">
+  <h1>Welcome to Your Dashboard</h1>
+  <div style="display: flex; gap: 1em; align-items: center;">
+    <div class="profile-toggle" onclick="toggleProfileModal()">👤</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
+</div>
+<!-- Quotes Table -->
+<h2>Your Quotes</h2>
+<table id="quotesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
 
-  <section id="requestsTab" class="tab-content active">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead><tr><th>Name</th><th>Email</th><th>Request</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-    </table>
-  </section>
+<!-- Invoices Table -->
+<h2>Your Invoices</h2>
+<table id="invoicesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
 
-  <section id="quotesTab" class="tab-content">
-    <h2>Create Quote</h2>
-    <input id="quoteName" placeholder="Customer Name" />
-    <input id="quoteEmail" placeholder="Customer Email" />
-    <textarea id="quoteService" placeholder="Service Description"></textarea>
-    <input id="quoteAmount" type="number" placeholder="Amount ($)" />
-    <button onclick="createQuote()">Create Quote</button>
-    <button onclick="exportQuotesPDF()">📄 Export Quotes PDF</button>
-    <table id="quotesTable">
-      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-      <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
-    </table>
-  </section>
+<!-- Footer -->
+<footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
-  <section id="invoicesTab" class="tab-content">
-    <h2>Invoices</h2>
-    <button onclick="exportInvoicesPDF()">📄 Export Invoices PDF</button>
-    <table id="invoicesTable">
-      <thead><tr><th>Name</th><th>Service</th><th>Amount</th><th>Status</th></tr></thead>
-      <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
-    </table>
-  </section>
-
-  <section id="profitTab" class="tab-content">
-    <h2>Auto-Profit Calculator</h2>
-    <label>Service Type</label>
-    <select id="profitService" onchange="loadServiceDefaults()">
-      <option disabled selected value="">-- Select Service --</option>
-      <option value="mowing">🌿 Mowing & Trimming</option>
-      <option value="landscape">🌸 Landscape Design</option>
-      <option value="leaves">🍂 Leaf Removal</option>
-      <option value="fertilization">🌾 Fertilization & Seeding</option>
-      <option value="cleanup">🧹 Seasonal Cleanup</option>
-      <option value="mulch">🚜 Mulching & Edging</option>
-      <option value="commercial">🏡 Commercial Lawn Care</option>
-      <option value="pressure">💦 Pressure Washing</option>
-    </select>
-
-    <label>Labor Cost ($)</label><input type="number" id="laborCost" step="0.01" />
-    <label>Gas/Equipment Cost ($)</label><input type="number" id="gasCost" step="0.01" />
-    <label>Overhead Cost ($)</label><input type="number" id="overheadCost" step="0.01" />
-    <label>Guaranteed Profit ($)</label><input type="number" id="guaranteedProfit" value="30" step="0.01" />
-    <button onclick="calculateAutoProfit()">Calculate</button>
-    <h3 id="autoProfitResult"></h3>
-    <div id="autoProfitBar"><div id="autoProfitFill"></div></div>
-  </section>
-
-  <!-- Notification Modal -->
-  <div id="notifModal" onclick="closeNotifModal()">
-    <div class="modal-content" onclick="event.stopPropagation();">
-      <h3>Recent Messages</h3>
-      <div id="notifList">Loading...</div>
-      <div style="text-align: center;"><button onclick="markAllAsRead()">Mark All as Read</button></div>
-    </div>
-  </div>
-
-  <!-- Chat Modal -->
-  <div id="chatModal" onclick="closeChat()">
-    <div class="modal-content" style="display: flex; flex-direction: column;" onclick="event.stopPropagation();">
-      <h3>Chat with Customer</h3>
-      <div id="chatMessages" style="flex:1; height:200px; overflow-y:auto; background:#eee; padding:1em;"></div>
-      <div style="margin-top: 1em;">
-        <input type="text" id="chatInput" placeholder="Type message..." style="width:80%;" />
-        <button onclick="sendChatMessage()">Send</button>
-      </div>
-    </div>
-  </div>
 <script>
 const db = firebase.firestore();
-let currentChatRequestId = null;
+let currentUser = null;
+let selectedInvoiceId = null;
+let selectedInvoiceAmount = null;
 
 firebase.auth().onAuthStateChanged(user => {
-  if (!user) return location.href = "login.html";
-  loadRequests(); loadQuotes(); loadInvoices(); loadNotifications();
+  if (user) {
+    currentUser = user;
+    document.getElementById("email").value = user.email;
+    document.getElementById("fullName").value = user.displayName || "";
+    loadQuotes();
+    loadInvoices();
+  } else {
+    location.href = "login.html";
+  }
 });
 
 function logout() {
   firebase.auth().signOut();
 }
 
-function showTab(id, e) {
-  document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  if (e) e.target.classList.add("active");
-}
-
-function openNotifModal() {
-  document.getElementById("notifModal").style.display = "flex";
-}
-function closeNotifModal() {
-  document.getElementById("notifModal").style.display = "none";
-}
-
-function openChat(id) {
-  currentChatRequestId = id;
-  document.getElementById("chatModal").style.display = "flex";
-  loadChatMessages(id);
-  db.collection("service_requests").doc(id).update({ adminRead: true });
-}
-
-function closeChat() {
-  document.getElementById("chatModal").style.display = "none";
-  document.getElementById("chatMessages").innerHTML = "";
-  currentChatRequestId = null;
-}
-
-function loadChatMessages(id) {
-  const box = document.getElementById("chatMessages");
-  db.collection("service_requests").doc(id).collection("messages").orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      box.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        const div = document.createElement("div");
-        div.style = `margin-bottom: 0.5em; background: ${msg.sender === "admin" ? "#d1f7c4" : "#e0e0e0"}; padding: 0.5em; border-radius: 8px;`;
-        div.innerHTML = `<strong>${msg.sender}:</strong> ${msg.text}<br><small>${new Date(msg.timestamp?.toDate()).toLocaleTimeString()}</small>`;
-        box.appendChild(div);
-      });
-      box.scrollTop = box.scrollHeight;
-    });
-}
-
-function sendChatMessage() {
-  const input = document.getElementById("chatInput");
-  const text = input.value.trim();
-  if (!text || !currentChatRequestId) return;
-  db.collection("service_requests").doc(currentChatRequestId).collection("messages").add({
-    sender: "admin", text,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-  });
-  input.value = "";
-}
-
-function markAllAsRead() {
-  db.collection("service_requests").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      db.collection("service_requests").doc(doc.id).update({ adminRead: true });
-    });
-    document.getElementById("notifBadge").style.display = "none";
-    document.getElementById("notifList").innerHTML = "<p>All caught up 🎉</p>";
-  });
-}
-
-function loadNotifications() {
-  const list = document.getElementById("notifList");
-  const badge = document.getElementById("notifBadge");
-  db.collection("service_requests").orderBy("submittedAt", "desc").limit(5).onSnapshot(snapshot => {
-    list.innerHTML = "";
-    let unread = 0;
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      if (!d.adminRead) unread++;
-      const div = document.createElement("div");
-      div.style = "padding: 0.5em; border-bottom: 1px solid #ddd; cursor:pointer;";
-      div.innerHTML = `<strong>${d.fullName}</strong><br><small>${(d.notes || '').slice(0, 40)}</small>`;
-      div.onclick = () => { closeNotifModal(); openChat(doc.id); };
-      list.appendChild(div);
-    });
-    badge.innerText = unread;
-    badge.style.display = unread > 0 ? "inline-block" : "none";
-  });
-}
-
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").orderBy("submittedAt", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${r.fullName}</td>
-        <td>${r.email}</td>
-        <td>${r.notes}</td>
-        <td>${r.adminRead ? "Read" : "Unread"}</td>
-        <td><button onclick="openChat('${doc.id}')">💬 Chat</button></td>`;
-      tbody.appendChild(row);
-    });
-  });
-}
-
-function createQuote() {
-  const name = quoteName.value.trim(), email = quoteEmail.value.trim();
-  const service = quoteService.value.trim(), amount = parseFloat(quoteAmount.value);
-  if (!name || !email || !service || isNaN(amount)) return alert("All fields required.");
-  db.collection("quotes").add({
-    name, email, service, amount, status: "pending",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("✅ Quote created.");
-    quoteName.value = quoteEmail.value = quoteService.value = quoteAmount.value = "";
-  });
-}
-
+// Enhanced Quotes Table
 function loadQuotes() {
   const tbody = document.querySelector("#quotesTable tbody");
-  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+  db.collection("quotes").where("email", "==", currentUser.email).onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const q = doc.data();
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td>${q.name}</td><td>${q.service}</td><td>$${q.amount.toFixed(2)}</td>
-        <td>${q.status}</td>
-        <td><button onclick="convertToInvoice('${doc.id}', '${q.name}', '${q.email}', '${q.service}', ${q.amount})">Convert</button></td>`;
+        <td>${q.service}</td>
+        <td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status || 'pending'}</td>
+        <td>
+          <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
+          <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button><br>
+          <button class="pdf-btn" onclick="downloadQuotePDF('${q.service}', ${q.amount}, '${q.status || 'pending'}')">PDF</button>
+        </td>`;
       tbody.appendChild(row);
     });
   });
 }
 
-function convertToInvoice(id, name, email, service, amount) {
-  db.collection("invoices").add({
-    name, customerEmail: email, service, amount, paid: false,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    db.collection("quotes").doc(id).update({ status: "approved" });
-    alert("✅ Converted to invoice.");
-  });
-}
-
+// Enhanced Invoices Table
 function loadInvoices() {
   const tbody = document.querySelector("#invoicesTable tbody");
-  db.collection("invoices").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).onSnapshot(snapshot => {
     tbody.innerHTML = "";
     snapshot.forEach(doc => {
-      const d = doc.data();
-      const status = d.paid ? "✅ Paid" : "❌ Unpaid";
+      const i = doc.data();
       const row = document.createElement("tr");
-      row.innerHTML = `<td>${d.name}</td><td>${d.service}</td><td>$${d.amount.toFixed(2)}</td><td>${status}</td>`;
+      row.innerHTML = `
+        <td>${i.service}</td>
+        <td>$${i.amount.toFixed(2)}</td>
+        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+        <td>
+          ${i.paid ? "Paid" : `<button onclick="openPaymentModal('${doc.id}', ${i.amount})">Pay</button>`}
+          <br><button class="pdf-btn" onclick="downloadInvoicePDF('${i.service}', ${i.amount}, '${i.paid ? 'Paid' : 'Unpaid'}')">PDF</button>
+        </td>`;
       tbody.appendChild(row);
     });
   });
 }
 
-function exportQuotesPDF() {
+// Individual PDF (with Logo)
+async function downloadQuotePDF(service, amount, status) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  doc.text("Quotes", 10, 10);
-  db.collection("quotes").get().then(snapshot => {
-    let y = 20;
-    snapshot.forEach((q, i) => {
-      const d = q.data();
-      doc.text(`${i + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.status}`, 10, y += 10);
-    });
-    doc.save("quotes.pdf");
+  const img = new Image();
+  img.src = "Holliday's Lawn & Garden.png";
+  await img.decode();
+  doc.addImage(img, "PNG", 10, 10, 40, 20);
+  doc.setFontSize(16);
+  doc.text("Quote Summary", 10, 40);
+  doc.setFontSize(12);
+  doc.text(`Service: ${service}`, 10, 50);
+  doc.text(`Amount: $${amount.toFixed(2)}`, 10, 60);
+  doc.text(`Status: ${status}`, 10, 70);
+  doc.save(`Quote-${service}.pdf`);
+}
+
+async function downloadInvoicePDF(service, amount, status) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const img = new Image();
+  img.src = "Holliday's Lawn & Garden.png";
+  await img.decode();
+  doc.addImage(img, "PNG", 10, 10, 40, 20);
+  doc.setFontSize(16);
+  doc.text("Invoice Summary", 10, 40);
+  doc.setFontSize(12);
+  doc.text(`Service: ${service}`, 10, 50);
+  doc.text(`Amount: $${amount.toFixed(2)}`, 10, 60);
+  doc.text(`Status: ${status}`, 10, 70);
+  doc.save(`Invoice-${service}.pdf`);
+}
+
+function approveQuote(id, amount, service) {
+  db.collection("quotes").doc(id).get().then(doc => {
+    const q = doc.data();
+    return db.collection("invoices").add({
+      name: q.name || "Customer",
+      customerEmail: q.email,
+      service,
+      amount,
+      paid: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => db.collection("quotes").doc(id).update({ status: "approved" }));
+  }).then(() => {
+    alert("✅ Approved & converted to invoice.");
   });
 }
 
-function exportInvoicesPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.text("Invoices", 10, 10);
-  db.collection("invoices").get().then(snapshot => {
-    let y = 20;
-    snapshot.forEach((i, idx) => {
-      const d = i.data();
-      doc.text(`${idx + 1}. ${d.name} - ${d.service} - $${d.amount.toFixed(2)} - ${d.paid ? "Paid" : "Unpaid"}`, 10, y += 10);
-    });
-    doc.save("invoices.pdf");
-  });
+function rejectQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "rejected" });
+  alert("❌ Quote rejected.");
 }
 
-const serviceDefaults = {
-  mowing:       { labor: 20, gas: 5, overhead: 5 },
-  landscape:    { labor: 80, gas: 10, overhead: 10 },
-  leaves:       { labor: 40, gas: 8, overhead: 5 },
-  fertilization:{ labor: 35, gas: 5, overhead: 5 },
-  cleanup:      { labor: 60, gas: 10, overhead: 10 },
-  mulch:        { labor: 50, gas: 10, overhead: 10 },
-  commercial:   { labor: 75, gas: 15, overhead: 15 },
-  pressure:     { labor: 45, gas: 10, overhead: 10 }
-};
-
-function loadServiceDefaults() {
-  const type = profitService.value;
-  const d = serviceDefaults[type] || { labor: 0, gas: 0, overhead: 0 };
-  laborCost.value = d.labor;
-  gasCost.value = d.gas;
-  overheadCost.value = d.overhead;
-}
-
-function calculateAutoProfit() {
-  const labor = parseFloat(laborCost.value) || 0;
-  const gas = parseFloat(gasCost.value) || 0;
-  const overhead = parseFloat(overheadCost.value) || 0;
-  const profit = parseFloat(guaranteedProfit.value) || 0;
-  const cost = labor + gas + overhead;
-  const total = cost + profit;
-  const percent = (profit / total) * 100;
-  autoProfitResult.innerHTML = `
-    💼 Cost: $${cost.toFixed(2)}<br>
-    ✅ Profit: $${profit.toFixed(2)}<br>
-    💰 Suggested Price: <strong>$${total.toFixed(2)}</strong> (${percent.toFixed(1)}% margin)
-  `;
-  autoProfitFill.style.width = `${Math.min(100, percent)}%`;
+function openPaymentModal(id, amount) {
+  selectedInvoiceId = id;
+  selectedInvoiceAmount = amount;
+  // Add your modal logic here
 }
 </script>
 </body>
