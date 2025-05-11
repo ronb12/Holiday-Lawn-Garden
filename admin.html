@@ -159,20 +159,26 @@
     <p>Holliday's Lawn & Garden</p>
   </header>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('requests')">Service Requests</div>
-    <div class="tab" onclick="showTab('quotes')">Quotes</div>
-    <div class="tab" onclick="showTab('invoices')">Invoices</div>
-    <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
-    <div class="tab" onclick="showTab('customers')">👥 Customers</div>
-    <div class="tab" onclick="showTab('settings')">⚙️ Settings</div>
-    <div class="tab" onclick="showModal('chatModal')">Chat 💬</div>
-    <div class="tab" onclick="showModal('notificationsModal')">🔔 Notifications</div>
-    <label style="margin-left:auto;">
-      <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" />
-      🌙 Dark Mode
-    </label>
-  </div>
+ <div class="tabs">
+  <div class="tab active" onclick="showTab('requests')">Service Requests</div>
+  <div class="tab" onclick="showTab('quotes')">Quotes</div>
+  <div class="tab" onclick="showTab('invoices')">Invoices</div>
+  <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
+  <div class="tab" onclick="showTab('customers')">👥 Customers</div>
+  <div class="tab" onclick="showTab('settings')">⚙️ Settings</div>
+  <div class="tab" onclick="showModal('chatModal')">Chat 💬</div>
+  <div class="tab" onclick="showModal('notificationsModal')">🔔 Notifications</div>
+  <label style="margin-left:auto;">
+    <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" />
+    🌙 Dark Mode
+  </label>
+</div>
+
+<!-- Action Buttons (Home / Logout) should go below tabs -->
+<div style="text-align: right; padding: 0.5em 1em;">
+  <button onclick="goHome()">🏠 Home</button>
+  <button onclick="logout()">🚪 Logout</button>
+</div>
 
   <!-- START: Service Requests Section -->
   <div id="requests" class="section active">
