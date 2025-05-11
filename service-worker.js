@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holliday-lawn-cache-v3'; // ✅ Bumped version
+const CACHE_NAME = 'holliday-lawn-cache-v3'; // 🔁 Bumped cache version
 
 const urlsToCache = [
   'index.html',
@@ -10,9 +10,9 @@ const urlsToCache = [
   'Hollidays_Lawn_Garden_Logo.png'
 ];
 
-// ✅ INSTALL: Cache core assets
+// ✅ INSTALL EVENT: Cache core assets
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Force activate immediately
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -20,18 +20,19 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
       .catch(err => {
-        console.error('❌ Error during cache install:', err);
+        console.error('❌ Error caching assets:', err);
       })
   );
 });
 
-// ✅ ACTIVATE: Remove old caches
+// ✅ ACTIVATE EVENT: Delete old caches
 self.addEventListener('activate', event => {
+  const keepCaches = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (key !== CACHE_NAME) {
+          if (!keepCaches.includes(key)) {
             console.log(`🧹 Deleting old cache: ${key}`);
             return caches.delete(key);
           }
@@ -41,34 +42,30 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ✅ FETCH: Cache-first with HTML fallback
+// ✅ FETCH EVENT: Cache-first with graceful fallback for navigations
 self.addEventListener('fetch', event => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => {
-        if (cached) return cached;
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request)
+        .then(response => response)
+        .catch(err => {
+          // 🧭 Only provide fallback HTML for navigation requests
+          if (event.request.mode === 'navigate') {
+            return new Response(`
+              <!DOCTYPE html>
+              <html lang="en"><head><meta charset="UTF-8"><title>Offline</title></head>
+              <body style="font-family:sans-serif;text-align:center;padding:2em;">
+                <h1>🔌 Offline</h1>
+                <p>This page is not available offline.</p>
+              </body></html>
+            `, { headers: { 'Content-Type': 'text/html' } });
+          }
 
-        return fetch(event.request)
-          .catch(() => {
-            // Offline fallback for navigation requests
-            if (event.request.mode === 'navigate') {
-              return new Response(`
-                <!DOCTYPE html>
-                <html lang="en">
-                <head><meta charset="UTF-8"><title>Offline</title></head>
-                <body style="font-family:sans-serif;text-align:center;padding:2em;">
-                  <h1>🔌 Offline</h1>
-                  <p>This page is not available while offline.</p>
-                </body>
-                </html>
-              `, {
-                headers: { 'Content-Type': 'text/html' }
-              });
-            }
-          });
-      })
+          // ❌ Non-navigation request failed silently (no fallback)
+          return;
+        });
+    })
   );
 });
