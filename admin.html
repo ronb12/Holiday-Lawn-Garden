@@ -5,29 +5,140 @@
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="manifest.json" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f4f9f4; padding: 1em; }
-    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
-    h1, h2 { margin: 0.5em 0; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 2em; }
-    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
-    th { background: #e4f5e4; position: sticky; top: 0; }
-    .tag { padding: 0.2em 0.5em; border-radius: 5px; font-size: 0.85em; }
-    .pending { background: orange; color: white; }
-    .in-progress { background: dodgerblue; color: white; }
-    .completed { background: green; color: white; }
-    .paid { background: green; color: white; }
-    .unpaid { background: crimson; color: white; }
-    .section { background: white; padding: 1em; margin-bottom: 2em; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    .flex { display: flex; justify-content: space-between; gap: 1em; flex-wrap: wrap; }
-    button { padding: 0.5em 1em; margin-top: 0.5em; }
-    .progress-bar { height: 20px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 1em; }
-    .progress-fill { height: 100%; background: green; width: 0%; text-align: center; color: white; font-size: 0.9em; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f4f9f4;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header, footer {
+      background: #1a4d2e;
+      color: white;
+      text-align: center;
+      padding: 1.5em;
+    }
+
+    h1, h2 {
+      margin: 0.3em 0;
+    }
+
+    main {
+      padding: 2em;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 1.5em;
+      margin-bottom: 2em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75em;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #e8f5e9;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .tag {
+      padding: 0.3em 0.6em;
+      border-radius: 5px;
+      font-size: 0.85em;
+    }
+
+    .pending { background: #ff9800; color: white; }
+    .in-progress { background: #2196f3; color: white; }
+    .completed, .paid { background: #4caf50; color: white; }
+    .unpaid { background: #f44336; color: white; }
+
+    button {
+      background: #1a4d2e;
+      color: white;
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #145533;
+    }
+
+    /* Profit Calculator Styles */
+    #profitForm {
+      max-width: 400px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #profitForm label {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    #profitForm input {
+      padding: 0.6em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 0.3em;
+    }
+
+    #profitForm button {
+      margin-top: 2em;
+      background: #2e7d32;
+    }
+
+    #finalPrice {
+      text-align: center;
+      margin-top: 1.5em;
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    .progress-bar {
+      height: 25px;
+      background: #ccc;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 1em;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #2e7d32;
+      text-align: center;
+      color: white;
+      width: 0%;
+      line-height: 25px;
+    }
   </style>
 </head>
 <body>
@@ -63,13 +174,26 @@
 
   <div class="section">
     <h2>Auto-Profit Calculator</h2>
-    <label>Service Type: <input type="text" id="serviceType" placeholder="Lawn Mowing" /></label><br>
-    <label>Labor Cost: $<input type="number" id="laborCost" /></label><br>
-    <label>Materials Cost: $<input type="number" id="materialsCost" /></label><br>
-    <label>Overhead: $<input type="number" id="overheadCost" /></label><br>
-    <label>Guaranteed Profit: $<input type="number" id="profitTarget" value="50" /></label><br>
-    <button onclick="calculatePrice()">Calculate Final Price</button>
-    <p id="finalPrice"></p>
+    <form id="profitForm">
+      <label>Service Type:</label>
+      <input type="text" id="serviceType" placeholder="Lawn Mowing" />
+
+      <label>Labor Cost ($):</label>
+      <input type="number" id="laborCost" placeholder="e.g. 100" />
+
+      <label>Materials Cost ($):</label>
+      <input type="number" id="materialsCost" placeholder="e.g. 25" />
+
+      <label>Overhead ($):</label>
+      <input type="number" id="overheadCost" placeholder="e.g. 15" />
+
+      <label>Guaranteed Profit ($):</label>
+      <input type="number" id="profitTarget" value="50" />
+
+      <button type="button" onclick="calculatePrice()">Calculate Final Price</button>
+    </form>
+
+    <div id="finalPrice"></div>
     <div class="progress-bar"><div id="profitProgress" class="progress-fill">0%</div></div>
   </div>
 </main>
@@ -81,30 +205,27 @@
 <script>
   const db = firebase.firestore();
 
-  // Load service requests
   db.collection("requests").onSnapshot(snapshot => {
     const table = document.querySelector("#requestsTable tbody");
     table.innerHTML = "";
     snapshot.forEach(doc => {
       const data = doc.data();
-      const row = `
+      table.innerHTML += `
         <tr>
           <td>${data.name}</td>
           <td>${data.service}</td>
           <td><span class="tag ${data.status.toLowerCase().replace(" ", "-")}">${data.status}</span></td>
           <td>${new Date(data.createdAt?.seconds * 1000).toLocaleDateString()}</td>
         </tr>`;
-      table.innerHTML += row;
     });
   });
 
-  // Load quotes
   db.collection("quotes").onSnapshot(snapshot => {
     const table = document.querySelector("#quotesTable tbody");
     table.innerHTML = "";
     snapshot.forEach(doc => {
       const data = doc.data();
-      const row = `
+      table.innerHTML += `
         <tr>
           <td>${data.name}</td>
           <td>${data.service}</td>
@@ -112,17 +233,15 @@
           <td>${data.status}</td>
           <td><button onclick="convertToInvoice('${doc.id}', ${data.amount})">Convert</button></td>
         </tr>`;
-      table.innerHTML += row;
     });
   });
 
-  // Load invoices
   db.collection("invoices").onSnapshot(snapshot => {
     const table = document.querySelector("#invoicesTable tbody");
     table.innerHTML = "";
     snapshot.forEach(doc => {
       const data = doc.data();
-      const row = `
+      table.innerHTML += `
         <tr>
           <td>${data.customer}</td>
           <td>${data.invoiceNumber}</td>
@@ -130,11 +249,9 @@
           <td><span class="tag ${data.paid ? 'paid' : 'unpaid'}">${data.paid ? "Paid" : "Unpaid"}</span></td>
           <td><button onclick="downloadInvoice('${doc.id}')">PDF</button></td>
         </tr>`;
-      table.innerHTML += row;
     });
   });
 
-  // Convert quote to invoice
   function convertToInvoice(quoteId, amount) {
     db.collection("quotes").doc(quoteId).get().then(doc => {
       const data = doc.data();
@@ -149,7 +266,6 @@
     });
   }
 
-  // Download invoice as PDF
   async function downloadInvoice(invoiceId) {
     const doc = await db.collection("invoices").doc(invoiceId).get();
     const data = doc.data();
@@ -163,17 +279,14 @@
     pdf.save(`${data.invoiceNumber}.pdf`);
   }
 
-  // Profit calculator
   function calculatePrice() {
     const labor = parseFloat(document.getElementById("laborCost").value) || 0;
     const materials = parseFloat(document.getElementById("materialsCost").value) || 0;
     const overhead = parseFloat(document.getElementById("overheadCost").value) || 0;
     const targetProfit = parseFloat(document.getElementById("profitTarget").value) || 0;
-
     const totalCost = labor + materials + overhead;
     const finalPrice = totalCost + targetProfit;
     const percentProfit = ((targetProfit / finalPrice) * 100).toFixed(0);
-
     document.getElementById("finalPrice").innerText = `Suggested Price: $${finalPrice.toFixed(2)}`;
     const bar = document.getElementById("profitProgress");
     bar.style.width = percentProfit + "%";
