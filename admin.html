@@ -3,180 +3,221 @@
 <head>
   <meta charset="UTF-8" />
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="manifest.json" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
-
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: #f4f9f4;
       margin: 0;
-      padding: 0;
+      background: #f4f9f4;
       color: #333;
     }
-
     header, footer {
       background: #1a4d2e;
       color: white;
+      padding: 1em;
       text-align: center;
-      padding: 1.5em;
     }
-
     h1, h2 {
-      margin: 0.3em 0;
+      margin: 0.5em 0;
     }
-
-    main {
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      background: #e4f5e4;
+      padding: 1em;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .tab {
+      padding: 0.6em 1.2em;
+      border-radius: 5px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      border: 1px solid #ccc;
+    }
+    .tab.active {
+      background: #1a4d2e;
+      color: white;
+    }
+    .section {
+      display: none;
       padding: 2em;
       max-width: 1200px;
       margin: auto;
     }
-
-    .section {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 1.5em;
-      margin-bottom: 2em;
+    .section.active {
+      display: block;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1em;
     }
-
     th, td {
-      text-align: left;
+      border-bottom: 1px solid #ccc;
       padding: 0.75em;
-      border-bottom: 1px solid #ddd;
+      text-align: left;
     }
-
     th {
-      background: #e8f5e9;
-      font-weight: bold;
+      background: #e4f5e4;
       position: sticky;
-      top: 0;
-      z-index: 1;
+      top: 50px;
     }
-
     .tag {
       padding: 0.3em 0.6em;
-      border-radius: 5px;
+      border-radius: 4px;
       font-size: 0.85em;
     }
-
     .pending { background: #ff9800; color: white; }
     .in-progress { background: #2196f3; color: white; }
-    .completed, .paid { background: #4caf50; color: white; }
+    .completed { background: #4caf50; color: white; }
+    .paid { background: #4caf50; color: white; }
     .unpaid { background: #f44336; color: white; }
-
     button {
-      background: #1a4d2e;
-      color: white;
       padding: 0.5em 1em;
       border: none;
-      border-radius: 6px;
+      background: #1a4d2e;
+      color: white;
+      border-radius: 4px;
       cursor: pointer;
-      font-weight: bold;
     }
-
     button:hover {
       background: #145533;
     }
-
-    /* Profit Calculator Styles */
-    #profitForm {
-      max-width: 400px;
-      margin: auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    #profitForm label {
-      margin-top: 1em;
-      font-weight: bold;
-    }
-
-    #profitForm input {
+    input, select {
       padding: 0.6em;
-      border: 1px solid #ccc;
+      margin: 0.5em 0;
+      width: 100%;
       border-radius: 5px;
-      margin-top: 0.3em;
+      border: 1px solid #ccc;
     }
-
-    #profitForm button {
-      margin-top: 2em;
-      background: #2e7d32;
-    }
-
-    #finalPrice {
-      text-align: center;
-      margin-top: 1.5em;
-      font-size: 1.1em;
-      font-weight: bold;
-    }
-
     .progress-bar {
       height: 25px;
       background: #ccc;
       border-radius: 12px;
-      overflow: hidden;
       margin-top: 1em;
+      overflow: hidden;
     }
-
     .progress-fill {
       height: 100%;
       background: #2e7d32;
-      text-align: center;
       color: white;
-      width: 0%;
+      text-align: center;
       line-height: 25px;
+      width: 0%;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal-content {
+      background: white;
+      padding: 2em;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+    }
+    .modal h3 { margin-top: 0; }
+    .close-btn {
+      float: right;
+      font-size: 1.2em;
+      cursor: pointer;
+      color: #666;
+    }
+    .filter-search {
+      display: flex;
+      justify-content: space-between;
+      gap: 1em;
+      margin-bottom: 1em;
+      flex-wrap: wrap;
     }
   </style>
 </head>
 <body>
-<header>
-  <h1>Admin Dashboard</h1>
-  <p>Holliday's Lawn & Garden</p>
-</header>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <p>Holliday's Lawn & Garden</p>
+  </header>
 
-<main>
-  <div class="section">
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('requests')">Service Requests</div>
+    <div class="tab" onclick="showTab('quotes')">Quotes</div>
+    <div class="tab" onclick="showTab('invoices')">Invoices</div>
+    <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
+    <div class="tab" onclick="showModal('chatModal')">Chat 💬</div>
+    <div class="tab" onclick="showModal('notificationsModal')">🔔 Notifications</div>
+  </div>
+  <!-- Section: Service Requests -->
+  <div id="requests" class="section active">
     <h2>Service Requests</h2>
+    <div class="filter-search">
+      <input type="text" id="requestSearch" placeholder="Search by name or service..." oninput="filterTable('requestsTable', this.value)">
+    </div>
     <table id="requestsTable">
-      <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th></tr></thead>
+      <thead>
+        <tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <div class="section">
+  <!-- Section: Quotes -->
+  <div id="quotes" class="section">
     <h2>Quotes</h2>
+    <div class="filter-search">
+      <input type="text" id="quoteSearch" placeholder="Search by name or service..." oninput="filterTable('quotesTable', this.value)">
+      <button onclick="bulkConvert()">Convert All Approved to Invoices</button>
+    </div>
     <table id="quotesTable">
-      <thead><tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead>
+        <tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <div class="section">
+  <!-- Section: Invoices -->
+  <div id="invoices" class="section">
     <h2>Invoices</h2>
+    <div class="filter-search">
+      <input type="text" id="invoiceSearch" placeholder="Search by name or invoice number..." oninput="filterTable('invoicesTable', this.value)">
+    </div>
     <table id="invoicesTable">
-      <thead><tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead>
+        <tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
-
-  <div class="section">
+  <!-- Section: Profit Calculator -->
+  <div id="profit" class="section">
     <h2>Auto-Profit Calculator</h2>
-    <form id="profitForm">
+    <form id="profitForm" style="max-width: 400px; margin: auto;">
       <label>Service Type:</label>
-      <input type="text" id="serviceType" placeholder="Lawn Mowing" />
+      <select id="serviceType">
+        <option value="">-- Select Service --</option>
+        <option value="Lawn Mowing">Lawn Mowing</option>
+        <option value="Edging">Edging</option>
+        <option value="Leaf Cleanup">Leaf Cleanup</option>
+        <option value="Hedge Trimming">Hedge Trimming</option>
+        <option value="Mulching">Mulching</option>
+        <option value="Fertilizing">Fertilizing</option>
+      </select>
 
       <label>Labor Cost ($):</label>
       <input type="number" id="laborCost" placeholder="e.g. 100" />
@@ -193,11 +234,29 @@
       <button type="button" onclick="calculatePrice()">Calculate Final Price</button>
     </form>
 
-    <div id="finalPrice"></div>
+    <div id="finalPrice" style="text-align: center; font-weight: bold; margin-top: 1em;"></div>
     <div class="progress-bar"><div id="profitProgress" class="progress-fill">0%</div></div>
   </div>
-</main>
 
+  <!-- Notifications Modal -->
+  <div id="notificationsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
+      <h3>🔔 Recent Notifications</h3>
+      <ul id="notificationsList"></ul>
+    </div>
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
+      <h3>💬 Real-Time Chat</h3>
+      <div style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em; margin-bottom: 1em;" id="chatMessages"></div>
+      <input type="text" id="chatInput" placeholder="Type a message..." />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
 <footer>
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
@@ -205,6 +264,24 @@
 <script>
   const db = firebase.firestore();
 
+  function showTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    [...document.querySelectorAll('.tab')].find(tab => tab.textContent.includes(id.charAt(0).toUpperCase() + id.slice(1))).classList.add('active');
+  }
+
+  function showModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    if (id === 'notificationsModal') loadNotifications();
+    if (id === 'chatModal') loadChat();
+  }
+
+  function hideModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  // Load Requests
   db.collection("requests").onSnapshot(snapshot => {
     const table = document.querySelector("#requestsTable tbody");
     table.innerHTML = "";
@@ -214,12 +291,13 @@
         <tr>
           <td>${data.name}</td>
           <td>${data.service}</td>
-          <td><span class="tag ${data.status.toLowerCase().replace(" ", "-")}">${data.status}</span></td>
+          <td><span class="tag ${data.status?.toLowerCase().replace(" ", "-")}">${data.status}</span></td>
           <td>${new Date(data.createdAt?.seconds * 1000).toLocaleDateString()}</td>
         </tr>`;
     });
   });
 
+  // Load Quotes
   db.collection("quotes").onSnapshot(snapshot => {
     const table = document.querySelector("#quotesTable tbody");
     table.innerHTML = "";
@@ -229,13 +307,14 @@
         <tr>
           <td>${data.name}</td>
           <td>${data.service}</td>
-          <td>$${data.amount.toFixed(2)}</td>
+          <td>$${data.amount?.toFixed(2)}</td>
           <td>${data.status}</td>
           <td><button onclick="convertToInvoice('${doc.id}', ${data.amount})">Convert</button></td>
         </tr>`;
     });
   });
 
+  // Load Invoices
   db.collection("invoices").onSnapshot(snapshot => {
     const table = document.querySelector("#invoicesTable tbody");
     table.innerHTML = "";
@@ -245,7 +324,7 @@
         <tr>
           <td>${data.customer}</td>
           <td>${data.invoiceNumber}</td>
-          <td>$${data.amount.toFixed(2)}</td>
+          <td>$${data.amount?.toFixed(2)}</td>
           <td><span class="tag ${data.paid ? 'paid' : 'unpaid'}">${data.paid ? "Paid" : "Unpaid"}</span></td>
           <td><button onclick="downloadInvoice('${doc.id}')">PDF</button></td>
         </tr>`;
@@ -266,6 +345,22 @@
     });
   }
 
+  function bulkConvert() {
+    db.collection("quotes").where("status", "==", "Approved").get().then(snapshot => {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        db.collection("invoices").add({
+          customer: data.name,
+          amount: data.amount,
+          invoiceNumber: `INV${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          paid: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+      alert("✅ All approved quotes converted to invoices.");
+    });
+  }
+
   async function downloadInvoice(invoiceId) {
     const doc = await db.collection("invoices").doc(invoiceId).get();
     const data = doc.data();
@@ -274,8 +369,9 @@
     pdf.text("Invoice - Holliday's Lawn & Garden", 10, 10);
     pdf.text(`Invoice #: ${data.invoiceNumber}`, 10, 20);
     pdf.text(`Customer: ${data.customer}`, 10, 30);
-    pdf.text(`Amount: $${data.amount.toFixed(2)}`, 10, 40);
+    pdf.text(`Amount: $${data.amount?.toFixed(2)}`, 10, 40);
     pdf.text(`Status: ${data.paid ? "Paid" : "Unpaid"}`, 10, 50);
+    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 10, 60);
     pdf.save(`${data.invoiceNumber}.pdf`);
   }
 
@@ -291,6 +387,50 @@
     const bar = document.getElementById("profitProgress");
     bar.style.width = percentProfit + "%";
     bar.innerText = percentProfit + "% Profit";
+  }
+
+  function loadNotifications() {
+    db.collection("notifications").orderBy("timestamp", "desc").limit(10).get().then(snapshot => {
+      const ul = document.getElementById("notificationsList");
+      ul.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        ul.innerHTML += `<li>${data.message} (${new Date(data.timestamp?.seconds * 1000).toLocaleString()})</li>`;
+      });
+    });
+  }
+
+  function loadChat() {
+    const msgBox = document.getElementById("chatMessages");
+    db.collection("admin_chat").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+      msgBox.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        msgBox.innerHTML += `<div><strong>${data.sender}:</strong> ${data.text}</div>`;
+      });
+      msgBox.scrollTop = msgBox.scrollHeight;
+    });
+  }
+
+  function sendChat() {
+    const input = document.getElementById("chatInput");
+    const text = input.value.trim();
+    if (text) {
+      db.collection("admin_chat").add({
+        sender: "Admin",
+        text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      input.value = "";
+    }
+  }
+
+  function filterTable(tableId, query) {
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    rows.forEach(row => {
+      const match = row.innerText.toLowerCase().includes(query.toLowerCase());
+      row.style.display = match ? "" : "none";
+    });
   }
 </script>
 </body>
