@@ -43,14 +43,17 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
-      return response || fetch(event.request).then(networkResponse => {
-        return networkResponse;
-      }).catch(err => {
+      return response || fetch(event.request).catch(err => {
         console.warn('⚠️ Network request failed:', err);
-        // Fallback response to avoid TypeError
-        return new Response('<h1>Offline</h1><p>The app is offline and the resource was not cached.</p>', {
-          headers: { 'Content-Type': 'text/html' }
-        });
+        // ✅ Return valid fallback Response with required properties
+        return new Response(
+          `<html><body><h1>Offline</h1><p>This page is not cached and you are offline.</p></body></html>`,
+          {
+            status: 200,
+            statusText: 'OK',
+            headers: { 'Content-Type': 'text/html' }
+          }
+        );
       });
     })
   );
