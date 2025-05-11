@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holliday-lawn-cache-v3'; // 🔁 Bumped cache version
+const CACHE_NAME = 'holliday-lawn-cache-v3'; // Updated cache version
 
 const urlsToCache = [
   'index.html',
@@ -10,53 +10,58 @@ const urlsToCache = [
   'Hollidays_Lawn_Garden_Logo.png'
 ];
 
-// ✅ INSTALL EVENT: Cache core assets
+// ✅ INSTALL: Cache static assets
 self.addEventListener('install', event => {
-  self.skipWaiting(); // Activate this SW immediately
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('📦 Caching assets');
         return cache.addAll(urlsToCache);
       })
-      .catch(err => {
-        console.error('❌ Error caching assets:', err);
-      })
+      .catch(err => console.error('❌ Error caching assets:', err))
   );
 });
 
-// ✅ ACTIVATE EVENT: Clean old caches
+// ✅ ACTIVATE: Clean up old caches
 self.addEventListener('activate', event => {
-  const keepCaches = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys().then(keys => {
+      return Promise.all(
         keys.map(key => {
-          if (!keepCaches.includes(key)) {
+          if (key !== CACHE_NAME) {
             console.log(`🧹 Deleting old cache: ${key}`);
             return caches.delete(key);
           }
         })
-      )
-    ).then(() => self.clients.claim())
+      );
+    }).then(() => self.clients.claim())
   );
 });
 
-// ✅ FETCH EVENT: Cache-first strategy with fallback + error handling
+// ✅ FETCH: Serve from cache, fallback to network, fallback to offline page
 self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return; // Only handle GET requests
+
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      return cached || fetch(event.request)
-        .then(response => {
-          return response;
-        })
-        .catch(err => {
-          console.warn('⚠️ Fetch failed; serving fallback HTML', err);
-          return new Response(
-            '<h1>Offline</h1><p>This page is not available offline.</p>',
-            { headers: { 'Content-Type': 'text/html' } }
-          );
+    caches.match(event.request)
+      .then(cachedResponse => {
+        return cachedResponse || fetch(event.request);
+      })
+      .catch(() => {
+        return new Response(`
+          <!DOCTYPE html>
+          <html lang="en">
+          <head><meta charset="UTF-8"><title>Offline</title></head>
+          <body>
+            <h1>Offline</h1>
+            <p>This page is not available offline.</p>
+          </body>
+          </html>
+        `, {
+          headers: { 'Content-Type': 'text/html' }
         });
-    })
+      })
   );
 });
+
