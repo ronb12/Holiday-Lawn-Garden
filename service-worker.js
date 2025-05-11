@@ -1,4 +1,5 @@
-const CACHE_NAME = 'holliday-lawn-cache-v2';
+const CACHE_NAME = 'holliday-lawn-cache-v3'; // 🔁 Bumped cache version
+
 const urlsToCache = [
   'index.html',
   'admin.html',
@@ -9,27 +10,29 @@ const urlsToCache = [
   'Hollidays_Lawn_Garden_Logo.png'
 ];
 
-// ✅ Install: cache files
+// ✅ INSTALL EVENT: Cache core assets
 self.addEventListener('install', event => {
-  self.skipWaiting();
+  self.skipWaiting(); // Activate this SW immediately
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('📦 Caching assets');
-      return cache.addAll(urlsToCache).catch(err => {
-        console.error('❌ Cache addAll error:', err);
-      });
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('📦 Caching assets');
+        return cache.addAll(urlsToCache);
+      })
+      .catch(err => {
+        console.error('❌ Error caching assets:', err);
+      })
   );
 });
 
-// ✅ Activate: delete old caches
+// ✅ ACTIVATE EVENT: Clean old caches
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
+  const keepCaches = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
-          if (!cacheWhitelist.includes(key)) {
+          if (!keepCaches.includes(key)) {
             console.log(`🧹 Deleting old cache: ${key}`);
             return caches.delete(key);
           }
@@ -39,22 +42,21 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ✅ Fetch: try cache first, fallback to network, catch failures
+// ✅ FETCH EVENT: Cache-first strategy with fallback + error handling
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request).catch(err => {
-        console.warn('⚠️ Network request failed:', err);
-        // ✅ Return valid fallback Response with required properties
-        return new Response(
-          `<html><body><h1>Offline</h1><p>This page is not cached and you are offline.</p></body></html>`,
-          {
-            status: 200,
-            statusText: 'OK',
-            headers: { 'Content-Type': 'text/html' }
-          }
-        );
-      });
+    caches.match(event.request).then(cached => {
+      return cached || fetch(event.request)
+        .then(response => {
+          return response;
+        })
+        .catch(err => {
+          console.warn('⚠️ Fetch failed; serving fallback HTML', err);
+          return new Response(
+            '<h1>Offline</h1><p>This page is not available offline.</p>',
+            { headers: { 'Content-Type': 'text/html' } }
+          );
+        });
     })
   );
 });
