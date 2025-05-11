@@ -19,11 +19,11 @@
     .tab.active { background: #1a4d2e; color: white; }
     .section { display: none; padding: 2em; max-width: 1200px; margin: auto; }
     .section.active { display: block; }
-    button { padding: 0.5em 1em; border: none; background: #1a4d2e; color: white; border-radius: 4px; cursor: pointer; }
-    .actions-bar { display: flex; justify-content: flex-end; padding: 0.5em 1em; gap: 0.5em; }
     table { width: 100%; border-collapse: collapse; margin-top: 1em; }
     th, td { padding: 0.75em; border-bottom: 1px solid #ccc; text-align: left; }
-    select { padding: 0.4em; }
+    select, input[type="text"], input[type="number"] { padding: 0.4em; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 0.5em 1em; border: none; background: #1a4d2e; color: white; border-radius: 4px; cursor: pointer; }
+    .actions-bar { display: flex; justify-content: flex-end; gap: 0.5em; margin: 1em; }
     .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100; }
     .modal-content { background: white; padding: 2em; border-radius: 8px; width: 90%; max-width: 500px; }
     .close-btn { float: right; cursor: pointer; color: #666; font-size: 1.2em; }
@@ -36,313 +36,302 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>Admin Dashboard</h1>
-    <p>Holliday's Lawn & Garden</p>
-  </header>
+<header>
+  <h1>Admin Dashboard</h1>
+  <p>Holliday's Lawn & Garden</p>
+</header>
 
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('requests')">Service Requests</div>
-    <div class="tab" onclick="showTab('quotes')">Quotes</div>
-    <div class="tab" onclick="showTab('invoices')">Invoices</div>
-    <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
-    <div class="tab" onclick="showTab('customers')">Customers</div>
-    <div class="tab" onclick="showTab('settings')">Settings</div>
-    <div class="tab" onclick="showModal('chatModal')">Chat</div>
-    <div class="tab" onclick="showModal('notificationsModal')">Notifications</div>
-    <label style="margin-left:auto;">
-      <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" /> 🌙 Dark Mode
-    </label>
+<div class="tabs">
+  <div class="tab active" onclick="showTab('requests')">Service Requests</div>
+  <div class="tab" onclick="showTab('quotes')">Quotes</div>
+  <div class="tab" onclick="showTab('invoices')">Invoices</div>
+  <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
+  <div class="tab" onclick="showTab('customers')">Customers</div>
+  <div class="tab" onclick="showTab('settings')">Settings</div>
+  <div class="tab" onclick="showModal('chatModal')">Chat</div>
+  <div class="tab" onclick="showModal('notificationsModal')">Notifications</div>
+  <label style="margin-left:auto;"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" /> 🌙</label>
+</div>
+
+<div class="actions-bar">
+  <button onclick="goHome()">🏠 Home</button>
+  <button onclick="logout()">🚪 Logout</button>
+</div>
+
+<div id="requests" class="section active">
+  <h2>Service Requests</h2>
+  <table id="requestsTable">
+    <thead>
+      <tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="quotes" class="section">
+  <h2>Quotes</h2>
+  <table id="quotesTable">
+    <thead>
+      <tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="invoices" class="section">
+  <h2>Invoices</h2>
+  <table id="invoicesTable">
+    <thead>
+      <tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div id="profit" class="section">
+  <h2>Profit Calculator</h2>
+  <input id="laborCost" placeholder="Labor Cost">
+  <input id="materialsCost" placeholder="Materials Cost">
+  <input id="overheadCost" placeholder="Overhead">
+  <input id="profitTarget" placeholder="Profit" value="50">
+  <button onclick="calculatePrice()">Calculate</button>
+  <div id="finalPrice"></div>
+</div>
+
+<div id="customers" class="section">
+  <h2>Customers</h2>
+  <table id="customersTable">
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+<div id="settings" class="section">
+  <h2>Settings</h2>
+  <label>Default Profit ($):</label>
+  <input type="number" id="defaultProfit" value="50" />
+  <label>PayPal Business ID:</label>
+  <input type="text" id="paypalID" value="business@example.com" />
+  <button onclick="saveSettings()">Save</button>
+  <p id="settingsStatus" style="color:green; margin-top:1em;"></p>
+</div>
+
+<div id="chatModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
+    <h3>💬 Real-Time Chat</h3>
+    <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em; margin-bottom: 1em;"></div>
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+    <button onclick="sendChat()">Send</button>
   </div>
+</div>
 
-  <div class="actions-bar">
-    <button onclick="goHome()">🏠 Home</button>
-    <button onclick="logout()">🚪 Logout</button>
+<div id="notificationsModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
+    <h3>🔔 Recent Notifications</h3>
+    <ul id="notificationsList"></ul>
   </div>
+</div>
 
-  <div id="requests" class="section active">
-    <h2>Service Requests</h2>
-    <table id="requestsTable">
-      <thead>
-        <tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-  <div id="quotes" class="section">
-    <h2>Quotes</h2>
-    <table id="quotesTable">
-      <thead>
-        <tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
 
-  <div id="invoices" class="section">
-    <h2>Invoices</h2>
-    <table id="invoicesTable">
-      <thead>
-        <tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+<script>
+  const db = firebase.firestore();
 
-  <div id="profit" class="section">
-    <h2>Profit Calculator</h2>
-    <input id="laborCost" placeholder="Labor Cost">
-    <input id="materialsCost" placeholder="Materials Cost">
-    <input id="overheadCost" placeholder="Overhead">
-    <input id="profitTarget" placeholder="Profit" value="50">
-    <button onclick="calculatePrice()">Calculate</button>
-    <div id="finalPrice"></div>
-  </div>
+  function showTab(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(id)).classList.add('active');
+  }
 
-  <div id="customers" class="section">
-    <h2>Customers</h2>
-    <table id="customersTable">
-      <thead>
-        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+  }
 
-  <div id="settings" class="section">
-    <h2>Settings</h2>
-    <label>Default Profit ($):</label>
-    <input type="number" id="defaultProfit" value="50" />
-    <label>PayPal Business ID:</label>
-    <input type="text" id="paypalID" value="business@example.com" />
-    <button onclick="saveSettings()">Save</button>
-    <p id="settingsStatus" style="color:green; margin-top:1em;"></p>
-  </div>
+  function showModal(id) {
+    document.getElementById(id).style.display = 'flex';
+    if (id === 'chatModal') loadChat();
+    if (id === 'notificationsModal') loadNotifications();
+  }
 
-  <div id="chatModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
-      <h3>💬 Real-Time Chat</h3>
-      <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em; margin-bottom: 1em;"></div>
-      <input type="text" id="chatInput" placeholder="Type a message..." />
-      <button onclick="sendChat()">Send</button>
-    </div>
-  </div>
+  function hideModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
 
-  <div id="notificationsModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
-      <h3>🔔 Recent Notifications</h3>
-      <ul id="notificationsList"></ul>
-    </div>
-  </div>
+  function calculatePrice() {
+    const labor = parseFloat(document.getElementById("laborCost").value) || 0;
+    const materials = parseFloat(document.getElementById("materialsCost").value) || 0;
+    const overhead = parseFloat(document.getElementById("overheadCost").value) || 0;
+    const profit = parseFloat(document.getElementById("profitTarget").value) || 0;
+    const total = labor + materials + overhead + profit;
+    const percent = ((profit / total) * 100).toFixed(0);
+    document.getElementById("finalPrice").innerText = `Total: $${total.toFixed(2)} (${percent}% Profit)`;
+  }
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
-  </footer>
+  function saveSettings() {
+    localStorage.setItem("defaultProfit", document.getElementById("defaultProfit").value);
+    localStorage.setItem("paypalID", document.getElementById("paypalID").value);
+    document.getElementById("settingsStatus").innerText = "✅ Settings saved.";
+  }
 
-  <script>
-    const db = firebase.firestore();
-
-    function showTab(id) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(id)).classList.add('active');
-    }
-
-    function showModal(id) {
-      document.getElementById(id).style.display = 'flex';
-      if (id === 'chatModal') loadChat();
-      if (id === 'notificationsModal') loadNotifications();
-    }
-
-    function hideModal(id) {
-      document.getElementById(id).style.display = 'none';
-    }
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-      localStorage.setItem("darkMode", document.body.classList.contains("dark"));
-    }
-
-    function calculatePrice() {
-      const labor = parseFloat(document.getElementById("laborCost").value) || 0;
-      const materials = parseFloat(document.getElementById("materialsCost").value) || 0;
-      const overhead = parseFloat(document.getElementById("overheadCost").value) || 0;
-      const targetProfit = parseFloat(document.getElementById("profitTarget").value) || 0;
-      const totalCost = labor + materials + overhead;
-      const finalPrice = totalCost + targetProfit;
-      const percentProfit = ((targetProfit / finalPrice) * 100).toFixed(0);
-      document.getElementById("finalPrice").innerText = `Suggested Price: $${finalPrice.toFixed(2)} (${percentProfit}% Profit)`;
-    }
-
-    function saveSettings() {
-      const profit = document.getElementById("defaultProfit").value;
-      const paypal = document.getElementById("paypalID").value;
-      localStorage.setItem("defaultProfit", profit);
-      localStorage.setItem("paypalID", paypal);
-      document.getElementById("settingsStatus").innerText = "✅ Settings saved locally.";
-    }
-
-    function goHome() {
+  function logout() {
+    firebase.auth().signOut().then(() => {
+      alert("✅ Successfully logged out.");
       window.location.href = 'index.html';
-    }
-
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        alert("✅ Successfully logged out.");
-        window.location.href = 'index.html';
-      }).catch(error => {
-        console.error("Logout Error:", error);
-      });
-    }
-
-    function sendChat() {
-      const input = document.getElementById("chatInput");
-      const text = input.value.trim();
-      if (text) {
-        db.collection("admin_chat").add({
-          sender: "Admin",
-          text,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        input.value = "";
-      }
-    }
-
-    function loadChat() {
-      const msgBox = document.getElementById("chatMessages");
-      db.collection("admin_chat").orderBy("timestamp", "asc").onSnapshot(snapshot => {
-        msgBox.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          msgBox.innerHTML += `<div><strong>${data.sender}:</strong> ${data.text}</div>`;
-        });
-        msgBox.scrollTop = msgBox.scrollHeight;
-      });
-    }
-
-    function loadNotifications() {
-      db.collection("notifications").orderBy("timestamp", "desc").limit(10).get().then(snapshot => {
-        const ul = document.getElementById("notificationsList");
-        ul.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          ul.innerHTML += `<li>${data.message} (${new Date(data.timestamp?.seconds * 1000).toLocaleString()})</li>`;
-        });
-      });
-    }
-
-    function updateStatus(docId, newStatus) {
-      db.collection("service_requests").doc(docId).update({ status: newStatus });
-    }
-
-    function convertToQuote(id, name, service, notes) {
-      const amount = prompt(`Enter quote amount for ${service}:`);
-      if (!amount) return;
-      db.collection("quotes").add({
-        name,
-        service,
-        amount: parseFloat(amount),
-        status: 'Pending',
-        notes,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        db.collection("service_requests").doc(id).update({ status: 'Quoted' });
-        alert("✅ Converted to Quote");
-      });
-    }
-
-    function deleteRequest(id) {
-      if (confirm("Delete this request?")) {
-        db.collection("service_requests").doc(id).delete();
-      }
-    }
-
-    window.addEventListener("load", () => {
-      if (localStorage.getItem("darkMode") === "true") {
-        document.body.classList.add("dark");
-        document.getElementById("darkModeToggle").checked = true;
-      }
+    }).catch(error => {
+      console.error("Logout Error:", error);
     });
+  }
 
-    firebase.auth().onAuthStateChanged(async user => {
-      if (!user) return alert("❌ Not logged in.");
-      const profile = await db.collection("users").doc(user.uid).get();
-      if (!profile.exists || profile.data().role !== "admin") return alert("⛔ Access denied.");
+  function goHome() {
+    window.location.href = 'index.html';
+  }
 
-      db.collection("service_requests").onSnapshot(snapshot => {
-        const table = document.querySelector("#requestsTable tbody");
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          table.innerHTML += `
-            <tr>
-              <td>${d.fullName || d.name || '—'}</td>
-              <td>${d.serviceType || d.service || '—'}</td>
-              <td>
-                <select onchange="updateStatus('${doc.id}', this.value)">
-                  <option ${d.status === 'New' ? 'selected' : ''}>New</option>
-                  <option ${d.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                  <option ${d.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                </select>
-              </td>
-              <td>${d.submittedAt?.seconds ? new Date(d.submittedAt.seconds * 1000).toLocaleDateString() : '—'}</td>
-              <td>
-                <button onclick="convertToQuote('${doc.id}', '${d.fullName || d.name}', '${d.serviceType || d.service}', \`${d.notes || ''}\`)">💬 Quote</button>
-                <button onclick="deleteRequest('${doc.id}')">🗑️</button>
-              </td>
-            </tr>`;
-        });
+  function sendChat() {
+    const text = document.getElementById("chatInput").value.trim();
+    if (text) {
+      db.collection("admin_chat").add({
+        sender: "Admin",
+        text,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
       });
+      document.getElementById("chatInput").value = "";
+    }
+  }
 
-      db.collection("quotes").onSnapshot(snapshot => {
-        const table = document.querySelector("#quotesTable tbody");
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          table.innerHTML += `
-            <tr>
-              <td>${d.name}</td>
-              <td>${d.service}</td>
-              <td>$${d.amount?.toFixed(2)}</td>
-              <td>${d.status}</td>
-              <td><button onclick="alert('${d.notes || 'No notes'}')">View</button></td>
-            </tr>`;
-        });
+  function loadChat() {
+    const box = document.getElementById("chatMessages");
+    db.collection("admin_chat").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+      box.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        box.innerHTML += `<div><strong>${d.sender}:</strong> ${d.text}</div>`;
       });
+      box.scrollTop = box.scrollHeight;
+    });
+  }
 
-      db.collection("invoices").onSnapshot(snapshot => {
-        const table = document.querySelector("#invoicesTable tbody");
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          table.innerHTML += `
-            <tr>
-              <td>${d.customer}</td>
-              <td>${d.invoiceNumber}</td>
-              <td>$${d.amount?.toFixed(2)}</td>
-              <td><span class="tag ${d.paid ? 'paid' : 'unpaid'}">${d.paid ? 'Paid' : 'Unpaid'}</span></td>
-              <td><button>PDF</button></td>
-            </tr>`;
-        });
-      });
-
-      db.collection("customers").onSnapshot(snapshot => {
-        const table = document.querySelector("#customersTable tbody");
-        table.innerHTML = "";
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          table.innerHTML += `
-            <tr>
-              <td>${d.name}</td>
-              <td>${d.email}</td>
-              <td>${d.phone}</td>
-              <td>${(d.address?.street || '')}, ${(d.address?.city || '')}</td>
-            </tr>`;
-        });
+  function loadNotifications() {
+    const ul = document.getElementById("notificationsList");
+    db.collection("notifications").orderBy("timestamp", "desc").limit(10).get().then(snapshot => {
+      ul.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        ul.innerHTML += `<li>${d.message} (${new Date(d.timestamp?.seconds * 1000).toLocaleString()})</li>`;
       });
     });
-  </script>
+  }
+
+  function updateStatus(docId, newStatus) {
+    db.collection("service_requests").doc(docId).update({ status: newStatus });
+  }
+
+  function convertToQuote(id, name, service, notes) {
+    const amount = prompt(`Enter quote amount for ${service}:`);
+    if (!amount) return;
+    db.collection("quotes").add({
+      name,
+      service,
+      amount: parseFloat(amount),
+      status: 'Pending',
+      notes,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      db.collection("service_requests").doc(id).update({ status: 'Quoted' });
+      alert("✅ Converted to Quote");
+    });
+  }
+
+  function deleteRequest(id) {
+    if (confirm("Delete this request?")) {
+      db.collection("service_requests").doc(id).delete();
+    }
+  }
+
+  firebase.auth().onAuthStateChanged(async user => {
+    if (!user) return alert("❌ Not logged in.");
+    const profile = await db.collection("users").doc(user.uid).get();
+    if (!profile.exists || profile.data().role !== "admin") return alert("⛔ Access denied.");
+
+    db.collection("service_requests").onSnapshot(snapshot => {
+      const table = document.querySelector("#requestsTable tbody");
+      table.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `
+          <tr>
+            <td>${d.fullName || d.name || '—'}</td>
+            <td>${d.serviceType || d.service || '—'}</td>
+            <td>
+              <select onchange="updateStatus('${doc.id}', this.value)">
+                <option ${d.status === 'New' ? 'selected' : ''}>New</option>
+                <option ${d.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option ${d.status === 'Completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </td>
+            <td>${d.submittedAt?.seconds ? new Date(d.submittedAt.seconds * 1000).toLocaleDateString() : '—'}</td>
+            <td>
+              <button onclick="convertToQuote('${doc.id}', '${d.fullName || d.name}', '${d.serviceType || d.service}', \`${d.notes || ''}\`)">💬 Quote</button>
+              <button onclick="alert('📋 Notes: ${d.notes || 'No notes provided'}')">📄 View</button>
+              <button onclick="deleteRequest('${doc.id}')">🗑️</button>
+            </td>
+          </tr>`;
+      });
+    });
+
+    db.collection("quotes").onSnapshot(snapshot => {
+      const table = document.querySelector("#quotesTable tbody");
+      table.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `
+          <tr>
+            <td>${d.name}</td>
+            <td>${d.service}</td>
+            <td>$${d.amount?.toFixed(2)}</td>
+            <td>${d.status}</td>
+            <td><button onclick="alert('${d.notes || 'No notes'}')">View</button></td>
+          </tr>`;
+      });
+    });
+
+    db.collection("invoices").onSnapshot(snapshot => {
+      const table = document.querySelector("#invoicesTable tbody");
+      table.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `
+          <tr>
+            <td>${d.customer}</td>
+            <td>${d.invoiceNumber}</td>
+            <td>$${d.amount?.toFixed(2)}</td>
+            <td><span class="tag ${d.paid ? 'paid' : 'unpaid'}">${d.paid ? 'Paid' : 'Unpaid'}</span></td>
+            <td><button>PDF</button></td>
+          </tr>`;
+      });
+    });
+
+    db.collection("customers").onSnapshot(snapshot => {
+      const table = document.querySelector("#customersTable tbody");
+      table.innerHTML = "";
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        table.innerHTML += `
+          <tr>
+            <td>${d.name}</td>
+            <td>${d.email}</td>
+            <td>${d.phone}</td>
+            <td>${(d.address?.street || '')}, ${(d.address?.city || '')}</td>
+          </tr>`;
+      });
+    });
+  });
+</script>
 </body>
 </html>
