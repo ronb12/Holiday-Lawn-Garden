@@ -438,8 +438,33 @@
       if (localStorage.getItem("darkMode") === "true") {
         document.body.classList.add("dark");
         document.getElementById("darkModeToggle").checked = true;
+      });
+
+    function updateStatus(docId, newStatus) {
+      db.collection("service_requests").doc(docId).update({ status: newStatus });
+    }
+
+    function convertToQuote(id, name, service, notes) {
+      const amount = prompt(`Enter quote amount for ${service}:`);
+      if (!amount) return;
+      db.collection("quotes").add({
+        name,
+        service,
+        amount: parseFloat(amount),
+        status: 'Pending',
+        notes,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        db.collection("service_requests").doc(id).update({ status: 'Quoted' });
+        alert("✅ Converted to Quote");
+      });
+    }
+
+    function deleteRequest(id) {
+      if (confirm("Delete this request?")) {
+        db.collection("service_requests").doc(id).delete();
       }
-    });
+    }
   </script>
 </body>
 </html>
