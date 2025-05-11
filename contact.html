@@ -61,21 +61,22 @@
     document.getElementById('contactForm').addEventListener('submit', async function(e) {
       e.preventDefault();
 
-      const fullName = document.getElementById('name').value;
+      const name = document.getElementById('name').value;
       const email = document.getElementById('email').value;
       const phone = document.getElementById('phone').value;
       const notes = document.getElementById('message').value;
 
       try {
         await db.collection('service_requests').add({
-          fullName,
+          name,                            // required for admin.html
+          service: "Contact Form",         // display service
+          status: "New",                   // default status tag
           email,
           phone,
           notes,
-          serviceType: "Contact Form",
-          preferredDate: new Date().toISOString(),
-          submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp() // timestamp used in admin
         });
+
         alert("✅ Message sent successfully! We’ll be in touch.");
         document.getElementById('contactForm').reset();
       } catch (error) {
