@@ -3,257 +3,240 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; }
-    header, footer { background: #228B22; color: white; text-align: center; padding: 1em; }
-    nav.tabs { display: flex; justify-content: space-around; background: #e2f0e2; padding: 0.5em 0; }
-    nav.tabs button { background: none; border: none; font-weight: bold; color: #228B22; cursor: pointer; }
-    nav.tabs button.active { text-decoration: underline; }
-    .tab-content { display: none; padding: 1em; }
-    .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; margin: 1em 0; }
-    th, td { border: 1px solid #ccc; padding: 10px; }
-    th { background-color: #228B22; color: white; }
-    input, select, button { margin: 5px 0; padding: 8px; width: 100%; }
-    .service-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .service-row input, .service-row select { flex: 1; }
-    .badge { background: red; color: white; padding: 2px 6px; border-radius: 50%; font-size: 0.8em; vertical-align: top; }
-    #footer { text-align: center; margin-top: 20px; color: #666; }
+    body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
+    h1, h2 { color: #228B22; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.75em; text-align: left; }
+    th { background: #228B22; color: white; }
+    input, textarea, select, button {
+      width: 100%; padding: 0.5em; margin-top: 0.5em; box-sizing: border-box;
+    }
+    button {
+      background: #228B22; color: white; border: none; cursor: pointer;
+      padding: 6px 12px; border-radius: 6px;
+    }
+    button:hover { background: #1a6b1a; }
+    .logout-btn {
+      background: #228B22;
+      color: white;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .profile-toggle {
+      font-size: 20px;
+      cursor: pointer;
+      margin-right: 12px;
+    }
+    #profileModal, #paypalModal, #chatModal {
+      display: none;
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
+      width: 320px;
+    }
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+    .profile-info label {
+      font-weight: bold;
+      display: block;
+      margin-top: 0.5em;
+    }
+    #chatMessages {
+      background: #f9f9f9;
+      height: 200px;
+      overflow-y: auto;
+      padding: 1em;
+      margin-bottom: 1em;
+      border: 1px solid #ccc;
+    }
+    .chat-bubble {
+      max-width: 75%;
+      padding: 0.5em 1em;
+      border-radius: 1em;
+      margin-bottom: 0.5em;
+    }
+    .chat-bubble.customer { background: #e5e5ea; }
+    .chat-bubble.admin { background: #d1f7c4; text-align: right; }
+    .pdf-btn { margin-top: 5px; font-size: 0.8em; background: #555; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Admin Dashboard - Holliday's Lawn & Garden</h1>
-  </header>
-  <nav class="tabs">
-    <button onclick="switchTab('invoicesTab')" class="active">Invoices</button>
-    <button onclick="switchTab('quotesTab')">Quotes</button>
-    <button onclick="switchTab('requestsTab')">Requests</button>
-    <button onclick="switchTab('profitTab')">Profit Calculator</button>
-  </nav>
+<div class="header-bar">
+  <h1>Welcome to Your Dashboard</h1>
+  <div style="display: flex; gap: 1em; align-items: center;">
+    <div class="profile-toggle" onclick="toggleProfileModal()">👤</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+<!-- Quotes Table -->
+<h2>Your Quotes</h2>
+<table id="quotesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
 
-  <!-- Invoices Tab -->
-  <section id="invoicesTab" class="tab-content active">
-    <h2>Create Invoice</h2>
-    <form id="invoiceForm" onsubmit="createInvoice(event)">
-      <input type="email" id="invoiceEmail" placeholder="Customer Email" required />
-      <input type="text" id="invoiceNumber" placeholder="Invoice Number" required />
-      <input type="date" id="invoiceDueDate" required />
-      <div id="serviceList"></div>
-      <button type="button" onclick="addServiceRow()">+ Add Service</button>
-      <p>Total: $<span id="totalAmount">0.00</span></p>
-      <button type="submit">Create Invoice</button>
-    </form>
-    <h3>Unpaid Invoices</h3>
-    <table id="invoicesDueTable"><thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
-    <h3>Paid Invoices</h3>
-    <table id="invoicesPaidTable"><thead><tr><th>Email</th><th>#</th><th>Amount</th><th>Due</th><th>Status</th></tr></thead><tbody></tbody></table>
-  </section>
+<!-- Invoices Table -->
+<h2>Your Invoices</h2>
+<table id="invoicesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
 
-  <!-- Quotes Tab -->
-  <section id="quotesTab" class="tab-content">
-    <h2>Create Quote</h2>
-    <form id="quoteForm" onsubmit="createQuote(event)">
-      <input type="email" id="quoteEmail" placeholder="Customer Email" required />
-      <input type="text" id="quoteNumber" placeholder="Quote Description" required />
-      <input type="number" id="quoteAmount" placeholder="Amount ($)" required />
-      <button type="submit">Create Quote</button>
-    </form>
-    <h3>All Quotes</h3>
-    <table id="quotesTable"><thead><tr><th>Email</th><th>Quote</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody></tbody></table>
-  </section>
-
-  <!-- Requests Tab -->
-  <section id="requestsTab" class="tab-content">
-    <h2>Service Requests <span id="requestCount" class="badge"></span></h2>
-    <table id="requestsTable"><thead><tr><th>Name</th><th>Email</th><th>Service</th><th>Status</th><th>Update</th></tr></thead><tbody></tbody></table>
-  </section>
-
-  <!-- Profit Calculator Tab -->
-  <section id="profitTab" class="tab-content">
-    <h2>Auto Profit Calculator</h2>
-    <label>Labor Cost ($): <input type="number" id="laborCost" /></label>
-    <label>Gas Cost ($): <input type="number" id="gasCost" /></label>
-    <label>Other Costs ($): <input type="number" id="otherCost" /></label>
-    <label>Desired Profit Margin (%): <input type="number" id="profitMargin" value="25" /></label>
-    <button onclick="calculateProfit()">Calculate Final Price</button>
-    <h3>Recommended Quote: $<span id="finalPrice">0.00</span></h3>
-  </section>
-
-  <footer id="footer"></footer>
+<!-- Footer -->
+<footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
 <script>
 const db = firebase.firestore();
-let preloadedServices = ["Lawn Mowing", "Hedge Trimming", "Leaf Cleanup", "Garden Design"];
-
-function switchTab(id) {
-  document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-  document.querySelectorAll("nav button").forEach(btn => btn.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  event.target.classList.add("active");
-}
-
-// Profit Calc
-function calculateProfit() {
-  const labor = parseFloat(document.getElementById("laborCost").value || 0);
-  const gas = parseFloat(document.getElementById("gasCost").value || 0);
-  const other = parseFloat(document.getElementById("otherCost").value || 0);
-  const margin = parseFloat(document.getElementById("profitMargin").value || 0);
-  const totalCost = labor + gas + other;
-  const finalPrice = totalCost * (1 + margin / 100);
-  document.getElementById("finalPrice").innerText = finalPrice.toFixed(2);
-}
-
-function addServiceRow() {
-  const container = document.getElementById("serviceList");
-  const row = document.createElement("div");
-  row.className = "service-row";
-  row.innerHTML = `
-    <select>${preloadedServices.map(s => `<option value="${s}">${s}</option>`).join("")}</select>
-    <input type="text" placeholder="Description" />
-    <input type="number" placeholder="Amount ($)" step="0.01" />
-    <button type="button" onclick="this.parentElement.remove(); calcTotal()">❌</button>
-  `;
-  container.appendChild(row);
-}
-
-function calcTotal() {
-  let total = 0;
-  document.querySelectorAll("#serviceList .service-row").forEach(row => {
-    const amount = parseFloat(row.querySelector('input[type="number"]').value || 0);
-    total += amount;
-  });
-  document.getElementById("totalAmount").innerText = total.toFixed(2);
-}
-
-function createInvoice(e) {
-  e.preventDefault();
-  const email = document.getElementById("invoiceEmail").value;
-  const number = document.getElementById("invoiceNumber").value;
-  const due = document.getElementById("invoiceDueDate").value;
-  const services = Array.from(document.querySelectorAll("#serviceList .service-row")).map(row => {
-    return {
-      description: row.querySelector("input[type='text']").value,
-      amount: parseFloat(row.querySelector("input[type='number']").value || 0)
-    };
-  });
-  const total = services.reduce((sum, s) => sum + s.amount, 0);
-  db.collection("invoices").add({ customerEmail: email, invoiceNumber: number, services, amountDue: total, dueDate: due, paid: false, createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
-    e.target.reset(); document.getElementById("serviceList").innerHTML = ""; addServiceRow(); calcTotal(); loadInvoices();
-  });
-}
-
-function loadInvoices() {
-  const due = document.querySelector("#invoicesDueTable tbody");
-  const paid = document.querySelector("#invoicesPaidTable tbody");
-  due.innerHTML = ""; paid.innerHTML = "";
-  db.collection("invoices").orderBy("dueDate").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const row = `<tr>
-        <td>${d.customerEmail}</td>
-        <td>${d.invoiceNumber}</td>
-        <td>$${d.amountDue.toFixed(2)}</td>
-        <td>${d.dueDate}</td>
-        <td>${d.paid ? "Paid" : "Unpaid"}</td>
-        <td>${!d.paid ? `<button onclick="markPaid('${doc.id}')">Mark Paid</button>` : ""}</td>
-      </tr>`;
-      d.paid ? paid.innerHTML += row : due.innerHTML += row;
-    });
-  });
-}
-
-function markPaid(id) {
-  db.collection("invoices").doc(id).update({ paid: true }).then(loadInvoices);
-}
-
-function createQuote(e) {
-  e.preventDefault();
-  const email = document.getElementById("quoteEmail").value;
-  const quote = document.getElementById("quoteNumber").value;
-  const amount = parseFloat(document.getElementById("quoteAmount").value);
-  db.collection("quotes").add({ email, quote, amount, status: "Pending", createdAt: firebase.firestore.FieldValue.serverTimestamp() }).then(() => {
-    e.target.reset(); loadQuotes();
-  });
-}
-
-function loadQuotes() {
-  const tbody = document.querySelector("#quotesTable tbody");
-  tbody.innerHTML = "";
-  db.collection("quotes").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.email}</td>
-          <td>${d.quote}</td>
-          <td>$${parseFloat(d.amount).toFixed(2)}</td>
-          <td>${d.status}</td>
-          <td>
-            <select onchange="updateQuote('${doc.id}', this.value)">
-              <option ${d.status === "Pending" ? "selected" : ""}>Pending</option>
-              <option ${d.status === "Approved" ? "selected" : ""}>Approved</option>
-              <option ${d.status === "Accepted" ? "selected" : ""}>Accepted</option>
-              <option ${d.status === "Archived" ? "selected" : ""}>Archived</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-function updateQuote(id, status) {
-  db.collection("quotes").doc(id).update({ status });
-}
-
-function loadRequests() {
-  const tbody = document.querySelector("#requestsTable tbody");
-  db.collection("service_requests").orderBy("timestamp", "desc").onSnapshot(snapshot => {
-    tbody.innerHTML = "";
-    document.getElementById("requestCount").innerText = snapshot.size || "";
-    snapshot.forEach(doc => {
-      const r = doc.data();
-      const name = r.fullName || r.name || "N/A";
-      const request = r.details || r.serviceType || "N/A";
-      tbody.innerHTML += `
-        <tr>
-          <td>${name}</td>
-          <td>${r.email}</td>
-          <td>${request}</td>
-          <td>${r.status || "Pending"}</td>
-          <td>
-            <select onchange="updateRequest('${doc.id}', this.value)">
-              <option ${r.status === "Pending" ? "selected" : ""}>Pending</option>
-              <option ${r.status === "Approved" ? "selected" : ""}>Approved</option>
-              <option ${r.status === "In Progress" ? "selected" : ""}>In Progress</option>
-              <option ${r.status === "Completed" ? "selected" : ""}>Completed</option>
-            </select>
-          </td>
-        </tr>`;
-    });
-  });
-}
-
-function updateRequest(id, status) {
-  db.collection("service_requests").doc(id).update({ status });
-}
+let currentUser = null;
+let selectedInvoiceId = null;
+let selectedInvoiceAmount = null;
 
 firebase.auth().onAuthStateChanged(user => {
-  if (user?.email === "ronellbradley@bradleyvs.com") {
-    loadInvoices(); loadRequests(); loadQuotes(); addServiceRow();
+  if (user) {
+    currentUser = user;
+    document.getElementById("email").value = user.email;
+    document.getElementById("fullName").value = user.displayName || "";
+    loadQuotes();
+    loadInvoices();
   } else {
-    window.location.href = "login.html";
+    location.href = "login.html";
   }
 });
 
-document.getElementById("footer").innerHTML = `&copy; ${new Date().getFullYear()} Holliday's Lawn & Garden`;
+function logout() {
+  firebase.auth().signOut();
+}
+
+// Enhanced Quotes Table
+function loadQuotes() {
+  const tbody = document.querySelector("#quotesTable tbody");
+  db.collection("quotes").where("email", "==", currentUser.email).onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const q = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${q.service}</td>
+        <td>$${q.amount.toFixed(2)}</td>
+        <td>${q.status || 'pending'}</td>
+        <td>
+          <button onclick="approveQuote('${doc.id}', ${q.amount}, '${q.service}')" ${q.status === 'approved' ? 'disabled' : ''}>Approve</button>
+          <button onclick="rejectQuote('${doc.id}')" ${q.status === 'rejected' ? 'disabled' : ''}>Reject</button><br>
+          <button class="pdf-btn" onclick="downloadQuotePDF('${q.service}', ${q.amount}, '${q.status || 'pending'}')">PDF</button>
+        </td>`;
+      tbody.appendChild(row);
+    });
+  });
+}
+
+// Enhanced Invoices Table
+function loadInvoices() {
+  const tbody = document.querySelector("#invoicesTable tbody");
+  db.collection("invoices").where("customerEmail", "==", currentUser.email).onSnapshot(snapshot => {
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const i = doc.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${i.service}</td>
+        <td>$${i.amount.toFixed(2)}</td>
+        <td>${i.paid ? "✅ Paid" : "❌ Unpaid"}</td>
+        <td>
+          ${i.paid ? "Paid" : `<button onclick="openPaymentModal('${doc.id}', ${i.amount})">Pay</button>`}
+          <br><button class="pdf-btn" onclick="downloadInvoicePDF('${i.service}', ${i.amount}, '${i.paid ? 'Paid' : 'Unpaid'}')">PDF</button>
+        </td>`;
+      tbody.appendChild(row);
+    });
+  });
+}
+
+// Individual PDF (with Logo)
+async function downloadQuotePDF(service, amount, status) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const img = new Image();
+  img.src = "Holliday's Lawn & Garden.png";
+  await img.decode();
+  doc.addImage(img, "PNG", 10, 10, 40, 20);
+  doc.setFontSize(16);
+  doc.text("Quote Summary", 10, 40);
+  doc.setFontSize(12);
+  doc.text(`Service: ${service}`, 10, 50);
+  doc.text(`Amount: $${amount.toFixed(2)}`, 10, 60);
+  doc.text(`Status: ${status}`, 10, 70);
+  doc.save(`Quote-${service}.pdf`);
+}
+
+async function downloadInvoicePDF(service, amount, status) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const img = new Image();
+  img.src = "Holliday's Lawn & Garden.png";
+  await img.decode();
+  doc.addImage(img, "PNG", 10, 10, 40, 20);
+  doc.setFontSize(16);
+  doc.text("Invoice Summary", 10, 40);
+  doc.setFontSize(12);
+  doc.text(`Service: ${service}`, 10, 50);
+  doc.text(`Amount: $${amount.toFixed(2)}`, 10, 60);
+  doc.text(`Status: ${status}`, 10, 70);
+  doc.save(`Invoice-${service}.pdf`);
+}
+
+function approveQuote(id, amount, service) {
+  db.collection("quotes").doc(id).get().then(doc => {
+    const q = doc.data();
+    return db.collection("invoices").add({
+      name: q.name || "Customer",
+      customerEmail: q.email,
+      service,
+      amount,
+      paid: false,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => db.collection("quotes").doc(id).update({ status: "approved" }));
+  }).then(() => {
+    alert("✅ Approved & converted to invoice.");
+  });
+}
+
+function rejectQuote(id) {
+  db.collection("quotes").doc(id).update({ status: "rejected" });
+  alert("❌ Quote rejected.");
+}
+
+function openPaymentModal(id, amount) {
+  selectedInvoiceId = id;
+  selectedInvoiceAmount = amount;
+  // Add your modal logic here
+}
 </script>
 </body>
 </html>
