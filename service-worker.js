@@ -1,6 +1,7 @@
-const CACHE_NAME = 'holliday-lawn-cache-v2'; // Updated to bust old cache
+const CACHE_NAME = 'holliday-lawn-cache-v2';
 const urlsToCache = [
   'index.html',
+  'admin.html',
   'style.css',
   'manifest.json',
   'icons/icon-192.png',
@@ -8,18 +9,20 @@ const urlsToCache = [
   'Hollidays_Lawn_Garden_Logo.png'
 ];
 
-// Install event: cache core files
+// ✅ Install: cache files
 self.addEventListener('install', event => {
-  self.skipWaiting(); // 🔄 Activate this service worker immediately
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log('📦 Caching assets');
-      return cache.addAll(urlsToCache);
+      return cache.addAll(urlsToCache).catch(err => {
+        console.error('❌ Cache addAll error:', err);
+      });
     })
   );
 });
 
-// Activate event: clean up old caches and claim control
+// ✅ Activate: delete old caches
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -32,17 +35,23 @@ self.addEventListener('activate', event => {
           }
         })
       )
-    ).then(() => self.clients.claim()) // 🚀 Take control of all tabs immediately
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch event: serve from cache first, then fallback to network
+// ✅ Fetch: try cache first, fallback to network, catch failures
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then(response =>
-      response || fetch(event.request)
-    ).catch(() =>
-      caches.match('index.html') // Fallback for offline use
-    )
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).then(networkResponse => {
+        return networkResponse;
+      }).catch(err => {
+        console.warn('⚠️ Network request failed:', err);
+        // Fallback response to avoid TypeError
+        return new Response('<h1>Offline</h1><p>The app is offline and the resource was not cached.</p>', {
+          headers: { 'Content-Type': 'text/html' }
+        });
+      });
+    })
   );
 });
