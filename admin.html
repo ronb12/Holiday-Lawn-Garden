@@ -498,10 +498,10 @@
       document.getElementById("darkModeToggle").checked = true;
     }
   });
-  function logout() {
+ function logout() {
   firebase.auth().signOut().then(() => {
-    alert("You have been logged out.");
-    window.location.href = 'index.html'; // Or your login page
+    // Pass message through URL
+    window.location.href = 'index.html?logout=success';
   }).catch(error => {
     console.error("Logout Error:", error);
   });
