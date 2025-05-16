@@ -48,12 +48,354 @@
     <p>Holliday's Lawn & Garden</p>
   </header>
 
-  <!-- Body content omitted here for brevity (use your most recent working version) -->
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('requests')">Service Requests</div>
+    <div class="tab" onclick="showTab('quotes')">Quotes</div>
+    <div class="tab" onclick="showTab('invoices')">Invoices</div>
+    <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
+    <div class="tab" onclick="showTab('customers')">Customers</div>
+    <div class="tab" onclick="showTab('settings')">Settings</div>
+    <div class="tab" onclick="showModal('chatModal')">Chat</div>
+    <div class="tab" onclick="showModal('notificationsModal')">Notifications</div>
+    <label style="margin-left:auto;">
+      <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" /> 🌙 Dark Mode
+    </label>
+  </div>
 
+  <div class="actions-bar">
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <div id="requests" class="section active">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div id="quotes" class="section">
+    <h2>Quotes</h2>
+    <table id="quotesTable">
+      <thead><tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="invoices" class="section">
+    <h2>Invoices</h2>
+    <table id="invoicesTable">
+      <thead><tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="profit" class="section">
+    <h2>Auto Profit Calculator</h2>
+    <input type="number" id="laborCost" placeholder="Labor Cost ($)">
+    <input type="number" id="materialsCost" placeholder="Materials Cost ($)">
+    <input type="number" id="overheadCost" placeholder="Overhead ($)">
+    <input type="number" id="profitTarget" placeholder="Guaranteed Profit ($)" value="50">
+    <button onclick="calculatePrice()">Calculate</button>
+    <div id="finalPrice" style="margin-top: 1em; font-weight: bold;"></div>
+    <div class="progress-bar"><div id="profitProgress" class="progress-fill">0%</div></div>
+  </div>
+
+  <div id="customers" class="section">
+    <h2>Customers</h2>
+    <table id="customersTable">
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="settings" class="section">
+    <h2>Settings</h2>
+    <label>Default Profit ($):</label>
+    <input type="number" id="defaultProfit" value="50" />
+    <label>PayPal Business ID:</label>
+    <input type="text" id="paypalID" value="business@example.com" />
+    <button onclick="saveSettings()">Save</button>
+    <p id="settingsStatus" style="color:green; margin-top:1em;"></p>
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
+      <h3>💬 Real-Time Chat</h3>
+      <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em;"></div>
+      <input type="text" id="chatInput" placeholder="Type your message" />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notificationsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
+      <h3>🔔 Notifications</h3>
+      <ul id="notificationsList"></ul>
+    </div>
+  </div>
+
+  <!-- View Note Modal -->
+  <div id="noteModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('noteModal')">&times;</span>
+      <h3>📄 Service Request Note</h3>
+      <pre id="noteContent" style="white-space: pre-wrap; margin-top: 1em;"></pre>
+      <button onclick="printNote()">🖨️ Print Note</button>
+    </div>
+  </div>
   <footer>
     &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
 
-  <!-- Your full JavaScript remains unchanged from your most recent post -->
+  <script>
+    const db = firebase.firestore();
+
+    function showTab(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      [...document.querySelectorAll('.tab')].find(t => t.textContent.toLowerCase().includes(id)).classList.add('active');
+    }
+
+    function showModal(id) {
+      document.getElementById(id).style.display = 'flex';
+      if (id === 'chatModal') loadChat();
+      if (id === 'notificationsModal') loadNotifications();
+    }
+
+    function hideModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    function printNote() {
+      const content = document.getElementById("noteContent").textContent;
+      const win = window.open('', '', 'width=600,height=400');
+      win.document.write(`<pre>${content}</pre>`);
+      win.print();
+      win.close();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("darkMode", document.body.classList.contains("dark"));
+    }
+
+    function calculatePrice() {
+      const labor = parseFloat(document.getElementById("laborCost").value) || 0;
+      const materials = parseFloat(document.getElementById("materialsCost").value) || 0;
+      const overhead = parseFloat(document.getElementById("overheadCost").value) || 0;
+      const targetProfit = parseFloat(document.getElementById("profitTarget").value) || 0;
+      const totalCost = labor + materials + overhead;
+      const finalPrice = totalCost + targetProfit;
+      const percentProfit = ((targetProfit / finalPrice) * 100).toFixed(0);
+      document.getElementById("finalPrice").innerText = `Suggested Price: $${finalPrice.toFixed(2)}`;
+      const bar = document.getElementById("profitProgress");
+      bar.style.width = percentProfit + "%";
+      bar.innerText = percentProfit + "% Profit";
+    }
+
+    function saveSettings() {
+      const profit = document.getElementById("defaultProfit").value;
+      const paypal = document.getElementById("paypalID").value;
+      localStorage.setItem("defaultProfit", profit);
+      localStorage.setItem("paypalID", paypal);
+      document.getElementById("settingsStatus").innerText = "✅ Settings saved locally.";
+    }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        alert("✅ Successfully logged out.");
+        window.location.href = 'index.html';
+      }).catch(error => {
+        console.error("Logout Error:", error);
+      });
+    }
+
+    function goHome() {
+      window.location.href = 'index.html';
+    }
+
+    function sendChat() {
+      const input = document.getElementById("chatInput");
+      const text = input.value.trim();
+      if (text) {
+        db.collection("admin_chat").add({
+          sender: "Admin",
+          text,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        input.value = "";
+      }
+    }
+
+    function loadChat() {
+      const box = document.getElementById("chatMessages");
+      db.collection("admin_chat").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+        box.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          box.innerHTML += `<div><strong>${d.sender}:</strong> ${d.text}</div>`;
+        });
+        box.scrollTop = box.scrollHeight;
+      });
+    }
+
+    function loadNotifications() {
+      db.collection("notifications").orderBy("timestamp", "desc").limit(10).get().then(snapshot => {
+        const ul = document.getElementById("notificationsList");
+        ul.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          ul.innerHTML += `<li>${d.message} (${new Date(d.timestamp?.seconds * 1000).toLocaleString()})</li>`;
+        });
+      });
+    }
+
+    function updateStatus(docId, newStatus) {
+      db.collection("service_requests").doc(docId).update({ status: newStatus });
+    }
+
+    function viewNote(note) {
+      document.getElementById("noteContent").textContent = note || 'No notes provided.';
+      showModal('noteModal');
+    }
+
+    function convertToQuote(id, name, service, notes) {
+      const amount = prompt(`Enter quote amount for ${service}:`);
+      if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
+        alert("❌ Please enter a valid positive number.");
+        return;
+      }
+      db.collection("quotes").add({
+        name,
+        service,
+        amount: parseFloat(amount),
+        status: 'Pending',
+        notes,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        db.collection("service_requests").doc(id).update({ status: 'Quoted' });
+        alert("✅ Converted to Quote");
+      }).catch(err => {
+        console.error("Error converting to quote:", err);
+      });
+    }
+
+    function convertToInvoice(quoteId, quoteData) {
+      db.collection("invoices").add({
+        customer: quoteData.name,
+        service: quoteData.service,
+        amount: quoteData.amount,
+        paid: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        invoiceNumber: "INV-" + Math.floor(Math.random() * 100000)
+      }).then(() => {
+        db.collection("quotes").doc(quoteId).update({ status: "Invoiced" });
+        alert("✅ Converted to Invoice");
+      }).catch(err => {
+        console.error("Error converting to invoice:", err);
+      });
+    }
+
+    function deleteRequest(id) {
+      if (confirm("Delete this request?")) {
+        db.collection("service_requests").doc(id).delete();
+      }
+    }
+
+    firebase.auth().onAuthStateChanged(async user => {
+      if (!user) return alert("❌ Not logged in.");
+      const profile = await db.collection("users").doc(user.uid).get();
+      if (!profile.exists || profile.data().role !== "admin") return alert("⛔ Access denied.");
+
+      db.collection("service_requests").onSnapshot(snapshot => {
+        const table = document.querySelector("#requestsTable tbody");
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          table.innerHTML += `
+            <tr>
+              <td>${d.fullName || d.name || '—'}</td>
+              <td>${d.serviceType || d.service || '—'}</td>
+              <td>
+                <select onchange="updateStatus('${doc.id}', this.value)">
+                  <option ${d.status === 'New' ? 'selected' : ''}>New</option>
+                  <option ${d.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                  <option ${d.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                </select>
+              </td>
+              <td>${d.createdAt?.seconds ? new Date(d.createdAt.seconds * 1000).toLocaleDateString() : '—'}</td>
+              <td>
+                <button onclick="convertToQuote('${doc.id}', '${d.fullName || d.name}', '${d.serviceType || d.service}', \`${d.notes || ''}\`)">💬 Quote</button>
+                <button onclick="viewNote(\`${d.notes || 'No details provided.'}\`)">📝 View Note</button>
+                <button onclick="deleteRequest('${doc.id}')">🗑️</button>
+              </td>
+            </tr>`;
+        });
+      });
+
+      db.collection("quotes").onSnapshot(snapshot => {
+        const table = document.querySelector("#quotesTable tbody");
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          table.innerHTML += `
+            <tr>
+              <td>${d.name}</td>
+              <td>${d.service}</td>
+              <td>$${d.amount?.toFixed(2)}</td>
+              <td>${d.status}</td>
+              <td>
+                <button onclick="alert(\`${d.notes || 'No notes'}\`)">View</button>
+                <button onclick="convertToInvoice('${doc.id}', ${JSON.stringify(d).replace(/'/g, "\\'")})">💰 Invoice</button>
+              </td>
+            </tr>`;
+        });
+      });
+
+      db.collection("invoices").onSnapshot(snapshot => {
+        const table = document.querySelector("#invoicesTable tbody");
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          table.innerHTML += `
+            <tr>
+              <td>${d.customer}</td>
+              <td>${d.invoiceNumber}</td>
+              <td>$${d.amount?.toFixed(2)}</td>
+              <td><span class="tag ${d.paid ? 'paid' : 'unpaid'}">${d.paid ? 'Paid' : 'Unpaid'}</span></td>
+              <td><button onclick="alert('PDF export coming soon')">📄 PDF</button></td>
+            </tr>`;
+        });
+      });
+
+      db.collection("customers").onSnapshot(snapshot => {
+        const table = document.querySelector("#customersTable tbody");
+        table.innerHTML = "";
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          table.innerHTML += `
+            <tr>
+              <td>${d.name}</td>
+              <td>${d.email}</td>
+              <td>${d.phone || '—'}</td>
+              <td>${(d.address?.street || '')}, ${(d.address?.city || '')}</td>
+            </tr>`;
+        });
+      });
+    });
+
+    window.addEventListener("load", () => {
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark");
+        document.getElementById("darkModeToggle").checked = true;
+      }
+    });
+  </script>
 </body>
 </html>
