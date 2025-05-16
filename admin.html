@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
@@ -11,7 +11,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="firebase-init.js"></script>
   <style>
     body { font-family: 'Roboto', sans-serif; margin: 0; background: #f4f9f4; color: #333; }
@@ -47,94 +47,142 @@
     <h1>Admin Dashboard</h1>
     <p>Holliday's Lawn & Garden</p>
   </header>
-  <!-- The rest of the admin dashboard follows... -->
-<!-- PART 2: Quotes, Invoices, Profit Calculator, Customers, Settings, Chat, Notes Modals -->
 
-<!-- Quotes Section -->
-<div id="quotes" class="section">
-  <h2>Quotes</h2>
-  <table id="quotesTable">
-    <thead>
-      <tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- Invoices Section -->
-<div id="invoices" class="section">
-  <h2>Invoices</h2>
-  <table id="invoicesTable">
-    <thead>
-      <tr><th>Customer</th><th>Invoice #</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- Profit Calculator -->
-<div id="profit" class="section">
-  <h2>Auto Profit Calculator</h2>
-  <input type="number" id="laborCost" placeholder="Labor Cost ($)">
-  <input type="number" id="materialsCost" placeholder="Materials Cost ($)">
-  <input type="number" id="overheadCost" placeholder="Overhead ($)">
-  <input type="number" id="profitTarget" placeholder="Guaranteed Profit ($)" value="50">
-  <button onclick="calculatePrice()">Calculate</button>
-  <div id="finalPrice" style="margin-top: 1em; font-weight: bold;"></div>
-  <div class="progress-bar">
-    <div id="profitProgress" class="progress-fill">0%</div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('requests')">Service Requests</div>
+    <div class="tab" onclick="showTab('quotes')">Quotes</div>
+    <div class="tab" onclick="showTab('invoices')">Invoices</div>
+    <div class="tab" onclick="showTab('profit')">Profit Calculator</div>
+    <div class="tab" onclick="showTab('customers')">Customers</div>
+    <div class="tab" onclick="showTab('settings')">Settings</div>
+    <div class="tab" onclick="showModal('chatModal')">Chat</div>
+    <div class="tab" onclick="showModal('notificationsModal')">Notifications</div>
+    <label style="margin-left:auto;">
+      <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" /> 🌙 Dark Mode
+    </label>
   </div>
-</div>
 
-<!-- Customers Section -->
-<div id="customers" class="section">
-  <h2>Customers</h2>
-  <table id="customersTable">
-    <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Address</th></tr></thead>
-    <tbody></tbody>
-  </table>
-</div>
-
-<!-- Settings Section -->
-<div id="settings" class="section">
-  <h2>Settings</h2>
-  <label>Default Profit ($):</label>
-  <input type="number" id="defaultProfit" value="50">
-  <label>PayPal Business ID:</label>
-  <input type="text" id="paypalID" value="business@example.com">
-  <button onclick="saveSettings()">Save</button>
-  <p id="settingsStatus" style="color:green; margin-top:1em;"></p>
-</div>
-
-<!-- Chat Modal -->
-<div id="chatModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
-    <h3>💬 Real-Time Chat</h3>
-    <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em;"></div>
-    <input type="text" id="chatInput" placeholder="Type your message">
-    <button onclick="sendChat()">Send</button>
+  <div class="actions-bar">
+    <button onclick="goHome()">🏠 Home</button>
+    <button onclick="logout()">🚪 Logout</button>
   </div>
-</div>
 
-<!-- Notifications Modal -->
-<div id="notificationsModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
-    <h3>🔔 Notifications</h3>
-    <ul id="notificationsList"></ul>
+  <div id="requests" class="section active">
+    <h2>Service Requests</h2>
+    <table id="requestsTable">
+      <thead><tr><th>Name</th><th>Service</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
-</div>
 
-<!-- Note Viewer Modal -->
-<div id="noteModal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn" onclick="hideModal('noteModal')">&times;</span>
-    <h3>📄 Service Request Note</h3>
-    <pre id="noteContent" style="white-space: pre-wrap; margin-top: 1em;"></pre>
-    <button onclick="printNote()">🖨️ Print Note</button>
+  <div id="quotes" class="section">
+    <h2>Quotes</h2>
+    <table id="quotesTable">
+      <thead><tr><th>Customer</th><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
-</div>
+  <div id="quotes" class="section">
+    <h2>Quotes</h2>
+    <table id="quotesTable">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Service</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="invoices" class="section">
+    <h2>Invoices</h2>
+    <table id="invoicesTable">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Invoice #</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="profit" class="section">
+    <h2>Auto Profit Calculator</h2>
+    <input type="number" id="laborCost" placeholder="Labor Cost ($)">
+    <input type="number" id="materialsCost" placeholder="Materials Cost ($)">
+    <input type="number" id="overheadCost" placeholder="Overhead ($)">
+    <input type="number" id="profitTarget" placeholder="Guaranteed Profit ($)" value="50">
+    <button onclick="calculatePrice()">Calculate</button>
+    <div id="finalPrice" style="margin-top: 1em; font-weight: bold;"></div>
+    <div class="progress-bar"><div id="profitProgress" class="progress-fill">0%</div></div>
+  </div>
+
+  <div id="customers" class="section">
+    <h2>Customers</h2>
+    <table id="customersTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Address</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="settings" class="section">
+    <h2>Settings</h2>
+    <label>Default Profit ($):</label>
+    <input type="number" id="defaultProfit" value="50" />
+    <label>PayPal Business ID:</label>
+    <input type="text" id="paypalID" value="business@example.com" />
+    <button onclick="saveSettings()">Save</button>
+    <p id="settingsStatus" style="color:green; margin-top:1em;"></p>
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chatModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('chatModal')">&times;</span>
+      <h3>💬 Real-Time Chat</h3>
+      <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 1em;"></div>
+      <input type="text" id="chatInput" placeholder="Type your message" />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <!-- Notifications Modal -->
+  <div id="notificationsModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('notificationsModal')">&times;</span>
+      <h3>🔔 Notifications</h3>
+      <ul id="notificationsList"></ul>
+    </div>
+  </div>
+
+  <!-- Note Modal -->
+  <div id="noteModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="hideModal('noteModal')">&times;</span>
+      <h3>📄 Service Request Note</h3>
+      <pre id="noteContent" style="white-space: pre-wrap; margin-top: 1em;"></pre>
+      <button onclick="printNote()">🖨️ Print Note</button>
+    </div>
+  </div>
+
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
   <script>
     const db = firebase.firestore();
 
@@ -153,6 +201,14 @@
 
     function hideModal(id) {
       document.getElementById(id).style.display = 'none';
+    }
+
+    function printNote() {
+      const content = document.getElementById("noteContent").textContent;
+      const win = window.open('', '', 'width=600,height=400');
+      win.document.write(`<pre>${content}</pre>`);
+      win.print();
+      win.close();
     }
 
     function toggleDarkMode() {
@@ -186,7 +242,9 @@
       firebase.auth().signOut().then(() => {
         alert("✅ Successfully logged out.");
         window.location.href = 'index.html';
-      }).catch(error => console.error("Logout Error:", error));
+      }).catch(error => {
+        console.error("Logout Error:", error);
+      });
     }
 
     function goHome() {
@@ -219,8 +277,8 @@
     }
 
     function loadNotifications() {
-      const ul = document.getElementById("notificationsList");
       db.collection("notifications").orderBy("timestamp", "desc").limit(10).get().then(snapshot => {
+        const ul = document.getElementById("notificationsList");
         ul.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -238,18 +296,10 @@
       showModal('noteModal');
     }
 
-    function printNote() {
-      const content = document.getElementById("noteContent").textContent;
-      const win = window.open('', '', 'width=600,height=400');
-      win.document.write(`<pre>${content}</pre>`);
-      win.print();
-      win.close();
-    }
-
     function convertToQuote(id, name, service, notes) {
       const amount = prompt(`Enter quote amount for ${service}:`);
       if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-        alert("❌ Please enter a valid number.");
+        alert("❌ Please enter a valid positive number.");
         return;
       }
       db.collection("quotes").add({
@@ -262,6 +312,8 @@
       }).then(() => {
         db.collection("service_requests").doc(id).update({ status: 'Quoted' });
         alert("✅ Converted to Quote");
+      }).catch(err => {
+        console.error("Error converting to quote:", err);
       });
     }
 
@@ -276,6 +328,8 @@
       }).then(() => {
         db.collection("quotes").doc(quoteId).update({ status: "Invoiced" });
         alert("✅ Converted to Invoice");
+      }).catch(err => {
+        console.error("Error converting to invoice:", err);
       });
     }
 
@@ -285,18 +339,6 @@
       }
     }
 
-    function exportInvoicePDF(data) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Invoice", 20, 20);
-      doc.text(`Customer: ${data.customer}`, 20, 30);
-      doc.text(`Service: ${data.service}`, 20, 40);
-      doc.text(`Amount: $${data.amount.toFixed(2)}`, 20, 50);
-      doc.text(`Invoice #: ${data.invoiceNumber}`, 20, 60);
-      doc.text(`Status: ${data.paid ? 'Paid' : 'Unpaid'}`, 20, 70);
-      doc.save(`${data.invoiceNumber}.pdf`);
-    }
-
     firebase.auth().onAuthStateChanged(async user => {
       if (!user) return alert("❌ Not logged in.");
       const profile = await db.collection("users").doc(user.uid).get();
@@ -304,6 +346,7 @@
 
       db.collection("service_requests").onSnapshot(snapshot => {
         const table = document.querySelector("#requestsTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -330,6 +373,7 @@
 
       db.collection("quotes").onSnapshot(snapshot => {
         const table = document.querySelector("#quotesTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -349,6 +393,7 @@
 
       db.collection("invoices").onSnapshot(snapshot => {
         const table = document.querySelector("#invoicesTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -358,13 +403,14 @@
               <td>${d.invoiceNumber}</td>
               <td>$${d.amount?.toFixed(2)}</td>
               <td><span class="tag ${d.paid ? 'paid' : 'unpaid'}">${d.paid ? 'Paid' : 'Unpaid'}</span></td>
-              <td><button onclick='exportInvoicePDF(${JSON.stringify(d)})'>📄 PDF</button></td>
+              <td><button onclick="alert('📄 PDF export coming soon')">📄 PDF</button></td>
             </tr>`;
         });
       });
 
       db.collection("customers").onSnapshot(snapshot => {
         const table = document.querySelector("#customersTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
