@@ -1,13 +1,14 @@
 const CACHE_NAME = 'holliday-lawn-cache-v3';
 
 const urlsToCache = [
-  'index.html',
-  'admin.html',
-  'style.css',
-  'manifest.json',
-  'icons/icon-192.png',
-  'icons/icon-512.png',
-  'Hollidays_Lawn_Garden_Logo.png'
+  '/Holliday-Lawn-Garden/index.html',
+  '/Holliday-Lawn-Garden/admin.html',
+  '/Holliday-Lawn-Garden/style.css',
+  '/Holliday-Lawn-Garden/manifest.json',
+  '/Holliday-Lawn-Garden/icons/icon-192.png',
+  '/Holliday-Lawn-Garden/icons/icon-512.png',
+  '/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png',
+  '/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg'
 ];
 
 // INSTALL: Cache core assets
