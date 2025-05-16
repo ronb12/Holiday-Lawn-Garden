@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="manifest" href="/Holliday-Lawn-Garden/manifest.json" />
-  <link rel="icon" href="/Holliday-Lawn-Garden/icons/icon-192.png" />
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <script src="/Holliday-Lawn-Garden/firebase-init.js"></script>
+  <script src="firebase-init.js"></script>
   <style>
     body { font-family: 'Roboto', sans-serif; margin: 0; background: #f4f9f4; color: #333; }
     header, footer { background: #1a4d2e; color: white; padding: 1em; text-align: center; }
@@ -148,10 +148,10 @@
       <button onclick="printNote()">🖨️ Print Note</button>
     </div>
   </div>
+
   <footer>
     &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
   </footer>
-
   <script>
     const db = firebase.firestore();
 
@@ -315,6 +315,7 @@
 
       db.collection("service_requests").onSnapshot(snapshot => {
         const table = document.querySelector("#requestsTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -341,6 +342,7 @@
 
       db.collection("quotes").onSnapshot(snapshot => {
         const table = document.querySelector("#quotesTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -352,7 +354,7 @@
               <td>${d.status}</td>
               <td>
                 <button onclick="alert(\`${d.notes || 'No notes'}\`)">View</button>
-                <button onclick="convertToInvoice('${doc.id}', ${JSON.stringify(d).replace(/'/g, "\\'")})">💰 Invoice</button>
+                <button onclick='convertToInvoice("${doc.id}", ${JSON.stringify(d).replace(/'/g, "\\'")})'>💰 Invoice</button>
               </td>
             </tr>`;
         });
@@ -360,6 +362,7 @@
 
       db.collection("invoices").onSnapshot(snapshot => {
         const table = document.querySelector("#invoicesTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
@@ -376,6 +379,7 @@
 
       db.collection("customers").onSnapshot(snapshot => {
         const table = document.querySelector("#customersTable tbody");
+        if (!table) return;
         table.innerHTML = "";
         snapshot.forEach(doc => {
           const d = doc.data();
