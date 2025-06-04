@@ -10,8 +10,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js" onerror="console.error('Firebase config failed to load')"></script>
-  <script src="firebase-init.js" onerror="console.error('Firebase init failed to load')"></script>
+  <script src="firebase-config.js" onerror="console.error('Firebase config failed to load'); window.firebaseConfigFailed = true;"></script>
+  <script src="firebase-init.js" onerror="console.error('Firebase init failed to load'); window.firebaseInitFailed = true;"></script>
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -103,6 +103,23 @@
       }
     </style>
   </noscript>
+
+  <!-- Debug Script -->
+  <script>
+    // Ensure page content is visible regardless of Firebase status
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded - ensuring login form is visible');
+      const loginContainer = document.querySelector('.login-container');
+      if (loginContainer) {
+        loginContainer.style.display = 'block';
+        loginContainer.style.visibility = 'visible';
+        loginContainer.style.opacity = '1';
+        console.log('Login container made visible');
+      } else {
+        console.error('Login container not found');
+      }
+    });
+  </script>
 </head>
 <body>
 
