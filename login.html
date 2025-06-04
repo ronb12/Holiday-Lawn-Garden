@@ -13,8 +13,7 @@
   <script src="firebase-config.js" onerror="console.error('Firebase config failed to load'); window.firebaseConfigFailed = true;"></script>
   <script src="firebase-init.js" onerror="console.error('Firebase init failed to load'); window.firebaseInitFailed = true;"></script>
 
-  <!-- Google Identity Services -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Removed Google Identity Services - using Firebase Google Auth instead -->
 
   <style>
     .login-container {
@@ -52,11 +51,6 @@
     .login-links a {
       color: #228B22;
       text-decoration: none;
-    }
-    .g_id_signin {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
     }
     #loginErrorMessage {
       color: red;
@@ -96,7 +90,6 @@
   
   <noscript>
     <style>
-      .g_id_signin { display: none; }
       #loginErrorMessage::after {
         content: "JavaScript is required for full functionality.";
         color: orange;
@@ -149,17 +142,10 @@
     <!-- Error Message Display -->
     <div id="loginErrorMessage"></div>
 
-    <!-- Google Sign In -->
-    <div class="g_id_signin"
-         data-type="standard"
-         data-shape="rectangular"
-         data-theme="outline"
-         data-text="sign_in_with"
-         data-size="large"
-         data-logo_alignment="left"
-         data-width="250"
-         data-callback="handleGoogleSignInCallback">
-    </div>
+    <!-- Simple Google Sign-In Button (using Firebase) -->
+    <button onclick="googleSignIn()" style="background-color: #4285f4; color: white; margin-top: 20px; border: none; padding: 0.7em 2em; border-radius: 5px; font-size: 1em; cursor: pointer;">
+      🔵 Sign in with Google
+    </button>
 
     <div class="login-links">
       <p><a href="forgot-password.html">Forgot Password?</a></p>

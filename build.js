@@ -20,7 +20,6 @@ if (!fs.existsSync('./dist')) {
 // Write the configuration
 const configContent = `
 window.firebaseConfig = ${JSON.stringify(firebaseConfig, null, 2)};
-window.googleClientId = "${process.env.GOOGLE_CLIENT_ID}";
 `;
 
 fs.writeFileSync('./dist/firebase-config.js', configContent); 

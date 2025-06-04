@@ -22,24 +22,7 @@ window.onload = function () {
   // Initialize Firebase first
   initializeFirebaseLogin();
   
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    // Use the Google Client ID from the configuration
-    const clientId = window.googleClientId || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-    
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: handleGoogleSignInCallback 
-    });
-    // The button is already configured with data-callback, so explicit renderButton may not be needed
-    // if it's not working, uncomment and ensure the div ID matches:
-    // google.accounts.id.renderButton(
-    //   document.getElementById("googleSignInButtonDiv"), // Ensure you have a div with this ID if using renderButton
-    //   { theme: "outline", size: "large", text: "sign_in_with", shape: "rectangular", logo_alignment: "left" } 
-    // );
-  } else {
-    console.error("Google Identity Services script not loaded yet or google object not available.");
-    if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In is currently unavailable. Please try again later.";
-  }
+  console.log("Page loaded - Firebase authentication ready");
 };
 
 async function handleUserLogin(firebaseUser) {
@@ -110,29 +93,30 @@ function emailPasswordLogin() {
     });
 }
 
-// Google Sign-In Callback
-async function handleGoogleSignInCallback(response) {
+// Simple Firebase Google Sign-In
+function googleSignIn() {
   if(loginErrorMessage) loginErrorMessage.textContent = ""; // Clear previous errors
-  if (response.credential) {
-    const googleCredential = firebase.auth.GoogleAuthProvider.credential(response.credential);
-    firebase.auth().signInWithCredential(googleCredential)
-      .then((result) => {
-        // result.user contains the Firebase user
-        // result.additionalUserInfo.isNewUser can be used if needed
-        console.log("Google Sign-In successful for Firebase user:", result.user.email);
-        handleUserLogin(result.user);
-      })
-      .catch((error) => {
-        console.error("Firebase Google Sign-In error:", error);
-        if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
-        if (error.code === 'auth/account-exists-with-different-credential') {
-          if(loginErrorMessage) loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
-        }
-      });
-  } else {
-    console.error("Google Sign-In response did not contain credential.");
-    if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: No credential received.";
+  
+  // Check if Firebase is ready
+  if (!db || typeof firebase === 'undefined') {
+    if(loginErrorMessage) loginErrorMessage.textContent = "Authentication service not ready. Please refresh the page.";
+    return;
   }
+
+  const provider = new firebase.auth.GoogleAuthProvider();
+  
+  firebase.auth().signInWithPopup(provider)
+    .then((result) => {
+      console.log("Google Sign-In successful for Firebase user:", result.user.email);
+      handleUserLogin(result.user);
+    })
+    .catch((error) => {
+      console.error("Firebase Google Sign-In error:", error);
+      if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
+      if (error.code === 'auth/account-exists-with-different-credential') {
+        if(loginErrorMessage) loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
+      }
+    });
 }
 
 // Fade-in animation for sections with class 'fade-in'
