@@ -56,6 +56,11 @@
       display: flex;
       justify-content: center;
     }
+    #loginErrorMessage {
+      color: red;
+      margin-top: 1em;
+      min-height: 1.2em; /* Reserve space to prevent layout shifts */
+    }
   </style>
 </head>
 <body>
@@ -83,6 +88,9 @@
     <input type="password" id="loginPassword" placeholder="Password" required><br>
     <button onclick="emailPasswordLogin()">Login</button>
 
+    <!-- Error Message Display -->
+    <div id="loginErrorMessage"></div>
+
     <!-- Google Sign In (optional) -->
     <div class="g_id_signin"
          data-type="standard"
@@ -91,7 +99,8 @@
          data-text="sign_in_with"
          data-size="large"
          data-logo_alignment="left"
-         data-width="250">
+         data-width="250"
+         data-callback="handleGoogleSignInCallback">
     </div>
 
     <div class="login-links">
@@ -106,30 +115,102 @@
 </footer>
 
 <script>
+  const loginErrorMessage = document.getElementById('loginErrorMessage');
+
+  // Initialize Google Sign-In
+  window.onload = function () {
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+      google.accounts.id.initialize({
+        client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // <!-- REPLACE WITH YOUR ACTUAL GOOGLE CLIENT ID -->
+        callback: handleGoogleSignInCallback 
+      });
+      // The button is already configured with data-callback, so explicit renderButton may not be needed
+      // if it's not working, uncomment and ensure the div ID matches:
+      // google.accounts.id.renderButton(
+      //   document.getElementById("googleSignInButtonDiv"), // Ensure you have a div with this ID if using renderButton
+      //   { theme: "outline", size: "large", text: "sign_in_with", shape: "rectangular", logo_alignment: "left" } 
+      // );
+    } else {
+      console.error("Google Identity Services script not loaded yet or google object not available.");
+      loginErrorMessage.textContent = "Google Sign-In is currently unavailable. Please try again later.";
+    }
+  };
+
+  async function handleUserLogin(firebaseUser) {
+    if (!firebaseUser) {
+      loginErrorMessage.textContent = "User authentication failed.";
+      return;
+    }
+    
+    try {
+      const userDocRef = db.collection("users").doc(firebaseUser.uid);
+      const userDoc = await userDocRef.get();
+
+      if (userDoc.exists && userDoc.data().role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        if (!userDoc.exists) {
+          // If user doc doesn't exist (e.g., first Google Sign-In), create it with customer role
+          await userDocRef.set({
+            email: firebaseUser.email,
+            displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+            uid: firebaseUser.uid,
+            role: "customer",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          console.log("New user document created for:", firebaseUser.email);
+        }
+        window.location.href = "customer-dashboard.html";
+      }
+    } catch (error) {
+      console.error("Error during role check or user doc creation: ", error);
+      loginErrorMessage.textContent = "Login error: Could not verify user role. " + error.message;
+    }
+  }
+
   // Email/Password Login with role-based redirect
   function emailPasswordLogin() {
+    loginErrorMessage.textContent = ""; // Clear previous errors
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
     if (!email || !password) {
-      alert("Please enter both email and password.");
+      loginErrorMessage.textContent = "Please enter both email and password.";
       return;
     }
 
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((userCredential) => {
-        const userEmail = userCredential.user.email;
-        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail); // ✅ Replace/add more admins as needed
-
-        if (isAdmin) {
-          window.location.href = "admin.html";
-        } else {
-          window.location.href = "customer-dashboard.html"; // ✅ Make sure this page exists
-        }
+        handleUserLogin(userCredential.user);
       })
       .catch((error) => {
-        alert("Login failed: " + error.message);
+        loginErrorMessage.textContent = "Login failed: " + error.message;
       });
+  }
+
+  // Google Sign-In Callback
+  async function handleGoogleSignInCallback(response) {
+    loginErrorMessage.textContent = ""; // Clear previous errors
+    if (response.credential) {
+      const googleCredential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+      firebase.auth().signInWithCredential(googleCredential)
+        .then((result) => {
+          // result.user contains the Firebase user
+          // result.additionalUserInfo.isNewUser can be used if needed
+          console.log("Google Sign-In successful for Firebase user:", result.user.email);
+          handleUserLogin(result.user);
+        })
+        .catch((error) => {
+          console.error("Firebase Google Sign-In error:", error);
+          loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
+          if (error.code === 'auth/account-exists-with-different-credential') {
+            loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
+          }
+        });
+    } else {
+      console.error("Google Sign-In response did not contain credential.");
+      loginErrorMessage.textContent = "Google Sign-In failed: No credential received.";
+    }
   }
 
   // Fade-in animation

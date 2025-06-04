@@ -102,35 +102,35 @@ class PackageBuilder {
 }
 
 // Notification System
-class NotificationSystem {
-  static async sendNotification(userId, type, message) {
-    const notification = {
-      userId,
-      type,
-      message,
-      timestamp: new Date(),
-      read: false
-    };
+// class NotificationSystem { // Commenting out the class version to avoid conflict with the object literal below
+//   static async sendNotification(userId, type, message) {
+//     const notification = {
+//       userId,
+//       type,
+//       message,
+//       timestamp: new Date(),
+//       read: false
+//     };
 
-    try {
-      await db.collection('notifications').add(notification);
-      this.showNotification(message);
-    } catch (error) {
-      console.error('Notification error:', error);
-    }
-  }
+//     try {
+//       await db.collection('notifications').add(notification);
+//       this.showNotification(message); // This would call the class's showNotification
+//     } catch (error) {
+//       console.error('Notification error:', error);
+//     }
+//   }
 
-  static showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    document.body.appendChild(notification);
+//   static showNotification(message, type = 'info') { // Simpler version, now superseded by the object literal
+//     const notification = document.createElement('div');
+//     notification.className = `notification notification-${type}`;
+//     notification.textContent = message;
+//     document.body.appendChild(notification);
 
-    setTimeout(() => {
-      notification.remove();
-    }, 5000);
-  }
-}
+//     setTimeout(() => {
+//       notification.remove();
+//     }, 5000);
+//   }
+// }
 
 // Form Validation
 class FormValidator {
@@ -178,4 +178,67 @@ window.PackageBuilder = PackageBuilder;
 window.NotificationSystem = NotificationSystem;
 window.FormValidator = FormValidator;
 window.serviceRates = serviceRates;
-window.servicePackages = servicePackages; 
+window.servicePackages = servicePackages;
+
+// --- Notification System ---
+const NotificationSystem = {
+  showNotification: function(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('notification-container-dynamic') || this.createContainer();
+
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    // Add close button
+    const closeButton = document.createElement('span');
+    closeButton.innerHTML = '&times;';
+    closeButton.className = 'notification-close-btn';
+    closeButton.onclick = () => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentNode === container) {
+           container.removeChild(notification);
+        }
+        if (container.children.length === 0 && container.id === 'notification-container-dynamic') {
+            container.remove();
+        }
+      }, 500); // Match CSS transition time
+    };
+    notification.appendChild(closeButton);
+
+    container.appendChild(notification);
+
+    // Trigger fade in
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 10); // Small delay to allow CSS transition
+
+    // Auto-dismiss timer
+    setTimeout(() => {
+      if (notification.classList.contains('show')) { // Check if not already closed by button
+        notification.classList.remove('show');
+        setTimeout(() => {
+          if (notification.parentNode === container) {
+             container.removeChild(notification);
+          }
+          if (container.children.length === 0 && container.id === 'notification-container-dynamic') {
+              container.remove();
+          }
+        }, 500); // Match CSS transition time
+      }
+    }, duration);
+  },
+
+  createContainer: function() {
+    let container = document.getElementById('notification-container-dynamic');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container-dynamic';
+        document.body.appendChild(container);
+    }
+    return container;
+  }
+};
+
+// Make it globally available if not using modules
+window.NotificationSystem = NotificationSystem; 

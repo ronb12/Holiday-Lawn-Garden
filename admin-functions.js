@@ -1,11 +1,10 @@
-// ✅ Firebase Initialization
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "mobile-debt-crusher.firebaseapp.com",
-  projectId: process.env.FIREBASE_PROJECT_ID || "mobile-debt-crusher"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// const firebaseConfig = { // Commenting out redundant Firebase initialization
+//   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+//   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "mobile-debt-crusher.firebaseapp.com",
+//   projectId: process.env.FIREBASE_PROJECT_ID || "mobile-debt-crusher"
+// };
+// firebase.initializeApp(firebaseConfig); // firebase-init.js should handle this
+const db = firebase.firestore(); // Assuming firebase is initialized by firebase-init.js
 
 // ✅ Utility Functions
 function showLoader() {
@@ -57,8 +56,9 @@ function submitRequest(e) {
   ref.get().then(doc => {
     const name = doc.data().name || "Customer";
     ref.collection("requests").add({ customer: name, description, status: "Pending", createdAt: new Date(), fromAdmin: true });
-    db.collection("requests").add({ customer: name, description, status: "Pending", createdAt: new Date() });
-    e.target.reset(); loadRequests();
+    db.collection("service_requests").add({ customerId: customerUID, customerName: name, description, status: "Pending", createdAt: new Date(), submittedBy: 'admin', email: doc.data().email, serviceType: 'Admin Created', hasUnreadFromCustomer: false, hasUnreadFromAdmin: false });
+    e.target.reset();
+    updateDashboardStats();
   });
 }
 
@@ -152,7 +152,7 @@ function updateDashboardStats() {
   const now = new Date();
   const m = now.getMonth(), y = now.getFullYear();
   let mp = 0, yp = 0, td = 0, ti = 0, em = 0, ey = 0;
-  db.collection("requests").get().then(snap => {
+  db.collection("service_requests").get().then(snap => {
     document.getElementById("statRequests").innerText = `📝 Requests: ${snap.size}`;
   });
   db.collection("quotes").get().then(snap => {
@@ -388,11 +388,11 @@ async function createInvoice(e) {
     });
 
     // Send notification to customer
-    await NotificationSystem.sendNotification(
-      formData.customerId,
-      "invoice",
-      `New invoice created for $${formData.amount.toFixed(2)}`
-    );
+    // await NotificationSystem.sendNotification( // Commenting out as sendNotification is not on the current NotificationSystem object
+    //   formData.customerId,
+    //   "invoice",
+    //   `New invoice created for $${formData.amount.toFixed(2)}`
+    // );
 
     NotificationSystem.showNotification("Invoice created successfully!", "success");
     document.getElementById("createInvoiceForm").reset();
@@ -565,11 +565,11 @@ async function loadBidsTable() {
         <td><span class="status-badge status-${bid.status.replace('_', '-')}">${bid.status}</span></td>
         <td>
           <button class="btn-modern btn-small" onclick="viewBidDetails('${bid.id}')">View/Propose</button>
+          ${bid.status === 'accepted' ? `<button class="btn-modern btn-small btn-success" onclick="openScheduleServiceModal('${bid.id}')">Schedule Service</button>` : ''}
           <select onchange="updateBidStatus('${bid.id}', this.value)" class="form-control-small" style="padding: 5px; margin-left: 5px;">
             <option value="draft" ${bid.status === 'draft' ? 'selected' : ''}>Draft</option>
             <option value="proposal_generated" ${bid.status === 'proposal_generated' ? 'selected' : ''}>Proposal Generated</option>
             <option value="sent" ${bid.status === 'sent' ? 'selected' : ''}>Sent</option>
-            <option value="accepted" ${bid.status === 'accepted' ? 'selected' : ''}>Accepted</option>
             <option value="rejected" ${bid.status === 'rejected' ? 'selected' : ''}>Rejected</option>
             <option value="archived" ${bid.status === 'archived' ? 'selected' : ''}>Archived</option>
           </select>
@@ -1004,6 +1004,347 @@ async function generateSustainabilityReportAdmin() {
     }
 }
 
+// ----- Incoming Service Requests View -----
+async function loadIncomingServiceRequests() {
+  const tableBody = document.getElementById("incomingRequestsTableBody");
+  if (!tableBody) {
+    console.log("Incoming service requests table body not found"); 
+    return;
+  }
+  tableBody.innerHTML = '<tr><td colspan="6">Loading requests...</td></tr>';
+  showLoader();
+
+  try {
+    const snapshot = await db.collection("service_requests")
+                            .orderBy("createdAt", "desc")
+                            .limit(50) // Add limit for performance, consider pagination for more
+                            .get();
+    
+    if (snapshot.empty) {
+      tableBody.innerHTML = '<tr><td colspan="6">No incoming service requests found.</td></tr>';
+      hideLoader();
+      return;
+    }
+
+    let rowsHtml = "";
+    snapshot.forEach(doc => {
+      const request = { id: doc.id, ...doc.data() };
+      const requestDate = request.createdAt && request.createdAt.toDate ? request.createdAt.toDate().toLocaleDateString() : 'N/A';
+      const customerName = request.customerName || request.fullName || request.email; // Fallback for name
+      rowsHtml += `
+        <tr>
+          <td>${requestDate}</td>
+          <td>${customerName}</td>
+          <td>${request.email || 'N/A'}</td>
+          <td>${request.serviceType || request.description?.substring(0,30) || 'N/A'}</td>
+          <td><span class="status-badge status-${request.status?.toLowerCase() || 'unknown'}">${request.status || 'Unknown'}</span></td>
+          <td>
+            <button class="btn-modern btn-small" onclick="openServiceRequestChatModal('${request.id}')">
+              ${request.hasUnreadFromCustomer ? '<span class="notification-dot">●</span> ' : ''}Chat / View
+            </button>
+            <!-- Add other actions like 'Create Quote' later -->
+          </td>
+        </tr>
+      `;
+    });
+    tableBody.innerHTML = rowsHtml;
+
+  } catch (error) {
+    console.error("Error loading incoming service requests:", error);
+    tableBody.innerHTML = '<tr><td colspan="6">Error loading requests. See console.</td></tr>';
+  } finally {
+    hideLoader();
+  }
+}
+
+function filterServiceRequestsTable() {
+  const input = document.getElementById("serviceRequestSearch");
+  const filter = input.value.toLowerCase();
+  const tableBody = document.getElementById("incomingRequestsTableBody");
+  const rows = tableBody.getElementsByTagName("tr");
+
+  for (let i = 0; i < rows.length; i++) {
+    const cells = rows[i].getElementsByTagName("td");
+    let found = false;
+    if (cells.length > 0) { // Ensure row has cells
+        // Search in relevant cells (e.g., Customer, Email, Service Type)
+        const customerText = cells[1]?.textContent || cells[1]?.innerText || "";
+        const emailText = cells[2]?.textContent || cells[2]?.innerText || "";
+        const serviceText = cells[3]?.textContent || cells[3]?.innerText || "";
+        if (customerText.toLowerCase().includes(filter) || 
+            emailText.toLowerCase().includes(filter) || 
+            serviceText.toLowerCase().includes(filter)) {
+            found = true;
+        }
+    }
+    rows[i].style.display = found ? "" : "none";
+  }
+}
+
+// ----- Admin Chat Modal Functions -----
+let currentServiceRequestIdForAdminChat = null;
+let adminChatMessagesUnsubscribe = null; // To stop listening to message updates when modal closes
+
+async function openServiceRequestChatModal(requestId) {
+  currentServiceRequestIdForAdminChat = requestId;
+  const modal = document.getElementById("adminChatModal");
+  const chatTitle = document.getElementById("adminChatModalTitle");
+  const messagesContainer = document.getElementById("adminChatMessagesContainer");
+  
+  if (!modal || !chatTitle || !messagesContainer) {
+    console.error("Admin chat modal elements not found.");
+    return;
+  }
+
+  // Fetch request details to display customer name/info in title
+  try {
+    const requestDoc = await db.collection("service_requests").doc(requestId).get();
+    if (requestDoc.exists) {
+      const requestData = requestDoc.data();
+      chatTitle.textContent = `Chat with ${requestData.customerName || requestData.email || 'Customer'} (ID: ${requestId.substring(0,6)}...)`;
+      // Mark as read by admin
+      if (requestData.hasUnreadFromCustomer) {
+        await db.collection("service_requests").doc(requestId).update({ hasUnreadFromCustomer: false });
+        // Optimistically update the UI button if an observer isn't set up for the request table
+        loadIncomingServiceRequests(); // This will refresh the table and clear the dot
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching service request for chat title:", error);
+    chatTitle.textContent = `Service Request Chat (ID: ${requestId.substring(0,6)}...)`;
+  }
+
+  messagesContainer.innerHTML = "<p>Loading messages...</p>";
+  modal.style.display = "block";
+  loadAdminChatMessages(requestId);
+}
+
+function loadAdminChatMessages(requestId) {
+  const messagesContainer = document.getElementById("adminChatMessagesContainer");
+  if (!messagesContainer) return;
+
+  // Unsubscribe from previous listener if any
+  if (adminChatMessagesUnsubscribe) {
+    adminChatMessagesUnsubscribe();
+  }
+
+  adminChatMessagesUnsubscribe = db.collection("service_requests").doc(requestId).collection("messages")
+    .orderBy("timestamp", "asc")
+    .onSnapshot(snapshot => {
+      if (snapshot.empty) {
+        messagesContainer.innerHTML = "<p>No messages yet. Start the conversation!</p>";
+        return;
+      }
+      let messagesHtml = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const senderClass = msg.sender === 'admin' ? 'chat-bubble-admin' : 'chat-bubble-customer';
+        const time = msg.timestamp && msg.timestamp.toDate ? msg.timestamp.toDate().toLocaleTimeString() : '';
+        messagesHtml += `<div class="chat-bubble ${senderClass}"><strong>${msg.sender === 'admin' ? 'Admin' : (msg.customerName || 'Customer')}:</strong> ${msg.text}<div class="chat-timestamp">${time}</div></div>`;
+      });
+      messagesContainer.innerHTML = messagesHtml;
+      messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to bottom
+    }, error => {
+      console.error("Error listening to chat messages:", error);
+      messagesContainer.innerHTML = "<p>Error loading messages. Please try again.</p>";
+    });
+}
+
+async function sendAdminChatMessage() {
+  const input = document.getElementById("adminChatMessageInput");
+  const messageText = input.value.trim();
+
+  if (!messageText || !currentServiceRequestIdForAdminChat) {
+    NotificationSystem.showNotification("Cannot send empty message or no request selected.", "warning");
+    return;
+  }
+
+  const messageData = {
+    text: messageText,
+    sender: "admin",
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db.collection("service_requests").doc(currentServiceRequestIdForAdminChat).collection("messages").add(messageData);
+    // Optionally, set a flag on the service request to notify customer
+    await db.collection("service_requests").doc(currentServiceRequestIdForAdminChat).update({ 
+      hasUnreadFromAdmin: true,
+      lastMessageSnippetAdmin: messageText.substring(0, 50) // Store a snippet of the last admin message
+    }); 
+    input.value = ""; // Clear input field
+    // Messages will update automatically due to the onSnapshot listener in loadAdminChatMessages
+  } catch (error) {
+    console.error("Error sending admin chat message:", error);
+    NotificationSystem.showNotification("Error sending message.", "error");
+  }
+}
+
+function closeAdminChatModal() {
+  const modal = document.getElementById("adminChatModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+  // Stop listening to message updates
+  if (adminChatMessagesUnsubscribe) {
+    adminChatMessagesUnsubscribe();
+    adminChatMessagesUnsubscribe = null;
+  }
+  currentServiceRequestIdForAdminChat = null;
+  document.getElementById("adminChatMessageInput").value = ""; // Clear input
+  document.getElementById("adminChatMessagesContainer").innerHTML = ""; // Clear messages
+}
+
+// ----- Generic Modal Helper -----
+function closeGenericAdminModal() {
+  const modal = document.getElementById("genericAdminModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+  // Clear previous content if necessary
+  document.getElementById("genericAdminModalTitle").innerHTML = "Modal Title";
+  document.getElementById("genericAdminModalBody").innerHTML = "";
+  document.getElementById("genericAdminModalFooter").innerHTML = '<button class="btn-modern btn-grey" onclick="closeGenericAdminModal()">Close</button>';
+}
+
+// ----- Quote to Schedule Workflow -----
+async function openScheduleServiceModal(bidId) {
+  if (!bidId) {
+    NotificationSystem.showNotification("Bid ID is missing.", "error");
+    return;
+  }
+
+  showLoader();
+  try {
+    const bidDoc = await biddingSystem.getBidById(bidId);
+    if (!bidDoc) {
+      NotificationSystem.showNotification("Bid details not found.", "error");
+      hideLoader();
+      return;
+    }
+
+    // Attempt to get customer details for better context
+    let customerName = bidDoc.customerId;
+    try {
+        const userDoc = await db.collection("users").doc(bidDoc.customerId).get();
+        if(userDoc.exists) customerName = userDoc.data().displayName || userDoc.data().email;
+    } catch (e) { console.warn("Could not fetch customer name for schedule modal", e); }
+
+    const services = bidDoc.services.map(s => s.serviceType).join(', ');
+
+    document.getElementById("genericAdminModalTitle").textContent = `Schedule Service for Bid: ${bidDoc.bidNumber}`;
+    const modalBody = document.getElementById("genericAdminModalBody");
+    modalBody.innerHTML = `
+      <p><strong>Customer:</strong> ${customerName}</p>
+      <p><strong>Services:</strong> ${services}</p>
+      <p><strong>Quoted Amount:</strong> $${bidDoc.estimatedTotal.toFixed(2)}</p>
+      <form id="scheduleServiceForm" class="form-modern" style="padding:0;">
+        <input type="hidden" id="scheduleBidId" value="${bidId}">
+        <div class="form-group">
+          <label for="scheduleDate">Scheduled Date</label>
+          <input type="date" id="scheduleDate" class="form-control-modern" required>
+        </div>
+        <div class="form-group">
+          <label for="scheduleTime">Scheduled Time (e.g., 10:00 AM)</label>
+          <input type="time" id="scheduleTime" class="form-control-modern" required>
+        </div>
+        <div class="form-group">
+          <label for="scheduleAdminNotes">Admin Notes (Optional)</label>
+          <textarea id="scheduleAdminNotes" class="form-control-modern" rows="3"></textarea>
+        </div>
+      </form>
+    `;
+
+    const modalFooter = document.getElementById("genericAdminModalFooter");
+    modalFooter.innerHTML = `
+      <button class="btn-modern btn-success" onclick="submitScheduleServiceForm('${bidId}')">Confirm Schedule</button>
+      <button class="btn-modern btn-grey" onclick="closeGenericAdminModal()">Cancel</button>
+    `;
+
+    document.getElementById("genericAdminModal").style.display = "block";
+  } catch (error) {
+    console.error("Error opening schedule service modal:", error);
+    NotificationSystem.showNotification("Error preparing schedule form: " + error.message, "error");
+  } finally {
+    hideLoader();
+  }
+}
+
+async function submitScheduleServiceForm(bidId) {
+  if (!bidId) {
+    NotificationSystem.showNotification("Bid ID is missing for scheduling.", "error");
+    return;
+  }
+
+  const scheduledDate = document.getElementById("scheduleDate").value;
+  const scheduledTime = document.getElementById("scheduleTime").value;
+  const adminNotes = document.getElementById("scheduleAdminNotes").value;
+
+  if (!scheduledDate || !scheduledTime) {
+    NotificationSystem.showNotification("Please select a date and time for the service.", "warning");
+    return;
+  }
+
+  showLoader();
+  try {
+    const bid = await biddingSystem.getBidById(bidId);
+    if (!bid) {
+      NotificationSystem.showNotification("Original bid not found. Cannot schedule.", "error");
+      hideLoader();
+      return;
+    }
+
+    // Fetch customer email (assuming bid.customerId is the Firebase UID)
+    let customerEmail = bid.customerEmail; // If already on bid
+    let customerDisplayName = bid.customerName; // If already on bid
+
+    if (!customerEmail || !customerDisplayName) {
+        const userDoc = await db.collection("users").doc(bid.customerId).get();
+        if (userDoc.exists) {
+            customerEmail = userDoc.data().email;
+            customerDisplayName = userDoc.data().displayName || userDoc.data().email.split('@')[0];
+        } else {
+            throw new Error("Customer user document not found.");
+        }
+    }
+
+    const serviceTypeDescription = bid.services.map(s => s.serviceType).join(', ');
+
+    const serviceRequestData = {
+      originalBidId: bidId,
+      bidNumber: bid.bidNumber,
+      customerId: bid.customerId,
+      customerName: customerDisplayName,
+      email: customerEmail,
+      serviceType: serviceTypeDescription,
+      description: `Service scheduled from accepted bid ${bid.bidNumber}. Services: ${serviceTypeDescription}`,
+      status: "scheduled",
+      scheduledDate: scheduledDate,
+      scheduledTime: scheduledTime,
+      notes: adminNotes,
+      price: bid.estimatedTotal,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      submittedBy: 'system_accepted_bid',
+      hasUnreadFromAdmin: false, // Or true if you want to notify customer of scheduling
+      hasUnreadFromCustomer: false,
+    };
+
+    await db.collection("service_requests").add(serviceRequestData);
+    await biddingSystem.updateBid(bidId, { status: "service_scheduled", scheduledServiceDate: scheduledDate });
+
+    NotificationSystem.showNotification("Service scheduled successfully!", "success");
+    closeGenericAdminModal();
+    loadBidsTable(); // Refresh bids table to show new status
+    loadIncomingServiceRequests(); // Refresh service requests to show newly scheduled one
+
+  } catch (error) {
+    console.error("Error scheduling service from bid:", error);
+    NotificationSystem.showNotification("Error scheduling service: " + error.message, "error");
+  } finally {
+    hideLoader();
+  }
+}
+
 // Centralized Admin Dashboard Initialization function
 function initializeAdminDashboard() {
     console.log("Initializing Admin Dashboard...");
@@ -1029,6 +1370,8 @@ function initializeAdminDashboard() {
     populateCustomerDropdownsForSustainability(); 
     populateSustainabilityLogFormFields(); // Initial call to set up fields for default log type
     loadSustainabilityLogTable();
+
+    loadIncomingServiceRequests(); // Add this line
     
     console.log("Admin Dashboard Fully Initialized.");
 }

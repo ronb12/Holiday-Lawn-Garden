@@ -372,7 +372,60 @@
       </div>
     </section>
 
+    <!-- Incoming Service Requests -->
+    <section class="card">
+      <h2>Incoming Service Requests</h2>
+      <div class="form-group">
+        <input type="text" id="serviceRequestSearch" class="form-control-modern" placeholder="Search by customer, email, or service..." onkeyup="filterServiceRequestsTable()">
+      </div>
+      <table id="incomingRequestsTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Email</th>
+            <th>Service Type</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="incomingRequestsTableBody">
+          <!-- Rows will be populated by JavaScript -->
+        </tbody>
+      </table>
+    </section>
+
   </main>
+
+  <!-- Admin Chat Modal -->
+  <div id="adminChatModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <span class="close-btn" onclick="closeAdminChatModal()">&times;</span>
+      <h3 id="adminChatModalTitle">Service Request Chat</h3>
+      <div id="adminChatMessagesContainer" class="chat-messages-container">
+        <!-- Messages will be loaded here -->
+      </div>
+      <div class="chat-input-area">
+        <textarea id="adminChatMessageInput" placeholder="Type your message to the customer..." rows="3"></textarea>
+        <button id="sendAdminChatMessageBtn" class="btn-modern" onclick="sendAdminChatMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generic Modal for Scheduling/Details -->
+  <div id="genericAdminModal" class="modal" style="display: none;">
+    <div class="modal-content" id="genericAdminModalContent" style="max-width: 600px;">
+      <span class="close-btn" onclick="closeGenericAdminModal()">&times;</span>
+      <h3 id="genericAdminModalTitle">Modal Title</h3>
+      <div id="genericAdminModalBody">
+        <!-- Content will be injected here by JavaScript -->
+      </div>
+      <div id="genericAdminModalFooter" style="margin-top: 15px;">
+        <button class="btn-modern btn-grey" onclick="closeGenericAdminModal()">Close</button>
+        <!-- Additional action buttons can be added here by JavaScript -->
+      </div>
+    </div>
+  </div>
 
   <footer>
     <p>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</p>
