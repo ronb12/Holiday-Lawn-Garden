@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="modern-styles.css" />
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
@@ -14,6 +14,206 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <script src="utils.js"></script>
+  <style>
+    :root {
+      /* Re-define some key variables here if modern-styles.css is not fully applied or to override */
+      --admin-bg-light: #f8f9fa; /* Light grey page background */
+      --admin-text-dark: #212529; /* Darker text for readability */
+      --admin-primary-color: #228B22; /* Keep consistent with modern-styles if possible */
+      --admin-primary-dark: #006400;
+      --admin-card-bg: #ffffff;
+      --admin-border-color: #e9ecef; /* Subtle border color */
+      --admin-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --admin-shadow-md: 0 4px 8px rgba(0,0,0,0.07);
+      --admin-radius-md: 8px;
+      --admin-radius-lg: 12px;
+      --admin-spacing-sm: 0.5rem;
+      --admin-spacing-md: 1rem;
+      --admin-spacing-lg: 1.5rem;
+    }
+
+    body {
+      background-color: var(--admin-bg-light);
+      color: var(--admin-text-dark);
+      font-family: 'Roboto', sans-serif;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1400px; /* Wider max-width for admin */
+      margin: 0 auto;
+      padding: var(--admin-spacing-lg) var(--admin-spacing-sm);
+    }
+
+    .header {
+      background-color: var(--admin-card-bg);
+      padding: var(--admin-spacing-md) 0;
+      box-shadow: var(--admin-shadow-sm);
+      border-bottom: 1px solid var(--admin-border-color);
+      margin-bottom: var(--admin-spacing-lg);
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 90%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .header-content h1 {
+      font-size: 1.5rem;
+      color: var(--admin-primary-dark);
+      margin: 0;
+      font-weight: 500;
+    }
+
+    .card {
+      background-color: var(--admin-card-bg);
+      border-radius: var(--admin-radius-lg);
+      box-shadow: var(--admin-shadow-md);
+      margin-bottom: var(--admin-spacing-lg);
+      padding: var(--admin-spacing-lg);
+      border: 1px solid var(--admin-border-color);
+    }
+    .card h2 {
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--admin-primary-dark);
+      margin-top: 0; /* Remove default top margin for h2 in card */
+      margin-bottom: var(--admin-spacing-md);
+      padding-bottom: var(--admin-spacing-md);
+      border-bottom: 1px solid var(--admin-border-color);
+    }
+    .card h3 {
+        font-size: 1.15rem;
+        font-weight: 500;
+        color: var(--admin-text-dark);
+        margin-top: var(--admin-spacing-lg); 
+        margin-bottom: var(--admin-spacing-sm);
+    }
+    .card-content {
+      padding-top: 0; /* Reset as card h2 has padding-bottom now */
+    }
+    .card .grid .card { /* Nested cards like stats */
+        box-shadow: var(--admin-shadow-sm);
+        border: 1px solid var(--admin-border-color);
+        padding: var(--admin-spacing-md);
+        font-size: 0.95rem;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var(--admin-spacing-md);
+      font-size: 0.9rem;
+    }
+    .table thead th {
+      background-color: #f1f5f9; /* Lighter, neutral header */
+      color: var(--admin-text-dark);
+      font-weight: 500; /* Less heavy than 600 */
+      padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+      text-align: left;
+      border-bottom: 2px solid var(--admin-border-color);
+      text-transform: capitalize; /* More readable */
+      letter-spacing: 0.02em;
+    }
+    .table tbody td {
+      padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+      border-bottom: 1px solid var(--admin-border-color);
+      vertical-align: middle;
+    }
+    .table tbody tr:nth-child(even) {
+      background-color: var(--admin-bg-light); /* Subtle striping */
+    }
+    .table tbody tr:hover {
+      background-color: #e9ecef; /* Subtle hover */
+    }
+    .table .btn-modern.btn-small {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+    }
+    .table select.form-control-small {
+        padding: 5px 8px;
+        font-size: 0.85rem;
+    }
+
+    /* Form refinement (assuming .form-modern is still styled by external CSS) */
+    .form-modern .form-group {
+      margin-bottom: var(--admin-spacing-lg);
+    }
+    .form-modern label {
+      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: var(--admin-spacing-sm);
+    }
+    .form-modern input, .form-modern select, .form-modern textarea {
+        border-radius: var(--admin-radius-md);
+        border: 1px solid #ced4da;
+        padding: 10px;
+    }
+    .form-modern input:focus, .form-modern select:focus, .form-modern textarea:focus {
+        border-color: var(--admin-primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(34, 139, 34, 0.2);
+    }
+
+    .btn-modern { /* Adjust if necessary to fit new design */
+      /* Example: background-color: var(--admin-primary-color); */
+      /* color: white; */
+      /* padding: 10px 20px; */
+      /* border-radius: var(--admin-radius-md); */
+      /* box-shadow: var(--admin-shadow-sm); */
+    }
+    .btn-modern:hover {
+      /* background-color: var(--admin-primary-dark); */
+    }
+
+    /* Modal styling to ensure consistency */
+    .modal-content {
+      border-radius: var(--admin-radius-lg);
+      padding: var(--admin-spacing-lg);
+      box-shadow: var(--admin-shadow-md);
+    }
+    .modal-content h3 { /* Modal titles */
+      font-size: 1.35rem;
+      font-weight: 500;
+      color: var(--admin-primary-dark);
+      margin-top: 0;
+      padding-bottom: var(--admin-spacing-md);
+      border-bottom: 1px solid var(--admin-border-color);
+      margin-bottom: var(--admin-spacing-lg);
+    }
+    .chat-messages-container {
+        border-radius: var(--admin-radius-md);
+        background-color: var(--admin-bg-light);
+        padding: var(--admin-spacing-md);
+    }
+
+    /* Loading Overlay */
+    #loadingOverlay {
+      background-color: rgba(248, 249, 250, 0.85); /* Match light background */
+    }
+    .loading-spinner {
+      border-top: 3px solid var(--admin-primary-color);
+    }
+    
+    /* Ensure specificity for status badges if modern-styles.css has issues */
+    .status-badge { 
+        font-size: 0.75rem; padding: 3px 10px; border-radius: var(--admin-radius-full); 
+    }
+    .status-badge.status-paid {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .status-badge.status-unpaid {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+  </style>
 </head>
 <body>
   <!-- Loading Overlay -->
@@ -48,351 +248,396 @@
     <!-- Enhanced Quote Calculator -->
     <section class="card">
       <h2>Enhanced Quote Calculator</h2>
-      <form id="quoteCalculatorForm" class="form-modern">
-        <div class="form-group">
-          <label for="serviceType">Service Type</label>
-          <select id="serviceType" required>
-            <option value="">-- Select Service --</option>
-            <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
-            <option value="Landscape Design">🌸 Landscape Design</option>
-            <option value="Leaf Removal">🍂 Leaf Removal</option>
-            <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
-            <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
-            <option value="Mulching & Edging">🚜 Mulching & Edging</option>
-            <option value="Commercial Lawn Care">🏡 Commercial Lawn Care</option>
-            <option value="Pressure Washing">💦 Pressure Washing</option>
-          </select>
-  </div>
+      <div class="card-content">
+        <form id="quoteCalculatorForm" class="form-modern">
+          <div class="form-group">
+            <label for="serviceType">Service Type</label>
+            <select id="serviceType" required>
+              <option value="">-- Select Service --</option>
+              <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
+              <option value="Landscape Design">🌸 Landscape Design</option>
+              <option value="Leaf Removal">🍂 Leaf Removal</option>
+              <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+              <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+              <option value="Mulching & Edging">🚜 Mulching & Edging</option>
+              <option value="Commercial Lawn Care">🏡 Commercial Lawn Care</option>
+              <option value="Pressure Washing">💦 Pressure Washing</option>
+            </select>
+          </div>
 
-        <div class="form-group">
-          <label for="propertySize">Property Size (sq ft)</label>
-          <input type="number" id="propertySize" required min="100" step="100">
-  </div>
+          <div class="form-group">
+            <label for="propertySize">Property Size (sq ft)</label>
+            <input type="number" id="propertySize" required min="100" step="100">
+          </div>
 
-        <div class="form-group">
-          <label for="complexityFactor">Property Complexity (1-3)</label>
-          <input type="number" id="complexityFactor" min="1" max="3" step="0.1" value="1">
-  </div>
+          <div class="form-group">
+            <label for="complexityFactor">Property Complexity (1-3)</label>
+            <input type="number" id="complexityFactor" min="1" max="3" step="0.1" value="1">
+          </div>
 
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="urgentService">
-            Urgent Service (+25% fee)
-          </label>
-  </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="urgentService">
+              Urgent Service (+25% fee)
+            </label>
+          </div>
 
-        <button type="submit" class="btn-modern">Calculate Quote</button>
-      </form>
+          <button type="submit" class="btn-modern">Calculate Quote</button>
+        </form>
 
-      <div id="quoteBreakdown"></div>
+        <div id="quoteBreakdown"></div>
+      </div>
     </section>
 
     <!-- Package Builder -->
     <section class="card">
       <h2>Service Package Builder</h2>
-      <form id="packageBuilderForm" class="form-modern">
-        <div class="form-group">
-          <label>Select Services</label>
-          <div class="checkbox-group">
-            <label>
-              <input type="checkbox" name="package-services" value="Mowing & Trimming">
-              🌿 Mowing & Trimming
-            </label>
-            <label>
-              <input type="checkbox" name="package-services" value="Landscape Design">
-              🌸 Landscape Design
-            </label>
-            <label>
-              <input type="checkbox" name="package-services" value="Leaf Removal">
-              🍂 Leaf Removal
-            </label>
-            <label>
-              <input type="checkbox" name="package-services" value="Fertilization & Seeding">
-              🌾 Fertilization & Seeding
-            </label>
-  </div>
-  </div>
+      <div class="card-content">
+        <form id="packageBuilderForm" class="form-modern">
+          <div class="form-group">
+            <label>Select Services</label>
+            <div class="checkbox-group">
+              <label>
+                <input type="checkbox" name="package-services" value="Mowing & Trimming">
+                🌿 Mowing & Trimming
+              </label>
+              <label>
+                <input type="checkbox" name="package-services" value="Landscape Design">
+                🌸 Landscape Design
+              </label>
+              <label>
+                <input type="checkbox" name="package-services" value="Leaf Removal">
+                🍂 Leaf Removal
+              </label>
+              <label>
+                <input type="checkbox" name="package-services" value="Fertilization & Seeding">
+                🌾 Fertilization & Seeding
+              </label>
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="packagePropertySize">Property Size (sq ft)</label>
-          <input type="number" id="packagePropertySize" required min="100" step="100">
-  </div>
+          <div class="form-group">
+            <label for="packagePropertySize">Property Size (sq ft)</label>
+            <input type="number" id="packagePropertySize" required min="100" step="100">
+          </div>
 
-        <button type="submit" class="btn-modern">Build Package</button>
-      </form>
+          <button type="submit" class="btn-modern">Build Package</button>
+        </form>
 
-      <div id="packageBreakdown"></div>
+        <div id="packageBreakdown"></div>
+      </div>
     </section>
 
     <!-- Customer Management -->
     <section class="card">
       <h2>Customer Management</h2>
-      <select id="customerSelect" onchange="loadCustomerDetails(this.value)" class="form-modern">
-        <option value="">Select Customer</option>
-      </select>
+      <div class="card-content">
+        <select id="customerSelect" onchange="loadCustomerDetails(this.value)" class="form-modern" style="margin-bottom: 1rem;">
+          <option value="">Select Customer</option>
+        </select>
+        <div id="customerDetails"></div>
+      </div>
+    </section>
 
-      <div id="customerDetails"></div>
+    <!-- Invoices Management -->
+    <section class="card">
+      <h2>Invoices Management</h2>
+      <div class="card-content">
+        <div class="form-group">
+          <input type="text" id="invoiceSearch" class="form-control-modern" placeholder="Search by customer, email, or invoice #..." onkeyup="filterInvoicesTable()">
+        </div>
+        <table id="adminInvoicesTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Email</th>
+              <th>Amount</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminInvoicesTableBody">
+            <!-- Invoice rows will be populated here -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Invoice Creation -->
     <section class="card">
       <h2>Create Invoice</h2>
-      <form id="createInvoiceForm" class="form-modern">
-        <div class="form-group">
-          <label for="invoiceCustomer">Customer</label>
-          <select id="invoiceCustomer" required></select>
-  </div>
+      <div class="card-content">
+        <form id="createInvoiceForm" class="form-modern">
+          <div class="form-group">
+            <label for="invoiceCustomer">Customer</label>
+            <select id="invoiceCustomer" required></select>
+          </div>
 
-        <div class="form-group">
-          <label>Services Provided</label>
-          <div class="checkbox-group">
-            <label>
-              <input type="checkbox" name="invoice-services" value="Mowing & Trimming">
-              🌿 Mowing & Trimming
-            </label>
-            <label>
-              <input type="checkbox" name="invoice-services" value="Landscape Design">
-              🌸 Landscape Design
-            </label>
-            <!-- Add more services as needed -->
-    </div>
-  </div>
+          <div class="form-group">
+            <label>Services Provided</label>
+            <div class="checkbox-group">
+              <label>
+                <input type="checkbox" name="invoice-services" value="Mowing & Trimming">
+                🌿 Mowing & Trimming
+              </label>
+              <label>
+                <input type="checkbox" name="invoice-services" value="Landscape Design">
+                🌸 Landscape Design
+              </label>
+              <!-- Add more services as needed -->
+            </div>
+          </div>
 
-        <div class="form-group">
-          <label for="invoiceAmount">Amount ($)</label>
-          <input type="number" id="invoiceAmount" required min="0" step="0.01">
-  </div>
+          <div class="form-group">
+            <label for="invoiceAmount">Amount ($)</label>
+            <input type="number" id="invoiceAmount" required min="0" step="0.01">
+          </div>
 
-        <div class="form-group">
-          <label for="invoiceDueDate">Due Date</label>
-          <input type="date" id="invoiceDueDate" required>
-  </div>
+          <div class="form-group">
+            <label for="invoiceDueDate">Due Date</label>
+            <input type="date" id="invoiceDueDate" required>
+          </div>
 
-        <button type="submit" class="btn-modern">Create Invoice</button>
-      </form>
+          <button type="submit" class="btn-modern">Create Invoice</button>
+        </form>
+      </div>
     </section>
 
     <!-- Equipment Management -->
     <section class="card">
       <h2>Equipment Management</h2>
-      <div class="form-modern">
-        <h3>Add New Equipment</h3>
-        <form id="addEquipmentForm">
-          <div class="form-group">
-            <label for="equipmentName">Equipment Name</label>
-            <input type="text" id="equipmentName" required>
-          </div>
-          <div class="form-group">
-            <label for="equipmentType">Equipment Type (e.g., Mower, Trimmer, Blower)</label>
-            <input type="text" id="equipmentType" required>
-          </div>
-          <div class="form-group">
-            <label for="equipmentPurchaseDate">Purchase Date</label>
-            <input type="date" id="equipmentPurchaseDate" required>
-          </div>
-          <div class="form-group">
-            <label for="equipmentCost">Cost ($)</label>
-            <input type="number" id="equipmentCost" min="0" step="0.01" required>
-          </div>
-          <div class="form-group">
-            <label for="equipmentSerial">Serial Number (Optional)</label>
-            <input type="text" id="equipmentSerial">
-          </div>
-          <button type="submit" class="btn-modern">Add Equipment</button>
-        </form>
-      </div>
+      <div class="card-content">
+        <div class="form-modern">
+          <h3>Add New Equipment</h3>
+          <form id="addEquipmentForm">
+            <div class="form-group">
+              <label for="equipmentName">Equipment Name</label>
+              <input type="text" id="equipmentName" required>
+            </div>
+            <div class="form-group">
+              <label for="equipmentType">Equipment Type (e.g., Mower, Trimmer, Blower)</label>
+              <input type="text" id="equipmentType" required>
+            </div>
+            <div class="form-group">
+              <label for="equipmentPurchaseDate">Purchase Date</label>
+              <input type="date" id="equipmentPurchaseDate" required>
+            </div>
+            <div class="form-group">
+              <label for="equipmentCost">Cost ($)</label>
+              <input type="number" id="equipmentCost" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="equipmentSerial">Serial Number (Optional)</label>
+              <input type="text" id="equipmentSerial">
+            </div>
+            <button type="submit" class="btn-modern">Add Equipment</button>
+          </form>
+        </div>
 
-      <h3 style="margin-top: 2rem;">Existing Equipment</h3>
-      <table id="equipmentTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Usage Hours</th>
-            <th>Next Maintenance</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Equipment rows will be populated here -->
-        </tbody>
-      </table>
+        <h3 style="margin-top: 2rem;">Existing Equipment</h3>
+        <table id="equipmentTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Usage Hours</th>
+              <th>Next Maintenance</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Equipment rows will be populated here -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Materials & Chemical Inventory -->
     <section class="card">
       <h2>Materials & Chemical Inventory</h2>
-      <div class="form-modern">
-        <h3>Add New Material/Chemical</h3>
-        <form id="addMaterialForm">
-          <div class="form-group">
-            <label for="materialName">Material Name</label>
-            <input type="text" id="materialName" required>
-          </div>
-          <div class="form-group">
-            <label for="materialType">Type (e.g., Fertilizer, Pesticide, Fuel, Seed)</label>
-            <input type="text" id="materialType" required>
-          </div>
-          <div class="form-group">
-            <label for="materialUnit">Unit (e.g., kg, L, gal, bag, item)</label>
-            <input type="text" id="materialUnit" required>
-          </div>
-          <div class="form-group">
-            <label for="materialStockLevel">Initial Stock Level</label>
-            <input type="number" id="materialStockLevel" min="0" step="0.01" required>
-          </div>
-          <div class="form-group">
-            <label for="materialReorderPoint">Reorder Point</label>
-            <input type="number" id="materialReorderPoint" min="0" step="0.01" required>
-          </div>
-          <div class="form-group">
-            <label for="materialSupplier">Supplier Info (Optional)</label>
-            <input type="text" id="materialSupplier">
-          </div>
-          <button type="submit" class="btn-modern">Add Material</button>
-        </form>
-      </div>
+      <div class="card-content">
+        <div class="form-modern">
+          <h3>Add New Material/Chemical</h3>
+          <form id="addMaterialForm">
+            <div class="form-group">
+              <label for="materialName">Material Name</label>
+              <input type="text" id="materialName" required>
+            </div>
+            <div class="form-group">
+              <label for="materialType">Type (e.g., Fertilizer, Pesticide, Fuel, Seed)</label>
+              <input type="text" id="materialType" required>
+            </div>
+            <div class="form-group">
+              <label for="materialUnit">Unit (e.g., kg, L, gal, bag, item)</label>
+              <input type="text" id="materialUnit" required>
+            </div>
+            <div class="form-group">
+              <label for="materialStockLevel">Initial Stock Level</label>
+              <input type="number" id="materialStockLevel" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="materialReorderPoint">Reorder Point</label>
+              <input type="number" id="materialReorderPoint" min="0" step="0.01" required>
+            </div>
+            <div class="form-group">
+              <label for="materialSupplier">Supplier Info (Optional)</label>
+              <input type="text" id="materialSupplier">
+            </div>
+            <button type="submit" class="btn-modern">Add Material</button>
+          </form>
+        </div>
 
-      <h3 style="margin-top: 2rem;">Current Inventory</h3>
-      <table id="materialsTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Stock Level</th>
-            <th>Unit</th>
-            <th>Reorder Point</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Material rows will be populated here -->
-        </tbody>
-      </table>
+        <h3 style="margin-top: 2rem;">Current Inventory</h3>
+        <table id="materialsTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Stock Level</th>
+              <th>Unit</th>
+              <th>Reorder Point</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Material rows will be populated here -->
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Bids & Proposals Management -->
     <section class="card">
       <h2>Bids & Proposals Management</h2>
-      <div class="form-modern">
-        <h3>Generate New Bid</h3>
-        <form id="generateBidForm">
-          <div class="form-group">
-            <label for="bidCustomerId">Customer</label>
-            <select id="bidCustomerId" required></select> <!-- Populate with customers -->
-          </div>
-          <div class="form-group">
-            <label for="bidPropertyAddress">Property Address</label>
-            <input type="text" id="bidPropertyAddress" required>
-          </div>
-          <div class="form-group">
-            <label for="bidPropertySize">Property Size (sq ft)</label>
-            <input type="number" id="bidPropertySize" required min="100">
-          </div>
-          <div class="form-group">
-            <label for="bidPropertyComplexity">Property Complexity (1-3)</label>
-            <input type="number" id="bidPropertyComplexity" value="1" min="1" max="3" step="0.1">
-          </div>
-          <div class="form-group">
-            <label>Services (select multiple)</label>
-            <div id="bidServicesCheckboxes" class="checkbox-group">
-              <!-- Checkboxes for services will be populated here -->
+      <div class="card-content">
+        <div class="form-modern">
+          <h3>Generate New Bid</h3>
+          <form id="generateBidForm">
+            <div class="form-group">
+              <label for="bidCustomerId">Customer</label>
+              <select id="bidCustomerId" required></select> <!-- Populate with customers -->
             </div>
-          </div>
-          <div class="form-group">
-            <label><input type="checkbox" id="bidUrgent"> Urgent Service?</label>
-          </div>
-          <button type="submit" class="btn-modern">Generate Bid</button>
-        </form>
-      </div>
+            <div class="form-group">
+              <label for="bidPropertyAddress">Property Address</label>
+              <input type="text" id="bidPropertyAddress" required>
+            </div>
+            <div class="form-group">
+              <label for="bidPropertySize">Property Size (sq ft)</label>
+              <input type="number" id="bidPropertySize" required min="100">
+            </div>
+            <div class="form-group">
+              <label for="bidPropertyComplexity">Property Complexity (1-3)</label>
+              <input type="number" id="bidPropertyComplexity" value="1" min="1" max="3" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Services (select multiple)</label>
+              <div id="bidServicesCheckboxes" class="checkbox-group">
+                <!-- Checkboxes for services will be populated here -->
+              </div>
+            </div>
+            <div class="form-group">
+              <label><input type="checkbox" id="bidUrgent"> Urgent Service?</label>
+            </div>
+            <button type="submit" class="btn-modern">Generate Bid</button>
+          </form>
+        </div>
 
-      <h3 style="margin-top: 2rem;">Existing Bids</h3>
-      <table id="bidsTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead><tr><th>Bid #</th><th>Customer ID</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <div id="proposalTextView" class="card" style="margin-top:1rem; display:none;">
-        <h4>Generated Proposal Text:</h4>
-        <pre id="proposalTextContent"></pre>
+        <h3 style="margin-top: 2rem;">Existing Bids</h3>
+        <table id="bidsTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead><tr><th>Bid #</th><th>Customer ID</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div id="proposalTextView" class="card" style="margin-top:1rem; display:none;">
+          <h4>Generated Proposal Text:</h4>
+          <pre id="proposalTextContent"></pre>
+        </div>
       </div>
     </section>
 
     <!-- Customer Loyalty Program Overview -->
     <section class="card">
       <h2>Customer Loyalty Program</h2>
-      <h3 style="margin-top: 1rem;">Loyalty Accounts</h3>
-      <table id="loyaltyAccountsTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead><tr><th>Customer ID</th><th>Points</th><th>Tier</th><th>Last Updated</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <h3 style="margin-top: 2rem;">Referrals</h3>
-      <table id="referralsTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead><tr><th>Referrer ID</th><th>Referred Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <div class="card-content">
+        <h3 style="margin-top: 1rem;">Loyalty Accounts</h3>
+        <table id="loyaltyAccountsTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead><tr><th>Customer ID</th><th>Points</th><th>Tier</th><th>Last Updated</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <h3 style="margin-top: 2rem;">Referrals</h3>
+        <table id="referralsTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead><tr><th>Referrer ID</th><th>Referred Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- Sustainability & Environmental Impact Log -->
     <section class="card">
       <h2>Sustainability & Environmental Impact</h2>
-      <div class="form-modern">
-        <h3>Log Environmental Data</h3>
-        <form id="logSustainabilityDataForm">
-          <div class="form-group">
-            <label for="susLogJobId">Job ID (Optional)</label>
-            <input type="text" id="susLogJobId">
-          </div>
-          <div class="form-group">
-            <label for="susLogCustomerId">Customer ID</label>
-            <select id="susLogCustomerId" required></select> <!-- Populate with customers -->
-          </div>
-          <div class="form-group">
-            <label for="susLogType">Log Type</label>
-            <select id="susLogType" required>
-              <option value="water_usage">Water Usage</option>
-              <option value="chemical_application">Chemical Application</option>
-              <option value="green_waste_management">Green Waste Management</option>
-            </select>
-          </div>
-          <!-- Fields will dynamically appear based on log type -->
-          <div id="sustainabilityLogFields"></div> 
-          <button type="submit" class="btn-modern">Log Data</button>
-        </form>
-      </div>
-      <h3 style="margin-top: 2rem;">Sustainability Log Entries</h3>
-      <table id="sustainabilityLogTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Job/Customer</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button class="btn-modern" onclick="generateSustainabilityReportAdmin()" style="margin-top:1rem;">Generate Summary Report</button>
-      <div id="sustainabilityReportView" class="card" style="margin-top:1rem; display:none;">
-        <h4>Sustainability Report</h4>
-        <pre id="sustainabilityReportContent"></pre>
+      <div class="card-content">
+        <div class="form-modern">
+          <h3>Log Environmental Data</h3>
+          <form id="logSustainabilityDataForm">
+            <div class="form-group">
+              <label for="susLogJobId">Job ID (Optional)</label>
+              <input type="text" id="susLogJobId">
+            </div>
+            <div class="form-group">
+              <label for="susLogCustomerId">Customer ID</label>
+              <select id="susLogCustomerId" required></select> <!-- Populate with customers -->
+            </div>
+            <div class="form-group">
+              <label for="susLogType">Log Type</label>
+              <select id="susLogType" required>
+                <option value="water_usage">Water Usage</option>
+                <option value="chemical_application">Chemical Application</option>
+                <option value="green_waste_management">Green Waste Management</option>
+              </select>
+            </div>
+            <!-- Fields will dynamically appear based on log type -->
+            <div id="sustainabilityLogFields"></div> 
+            <button type="submit" class="btn-modern">Log Data</button>
+          </form>
+        </div>
+        <h3 style="margin-top: 2rem;">Sustainability Log Entries</h3>
+        <table id="sustainabilityLogTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Job/Customer</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <button class="btn-modern" onclick="generateSustainabilityReportAdmin()" style="margin-top:1rem;">Generate Summary Report</button>
+        <div id="sustainabilityReportView" class="card" style="margin-top:1rem; display:none;">
+          <h4>Sustainability Report</h4>
+          <pre id="sustainabilityReportContent"></pre>
+        </div>
       </div>
     </section>
 
     <!-- Incoming Service Requests -->
     <section class="card">
       <h2>Incoming Service Requests</h2>
-      <div class="form-group">
-        <input type="text" id="serviceRequestSearch" class="form-control-modern" placeholder="Search by customer, email, or service..." onkeyup="filterServiceRequestsTable()">
+      <div class="card-content">
+        <div class="form-group">
+          <input type="text" id="serviceRequestSearch" class="form-control-modern" placeholder="Search by customer, email, or service..." onkeyup="filterServiceRequestsTable()">
+        </div>
+        <table id="incomingRequestsTable" class="table" style="width:100%; margin-top: 1rem;">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Email</th>
+              <th>Service Type</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="incomingRequestsTableBody">
+            <!-- Rows will be populated by JavaScript -->
+          </tbody>
+        </table>
       </div>
-      <table id="incomingRequestsTable" class="table" style="width:100%; margin-top: 1rem;">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer</th>
-            <th>Email</th>
-            <th>Service Type</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="incomingRequestsTableBody">
-          <!-- Rows will be populated by JavaScript -->
-        </tbody>
-      </table>
     </section>
 
   </main>
@@ -417,7 +662,7 @@
     <div class="modal-content" id="genericAdminModalContent" style="max-width: 600px;">
       <span class="close-btn" onclick="closeGenericAdminModal()">&times;</span>
       <h3 id="genericAdminModalTitle">Modal Title</h3>
-      <div id="genericAdminModalBody">
+      <div id="genericAdminModalBody" class="card-content">
         <!-- Content will be injected here by JavaScript -->
       </div>
       <div id="genericAdminModalFooter" style="margin-top: 15px;">

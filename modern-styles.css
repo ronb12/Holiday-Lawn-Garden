@@ -1,128 +1,405 @@
 /* Modern Design System */
 
 :root {
-  --primary-color: #228B22;
-  --primary-light: #32CD32;
-  --primary-dark: #006400;
-  --success-color: #155724;
-  --warning-color: #856404;
-  --error-color: #721c24;
-  --background-light: #f4f9f4;
-  --text-dark: #333;
-  --text-light: #fff;
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 6px 8px rgba(0, 0, 0, 0.15);
-  --radius-sm: 6px;
+  --primary-color: #2A9D8F; /* Tealish Green */
+  --primary-light: #A2D2FF; /* Light Blue for accents */
+  --primary-dark: #264653;  /* Dark Blue/Teal for text or dark elements */
+  
+  --secondary-color: #E9C46A; /* Yellow/Gold for accents */
+  --accent-color: #F4A261;   /* Orange for call to actions or highlights */
+  --destructive-color: #E76F51; /* Reddish-Orange for destructive actions */
+
+  --success-color: #2A9D8F; /* Same as primary for positive feedback */
+  --warning-color: #E9C46A; /* Same as secondary for warnings */
+  --error-color: #E76F51;   /* Same as destructive for errors */
+
+  --neutral-lightest: #FFFFFF;
+  --neutral-lighter: #F8F9FA; /* Very light grey for backgrounds */
+  --neutral-light: #E9ECEF;  /* Light grey for borders, dividers */
+  --neutral-medium: #CED4DA; /* Medium grey for less important text */
+  --neutral-dark: #495057;   /* Dark grey for body text */
+  --neutral-darkest: #212529; /* Near black for headings */
+
+  --background-light: var(--neutral-lighter); /* Page background */
+  --background-card: var(--neutral-lightest); /* Card background */
+  
+  --text-dark: var(--neutral-darkest);
+  --text-light: var(--neutral-lightest);
+  --text-on-primary: var(--neutral-lightest);
+  --text-on-secondary: var(--neutral-darkest);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.07);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.07);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.07);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.07);
+
+  --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  --font-family-sans: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem;  /* 8px */
+  --spacing-md: 1rem;    /* 16px */
+  --spacing-lg: 1.5rem;  /* 24px */
+  --spacing-xl: 2rem;    /* 32px */
+  --spacing-xxl: 3rem;   /* 48px */
 }
 
-/* Modern Card Design */
-.card {
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  padding: 1.5rem;
-  margin: 1rem 0;
+/* Global Resets & Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  line-height: 1.6;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Modern Button Design */
-.btn-modern {
-  background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
-  color: var(--text-light);
-  border: none;
-  padding: 12px 24px;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.container {
+  width: 90%;
+  max-width: 1200px; /* Max width for main content */
+  margin: 0 auto;
+  padding: var(--spacing-lg) 0;
 }
 
-.btn-modern:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(34, 139, 34, 0.3);
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-dark);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.3;
+  margin-bottom: var(--spacing-md);
+}
+h1 { font-size: 2.25rem; /* 36px */ margin-top: var(--spacing-lg); }
+h2 { font-size: 1.75rem; /* 28px */ margin-top: var(--spacing-lg); }
+h3 { font-size: 1.375rem; /* 22px */ margin-top: var(--spacing-md); }
+h4 { font-size: 1.125rem; /* 18px */ margin-top: var(--spacing-sm); }
+
+
+/* Header Enhancement */
+.header {
+  background-color: var(--neutral-lightest);
+  padding: var(--spacing-md) 0;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--neutral-light);
+  margin-bottom: var(--spacing-lg);
 }
 
-.btn-modern:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-/* Status Badges */
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.status-pending {
-  background: #FFF3CD;
-  color: var(--warning-color);
-}
-
-.status-completed {
-  background: #D4EDDA;
-  color: var(--success-color);
-}
-
-.status-error {
-  background: #f8d7da;
-  color: var(--error-color);
-}
-
-/* Modern Form Design */
-.form-modern {
-  max-width: 600px;
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
+.header-content h1 {
+  font-size: 1.75rem; /* Reduced for header context */
+  color: var(--primary-dark);
+  margin: 0; /* Reset margin for h1 in header */
+}
+
+.header-actions button {
+  margin-left: var(--spacing-sm);
+}
+
+/* Modern Card Design - Refined */
+.card {
+  background: var(--background-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: var(--spacing-lg); /* Use spacing variables */
+  margin-bottom: var(--spacing-lg); /* Consistent bottom margin */
+}
+
+.card:hover {
+  transform: translateY(-4px); /* Slightly more pronounced hover */
+  box-shadow: var(--shadow-lg);
+}
+
+.card h2 { /* Styling for card titles */
+  font-size: 1.5rem; /* 24px */
+  color: var(--primary-dark);
+  margin-top: 0; /* Remove top margin for h2 when it's the first element in a card */
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--neutral-light);
+}
+.card h3 { /* Styling for sub-titles within cards */
+    font-size: 1.25rem; /* 20px */
+    color: var(--neutral-darkest);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Modern Button Design - Refined */
+.btn-modern {
+  background: var(--primary-color); /* Solid color for more modern flat look */
+  color: var(--text-on-primary);
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-lg); /* 10px 24px for example */
+  border-radius: var(--radius-md); /* Slightly larger radius */
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  text-decoration: none; /* For <a> tags styled as buttons */
+  display: inline-block; /* For <a> tags */
+  text-align: center;
+  line-height: 1.5; /* Ensure text is vertically centered */
+}
+
+.btn-modern:hover {
+  background-color: var(--primary-dark); /* Darken on hover */
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-modern:active {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-modern:disabled {
+  background-color: var(--neutral-medium);
+  color: var(--neutral-dark);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Button Variations */
+.btn-modern.btn-secondary {
+  background-color: var(--neutral-light);
+  color: var(--neutral-darkest);
+  border: 1px solid var(--neutral-medium);
+}
+.btn-modern.btn-secondary:hover {
+  background-color: var(--neutral-medium);
+  border-color: var(--neutral-dark);
+}
+
+.btn-modern.btn-success {
+  background-color: var(--success-color);
+  color: var(--text-on-primary);
+}
+.btn-modern.btn-success:hover {
+  background-color: color-mix(in srgb, var(--success-color) 80%, black);
+}
+
+.btn-modern.btn-danger {
+  background-color: var(--destructive-color);
+  color: var(--text-on-primary);
+}
+.btn-modern.btn-danger:hover {
+  background-color: color-mix(in srgb, var(--destructive-color) 80%, black);
+}
+
+.btn-modern.btn-warning {
+  background-color: var(--warning-color);
+  color: var(--text-on-secondary);
+}
+.btn-modern.btn-warning:hover {
+  background-color: color-mix(in srgb, var(--warning-color) 80%, black);
+}
+
+.btn-modern.btn-small {
+    padding: var(--spacing-xs) var(--spacing-sm); /* 4px 8px */
+    font-size: 0.875rem;
+}
+.btn-modern.btn-grey { /* For close/cancel buttons */
+    background-color: var(--neutral-medium);
+    color: var(--neutral-darkest);
+}
+.btn-modern.btn-grey:hover {
+    background-color: var(--neutral-dark);
+    color: var(--text-light);
+}
+
+
+/* Status Badges - Refined */
+.status-badge {
+  padding: var(--spacing-xs) var(--spacing-sm); /* 4px 8px */
+  border-radius: var(--radius-full); /* Pill shape */
+  font-size: 0.8rem; /* Slightly smaller */
+  font-weight: var(--font-weight-medium);
+  display: inline-block;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
+.status-pending, .status-draft, .status-proposal-generated {
+  background-color: color-mix(in srgb, var(--warning-color) 20%, transparent);
+  color: color-mix(in srgb, var(--warning-color) 80%, black);
+}
+.status-in-progress, .status-sent {
+  background-color: color-mix(in srgb, var(--primary-light) 30%, transparent);
+  color: var(--primary-dark);
+}
+.status-completed, .status-available, .status-paid, .status-accepted, .status-service-scheduled {
+  background-color: color-mix(in srgb, var(--success-color) 20%, transparent);
+  color: color-mix(in srgb, var(--success-color) 80%, black);
+}
+.status-error, .status-rejected, .status-retired {
+  background-color: color-mix(in srgb, var(--destructive-color) 20%, transparent);
+  color: color-mix(in srgb, var(--destructive-color) 80%, black);
+}
+.status-maintenance {
+  background-color: color-mix(in srgb, var(--accent-color) 20%, transparent);
+  color: color-mix(in srgb, var(--accent-color) 80%, black);
+}
+.status-unknown {
+  background-color: var(--neutral-light);
+  color: var(--neutral-dark);
+}
+
+
+/* Modern Form Design - Refined */
+.form-modern { /* This class is already on some forms in admin.html */
+  /* max-width: 600px; */ /* Removed, let card width dictate */
+  /* margin: 0 auto; */ /* Removed, let card handle centering */
+}
+
 .form-modern .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-lg); /* Increased spacing */
 }
 
 .form-modern label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text-dark);
+  margin-bottom: var(--spacing-sm); /* Increased spacing */
+  font-weight: var(--font-weight-medium); /* Slightly bolder labels */
+  color: var(--neutral-darkest);
+  font-size: 0.9rem;
 }
 
-.form-modern input,
+.form-modern input[type="text"],
+.form-modern input[type="email"],
+.form-modern input[type="password"],
+.form-modern input[type="number"],
+.form-modern input[type="date"],
+.form-modern input[type="time"],
 .form-modern select,
 .form-modern textarea {
   width: 100%;
-  padding: 12px;
-  border: 2px solid #E0E0E0;
+  padding: var(--spacing-sm) var(--spacing-md); /* 10px 16px */
+  border: 1px solid var(--neutral-medium); /* Thinner border */
   border-radius: var(--radius-md);
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   font-size: 1rem;
+  background-color: var(--neutral-lightest);
+  color: var(--neutral-darkest);
 }
+.form-modern input[type="checkbox"], .form-modern input[type="radio"] {
+    width: auto; /* Checkboxes/radios shouldn't be full width */
+    margin-right: var(--spacing-sm);
+    vertical-align: middle;
+}
+.form-modern .checkbox-group label, .form-modern .radio-group label { /* For labels next to checkboxes */
+    font-weight: var(--font-weight-normal);
+    font-size: 1rem;
+    display: inline-flex; /* Align checkbox and text */
+    align-items: center;
+    margin-right: var(--spacing-md);
+}
+
 
 .form-modern input:focus,
 .form-modern select:focus,
 .form-modern textarea:focus {
   border-color: var(--primary-color);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+.form-modern select { /* Ensure select has some base styling */
+    appearance: none; /* Optional: for custom dropdown arrow later */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M5%208l5%205%205-5z%22%20fill%3D%22%23495057%22/%3E%3C/svg%3E'); /* Simple SVG arrow */
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-sm) center;
+    background-size: 1em;
+    padding-right: var(--spacing-xl); /* Space for arrow */
 }
 
-/* Loading States */
+
+/* Table Styling */
+.table {
+    width: 100%;
+    border-collapse: collapse; /* Keep this */
+    margin-top: var(--spacing-lg);
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    overflow: hidden; /* For border-radius on table */
+}
+
+.table th, .table td {
+    padding: var(--spacing-sm) var(--spacing-md); /* 12px 16px */
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-light);
+}
+
+.table thead th {
+    background-color: var(--neutral-lighter);
+    color: var(--primary-dark);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-top: 1px solid var(--neutral-light); /* Add top border for consistency */
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: var(--neutral-lighter);
+}
+
+.table tbody tr:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+}
+
+.table td .btn-modern.btn-small { /* Adjust small buttons in tables */
+    margin-right: var(--spacing-xs);
+}
+.table td select.form-control-small { /* For small selects in table cells */
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+}
+
+
+/* Loading Overlay - Refined */
+#loadingOverlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7); /* Lighter overlay */
+  z-index: 2000; /* Higher z-index */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .loading-spinner {
-  width: 30px;
-  height: 30px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid var(--primary-color);
+  width: 40px; /* Larger spinner */
+  height: 40px;
+  border: 4px solid var(--neutral-light);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -130,44 +407,257 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Notifications */
-.notification {
+/* --- Notification System CSS from previous step (ensure it's here) --- */
+#notification-container-dynamic {
   position: fixed;
-  bottom: 20px;
+  bottom: 20px; /* Changed from top to bottom */
   right: 20px;
-  padding: 1rem;
+  z-index: 2000; /* Ensure it's on top */
+  display: flex;
+  flex-direction: column-reverse; /* New notifications appear on top of older ones at the bottom */
+  gap: 10px;
+  max-height: 90vh; /* Limit height */
+  overflow-y: auto; /* Allow scrolling if many notifications */
+}
+
+#notification-container-dynamic .notification {
+  padding: 12px 20px;
   border-radius: var(--radius-md);
-  background: white;
+  color: white;
+  font-size: 0.95em;
+  opacity: 0;
+  transform: translateX(100%); /* Start off-screen to the right */
+  transition: opacity 0.4s ease, transform 0.4s ease;
   box-shadow: var(--shadow-lg);
-  max-width: 300px;
-  z-index: 1000;
-  animation: slideIn 0.3s ease;
+  min-width: 280px;
+  max-width: 350px; /* Max width for notifications */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  line-height: 1.4;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+#notification-container-dynamic .notification.show {
+  opacity: 1;
+  transform: translateX(0); /* Slide in from the right */
 }
 
-/* Grid Layout */
+#notification-container-dynamic .notification-success { background-color: var(--success-color); }
+#notification-container-dynamic .notification-error { background-color: var(--error-color); }
+#notification-container-dynamic .notification-warning { background-color: var(--warning-color); color: var(--neutral-darkest); }
+#notification-container-dynamic .notification-info { background-color: var(--primary-color); } /* Using primary for info */
+
+.notification-close-btn {
+  margin-left: 15px;
+  color: inherit; /* Inherit color from parent for better contrast */
+  font-weight: bold;
+  font-size: 1.2em;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.notification-close-btn:hover {
+  opacity: 1;
+}
+
+
+/* Grid Layout - Kept from existing */
 .grid {
   display: grid;
-  gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-lg); /* Use spacing variable */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Slightly larger minmax */
 }
 
-/* Responsive Design */
+/* Modal Styling - Basic for newly added modals */
+/* General Modal Styles (can be shared if other modals use this class) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1050; /* Sit on top, higher than notifications */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.5); /* Darker overlay for modals */
+  padding-top: var(--spacing-xl); 
+}
+
+.modal-content {
+  background-color: var(--background-card);
+  margin: 5% auto; 
+  padding: var(--spacing-lg);
+  border: 1px solid var(--neutral-light);
+  border-radius: var(--radius-lg);
+  width: 90%; 
+  max-width: 500px; /* Default max-width */
+  position: relative;
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-content .close-btn { /* Specific styling for close button in modal */
+  position: absolute;
+  top: var(--spacing-md);
+  right: var(--spacing-md);
+  color: var(--neutral-medium);
+  font-size: 1.5rem; /* Larger close button */
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.modal-content .close-btn:hover,
+.modal-content .close-btn:focus {
+  color: var(--neutral-darkest);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-content h3, .modal-content h4 { /* Modal titles */
+  margin-top: 0;
+  color: var(--primary-dark);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--neutral-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Admin Chat Modal Specifics - ensure it uses the new modal styles */
+#adminChatModal .modal-content { /* You can target specific modals for width adjustments */
+    /* max-width: 500px; /* Already set in HTML, can be controlled here */
+}
+.chat-messages-container {
+  height: 300px; 
+  overflow-y: auto;
+  border: 1px solid var(--neutral-light);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  background-color: var(--neutral-lighter);
+  border-radius: var(--radius-md);
+}
+.chat-bubble {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md); /* Consistent radius */
+  margin-bottom: var(--spacing-sm);
+  max-width: 85%; /* Slightly more width */
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+.chat-bubble-customer {
+  background-color: var(--neutral-light);
+  color: var(--neutral-darkest);
+  float: left;
+  clear: both;
+  text-align: left;
+}
+.chat-bubble-admin {
+  background-color: var(--primary-color);
+  color: var(--text-on-primary);
+  float: right;
+  clear: both;
+  text-align: left; 
+}
+.chat-bubble strong {
+  display: block;
+  font-size: 0.85em;
+  margin-bottom: var(--spacing-xs);
+  font-weight: var(--font-weight-medium);
+}
+.chat-timestamp {
+  font-size: 0.75em;
+  color: var(--neutral-medium);
+  margin-top: var(--spacing-xs);
+  display: block;
+  text-align: right;
+}
+.chat-bubble-admin .chat-timestamp {
+  color: color-mix(in srgb, var(--text-on-primary) 70%, transparent);
+}
+.chat-input-area {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start; /* Align items to the start for textarea */
+}
+#adminChatMessageInput {
+  flex-grow: 1;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-sm);
+  border: 1px solid var(--neutral-medium);
+  resize: vertical;
+  min-height: 40px; /* Ensure it has some min height */
+}
+#sendAdminChatMessageBtn {
+  white-space: nowrap; 
+  height: auto; /* Let padding define height */
+  align-self: flex-end; /* Align with bottom of textarea if it grows */
+}
+
+
+/* Utility Classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-success { color: var(--success-color); }
+.text-danger { color: var(--destructive-color); }
+.text-warning { color: var(--warning-color); }
+.mb-0 { margin-bottom: 0 !important; }
+.mt-0 { margin-top: 0 !important; }
+/* Add more spacing utilities as needed e.g. .mt-1, .mb-2 */
+
+
+/* Responsive Design - Refined */
 @media (max-width: 768px) {
+  .container {
+    width: 95%;
+    padding: var(--spacing-md) 0;
+  }
+  .header-content {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  .header-content h1 {
+    font-size: 1.5rem;
+  }
+  .header-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+  }
+
   .card {
-    margin: 0.5rem 0;
-    padding: 1rem;
+    margin: var(--spacing-md) 0;
+    padding: var(--spacing-md);
+  }
+  .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: var(--spacing-md);
+  }
+  .card h3 {
+      font-size: 1.1rem;
+      margin-bottom: var(--spacing-sm);
   }
   
   .btn-modern {
-    padding: 10px 20px;
+    padding: var(--spacing-sm) var(--spacing-md); /* 10px 16px */
+    width: 100%; /* Make buttons full width on mobile for forms */
+    margin-bottom: var(--spacing-sm); /* Add some space between full-width buttons */
   }
-  
+  .header-actions .btn-modern { /* Don't make header buttons full width */
+      width: auto;
+      margin-bottom: 0;
+  }
+  .table .btn-modern, .table .btn-modern.btn-small { /* Don't make table action buttons full width */
+      width: auto;
+      margin-bottom: 0;
+  }
+
   .grid {
     grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .modal-content {
+    width: 95%;
+    margin: 10% auto;
+    padding: var(--spacing-md);
   }
 } 

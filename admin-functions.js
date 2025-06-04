@@ -565,6 +565,7 @@ async function loadBidsTable() {
         <td><span class="status-badge status-${bid.status.replace('_', '-')}">${bid.status}</span></td>
         <td>
           <button class="btn-modern btn-small" onclick="viewBidDetails('${bid.id}')">View/Propose</button>
+          <button class="btn-modern btn-small btn-secondary" onclick="generateAdminQuotePDF('${bid.id}')">📄 PDF</button>
           ${bid.status === 'accepted' ? `<button class="btn-modern btn-small btn-success" onclick="openScheduleServiceModal('${bid.id}')">Schedule Service</button>` : ''}
           <select onchange="updateBidStatus('${bid.id}', this.value)" class="form-control-small" style="padding: 5px; margin-left: 5px;">
             <option value="draft" ${bid.status === 'draft' ? 'selected' : ''}>Draft</option>
@@ -1345,6 +1346,619 @@ async function submitScheduleServiceForm(bidId) {
   }
 }
 
+// ----- Admin Invoices Management -----
+async function loadAdminInvoicesTable() {
+  const tableBody = document.getElementById("adminInvoicesTableBody");
+  if (!tableBody) {
+    console.log("Admin invoices table body not found"); 
+    return;
+  }
+  tableBody.innerHTML = '<tr><td colspan="7">Loading invoices...</td></tr>';
+  showLoader();
+
+  try {
+    const snapshot = await db.collection("invoices")
+                            .orderBy("createdAt", "desc")
+                            .limit(100) // Add limit for performance
+                            .get();
+    
+    if (snapshot.empty) {
+      tableBody.innerHTML = '<tr><td colspan="7">No invoices found.</td></tr>';
+      hideLoader();
+      return;
+    }
+
+    let rowsHtml = "";
+    snapshot.forEach(doc => {
+      const invoice = { id: doc.id, ...doc.data() };
+      const invoiceNumber = invoice.invoiceNumber || doc.id.substring(0,8).toUpperCase();
+      const customerName = invoice.customerName || invoice.customer || "N/A";
+      const customerEmail = invoice.customerEmail || "N/A";
+      const amount = invoice.amount || invoice.grandTotal || 0;
+      const dueDate = invoice.dueDate ? (invoice.dueDate.toDate ? invoice.dueDate.toDate().toLocaleDateString() : new Date(invoice.dueDate).toLocaleDateString()) : 'N/A';
+      const status = invoice.paid ? "Paid" : (invoice.status || "Unpaid");
+      const statusClass = invoice.paid ? "paid" : "unpaid";
+
+      rowsHtml += `
+        <tr>
+          <td>${invoiceNumber}</td>
+          <td>${customerName}</td>
+          <td>${customerEmail}</td>
+          <td>$${amount.toFixed(2)}</td>
+          <td>${dueDate}</td>
+          <td><span class="status-badge status-${statusClass}">${status}</span></td>
+          <td>
+            <button class="btn-modern btn-small" onclick="viewInvoiceDetails('${invoice.id}')">View Details</button>
+            <button class="btn-modern btn-small btn-secondary" onclick="generateAdminInvoicePDF('${invoice.id}')">📄 PDF</button>
+            ${!invoice.paid ? `<button class="btn-modern btn-small btn-success" onclick="markInvoiceAsPaid('${invoice.id}')">Mark Paid</button>` : ''}
+          </td>
+        </tr>
+      `;
+    });
+    tableBody.innerHTML = rowsHtml;
+
+  } catch (error) {
+    console.error("Error loading admin invoices table:", error);
+    tableBody.innerHTML = '<tr><td colspan="7">Error loading invoices. See console.</td></tr>';
+  } finally {
+    hideLoader();
+  }
+}
+
+function filterInvoicesTable() {
+  const input = document.getElementById("invoiceSearch");
+  const filter = input.value.toLowerCase();
+  const tableBody = document.getElementById("adminInvoicesTableBody");
+  const rows = tableBody.getElementsByTagName("tr");
+
+  for (let i = 0; i < rows.length; i++) {
+    const cells = rows[i].getElementsByTagName("td");
+    let found = false;
+    if (cells.length > 0) { // Ensure row has cells
+        // Search in relevant cells (Invoice #, Customer, Email)
+        const invoiceNumberText = cells[0]?.textContent || cells[0]?.innerText || "";
+        const customerText = cells[1]?.textContent || cells[1]?.innerText || "";
+        const emailText = cells[2]?.textContent || cells[2]?.innerText || "";
+        if (invoiceNumberText.toLowerCase().includes(filter) || 
+            customerText.toLowerCase().includes(filter) || 
+            emailText.toLowerCase().includes(filter)) {
+            found = true;
+        }
+    }
+    rows[i].style.display = found ? "" : "none";
+  }
+}
+
+async function viewInvoiceDetails(invoiceId) {
+  try {
+    const invoiceDoc = await db.collection("invoices").doc(invoiceId).get();
+    if (!invoiceDoc.exists) {
+      NotificationSystem.showNotification("Invoice not found.", "error");
+      return;
+    }
+    const invoice = invoiceDoc.data();
+
+    document.getElementById("genericAdminModalTitle").textContent = `Invoice Details: ${invoice.invoiceNumber || invoiceId.substring(0,8).toUpperCase()}`;
+    const modalBody = document.getElementById("genericAdminModalBody");
+    
+    let itemsHtml = "";
+    if (invoice.items && invoice.items.length > 0) {
+      itemsHtml = `
+        <h4>Items/Services:</h4>
+        <table class="table" style="margin-top: 10px;">
+          <thead><tr><th>Item</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+          <tbody>
+            ${invoice.items.map(item => `
+              <tr>
+                <td>${item.name || 'N/A'}</td>
+                <td>${item.description || 'N/A'}</td>
+                <td>${item.quantity || 1}</td>
+                <td>$${(item.unitPrice || 0).toFixed(2)}</td>
+                <td>$${(item.total || (item.quantity || 1) * (item.unitPrice || 0)).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    } else if (invoice.service || invoice.description) {
+      itemsHtml = `
+        <h4>Service:</h4>
+        <p>${invoice.service || invoice.description}</p>
+      `;
+    }
+
+    modalBody.innerHTML = `
+      <p><strong>Customer:</strong> ${invoice.customerName || invoice.customer || 'N/A'}</p>
+      <p><strong>Email:</strong> ${invoice.customerEmail || 'N/A'}</p>
+      <p><strong>Amount:</strong> $${(invoice.amount || invoice.grandTotal || 0).toFixed(2)}</p>
+      <p><strong>Due Date:</strong> ${invoice.dueDate ? (invoice.dueDate.toDate ? invoice.dueDate.toDate().toLocaleDateString() : new Date(invoice.dueDate).toLocaleDateString()) : 'N/A'}</p>
+      <p><strong>Status:</strong> ${invoice.paid ? "✅ Paid" : "❌ Unpaid"}</p>
+      <p><strong>Created:</strong> ${invoice.createdAt ? invoice.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+      ${itemsHtml}
+      ${invoice.notes ? `<p><strong>Notes:</strong> ${invoice.notes}</p>` : ''}
+    `;
+
+    const modalFooter = document.getElementById("genericAdminModalFooter");
+    modalFooter.innerHTML = `
+      <button class="btn-modern btn-secondary" onclick="generateAdminInvoicePDF('${invoiceId}')">📄 Download PDF</button>
+      ${!invoice.paid ? `<button class="btn-modern btn-success" onclick="markInvoiceAsPaid('${invoiceId}'); closeGenericAdminModal();">Mark as Paid</button>` : ''}
+      <button class="btn-modern btn-grey" onclick="closeGenericAdminModal()">Close</button>
+    `;
+
+    document.getElementById("genericAdminModal").style.display = "block";
+
+  } catch (error) {
+    console.error("Error viewing invoice details:", error);
+    NotificationSystem.showNotification("Error loading invoice details: " + error.message, "error");
+  }
+}
+
+async function markInvoiceAsPaid(invoiceId) {
+  try {
+    await db.collection("invoices").doc(invoiceId).update({ 
+      paid: true, 
+      paidDate: firebase.firestore.FieldValue.serverTimestamp() 
+    });
+    NotificationSystem.showNotification("Invoice marked as paid!", "success");
+    loadAdminInvoicesTable(); // Refresh the table
+    updateDashboardStats(); // Update stats
+  } catch (error) {
+    console.error("Error marking invoice as paid:", error);
+    NotificationSystem.showNotification("Error updating invoice status: " + error.message, "error");
+  }
+}
+
+// ----- New Professional PDF Generation for Admin -----
+async function generateAdminQuotePDF(bidId) {
+  showLoader();
+  try {
+    const bidDoc = await db.collection("bids").doc(bidId).get();
+    if (!bidDoc.exists) {
+      NotificationSystem.showNotification("Quote/Bid not found.", "error");
+      hideLoader();
+      return;
+    }
+    const quoteData = bidDoc.data();
+
+    let customerData = {};
+    if (quoteData.customerId) {
+      const customerDoc = await db.collection("users").doc(quoteData.customerId).get(); // Assuming customer details are in 'users' collection by UID
+      if (customerDoc.exists) {
+        customerData = customerDoc.data();
+      } else {
+        const profileDoc = await db.collection("profiles").doc(quoteData.customerId).get(); // Fallback to profiles
+        if (profileDoc.exists) customerData = profileDoc.data();
+      }
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const companyName = "Holliday's Lawn & Garden";
+    const companyAddress = "123 Green St, Meadowville, FL 12345";
+    const companyContact = "contact@hollidaylawn.com | (555) 123-4567";
+    // const logoPath = 'path/to/your/logo.png'; // Placeholder for your logo
+
+    let yPos = 20;
+    const lineSpacing = 7;
+    const sectionSpacing = 10;
+    const leftMargin = 15;
+    const rightMargin = 195; 
+
+    // --- Company Header ---
+    // doc.addImage(logoPath, 'PNG', leftMargin, yPos - 5, 30, 10); // Example logo placement
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(companyName, leftMargin, yPos);
+    yPos += lineSpacing;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(companyAddress, leftMargin, yPos);
+    yPos += lineSpacing - 2;
+    doc.text(companyContact, leftMargin, yPos);
+    yPos += sectionSpacing;
+
+    // --- Document Title & Info ---
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text("QUOTE", rightMargin, yPos - sectionSpacing + 2, { align: 'right' });
+    yPos += lineSpacing;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Quote #: ${quoteData.bidNumber || bidId}`, rightMargin, yPos, { align: 'right' });
+    yPos += lineSpacing - 2;
+    const quoteDate = quoteData.createdAt && quoteData.createdAt.toDate ? quoteData.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString();
+    doc.text(`Date: ${quoteDate}`, rightMargin, yPos, { align: 'right' });
+    yPos += lineSpacing -2;
+    if(quoteData.validUntil) {
+        const validDate = quoteData.validUntil.toDate ? quoteData.validUntil.toDate().toLocaleDateString() : new Date(quoteData.validUntil).toLocaleDateString();
+        doc.text(`Valid Until: ${validDate}`, rightMargin, yPos, { align: 'right' });
+    }
+    yPos += sectionSpacing;
+
+    // --- Customer Information ---
+    const billToX = leftMargin;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Prepared for:", billToX, yPos);
+    yPos += lineSpacing - 1;
+    doc.setFont('helvetica', 'normal');
+    doc.text(customerData.name || quoteData.customerName || "Valued Customer", billToX, yPos);
+    yPos += lineSpacing - 2;
+    if (customerData.email || quoteData.customerEmail) {
+      doc.text(customerData.email || quoteData.customerEmail, billToX, yPos);
+      yPos += lineSpacing - 2;
+    }
+    if (customerData.address) {
+        doc.text(`${customerData.address.street || ''}`, billToX, yPos);
+        yPos += lineSpacing - 2;
+        doc.text(`${customerData.address.city || ''}, ${customerData.address.state || ''} ${customerData.address.zip || ''}`, billToX, yPos);
+    } else if (quoteData.propertyAddress) {
+        doc.text(quoteData.propertyAddress, billToX, yPos);
+    }
+    yPos += sectionSpacing + 5;
+
+    // --- Services/Items Table ---
+    doc.setFont('helvetica', 'bold');
+    const tableHeaders = ["Item/Service", "Description", "Qty", "Unit Price", "Total"];
+    const colWidths = [50, 70, 15, 25, 25]; // Total 185, fits within margins
+    let currentX = leftMargin;
+
+    doc.setFillColor(230, 230, 230);
+    doc.rect(leftMargin, yPos, rightMargin - leftMargin, lineSpacing + 1, 'F');
+    tableHeaders.forEach((header, i) => {
+      doc.text(header, currentX + 1, yPos + lineSpacing - 1);
+      currentX += colWidths[i];
+    });
+    yPos += lineSpacing + 1;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+
+    const services = quoteData.services || [];
+    if (services.length === 0 && quoteData.serviceType) { // Handle single service from older structure
+        services.push({ 
+            name: quoteData.serviceType, 
+            description: quoteData.description || 'N/A', 
+            quantity: 1, 
+            unitPrice: quoteData.estimatedTotal || 0,
+            total: quoteData.estimatedTotal || 0
+        });
+    }
+
+    services.forEach(item => {
+      if (yPos > 260) { // Page break check
+        doc.addPage();
+        yPos = 20;
+        // Redraw headers if needed, though for a single quote, it might not span pages often
+      }
+      currentX = leftMargin;
+      const nameLines = doc.splitTextToSize(item.name || 'N/A', colWidths[0] - 2);
+      const descLines = doc.splitTextToSize(item.description || 'N/A', colWidths[1] - 2);
+      const maxLines = Math.max(nameLines.length, descLines.length);
+      const rowHeight = (lineSpacing - 2) * maxLines + 2;
+
+      doc.text(nameLines, currentX + 1, yPos + lineSpacing - 3);
+      currentX += colWidths[0];
+      doc.text(descLines, currentX + 1, yPos + lineSpacing - 3);
+      currentX += colWidths[1];
+      doc.text((item.quantity || 1).toString(), currentX + (colWidths[2]/2), yPos + lineSpacing - 3, {align: 'center'});
+      currentX += colWidths[2];
+      doc.text((item.unitPrice || 0).toFixed(2), currentX + colWidths[3] -2 , yPos + lineSpacing - 3, {align: 'right'});
+      currentX += colWidths[3];
+      doc.text((item.total || (item.quantity || 1) * (item.unitPrice || 0)).toFixed(2), currentX + colWidths[4] - 2, yPos + lineSpacing - 3, {align: 'right'});
+      
+      yPos += rowHeight;
+      doc.setDrawColor(200, 200, 200);
+      doc.line(leftMargin, yPos, rightMargin, yPos); // Line after each item
+      yPos += 1; // Small space after line
+    });
+
+    // --- Totals Section ---
+    yPos += sectionSpacing -5;
+    const totalsX = rightMargin - colWidths[3] - colWidths[4]; 
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Subtotal:", totalsX - 10, yPos, {align: 'right'});
+    doc.setFont('helvetica', 'normal');
+    doc.text(`$${(quoteData.subtotal || quoteData.estimatedTotal || 0).toFixed(2)}`, rightMargin -2, yPos, {align: 'right'});
+    yPos += lineSpacing;
+
+    // Example for Discount and Tax - adapt if your data model supports this
+    if (typeof quoteData.discountAmount === 'number' && quoteData.discountAmount > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.text("Discount:", totalsX - 10, yPos, {align: 'right'});
+        doc.setFont('helvetica', 'normal');
+        doc.text(`-$${quoteData.discountAmount.toFixed(2)}`, rightMargin -2, yPos, {align: 'right'});
+        yPos += lineSpacing;
+    }
+    if (typeof quoteData.taxAmount === 'number' && quoteData.taxAmount > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.text("Tax:", totalsX - 10, yPos, {align: 'right'});
+        doc.setFont('helvetica', 'normal');
+        doc.text(`$${quoteData.taxAmount.toFixed(2)}`, rightMargin -2, yPos, {align: 'right'});
+        yPos += lineSpacing;
+    }
+
+    doc.setDrawColor(0,0,0);
+    doc.line(totalsX -15, yPos, rightMargin, yPos); // Line above Grand Total
+    yPos += 2;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text("TOTAL:", totalsX - 10, yPos + lineSpacing -2 , {align: 'right'});
+    doc.text(`$${(quoteData.grandTotal || quoteData.estimatedTotal || 0).toFixed(2)}`, rightMargin -2, yPos + lineSpacing -2, {align: 'right'});
+    yPos += lineSpacing + sectionSpacing;
+
+    // --- Notes / Terms ---
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    if (quoteData.notes) {
+      doc.setFont('helvetica', 'bold');
+      doc.text("Notes:", leftMargin, yPos);
+      yPos += lineSpacing -3;
+      doc.setFont('helvetica', 'normal');
+      const notesLines = doc.splitTextToSize(quoteData.notes, rightMargin - leftMargin);
+      doc.text(notesLines, leftMargin, yPos);
+      yPos += (lineSpacing - 3) * notesLines.length + (sectionSpacing / 2);
+    }
+    
+    doc.text("Quote prepared by Holliday's Lawn & Garden. All prices are estimates and subject to change based on final assessment.",
+             doc.internal.pageSize.getWidth() / 2, 280, { align: 'center' });
+
+    doc.save(`Quote_${quoteData.bidNumber || bidId}.pdf`);
+
+  } catch (error) {
+    console.error("Error generating admin quote PDF:", error);
+    NotificationSystem.showNotification("Failed to generate quote PDF. " + error.message, "error");
+  } finally {
+    hideLoader();
+  }
+}
+
+// Placeholder for generateAdminInvoicePDF - will be similar structure
+async function generateAdminInvoicePDF(invoiceId) {
+  showLoader();
+  try {
+    const invoiceDoc = await db.collection("invoices").doc(invoiceId).get();
+    if (!invoiceDoc.exists) {
+      NotificationSystem.showNotification("Invoice not found.", "error");
+      hideLoader();
+      return;
+    }
+    const invoiceData = invoiceDoc.data();
+
+    let customerData = {};
+    if (invoiceData.customerId) { 
+      const userDoc = await db.collection("users").doc(invoiceData.customerId).get();
+      if (userDoc.exists) customerData = userDoc.data();
+      else {
+        const profileDoc = await db.collection("profiles").doc(invoiceData.customerId).get();
+        if (profileDoc.exists) customerData = profileDoc.data();
+      }
+    } else if (invoiceData.customerEmail) { 
+        const usersQuery = await db.collection("users").where("email", "==", invoiceData.customerEmail).limit(1).get();
+        if (!usersQuery.empty) customerData = usersQuery.docs[0].data();
+        else {
+            const profilesQuery = await db.collection("profiles").where("email", "==", invoiceData.customerEmail).limit(1).get();
+            if(!profilesQuery.empty) customerData = profilesQuery.docs[0].data();
+        }
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const companyName = "Holliday's Lawn & Garden";
+    const companyAddress = "123 Green St, Meadowville, FL 12345";
+    const companyContact = "contact@hollidaylawn.com | (555) 123-4567";
+    // const logoPath = 'path/to/your/logo.png'; 
+
+    let yPos = 20;
+    const lineSpacing = 7;
+    const sectionSpacing = 10;
+    const leftMargin = 15;
+    const rightMargin = 195;
+
+    // --- Company Header ---
+    // doc.addImage(logoPath, 'PNG', leftMargin, yPos - 5, 30, 10);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(companyName, leftMargin, yPos);
+    yPos += lineSpacing;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(companyAddress, leftMargin, yPos);
+    yPos += lineSpacing - 2;
+    doc.text(companyContact, leftMargin, yPos);
+    yPos += sectionSpacing;
+
+    // --- Document Title & Info ---
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text("INVOICE", rightMargin, yPos - sectionSpacing + 2, { align: 'right' });
+    yPos += lineSpacing;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Invoice #: ${invoiceData.invoiceNumber || invoiceId}`, rightMargin, yPos, { align: 'right' });
+    yPos += lineSpacing - 2;
+    const issueDate = invoiceData.createdAt && invoiceData.createdAt.toDate ? invoiceData.createdAt.toDate().toLocaleDateString() : new Date().toLocaleDateString();
+    doc.text(`Date Issued: ${issueDate}`, rightMargin, yPos, { align: 'right' });
+    yPos += lineSpacing - 2;
+    if (invoiceData.dueDate) {
+        const dueDateStr = invoiceData.dueDate.toDate ? invoiceData.dueDate.toDate().toLocaleDateString() : new Date(invoiceData.dueDate).toLocaleDateString();
+        doc.text(`Due Date: ${dueDateStr}`, rightMargin, yPos, { align: 'right' });
+    }
+    yPos += sectionSpacing;
+
+    // --- Customer Information ---
+    const billToX = leftMargin;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Bill To:", billToX, yPos);
+    yPos += lineSpacing - 1;
+    doc.setFont('helvetica', 'normal');
+    doc.text(customerData.name || invoiceData.customerName || "Valued Customer", billToX, yPos);
+    yPos += lineSpacing - 2;
+    if (customerData.email || invoiceData.customerEmail) {
+      doc.text(customerData.email || invoiceData.customerEmail, billToX, yPos);
+      yPos += lineSpacing - 2;
+    }
+    if (customerData.address) {
+        doc.text(`${customerData.address.street || ''}`, billToX, yPos);
+        yPos += lineSpacing - 2;
+        doc.text(`${customerData.address.city || ''}, ${customerData.address.state || ''} ${customerData.address.zip || ''}`, billToX, yPos);
+    } 
+    yPos += sectionSpacing + 5;
+
+    // --- Services/Items Table ---
+    doc.setFont('helvetica', 'bold');
+    const tableHeaders = ["Item/Service", "Description", "Qty", "Unit Price", "Total"];
+    const colWidths = [50, 70, 15, 25, 25];
+    let currentX = leftMargin;
+
+    doc.setFillColor(230, 230, 230);
+    doc.rect(leftMargin, yPos, rightMargin - leftMargin, lineSpacing + 1, 'F');
+    tableHeaders.forEach((header, i) => {
+      doc.text(header, currentX + 1, yPos + lineSpacing - 1);
+      currentX += colWidths[i];
+    });
+    yPos += lineSpacing + 1;
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+
+    const items = invoiceData.items || []; 
+    if (items.length === 0 && invoiceData.serviceType) { 
+        items.push({
+            name: invoiceData.serviceType,
+            description: invoiceData.description || 'N/A',
+            quantity: 1,
+            unitPrice: invoiceData.amount || 0,
+            total: invoiceData.amount || 0
+        });
+    }
+     if (items.length === 0 && !invoiceData.serviceType && invoiceData.description) { 
+        items.push({
+            name: invoiceData.description, 
+            description: 'See details',
+            quantity: 1,
+            unitPrice: invoiceData.amount || 0,
+            total: invoiceData.amount || 0
+        });
+    }
+
+    items.forEach(item => {
+      if (yPos > 260) { doc.addPage(); yPos = 20; 
+        doc.setFillColor(230, 230, 230);
+        doc.rect(leftMargin, yPos, rightMargin - leftMargin, lineSpacing + 1, 'F');
+        let headerX = leftMargin;
+        tableHeaders.forEach((header, i) => {
+            doc.text(header, headerX + 1, yPos + lineSpacing - 1);
+            headerX += colWidths[i];
+        });
+        yPos += lineSpacing + 1;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+      }
+      currentX = leftMargin;
+      const nameLines = doc.splitTextToSize(item.name || 'Service', colWidths[0] - 2);
+      const descLines = doc.splitTextToSize(item.description || '-', colWidths[1] - 2);
+      const maxLines = Math.max(nameLines.length, descLines.length);
+      const rowHeight = (lineSpacing - 2) * maxLines + 2;
+
+      doc.text(nameLines, currentX + 1, yPos + lineSpacing - 3);
+      currentX += colWidths[0];
+      doc.text(descLines, currentX + 1, yPos + lineSpacing - 3);
+      currentX += colWidths[1];
+      doc.text((item.quantity || 1).toString(), currentX + (colWidths[2]/2), yPos + lineSpacing - 3, {align: 'center'});
+      currentX += colWidths[2];
+      doc.text((item.unitPrice || 0).toFixed(2), currentX + colWidths[3] - 2, yPos + lineSpacing - 3, {align: 'right'});
+      currentX += colWidths[3];
+      doc.text((item.total || (item.quantity || 1) * (item.unitPrice || 0)).toFixed(2), currentX + colWidths[4] - 2, yPos + lineSpacing - 3, {align: 'right'});
+      
+      yPos += rowHeight;
+      doc.setDrawColor(200, 200, 200);
+      doc.line(leftMargin, yPos, rightMargin, yPos);
+      yPos += 1;
+    });
+
+    // --- Totals Section ---
+    yPos += sectionSpacing -5;
+    const totalsX = rightMargin - colWidths[3] - colWidths[4];
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Subtotal:", totalsX - 10, yPos, {align: 'right'});
+    doc.setFont('helvetica', 'normal');
+    doc.text(`$${(invoiceData.subtotal || invoiceData.amount || 0).toFixed(2)}`, rightMargin - 2, yPos, {align: 'right'});
+    yPos += lineSpacing;
+
+    if (typeof invoiceData.discountAmount === 'number' && invoiceData.discountAmount > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.text("Discount:", totalsX - 10, yPos, {align: 'right'});
+        doc.setFont('helvetica', 'normal');
+        doc.text(`-$${invoiceData.discountAmount.toFixed(2)}`, rightMargin -2, yPos, {align: 'right'});
+        yPos += lineSpacing;
+    }
+    if (typeof invoiceData.taxAmount === 'number' && invoiceData.taxAmount > 0) {
+        doc.setFont('helvetica', 'bold');
+        doc.text("Tax:", totalsX - 10, yPos, {align: 'right'});
+        doc.setFont('helvetica', 'normal');
+        doc.text(`$${invoiceData.taxAmount.toFixed(2)}`, rightMargin -2, yPos, {align: 'right'});
+        yPos += lineSpacing;
+    }
+
+    doc.setDrawColor(0,0,0);
+    doc.line(totalsX -15, yPos, rightMargin, yPos);
+    yPos += 2;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text("TOTAL DUE:", totalsX - 10, yPos + lineSpacing -2 , {align: 'right'});
+    doc.text(`$${(invoiceData.grandTotal || invoiceData.amount || 0).toFixed(2)}`, rightMargin - 2, yPos + lineSpacing -2, {align: 'right'});
+    yPos += lineSpacing;
+
+    if(invoiceData.paid) {
+        doc.setFontSize(14);
+        doc.setTextColor(0, 100, 0); // Dark Green
+        doc.text("PAID", totalsX - 10, yPos + lineSpacing, {align: 'right'});
+        doc.setTextColor(0,0,0); // Reset color
+    }
+    yPos += sectionSpacing + lineSpacing;
+
+    // --- Payment Terms / Notes ---
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    if (invoiceData.paymentTerms) {
+      doc.setFont('helvetica', 'bold');
+      doc.text("Payment Terms:", leftMargin, yPos);
+      yPos += lineSpacing -3;
+      doc.setFont('helvetica', 'normal');
+      const termsLines = doc.splitTextToSize(invoiceData.paymentTerms, rightMargin - leftMargin);
+      doc.text(termsLines, leftMargin, yPos);
+      yPos += (lineSpacing - 3) * termsLines.length + (sectionSpacing / 2);
+    }
+    if (invoiceData.notes) {
+      doc.setFont('helvetica', 'bold');
+      doc.text("Notes:", leftMargin, yPos);
+      yPos += lineSpacing -3;
+      doc.setFont('helvetica', 'normal');
+      const notesLines = doc.splitTextToSize(invoiceData.notes, rightMargin - leftMargin);
+      doc.text(notesLines, leftMargin, yPos);
+    }
+
+    doc.text("Thank you for your business! Please make payments to Holliday's Lawn & Garden.",
+             doc.internal.pageSize.getWidth() / 2, 280, { align: 'center' });
+
+    doc.save(`Invoice_${invoiceData.invoiceNumber || invoiceId}.pdf`);
+
+  } catch (error) {
+    console.error("Error generating admin invoice PDF:", error);
+    NotificationSystem.showNotification("Failed to generate invoice PDF. " + error.message, "error");
+  } finally {
+    hideLoader();
+  }
+}
+
 // Centralized Admin Dashboard Initialization function
 function initializeAdminDashboard() {
     console.log("Initializing Admin Dashboard...");
@@ -1372,6 +1986,7 @@ function initializeAdminDashboard() {
     loadSustainabilityLogTable();
 
     loadIncomingServiceRequests(); // Add this line
+    loadAdminInvoicesTable(); // Load invoices table
     
     console.log("Admin Dashboard Fully Initialized.");
 }
