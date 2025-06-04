@@ -40,6 +40,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="dist/firebase-config.js"></script>
   <script src="firebase-init.js"></script>
 </head>
 <body>
@@ -96,6 +97,9 @@
       await firebase.firestore().collection("users").doc(uid).set({
         fullName: name,
         email,
+        displayName: name,
+        uid: uid,
+        role: "customer",
         address: {
           street,
           city,

@@ -9,9 +9,11 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="dist/firebase-config.js"></script>
   <script src="firebase-init.js"></script>
 
-  <!-- Google Identity Services (optional for future use) -->
+  <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
@@ -56,6 +58,11 @@
       display: flex;
       justify-content: center;
     }
+    #loginErrorMessage {
+      color: red;
+      margin-top: 1em;
+      min-height: 1.2em; /* Reserve space to prevent layout shifts */
+    }
   </style>
 </head>
 <body>
@@ -83,7 +90,10 @@
     <input type="password" id="loginPassword" placeholder="Password" required><br>
     <button onclick="emailPasswordLogin()">Login</button>
 
-    <!-- Google Sign In (optional) -->
+    <!-- Error Message Display -->
+    <div id="loginErrorMessage"></div>
+
+    <!-- Google Sign In -->
     <div class="g_id_signin"
          data-type="standard"
          data-shape="rectangular"
@@ -91,7 +101,8 @@
          data-text="sign_in_with"
          data-size="large"
          data-logo_alignment="left"
-         data-width="250">
+         data-width="250"
+         data-callback="handleGoogleSignInCallback">
     </div>
 
     <div class="login-links">
@@ -105,46 +116,7 @@
   &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
 </footer>
 
-<script>
-  // Email/Password Login with role-based redirect
-  function emailPasswordLogin() {
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    if (!email || !password) {
-      alert("Please enter both email and password.");
-      return;
-    }
-
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        const userEmail = userCredential.user.email;
-        const isAdmin = ["ronellbradley@bradleyvs.com"].includes(userEmail); // ✅ Replace/add more admins as needed
-
-        if (isAdmin) {
-          window.location.href = "admin.html";
-        } else {
-          window.location.href = "customer-dashboard.html"; // ✅ Make sure this page exists
-        }
-      })
-      .catch((error) => {
-        alert("Login failed: " + error.message);
-      });
-  }
-
-  // Fade-in animation
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.fade-in').forEach(section => {
-    observer.observe(section);
-  });
-</script>
+<script src="login.js"></script>
 
 </body>
-</html>
+</html> 

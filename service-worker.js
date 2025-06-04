@@ -1,14 +1,47 @@
-const CACHE_NAME = 'holliday-lawn-cache-v3';
+const CACHE_NAME = 'holliday-lawn-cache-v4';
 
 const urlsToCache = [
-  '/Holliday-Lawn-Garden/index.html',
-  '/Holliday-Lawn-Garden/admin.html',
-  '/Holliday-Lawn-Garden/style.css',
-  '/Holliday-Lawn-Garden/manifest.json',
-  '/Holliday-Lawn-Garden/icons/icon-192.png',
-  '/Holliday-Lawn-Garden/icons/icon-512.png',
-  '/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png',
-  '/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg'
+  // Core HTML Shell
+  './', // Alias for index.html
+  './index.html',
+  './login.html',
+  './admin.html',
+  './customer-dashboard.html',
+  './manifest.json',
+
+  // Core CSS
+  './style.css',
+  './modern-styles.css',
+
+  // Core JS (Firebase and main app logic)
+  './firebase-init.js',
+  './login.js',
+  './admin-functions.js',
+  './customer-dashboard.js',
+  './utils.js',
+
+  // Additional JS Modules (add all that are critical for offline shell/core features)
+  './equipment-manager.js',
+  './loyalty-program.js',
+  './material-tracker.js',
+  './bidding-system.js',
+  './sustainability-tracker.js',
+  
+  './route-optimizer.js',
+  './payment-handler.js',
+  // Note: Ensure these JS files don't immediately fail if APIs (weather, maps) are unavailable offline.
+  // The service worker primarily ensures the *code* is available.
+
+  // Key Images & Icons
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './Hollidays_Lawn_Garden_Logo.png',
+  // Add other critical images, e.g., from assets, if they are part of the core shell experience
+  // './assets/hero-garden-landscaping.jpg', // Example, uncomment if critical
+
+  // Firebase SDKs (loaded from CDN, usually not cached by custom SW unless specifically proxied)
+  // Consider caching if network reliability is extremely poor and you are self-hosting or proxying them.
+  // For now, relying on browser cache for CDN resources.
 ];
 
 // INSTALL: Cache core assets
