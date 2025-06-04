@@ -64,12 +64,16 @@ function showTab(id) {
   }
 }
 
-// Initialize when DOM and Firebase are ready
+// Initialize when DOM and Firebase are ready - simplified version
 window.addEventListener('load', () => {
   ensureFirebaseReady(() => {
     if (localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
+    
+    // Load basic admin components
     loadCustomersDropdown();
     updateDashboardStats();
+    
+    console.log('Basic admin dashboard initialized successfully');
   });
 });
 
@@ -141,23 +145,51 @@ function submitQuote(e) {
 // ✅ Smart Quote Calculator
 function calculateQuote(e) {
   e.preventDefault();
-  const job = document.getElementById("jobDesc").value;
-  const material = parseFloat(document.getElementById("materialCost").value);
-  const hours = parseFloat(document.getElementById("laborHours").value);
-  const rate = parseFloat(document.getElementById("hourlyRate").value);
-  const fuel = parseFloat(document.getElementById("fuelCost").value);
-  const margin = parseFloat(document.getElementById("profitMargin").value);
+  if (!db) return;
+  
+  const job = document.getElementById("jobDesc")?.value || "Quote";
+  const material = parseFloat(document.getElementById("materialCost")?.value || 0);
+  const hours = parseFloat(document.getElementById("laborHours")?.value || 0);
+  const rate = parseFloat(document.getElementById("hourlyRate")?.value || 0);
+  const fuel = parseFloat(document.getElementById("fuelCost")?.value || 0);
+  const margin = parseFloat(document.getElementById("profitMargin")?.value || 0);
+  
   const labor = hours * rate;
   const baseCost = material + labor + fuel;
   const recommended = baseCost * (1 + margin / 100);
-  document.getElementById("quoteResult").innerText = `Recommended Quote: $${recommended.toFixed(2)} (Base: $${baseCost.toFixed(2)}, Margin: ${margin}%)`;
-  document.getElementById("quoteAmount").value = recommended.toFixed(2);
-  db.collection("smartQuotes").add({ job, materialCost: material, laborCost: labor, fuelCost: fuel, baseCost, profitMargin: margin, recommendedQuote: recommended, createdAt: new Date() });
-  loadRecentSmartQuotes();
+  
+  const resultElement = document.getElementById("quoteResult");
+  if (resultElement) {
+    resultElement.innerText = `Recommended Quote: $${recommended.toFixed(2)} (Base: $${baseCost.toFixed(2)}, Margin: ${margin}%)`;
+  }
+  
+  const amountElement = document.getElementById("quoteAmount");
+  if (amountElement) {
+    amountElement.value = recommended.toFixed(2);
+  }
+  
+  if (db) {
+    db.collection("smartQuotes").add({ 
+      job, 
+      materialCost: material, 
+      laborCost: labor, 
+      fuelCost: fuel, 
+      baseCost, 
+      profitMargin: margin, 
+      recommendedQuote: recommended, 
+      createdAt: new Date() 
+    }).catch(error => {
+      console.error('Error saving quote:', error);
+    });
+  }
 }
 
 function loadRecentSmartQuotes() {
+  if (!db) return;
+  
   const tbody = document.querySelector("#recentSmartQuotes tbody");
+  if (!tbody) return;
+  
   tbody.innerHTML = "";
   db.collection("smartQuotes").orderBy("createdAt", "desc").limit(5).get().then(snapshot => {
     snapshot.forEach(doc => {
@@ -166,35 +198,88 @@ function loadRecentSmartQuotes() {
       const date = new Date(d.createdAt.toDate()).toLocaleDateString();
       tbody.innerHTML += `<tr><td>${d.job}</td><td>$${d.baseCost.toFixed(2)}</td><td>$${d.recommendedQuote.toFixed(2)}</td><td>${margin}%</td><td>${date}</td></tr>`;
     });
+  }).catch(error => {
+    console.error('Error loading smart quotes:', error);
   });
 }
 
 // ✅ Submit Invoice
 function submitInvoice(e) {
   e.preventDefault();
+  if (!db) return;
+  
   const customerUID = document.getElementById("invoiceCustomer").value;
   const amount = parseFloat(document.getElementById("invoiceAmount").value);
   const dueDate = document.getElementById("invoiceDueDate").value;
+  
+  if (!customerUID || !amount || !dueDate) {
+    alert('Please fill in all required fields');
+    return;
+  }
+  
   const ref = db.collection("customers").doc(customerUID);
   ref.get().then(doc => {
-    const name = doc.data().name || "Customer";
-    ref.collection("invoices").add({ customer: name, amount, dueDate, paid: false, createdAt: new Date() });
-    db.collection("invoices").add({ customer: name, amount, dueDate, paid: false, createdAt: new Date() });
-    e.target.reset(); loadInvoices();
+    const name = doc.exists ? (doc.data().name || "Customer") : "Customer";
+    
+    // Add to both collections for compatibility
+    const invoiceData = { 
+      customer: name, 
+      customerName: name,
+      amount, 
+      dueDate, 
+      paid: false, 
+      createdAt: new Date() 
+    };
+    
+    Promise.all([
+      ref.collection("invoices").add(invoiceData),
+      db.collection("invoices").add(invoiceData)
+    ]).then(() => {
+      e.target.reset();
+      updateDashboardStats();
+      alert('Invoice created successfully!');
+    }).catch(error => {
+      console.error('Error creating invoice:', error);
+      alert('Error creating invoice');
+    });
+  }).catch(error => {
+    console.error('Error fetching customer:', error);
+    alert('Error fetching customer information');
   });
 }
 
 // ✅ Expense Tracking
 function submitExpense(e) {
   e.preventDefault();
-  const desc = document.getElementById("expenseDesc").value;
-  const amount = parseFloat(document.getElementById("expenseAmount").value);
-  const date = document.getElementById("expenseDate").value;
+  if (!db) return;
+  
+  const desc = document.getElementById("expenseDesc")?.value;
+  const amount = parseFloat(document.getElementById("expenseAmount")?.value || 0);
+  const date = document.getElementById("expenseDate")?.value;
+  
+  if (!desc || !amount || !date) {
+    alert('Please fill in all fields');
+    return;
+  }
+  
   db.collection("expenses").add({ description: desc, amount, date, createdAt: new Date() })
-    .then(() => { e.target.reset(); loadExpenses(); updateDashboardStats(); });
+    .then(() => { 
+      e.target.reset(); 
+      loadExpenses(); 
+      updateDashboardStats(); 
+    })
+    .catch(error => {
+      console.error('Error adding expense:', error);
+      alert('Error adding expense');
+    });
 }
+
 function loadExpenses() {
+  if (!db) return;
+  
   const tbody = document.querySelector("#expensesTable tbody");
+  if (!tbody) return;
+  
   showLoader();
   db.collection("expenses").orderBy("date", "desc").get().then(snapshot => {
     tbody.innerHTML = "";
@@ -203,121 +288,140 @@ function loadExpenses() {
       tbody.innerHTML += `<tr><td>${d.description}</td><td>$${d.amount.toFixed(2)}</td><td>${d.date}</td><td><button onclick="deleteExpense('${doc.id}')">❌</button></td></tr>`;
     });
     hideLoader();
+  }).catch(error => {
+    console.error('Error loading expenses:', error);
+    hideLoader();
   });
 }
+
 function deleteExpense(id) {
-  db.collection("expenses").doc(id).delete().then(() => { loadExpenses(); updateDashboardStats(); });
+  if (!db) return;
+  
+  if (confirm('Are you sure you want to delete this expense?')) {
+    db.collection("expenses").doc(id).delete().then(() => { 
+      loadExpenses(); 
+      updateDashboardStats(); 
+    }).catch(error => {
+      console.error('Error deleting expense:', error);
+      alert('Error deleting expense');
+    });
+  }
 }
 
-// ✅ Dashboard Stats
+// ✅ Dashboard Stats - Updated for new tab design
 function updateDashboardStats() {
-  // DATA MODEL REFACTORING NOTE (Dashboard Stats Accuracy - Quotes):
-  // This function currently fetches quote counts from the "quotes" collection.
-  // For accuracy, if the `BiddingSystem` and `bids` collection become the standard for quotes/proposals,
-  // this section should be updated to count documents in the `bids` collection (e.g., with status 'sent' or 'accepted').
-  // UPDATE: This section has been updated to use biddingSystem.listBids().
-  const now = new Date();
-  const m = now.getMonth(), y = now.getFullYear();
-  let mp = 0, yp = 0, td = 0, ti = 0, em = 0, ey = 0;
-  db.collection("service_requests").get().then(snap => {
-    document.getElementById("statRequests").innerText = `📝 Requests: ${snap.size}`;
-  });
-  // db.collection("quotes").get().then(snap => { // Old method
-  //   document.getElementById("statQuotes").innerText = `💬 Quotes: ${snap.size}`;
-  // });
-  if (typeof biddingSystem !== 'undefined' && biddingSystem.listBids) {
-    biddingSystem.listBids().then(bidsList => {
-      const statQuotesElement = document.getElementById("statQuotes");
-      if (statQuotesElement) {
-        statQuotesElement.innerText = `💬 Quotes: ${bidsList.length}`;
-      }
-    }).catch(error => {
-      console.error("Error fetching bids for dashboard stats:", error);
-      const statQuotesElement = document.getElementById("statQuotes");
-      if (statQuotesElement) {
-        statQuotesElement.innerText = `💬 Quotes: Error`;
-      }
-    });
-  } else {
-    console.warn("biddingSystem not available for dashboard stats.");
-    const statQuotesElement = document.getElementById("statQuotes");
-    if (statQuotesElement) {
-      statQuotesElement.innerText = `💬 Quotes: N/A`;
-    }
+  if (!db) {
+    console.error('Database not initialized for dashboard stats');
+    return;
   }
-
-  db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const date = new Date(d.createdAt.toDate()).toLocaleDateString();
-      ti += d.paid ? 0 : d.amount;
-      const row = `<tr><td>${d.customer}</td><td>$${d.amount.toFixed(2)}</td><td>${date}</td><td>${d.paid ? '✅' : '❌'}</td><td><button onclick="toggleInvoicePaid('${doc.id}', ${!d.paid})">${d.paid ? 'Mark Unpaid' : 'Mark Paid'}</button></td></tr>`;
-      if (d.paid) document.querySelector("#paidInvoices tbody").innerHTML += row;
-      else document.querySelector("#unpaidInvoices tbody").innerHTML += row;
-    });
-    // Update elements that exist in new design
-    const totalDueElement = document.getElementById("statInvoicesValue") || document.getElementById("statTotalDue");
-    if (totalDueElement) {
-      totalDueElement.textContent = `$${ti.toFixed(2)}`;
+  
+  console.log('Updating dashboard stats...');
+  
+  // Update service requests count
+  db.collection("service_requests").get().then(snap => {
+    const requestsValue = document.getElementById("statRequestsValue");
+    if (requestsValue) {
+      requestsValue.textContent = snap.size;
     }
-    
-    // Legacy support for old IDs if they exist
-    const legacyTotalDue = document.getElementById("statTotalDue");
-    if (legacyTotalDue) {
-      legacyTotalDue.innerText = `💰 Total Due: $${ti.toFixed(2)}`;
-    }
-    
-    const legacyInvoices = document.getElementById("statInvoices");
-    if (legacyInvoices) {
-      legacyInvoices.innerText = `💰 Invoices: ${snapshot.size}`;
-    }
+    console.log('Updated requests count:', snap.size);
+  }).catch(error => {
+    console.error('Error fetching service requests:', error);
+    const requestsValue = document.getElementById("statRequestsValue");
+    if (requestsValue) requestsValue.textContent = "0";
   });
 
-  db.collection("invoices").where("paid", "==", true).get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const date = d.createdAt ? new Date(d.createdAt.toDate()) : new Date();
-      if (date.getMonth() === m && date.getFullYear() === y) mp += d.amount;
-      if (date.getFullYear() === y) yp += d.amount;
-    });
-    
-    // Update elements that exist in new design
-    const monthlyElement = document.getElementById("statRevenueValue") || document.getElementById("statMonthlyProfit");
-    if (monthlyElement) {
-      monthlyElement.textContent = `$${mp.toFixed(0)}`;
+  // Update quotes count - simplified approach
+  db.collection("quotes").get().then(snap => {
+    const quotesValue = document.getElementById("statQuotesValue");
+    if (quotesValue) {
+      quotesValue.textContent = snap.size;
     }
-    
-    // Legacy support
-    const legacyMonthly = document.getElementById("statMonthlyProfit");
-    if (legacyMonthly) {
-      legacyMonthly.innerText = `📆 This Month: $${mp.toFixed(2)}`;
-    }
-    
-    const legacyYearly = document.getElementById("statYearlyProfit");
-    if (legacyYearly) {
-      legacyYearly.innerText = `📈 This Year: $${yp.toFixed(2)}`;
-    }
+    console.log('Updated quotes count:', snap.size);
+  }).catch(error => {
+    console.error('Error fetching quotes:', error);
+    const quotesValue = document.getElementById("statQuotesValue");
+    if (quotesValue) quotesValue.textContent = "0";
   });
 
-  db.collection("expenses").get().then(snapshot => {
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      const date = new Date(d.date);
-      if (date.getMonth() === m && date.getFullYear() === y) em += d.amount;
-      if (date.getFullYear() === y) ey += d.amount;
-    });
+  // Update invoices count
+  db.collection("invoices").where("paid", "==", false).get().then(snap => {
+    const invoicesValue = document.getElementById("statInvoicesValue");
+    if (invoicesValue) {
+      invoicesValue.textContent = snap.size;
+    }
+    console.log('Updated invoices count:', snap.size);
+  }).catch(error => {
+    console.error('Error fetching invoices:', error);
+    const invoicesValue = document.getElementById("statInvoicesValue");
+    if (invoicesValue) invoicesValue.textContent = "0";
   });
+
+  // Update revenue - simplified calculation
+  db.collection("invoices").where("paid", "==", true).get().then(snap => {
+    let totalRevenue = 0;
+    snap.forEach(doc => {
+      const data = doc.data();
+      if (data.amount && data.createdAt) {
+        const date = data.createdAt.toDate();
+        const now = new Date();
+        if (date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()) {
+          totalRevenue += data.amount;
+        }
+      }
+    });
+    const revenueValue = document.getElementById("statRevenueValue");
+    if (revenueValue) {
+      revenueValue.textContent = `$${totalRevenue.toFixed(0)}`;
+    }
+    console.log('Updated monthly revenue:', totalRevenue);
+  }).catch(error => {
+    console.error('Error calculating revenue:', error);
+    const revenueValue = document.getElementById("statRevenueValue");
+    if (revenueValue) revenueValue.textContent = "$0";
+  });
+}
+
+// Initialize system objects with better error handling
+function initializeSystemObjects() {
+  try {
+    // Only initialize if classes are available
+    if (typeof EquipmentManager !== 'undefined') {
+      window.equipmentManager = new EquipmentManager();
+    }
+    if (typeof MaterialTracker !== 'undefined') {
+      window.materialTracker = new MaterialTracker();
+    }
+    if (typeof BiddingSystem !== 'undefined') {
+      window.biddingSystem = new BiddingSystem();
+    }
+    if (typeof LoyaltyProgram !== 'undefined') {
+      window.loyaltyProgram = new LoyaltyProgram();
+    }
+    if (typeof SustainabilityTracker !== 'undefined') {
+      window.sustainabilityTracker = new SustainabilityTracker();
+    }
+    if (typeof QuoteCalculator !== 'undefined') {
+      window.quoteCalculator = new QuoteCalculator();
+    }
+  } catch (error) {
+    console.warn('Some system objects could not be initialized:', error);
+  }
 }
 
 // ✅ Table Utils
 function filterTable(tableId, query) {
   const table = document.getElementById(tableId);
+  if (!table) return;
+  
   const rows = table.querySelectorAll("tbody tr");
   const f = query.toLowerCase();
   rows.forEach(row => row.style.display = row.innerText.toLowerCase().includes(f) ? "" : "none");
 }
+
 function sortTable(tableId, col) {
   const table = document.getElementById(tableId);
+  if (!table) return;
+  
   const rows = Array.from(table.tBodies[0].rows);
   const dir = table.getAttribute(`data-sort-${col}`) === "asc" ? "desc" : "asc";
   rows.sort((a, b) => {
@@ -329,6 +433,7 @@ function sortTable(tableId, col) {
   rows.forEach(r => table.tBodies[0].appendChild(r));
   table.setAttribute(`data-sort-${col}`, dir);
 }
+
 function exportTableToCSV(tableId, filename) {
   const rows = [...document.querySelectorAll(`#${tableId} tr`)];
   const csv = rows.map(row => [...row.cells].map(cell => `"${cell.innerText}"`).join(",")).join("\n");
@@ -338,7 +443,13 @@ function exportTableToCSV(tableId, filename) {
   link.download = filename;
   link.click();
 }
+
 function exportTableToPDF(tableId, title) {
+  if (typeof jsPDF === 'undefined') {
+    alert('PDF export not available');
+    return;
+  }
+  
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const rows = [...document.querySelectorAll(`#${tableId} tr`)];
@@ -420,59 +531,38 @@ function buildCustomPackage(e) {
   `;
 }
 
-// ✅ Enhanced Customer Management
+// ✅ Enhanced Customer Management - Simplified
 async function loadCustomerDetails(customerId) {
+  if (!db || !customerId) {
+    console.error('Database not initialized or no customer ID provided');
+    return;
+  }
+  
   showLoader();
   try {
     const doc = await db.collection("customers").doc(customerId).get();
-    const data = doc.data();
+    if (!doc.exists) {
+      console.error('Customer not found');
+      hideLoader();
+      return;
+    }
     
-    // Load service history
-    const history = await db.collection("services")
-      .where("customerId", "==", customerId)
-      .orderBy("date", "desc")
-      .get();
-
-    const serviceHistory = history.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      date: doc.data().date.toDate().toLocaleDateString()
-    }));
-
-    // Update customer details view
-    document.getElementById("customerDetails").innerHTML = `
-      <div class="card">
-        <h3>${data.name}</h3>
-        <p>Email: ${data.email}</p>
-        <p>Phone: ${data.phone || 'N/A'}</p>
-        <p>Address: ${data.address || 'N/A'}</p>
-        
-        <h4>Service History</h4>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Service</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${serviceHistory.map(service => `
-              <tr>
-                <td>${service.date}</td>
-                <td>${service.type}</td>
-                <td>$${service.amount.toFixed(2)}</td>
-                <td><span class="status-badge status-${service.status.toLowerCase()}">${service.status}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      </div>
-    `;
+    const data = doc.data();
+    const customerDetailsElement = document.getElementById("customerDetails");
+    
+    if (customerDetailsElement) {
+      customerDetailsElement.innerHTML = `
+        <div class="card">
+          <h3>${data.name || data.email || 'Customer'}</h3>
+          <p>Email: ${data.email || 'N/A'}</p>
+          <p>Phone: ${data.phone || 'N/A'}</p>
+          <p>Address: ${data.address || 'N/A'}</p>
+        </div>
+      `;
+    }
   } catch (error) {
     console.error("Error loading customer details:", error);
-    NotificationSystem.showNotification("Error loading customer details", "error");
+    alert("Error loading customer details");
   } finally {
     hideLoader();
   }
@@ -525,14 +615,6 @@ async function createInvoice(e) {
     NotificationSystem.showNotification("Error creating invoice", "error");
   }
 }
-
-// Instantiate new system managers
-const equipmentManager = new EquipmentManager();
-const materialTracker = new MaterialTracker();
-const biddingSystem = new BiddingSystem();
-const loyaltyProgram = new LoyaltyProgram();
-const sustainabilityTracker = new SustainabilityTracker();
-const quoteCalculator = new QuoteCalculator();
 
 // ----- Equipment Management Functions -----
 async function loadEquipmentTable() {
