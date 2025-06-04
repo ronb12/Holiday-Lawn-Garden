@@ -4,51 +4,89 @@
 // Firebase configuration should be loaded from environment variables
 // Do not hardcode credentials here
 
-// const firebaseConfig = { // Commenting out redundant Firebase initialization
-//   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
-//   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "mobile-debt-crusher.firebaseapp.com",
-//   projectId: process.env.FIREBASE_PROJECT_ID || "mobile-debt-crusher"
-// };
-// firebase.initializeApp(firebaseConfig); // firebase-init.js should handle this
-const db = firebase.firestore(); // Assuming firebase is initialized by firebase-init.js
+// Initialize Firebase DB reference after ensuring Firebase is initialized
+let db;
+
+// Wait for Firebase to be ready
+function initializeFirebaseDB() {
+  if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+    db = firebase.firestore();
+    return true;
+  }
+  return false;
+}
+
+// Ensure Firebase is ready before executing admin functions
+function ensureFirebaseReady(callback) {
+  if (initializeFirebaseDB()) {
+    callback();
+  } else {
+    // Wait a bit and try again
+    setTimeout(() => {
+      if (initializeFirebaseDB()) {
+        callback();
+      } else {
+        console.error('Firebase not ready after timeout');
+      }
+    }, 1000);
+  }
+}
 
 // ✅ Utility Functions
 function showLoader() {
-  document.getElementById("loadingOverlay").style.display = "flex";
+  const loader = document.getElementById("loadingOverlay");
+  if (loader) loader.style.display = "flex";
 }
+
 function hideLoader() {
-  document.getElementById("loadingOverlay").style.display = "none";
+  const loader = document.getElementById("loadingOverlay");
+  if (loader) loader.style.display = "none";
 }
+
 function toggleDarkMode() {
   document.body.classList.toggle("dark");
   localStorage.setItem("darkMode", document.body.classList.contains("dark") ? "on" : "off");
 }
+
+// Updated for new tab system
 function showTab(id) {
   document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-  updateDashboardStats();
+  const targetTab = document.getElementById(id + '-tab');
+  if (targetTab) targetTab.classList.add("active");
+  
+  // Update tab navigation
+  document.querySelectorAll(".tab-item").forEach(item => item.classList.remove("active"));
+  event.target.classList.add("active");
+  
+  // Load data based on tab
+  if (id === 'overview') {
+    updateDashboardStats();
+  }
 }
-window.onload = () => {
-  if (localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
-  loadCustomersDropdown();
-  updateDashboardStats();
-};
+
+// Initialize when DOM and Firebase are ready
+window.addEventListener('load', () => {
+  ensureFirebaseReady(() => {
+    if (localStorage.getItem("darkMode") === "on") document.body.classList.add("dark");
+    loadCustomersDropdown();
+    updateDashboardStats();
+  });
+});
 
 // ✅ Customer Dropdown
 function loadCustomersDropdown() {
-  // DATA MODEL REFACTORING NOTE (Customers):
-  // This function currently uses the "customers" collection.
-  // The application has customer-related data in multiple places:
-  // 1. "users" collection (Firebase Auth UID linked, stores roles like 'admin', 'customer').
-  // 2. "profiles" collection (used in customer-dashboard.html for detailed profile info - UID linked).
-  // 3. This "customers" collection.
-  // Consider consolidating customer data into a primary collection (e.g., extending "users" or "profiles")
-  // to simplify data management, reduce redundancy, and ensure consistency.
-  const ids = ["requestCustomer", "quoteCustomer", "invoiceCustomer"];
+  if (!db) {
+    console.error('Database not initialized');
+    return;
+  }
+  
+  // Updated dropdown IDs for new design
+  const ids = ["requestCustomer", "quoteCustomer", "invoiceCustomer", "customerSelect", "bidCustomerId"];
   ids.forEach(id => {
     const dropdown = document.getElementById(id);
     if (!dropdown) return;
     dropdown.innerHTML = '<option value="">Select Customer</option>';
+    
     db.collection("customers").get().then(snapshot => {
       snapshot.forEach(doc => {
         const data = doc.data();
@@ -57,6 +95,8 @@ function loadCustomersDropdown() {
         option.text = data.name || data.email || "Unnamed Customer";
         dropdown.appendChild(option);
       });
+    }).catch(error => {
+      console.error('Error loading customers:', error);
     });
   });
 }
@@ -64,6 +104,8 @@ function loadCustomersDropdown() {
 // ✅ Submit Request
 function submitRequest(e) {
   e.preventDefault();
+  if (!db) return;
+  
   const customerUID = document.getElementById("requestCustomer").value;
   const description = document.getElementById("requestDescription").value;
   const ref = db.collection("customers").doc(customerUID);
@@ -204,29 +246,65 @@ function updateDashboardStats() {
     }
   }
 
-  db.collection("invoices").get().then(snap => {
-    snap.forEach(doc => {
+  db.collection("invoices").orderBy("createdAt", "desc").get().then(snapshot => {
+    snapshot.forEach(doc => {
       const d = doc.data();
-      const dt = d.createdAt.toDate();
-      ti++;
-      if (!d.paid) td += d.amount;
-      if (d.paid && dt.getFullYear() === y) {
-        yp += d.amount;
-        if (dt.getMonth() === m) mp += d.amount;
-      }
+      const date = new Date(d.createdAt.toDate()).toLocaleDateString();
+      ti += d.paid ? 0 : d.amount;
+      const row = `<tr><td>${d.customer}</td><td>$${d.amount.toFixed(2)}</td><td>${date}</td><td>${d.paid ? '✅' : '❌'}</td><td><button onclick="toggleInvoicePaid('${doc.id}', ${!d.paid})">${d.paid ? 'Mark Unpaid' : 'Mark Paid'}</button></td></tr>`;
+      if (d.paid) document.querySelector("#paidInvoices tbody").innerHTML += row;
+      else document.querySelector("#unpaidInvoices tbody").innerHTML += row;
     });
-    document.getElementById("statInvoices").innerText = `💰 Invoices: ${ti}`;
-    document.getElementById("statTotalDue").innerText = `📉 Total Due: $${td.toFixed(2)}`;
-    db.collection("expenses").get().then(snap => {
-      snap.forEach(doc => {
-        const d = doc.data(), dt = new Date(d.date);
-        if (dt.getFullYear() === y) {
-          ey += d.amount;
-          if (dt.getMonth() === m) em += d.amount;
-        }
-      });
-      document.getElementById("statMonthlyProfit").innerText = `📆 This Month: $${mp.toFixed(2)} | Net: $${(mp - em).toFixed(2)}`;
-      document.getElementById("statYearlyProfit").innerText = `📈 This Year: $${yp.toFixed(2)} | Net: $${(yp - ey).toFixed(2)}`;
+    // Update elements that exist in new design
+    const totalDueElement = document.getElementById("statInvoicesValue") || document.getElementById("statTotalDue");
+    if (totalDueElement) {
+      totalDueElement.textContent = `$${ti.toFixed(2)}`;
+    }
+    
+    // Legacy support for old IDs if they exist
+    const legacyTotalDue = document.getElementById("statTotalDue");
+    if (legacyTotalDue) {
+      legacyTotalDue.innerText = `💰 Total Due: $${ti.toFixed(2)}`;
+    }
+    
+    const legacyInvoices = document.getElementById("statInvoices");
+    if (legacyInvoices) {
+      legacyInvoices.innerText = `💰 Invoices: ${snapshot.size}`;
+    }
+  });
+
+  db.collection("invoices").where("paid", "==", true).get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = d.createdAt ? new Date(d.createdAt.toDate()) : new Date();
+      if (date.getMonth() === m && date.getFullYear() === y) mp += d.amount;
+      if (date.getFullYear() === y) yp += d.amount;
+    });
+    
+    // Update elements that exist in new design
+    const monthlyElement = document.getElementById("statRevenueValue") || document.getElementById("statMonthlyProfit");
+    if (monthlyElement) {
+      monthlyElement.textContent = `$${mp.toFixed(0)}`;
+    }
+    
+    // Legacy support
+    const legacyMonthly = document.getElementById("statMonthlyProfit");
+    if (legacyMonthly) {
+      legacyMonthly.innerText = `📆 This Month: $${mp.toFixed(2)}`;
+    }
+    
+    const legacyYearly = document.getElementById("statYearlyProfit");
+    if (legacyYearly) {
+      legacyYearly.innerText = `📈 This Year: $${yp.toFixed(2)}`;
+    }
+  });
+
+  db.collection("expenses").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      const date = new Date(d.date);
+      if (date.getMonth() === m && date.getFullYear() === y) em += d.amount;
+      if (date.getFullYear() === y) ey += d.amount;
     });
   });
 }

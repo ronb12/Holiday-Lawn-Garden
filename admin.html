@@ -931,21 +931,21 @@
       if (tabName === 'overview') {
         updateDashboardStats();
       } else if (tabName === 'requests') {
-        loadIncomingServiceRequests();
+        if (typeof loadIncomingServiceRequests === 'function') loadIncomingServiceRequests();
       } else if (tabName === 'invoices') {
-        loadAdminInvoicesTable();
+        if (typeof loadAdminInvoicesTable === 'function') loadAdminInvoicesTable();
       } else if (tabName === 'quotes') {
-        loadBidsTable();
-        populateServiceCheckboxesForBids();
-        populateCustomerDropdownsForBids();
+        if (typeof loadBidsTable === 'function') loadBidsTable();
+        if (typeof populateServiceCheckboxesForBids === 'function') populateServiceCheckboxesForBids();
+        if (typeof populateCustomerDropdownsForBids === 'function') populateCustomerDropdownsForBids();
       } else if (tabName === 'customers') {
         loadCustomersDropdown();
-        loadLoyaltyAccountsTable();
+        if (typeof loadLoyaltyAccountsTable === 'function') loadLoyaltyAccountsTable();
       } else if (tabName === 'equipment') {
-        loadEquipmentTable();
-        loadMaterialsTable();
+        if (typeof loadEquipmentTable === 'function') loadEquipmentTable();
+        if (typeof loadMaterialsTable === 'function') loadMaterialsTable();
       } else if (tabName === 'reports') {
-        loadSustainabilityLogTable();
+        if (typeof loadSustainabilityLogTable === 'function') loadSustainabilityLogTable();
       }
     }
 
@@ -971,10 +971,29 @@
       document.getElementById('quickQuoteResult').style.display = 'block';
     });
 
+    // Logout function
+    function logout() {
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        firebase.auth().signOut().then(() => {
+          window.location.href = 'login.html';
+        }).catch((error) => {
+          console.error('Logout error:', error);
+          // Force redirect even if logout fails
+          window.location.href = 'login.html';
+        });
+      } else {
+        // Fallback if Firebase auth is not available
+        window.location.href = 'login.html';
+      }
+    }
+
     // Initialize dashboard
     window.onload = function() {
-      updateDashboardStats();
-      loadCustomersDropdown();
+      // Wait for Firebase to be ready
+      setTimeout(() => {
+        if (typeof updateDashboardStats === 'function') updateDashboardStats();
+        if (typeof loadCustomersDropdown === 'function') loadCustomersDropdown();
+      }, 1500);
     };
   </script>
 
