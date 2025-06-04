@@ -82,6 +82,7 @@ function showTab(id) {
     // Load data based on tab
     if (id === 'overview') {
       updateDashboardStats();
+      loadRecentActivity();
     }
   } catch (error) {
     console.warn('Tab switching error:', error);
@@ -312,6 +313,7 @@ window.addEventListener('load', () => {
       // Load initial data
       loadCustomersDropdown();
       updateDashboardStats();
+      loadRecentActivity();
       
       console.log('Admin dashboard initialized successfully');
     } catch (error) {
@@ -320,6 +322,118 @@ window.addEventListener('load', () => {
   });
 });
 
+// Recent Activity Management
+function loadRecentActivity() {
+  if (!db) {
+    console.warn('Database not available for recent activity');
+    return;
+  }
+
+  const activityContainer = document.getElementById('recentActivityList');
+  if (!activityContainer) {
+    console.warn('Recent activity container not found');
+    return;
+  }
+
+  // Show loading state
+  activityContainer.innerHTML = `
+    <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
+      <strong>Recent Activity:</strong> Loading...
+      <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+        Checking for recent business activity...
+      </div>
+    </div>
+  `;
+
+  showLoader();
+
+  // Get last 10 items from each collection
+  const promises = [
+    db.collection('service_requests').orderBy('createdAt', 'desc').limit(10).get(),
+    db.collection('quotes').orderBy('createdAt', 'desc').limit(10).get(),
+    db.collection('users').where('role', '==', 'customer').orderBy('createdAt', 'desc').limit(10).get()
+  ];
+
+  Promise.all(promises)
+    .then(([requests, quotes, customers]) => {
+      const activities = [];
+
+      // Process service requests
+      requests.forEach(doc => {
+        const data = doc.data();
+        activities.push({
+          type: 'request',
+          description: `New service request: ${data.description?.substring(0, 50) || 'No description'}...`,
+          timestamp: data.createdAt?.toDate() || new Date(),
+          icon: '🔧'
+        });
+      });
+
+      // Process quotes
+      quotes.forEach(doc => {
+        const data = doc.data();
+        activities.push({
+          type: 'quote',
+          description: `New quote created for $${data.amount?.toFixed(2) || '0.00'}`,
+          timestamp: data.createdAt?.toDate() || new Date(),
+          icon: '💰'
+        });
+      });
+
+      // Process new customers
+      customers.forEach(doc => {
+        const data = doc.data();
+        activities.push({
+          type: 'customer',
+          description: `New customer: ${data.displayName || data.email || 'Anonymous'}`,
+          timestamp: data.createdAt?.toDate() || new Date(),
+          icon: '👤'
+        });
+      });
+
+      // Sort by timestamp
+      activities.sort((a, b) => b.timestamp - a.timestamp);
+
+      // Update UI
+      if (activities.length === 0) {
+        activityContainer.innerHTML = `
+          <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
+            <strong>Recent Activity:</strong> No recent activity
+            <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+              The system is ready to track new business activities.
+            </div>
+          </div>
+        `;
+      } else {
+        activityContainer.innerHTML = activities.slice(0, 10).map(activity => `
+          <div style="color: #1e293b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #2563eb; margin-bottom: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.25rem;">${activity.icon}</span>
+              <strong>${activity.description}</strong>
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #64748b;">
+              ${activity.timestamp.toLocaleDateString()} at ${activity.timestamp.toLocaleTimeString()}
+            </div>
+          </div>
+        `).join('');
+      }
+    })
+    .catch(error => {
+      console.error('Error loading recent activity:', error);
+      activityContainer.innerHTML = `
+        <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+          <strong>Error Loading Activity</strong>
+          <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+            There was a problem loading recent activities. Please try again later.
+          </div>
+        </div>
+      `;
+    })
+    .finally(() => {
+      hideLoader();
+    });
+}
+
 // Export functions for global access
 window.showTab = showTab;
 window.toggleDarkMode = toggleDarkMode;
@@ -327,3 +441,4 @@ window.submitRequest = submitRequest;
 window.submitQuote = submitQuote;
 window.loadCustomersDropdown = loadCustomersDropdown;
 window.updateDashboardStats = updateDashboardStats;
+window.loadRecentActivity = loadRecentActivity;
