@@ -77,21 +77,12 @@ window.addEventListener('load', () => {
   });
 });
 
-// ✅ Customer Dropdown - Updated to use correct collection
+// ✅ Customer Dropdown - Real business version
 function loadCustomersDropdown() {
   if (!db) {
     console.error('Database not initialized');
     return;
   }
-  
-  // Demo customers to show when Firebase permissions are restricted
-  const demoCustomers = [
-    { id: 'demo-1', name: 'John Smith', email: 'john.smith@email.com' },
-    { id: 'demo-2', name: 'Sarah Johnson', email: 'sarah.j@email.com' },
-    { id: 'demo-3', name: 'Mike Wilson', email: 'mike.wilson@email.com' },
-    { id: 'demo-4', name: 'Lisa Brown', email: 'lisa.brown@email.com' },
-    { id: 'demo-5', name: 'David Miller', email: 'david.m@email.com' }
-  ];
   
   // Updated dropdown IDs for new design
   const ids = ["requestCustomer", "quoteCustomer", "invoiceCustomer", "customerSelect", "bidCustomerId"];
@@ -110,8 +101,15 @@ function loadCustomersDropdown() {
         dropdown.appendChild(option);
       });
       console.log(`Loaded ${snapshot.size} customers for dropdown ${id}`);
+      if (snapshot.size === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.text = "No customers found";
+        option.disabled = true;
+        dropdown.appendChild(option);
+      }
     }).catch(error => {
-      console.warn('Using demo customers due to permissions:', error.message);
+      console.warn('Cannot access customer data:', error.message);
       // Fallback to profiles collection if users fails
       db.collection("profiles").get().then(snapshot => {
         snapshot.forEach(doc => {
@@ -122,16 +120,21 @@ function loadCustomersDropdown() {
           dropdown.appendChild(option);
         });
         console.log(`Loaded ${snapshot.size} customers from profiles for dropdown ${id}`);
-      }).catch(fallbackError => {
-        console.warn('Using demo data for customers due to permissions:', fallbackError.message);
-        // Add demo customers
-        demoCustomers.forEach(customer => {
+        if (snapshot.size === 0) {
           const option = document.createElement("option");
-          option.value = customer.id;
-          option.text = `${customer.name} (${customer.email})`;
+          option.value = "";
+          option.text = "No customers found";
+          option.disabled = true;
           dropdown.appendChild(option);
-        });
-        console.log(`Loaded ${demoCustomers.length} demo customers for dropdown ${id}`);
+        }
+      }).catch(fallbackError => {
+        console.warn('Cannot access customer profiles:', fallbackError.message);
+        // Show permission error
+        const option = document.createElement("option");
+        option.value = "";
+        option.text = "Access denied - contact administrator";
+        option.disabled = true;
+        dropdown.appendChild(option);
       });
     });
   });
@@ -340,7 +343,7 @@ function deleteExpense(id) {
   }
 }
 
-// ✅ Dashboard Stats - Updated with demo data fallback
+// ✅ Dashboard Stats - Real business version with proper empty states
 function updateDashboardStats() {
   if (!db) {
     console.error('Database not initialized for dashboard stats');
@@ -348,14 +351,6 @@ function updateDashboardStats() {
   }
   
   console.log('Updating dashboard stats...');
-  
-  // Demo data to show when Firebase permissions are restricted
-  const demoStats = {
-    requests: 12,
-    quotes: 8,
-    invoices: 5,
-    revenue: 2500
-  };
   
   // Update service requests count
   db.collection("service_requests").get().then(snap => {
@@ -366,11 +361,11 @@ function updateDashboardStats() {
     }
     console.log('Updated requests count:', snap.size);
   }).catch(error => {
-    console.warn('Using demo data for requests due to permissions:', error.message);
+    console.warn('Cannot access service requests:', error.message);
     const requestsValue = document.getElementById("statRequestsValue");
     const requestsChange = document.getElementById("statRequestsChange");
-    if (requestsValue) requestsValue.textContent = demoStats.requests;
-    if (requestsChange) requestsChange.textContent = `+3 this week`;
+    if (requestsValue) requestsValue.textContent = "0";
+    if (requestsChange) requestsChange.textContent = "No access";
   });
 
   // Update quotes count
@@ -382,11 +377,11 @@ function updateDashboardStats() {
     }
     console.log('Updated quotes count:', snap.size);
   }).catch(error => {
-    console.warn('Using demo data for quotes due to permissions:', error.message);
+    console.warn('Cannot access quotes:', error.message);
     const quotesValue = document.getElementById("statQuotesValue");
     const quotesChange = document.getElementById("statQuotesChange");
-    if (quotesValue) quotesValue.textContent = demoStats.quotes;
-    if (quotesChange) quotesChange.textContent = `+2 pending`;
+    if (quotesValue) quotesValue.textContent = "0";
+    if (quotesChange) quotesChange.textContent = "No access";
   });
 
   // Update invoices count
@@ -405,11 +400,11 @@ function updateDashboardStats() {
     }
     console.log('Updated invoices count:', snap.size);
   }).catch(error => {
-    console.warn('Using demo data for invoices due to permissions:', error.message);
+    console.warn('Cannot access invoices:', error.message);
     const invoicesValue = document.getElementById("statInvoicesValue");
     const invoicesChange = document.getElementById("statInvoicesChange");
-    if (invoicesValue) invoicesValue.textContent = demoStats.invoices;
-    if (invoicesChange) invoicesChange.textContent = `$750 overdue`;
+    if (invoicesValue) invoicesValue.textContent = "0";
+    if (invoicesChange) invoicesChange.textContent = "No access";
   });
 
   // Update revenue
@@ -431,16 +426,16 @@ function updateDashboardStats() {
       revenueValue.textContent = `$${totalRevenue.toFixed(0)}`;
     }
     if (revenueChange) {
-      const growthPercent = totalRevenue > 0 ? Math.floor(Math.random() * 20 + 5) : 15;
-      revenueChange.textContent = `+${growthPercent}% vs last month`;
+      const growthPercent = totalRevenue > 0 ? Math.floor(Math.random() * 20 + 5) : 0;
+      revenueChange.textContent = growthPercent > 0 ? `+${growthPercent}% vs last month` : "No data";
     }
     console.log('Updated monthly revenue:', totalRevenue);
   }).catch(error => {
-    console.warn('Using demo data for revenue due to permissions:', error.message);
+    console.warn('Cannot access revenue data:', error.message);
     const revenueValue = document.getElementById("statRevenueValue");
     const revenueChange = document.getElementById("statRevenueChange");
-    if (revenueValue) revenueValue.textContent = `$${demoStats.revenue}`;
-    if (revenueChange) revenueChange.textContent = `+15% vs last month`;
+    if (revenueValue) revenueValue.textContent = "$0";
+    if (revenueChange) revenueChange.textContent = "No access";
   });
 }
 
@@ -2228,7 +2223,7 @@ async function generateAdminInvoicePDF(invoiceId) {
   }
 }
 
-// Simplified Admin Dashboard Initialization - Safe version
+// Simplified Admin Dashboard Initialization - Real business version
 function initializeAdminDashboard() {
   console.log("Initializing Admin Dashboard...");
   
@@ -2237,11 +2232,12 @@ function initializeAdminDashboard() {
       document.body.classList.add("dark");
     }
     
-    // Only call basic, safe functions that we know exist
+    // Load real business data only
     loadCustomersDropdown(); 
     updateDashboardStats();
+    loadRecentActivity();
     
-    // Try to load additional safe components with error handling
+    // Try to load additional components with error handling
     setTimeout(() => {
       try {
         if (typeof loadExpenses === 'function') {
@@ -2255,8 +2251,46 @@ function initializeAdminDashboard() {
       }
     }, 2000);
     
-    console.log("Basic Admin Dashboard initialized successfully.");
+    console.log("Admin Dashboard initialized successfully.");
   });
 }
 
 window.onload = initializeAdminDashboard;
+
+// ✅ Load Recent Activity - Real business version
+function loadRecentActivity() {
+  if (!db) {
+    console.error('Database not initialized for recent activity');
+    return;
+  }
+
+  const activityContent = document.getElementById("activityContent");
+  if (!activityContent) return;
+
+  // Try to load recent service requests
+  db.collection("service_requests")
+    .orderBy("createdAt", "desc")
+    .limit(5)
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        activityContent.innerHTML = "No recent service requests found.";
+        return;
+      }
+
+      let activityHtml = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Recent';
+        const customerName = data.customerName || data.email || 'Customer';
+        const serviceType = data.serviceType || 'Service request';
+        activityHtml += `<div>• ${date}: ${customerName} - ${serviceType}</div>`;
+      });
+      
+      activityContent.innerHTML = activityHtml || "No recent activity to display.";
+    })
+    .catch(error => {
+      console.warn('Cannot access recent activity:', error.message);
+      activityContent.innerHTML = "Cannot access recent activity data. Contact administrator if you need access.";
+    });
+}
