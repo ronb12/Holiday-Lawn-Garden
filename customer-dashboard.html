@@ -10,6 +10,7 @@
   <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
+  <script src="customer-dashboard.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f9f4; margin: 0; padding: 1em; }
     h1, h2 { color: #228B22; }
@@ -85,6 +86,82 @@
     }
     .chat-bubble.customer { background: #e5e5ea; }
     .chat-bubble.admin { background: #d1f7c4; text-align: right; }
+    /* Enhanced Styles */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5em;
+      margin: 2em 0;
+    }
+    .stat-card {
+      background: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    .notification-badge {
+      background: #ff4444;
+      color: white;
+      padding: 0.2em 0.6em;
+      border-radius: 50%;
+      font-size: 0.8em;
+      position: absolute;
+      top: -5px;
+      right: -5px;
+    }
+    .service-status {
+      display: inline-block;
+      padding: 0.3em 0.8em;
+      border-radius: 15px;
+      font-size: 0.9em;
+    }
+    .status-scheduled { background: #e3f2fd; color: #1976d2; }
+    .status-in-progress { background: #fff3e0; color: #f57c00; }
+    .status-completed { background: #e8f5e9; color: #388e3c; }
+    /* Weather Widget */
+    .weather-widget {
+      background: linear-gradient(135deg, #00897b, #4db6ac);
+      color: white;
+      padding: 1.5em;
+      border-radius: 8px;
+      margin-bottom: 1.5em;
+    }
+    .service-history {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 1em;
+    }
+    /* Improved Form Styles */
+    .modern-form {
+      background: white;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5em;
+      color: #555;
+    }
+    .btn-modern {
+      background: #228B22;
+      color: white;
+      padding: 0.8em 1.5em;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .btn-modern:hover {
+      background: #1a6b1a;
+    }
   </style>
 </head>
 <body>
@@ -176,6 +253,59 @@
   <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
   <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
 </table>
+
+<div class="dashboard-grid">
+  <div class="stat-card" id="activeServicesCard">
+    <h3>Active Services</h3>
+    <p id="activeServicesCount">Loading...</p>
+  </div>
+  <div class="stat-card" id="upcomingAppointmentsCard">
+    <h3>Upcoming Appointments</h3>
+    <p id="upcomingAppointmentsCount">Loading...</p>
+  </div>
+  <div class="stat-card" id="unreadMessagesCard">
+    <h3>Unread Messages</h3>
+    <p id="unreadMessagesCount">0</p>
+  </div>
+  <div class="stat-card" id="loyaltyPointsCard">
+    <h3>Loyalty Status</h3>
+    <p>Points: <span id="customerLoyaltyPoints">Loading...</span></p>
+    <p>Tier: <span id="customerLoyaltyTier">Loading...</span></p>
+  </div>
+</div>
+
+<!-- My Quotes & Proposals Section -->
+<section class="modern-form" id="myQuotesSection">
+  <h2>My Quotes & Proposals</h2>
+  <div id="myQuotesTableContainer">
+    <table id="myQuotesTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Bid/Proposal #</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="myQuotesBody">
+        <tr><td colspan="5">Loading your quotes and proposals...</td></tr>
+        <!-- Quotes will be populated here -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Service History -->
+<section class="modern-form" id="serviceHistorySection">
+  <h2>Your Service History</h2>
+  <div class="service-history">
+    <div id="weatherWidget"></div>
+    <div id="serviceHistoryContent">
+      <p>Loading service history...</p>
+    </div>
+  </div>
+</section>
 
 <footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
 
@@ -290,62 +420,79 @@ function sendChatMessage() {
   chatInput.value = "";
 }
 
-function loadProfile() {
-  db.collection("profiles").doc(currentUser.uid).get().then(doc => {
-    const d = doc.exists ? doc.data() : {};
-    const a = d.address || {};
-    displayName.innerText = d.name || "-";
-    displayEmail.innerText = d.email || currentUser.email;
-    displayPhone.innerText = d.phone || "-";
-    displayStreet.innerText = a.street || "-";
-    displayCity.innerText = a.city || "-";
-    displayState.innerText = a.state || "-";
-    displayZip.innerText = a.zip || "-";
-
-    editName.value = d.name || "";
-    editEmail.value = d.email || currentUser.email;
-    editPhone.value = d.phone || "";
-    editStreet.value = a.street || "";
-    editCity.value = a.city || "";
-    editState.value = a.state || "";
-    editZip.value = a.zip || "";
-  });
-}
-
-editProfileForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const profile = {
-    name: editName.value,
-    email: editEmail.value,
-    phone: editPhone.value,
-    address: {
-      street: editStreet.value,
-      city: editCity.value,
-      state: editState.value,
-      zip: editZip.value
+async function loadProfile() {
+  const doc = await db.collection("profiles").doc(currentUser.uid).get();
+  const data = doc.exists ? doc.data() : {};
+  const address = data.address || {};
+  
+  // Update profile display
+  displayName.innerText = data.name || currentUser.displayName || "-";
+  displayEmail.innerText = data.email || currentUser.email;
+  displayPhone.innerText = data.phone || "-";
+  displayStreet.innerText = address.street || "-";
+  displayCity.innerText = address.city || "-";
+  displayState.innerText = address.state || "-";
+  displayZip.innerText = address.zip || "-";
+  
+  // Load active services
+  const activeServices = await db.collection("service_requests")
+    .where("userId", "==", currentUser.uid)
+    .where("status", "in", ["scheduled", "in-progress"])
+    .get();
+  
+  document.getElementById("activeServicesCount").innerHTML = activeServices.size > 0 
+    ? activeServices.docs.map(doc => {
+        const service = doc.data();
+        return `
+          <div class="service-item">
+            <h4>${service.serviceType}</h4>
+            <span class="service-status status-${service.status}">${service.status}</span>
+            <p>Scheduled: ${service.scheduledDate}</p>
+          </div>
+        `;
+      }).join("")
+    : "No active services";
+    
+  // Load next service
+  const nextService = await db.collection("service_requests")
+    .where("userId", "==", currentUser.uid)
+    .where("status", "==", "scheduled")
+    .orderBy("scheduledDate")
+    .limit(1)
+    .get();
+    
+  if (!nextService.empty) {
+    const service = nextService.docs[0].data();
+    document.getElementById("upcomingAppointmentsCount").innerHTML = `
+      <div class="next-service-details">
+        <h4>${service.serviceType}</h4>
+        <p>Date: ${service.scheduledDate}</p>
+        <p>Time: ${service.scheduledTime || "TBD"}</p>
+        <button class="btn-modern" onclick="rescheduleService('${nextService.docs[0].id}')">
+          Reschedule
+        </button>
+      </div>
+    `;
+  } else {
+    document.getElementById("upcomingAppointmentsCount").innerHTML = "No upcoming services";
+  }
+  
+  // Load weather data
+  const weatherScheduler = new WeatherScheduler();
+  const location = `${address.city}, ${address.state}`;
+  if (address.city && address.state) {
+    const forecast = await weatherScheduler.getWeatherForecast(location, 1);
+    if (forecast) {
+      const weather = forecast.forecast.forecastday[0].day;
+      document.getElementById("weatherWidget").innerHTML = `
+        <h4>${location}</h4>
+        <p>Temperature: ${weather.avgtemp_f}°F</p>
+        <p>Condition: ${weather.condition.text}</p>
+        <p>Rain Chance: ${weather.daily_chance_of_rain}%</p>
+      `;
     }
-  };
-  await db.collection("profiles").doc(currentUser.uid).set(profile, { merge: true });
-  alert("✅ Profile updated!");
-  toggleProfileModal();
-  loadProfile();
-});
-
-requestForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  await db.collection("service_requests").add({
-    fullName: fullName.value,
-    email: email.value,
-    serviceType: serviceType.value,
-    notes: message.value,
-    submittedAt: new Date(),
-    hasUnreadFromCustomer: true,
-    adminRead: false
-  });
-  alert("✅ Request sent!");
-  requestForm.reset();
-  loadServiceRequests();
-});
+  }
+}
 
 function loadServiceRequests() {
   const dropdown = document.getElementById("requestSelector");
@@ -459,6 +606,40 @@ async function exportInvoicesPDF() {
     doc.text(`${i + 1}. ${d.service} - $${d.amount} - ${status}`, 10, y += 10);
   });
   doc.save("invoices.pdf");
+}
+
+// Add reschedule functionality
+async function rescheduleService(serviceId) {
+  const modal = document.createElement("div");
+  modal.className = "modal";
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>Reschedule Service</h3>
+      <form id="rescheduleForm">
+        <input type="date" id="newDate" required>
+        <button type="submit" class="btn-modern">Confirm</button>
+        <button type="button" class="btn-modern" onclick="this.closest('.modal').remove()">Cancel</button>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  document.getElementById("rescheduleForm").onsubmit = async (e) => {
+    e.preventDefault();
+    const newDate = document.getElementById("newDate").value;
+    try {
+      await db.collection("service_requests").doc(serviceId).update({
+        scheduledDate: newDate,
+        rescheduled: true
+      });
+      modal.remove();
+      loadProfile(); // Refresh the display
+      alert("Service rescheduled successfully!");
+    } catch (error) {
+      console.error("Error rescheduling:", error);
+      alert("Failed to reschedule service. Please try again.");
+    }
+  };
 }
 </script>
 </body>

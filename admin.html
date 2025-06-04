@@ -23,7 +23,7 @@
 
   <header class="header">
     <div class="header-content">
-      <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard</h1>
       <div class="header-actions">
         <button class="btn-modern" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
         <button class="btn-modern" onclick="logout()">Logout</button>
@@ -62,24 +62,24 @@
             <option value="Commercial Lawn Care">🏡 Commercial Lawn Care</option>
             <option value="Pressure Washing">💦 Pressure Washing</option>
           </select>
-        </div>
+  </div>
 
         <div class="form-group">
           <label for="propertySize">Property Size (sq ft)</label>
           <input type="number" id="propertySize" required min="100" step="100">
-        </div>
+  </div>
 
         <div class="form-group">
           <label for="complexityFactor">Property Complexity (1-3)</label>
           <input type="number" id="complexityFactor" min="1" max="3" step="0.1" value="1">
-        </div>
+  </div>
 
         <div class="form-group">
           <label>
             <input type="checkbox" id="urgentService">
             Urgent Service (+25% fee)
           </label>
-        </div>
+  </div>
 
         <button type="submit" class="btn-modern">Calculate Quote</button>
       </form>
@@ -110,13 +110,13 @@
               <input type="checkbox" name="package-services" value="Fertilization & Seeding">
               🌾 Fertilization & Seeding
             </label>
-          </div>
-        </div>
+  </div>
+  </div>
 
         <div class="form-group">
           <label for="packagePropertySize">Property Size (sq ft)</label>
           <input type="number" id="packagePropertySize" required min="100" step="100">
-        </div>
+  </div>
 
         <button type="submit" class="btn-modern">Build Package</button>
       </form>
@@ -141,7 +141,7 @@
         <div class="form-group">
           <label for="invoiceCustomer">Customer</label>
           <select id="invoiceCustomer" required></select>
-        </div>
+  </div>
 
         <div class="form-group">
           <label>Services Provided</label>
@@ -155,22 +155,223 @@
               🌸 Landscape Design
             </label>
             <!-- Add more services as needed -->
-          </div>
-        </div>
+    </div>
+  </div>
 
         <div class="form-group">
           <label for="invoiceAmount">Amount ($)</label>
           <input type="number" id="invoiceAmount" required min="0" step="0.01">
-        </div>
+  </div>
 
         <div class="form-group">
           <label for="invoiceDueDate">Due Date</label>
           <input type="date" id="invoiceDueDate" required>
-        </div>
+  </div>
 
         <button type="submit" class="btn-modern">Create Invoice</button>
       </form>
     </section>
+
+    <!-- Equipment Management -->
+    <section class="card">
+      <h2>Equipment Management</h2>
+      <div class="form-modern">
+        <h3>Add New Equipment</h3>
+        <form id="addEquipmentForm">
+          <div class="form-group">
+            <label for="equipmentName">Equipment Name</label>
+            <input type="text" id="equipmentName" required>
+          </div>
+          <div class="form-group">
+            <label for="equipmentType">Equipment Type (e.g., Mower, Trimmer, Blower)</label>
+            <input type="text" id="equipmentType" required>
+          </div>
+          <div class="form-group">
+            <label for="equipmentPurchaseDate">Purchase Date</label>
+            <input type="date" id="equipmentPurchaseDate" required>
+          </div>
+          <div class="form-group">
+            <label for="equipmentCost">Cost ($)</label>
+            <input type="number" id="equipmentCost" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="equipmentSerial">Serial Number (Optional)</label>
+            <input type="text" id="equipmentSerial">
+          </div>
+          <button type="submit" class="btn-modern">Add Equipment</button>
+        </form>
+      </div>
+
+      <h3 style="margin-top: 2rem;">Existing Equipment</h3>
+      <table id="equipmentTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Usage Hours</th>
+            <th>Next Maintenance</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Equipment rows will be populated here -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Materials & Chemical Inventory -->
+    <section class="card">
+      <h2>Materials & Chemical Inventory</h2>
+      <div class="form-modern">
+        <h3>Add New Material/Chemical</h3>
+        <form id="addMaterialForm">
+          <div class="form-group">
+            <label for="materialName">Material Name</label>
+            <input type="text" id="materialName" required>
+          </div>
+          <div class="form-group">
+            <label for="materialType">Type (e.g., Fertilizer, Pesticide, Fuel, Seed)</label>
+            <input type="text" id="materialType" required>
+          </div>
+          <div class="form-group">
+            <label for="materialUnit">Unit (e.g., kg, L, gal, bag, item)</label>
+            <input type="text" id="materialUnit" required>
+          </div>
+          <div class="form-group">
+            <label for="materialStockLevel">Initial Stock Level</label>
+            <input type="number" id="materialStockLevel" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="materialReorderPoint">Reorder Point</label>
+            <input type="number" id="materialReorderPoint" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="materialSupplier">Supplier Info (Optional)</label>
+            <input type="text" id="materialSupplier">
+          </div>
+          <button type="submit" class="btn-modern">Add Material</button>
+        </form>
+      </div>
+
+      <h3 style="margin-top: 2rem;">Current Inventory</h3>
+      <table id="materialsTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Stock Level</th>
+            <th>Unit</th>
+            <th>Reorder Point</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Material rows will be populated here -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Bids & Proposals Management -->
+    <section class="card">
+      <h2>Bids & Proposals Management</h2>
+      <div class="form-modern">
+        <h3>Generate New Bid</h3>
+        <form id="generateBidForm">
+          <div class="form-group">
+            <label for="bidCustomerId">Customer</label>
+            <select id="bidCustomerId" required></select> <!-- Populate with customers -->
+          </div>
+          <div class="form-group">
+            <label for="bidPropertyAddress">Property Address</label>
+            <input type="text" id="bidPropertyAddress" required>
+          </div>
+          <div class="form-group">
+            <label for="bidPropertySize">Property Size (sq ft)</label>
+            <input type="number" id="bidPropertySize" required min="100">
+          </div>
+          <div class="form-group">
+            <label for="bidPropertyComplexity">Property Complexity (1-3)</label>
+            <input type="number" id="bidPropertyComplexity" value="1" min="1" max="3" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Services (select multiple)</label>
+            <div id="bidServicesCheckboxes" class="checkbox-group">
+              <!-- Checkboxes for services will be populated here -->
+            </div>
+          </div>
+          <div class="form-group">
+            <label><input type="checkbox" id="bidUrgent"> Urgent Service?</label>
+          </div>
+          <button type="submit" class="btn-modern">Generate Bid</button>
+        </form>
+      </div>
+
+      <h3 style="margin-top: 2rem;">Existing Bids</h3>
+      <table id="bidsTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead><tr><th>Bid #</th><th>Customer ID</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div id="proposalTextView" class="card" style="margin-top:1rem; display:none;">
+        <h4>Generated Proposal Text:</h4>
+        <pre id="proposalTextContent"></pre>
+      </div>
+    </section>
+
+    <!-- Customer Loyalty Program Overview -->
+    <section class="card">
+      <h2>Customer Loyalty Program</h2>
+      <h3 style="margin-top: 1rem;">Loyalty Accounts</h3>
+      <table id="loyaltyAccountsTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead><tr><th>Customer ID</th><th>Points</th><th>Tier</th><th>Last Updated</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <h3 style="margin-top: 2rem;">Referrals</h3>
+      <table id="referralsTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead><tr><th>Referrer ID</th><th>Referred Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- Sustainability & Environmental Impact Log -->
+    <section class="card">
+      <h2>Sustainability & Environmental Impact</h2>
+      <div class="form-modern">
+        <h3>Log Environmental Data</h3>
+        <form id="logSustainabilityDataForm">
+          <div class="form-group">
+            <label for="susLogJobId">Job ID (Optional)</label>
+            <input type="text" id="susLogJobId">
+          </div>
+          <div class="form-group">
+            <label for="susLogCustomerId">Customer ID</label>
+            <select id="susLogCustomerId" required></select> <!-- Populate with customers -->
+          </div>
+          <div class="form-group">
+            <label for="susLogType">Log Type</label>
+            <select id="susLogType" required>
+              <option value="water_usage">Water Usage</option>
+              <option value="chemical_application">Chemical Application</option>
+              <option value="green_waste_management">Green Waste Management</option>
+            </select>
+          </div>
+          <!-- Fields will dynamically appear based on log type -->
+          <div id="sustainabilityLogFields"></div> 
+          <button type="submit" class="btn-modern">Log Data</button>
+        </form>
+      </div>
+      <h3 style="margin-top: 2rem;">Sustainability Log Entries</h3>
+      <table id="sustainabilityLogTable" class="table" style="width:100%; margin-top: 1rem;">
+        <thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Job/Customer</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="btn-modern" onclick="generateSustainabilityReportAdmin()" style="margin-top:1rem;">Generate Summary Report</button>
+      <div id="sustainabilityReportView" class="card" style="margin-top:1rem; display:none;">
+        <h4>Sustainability Report</h4>
+        <pre id="sustainabilityReportContent"></pre>
+      </div>
+    </section>
+
   </main>
 
   <footer>

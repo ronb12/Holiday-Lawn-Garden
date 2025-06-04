@@ -401,3 +401,636 @@ async function createInvoice(e) {
     NotificationSystem.showNotification("Error creating invoice", "error");
   }
 }
+
+// Instantiate new system managers
+const equipmentManager = new EquipmentManager();
+const materialTracker = new MaterialTracker();
+const biddingSystem = new BiddingSystem();
+const loyaltyProgram = new LoyaltyProgram();
+const sustainabilityTracker = new SustainabilityTracker();
+const quoteCalculator = new QuoteCalculator();
+
+// ----- Equipment Management Functions -----
+async function loadEquipmentTable() {
+  const equipmentList = await equipmentManager.getAllEquipment();
+  const tableBody = document.querySelector("#equipmentTable tbody");
+  if (!tableBody) return;
+  tableBody.innerHTML = ""; // Clear existing rows
+
+  if (equipmentList.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="6">No equipment found.</td></tr>';
+    return;
+  }
+
+  equipmentList.forEach(eq => {
+    const row = tableBody.insertRow();
+    row.innerHTML = `
+      <td>${eq.name}</td>
+      <td>${eq.type}</td>
+      <td><span class="status-badge status-${eq.status}">${eq.status}</span></td>
+      <td>${eq.usageHours ? eq.usageHours.toFixed(1) : 0}</td>
+      <td>${eq.nextMaintenanceDate ? new Date(eq.nextMaintenanceDate.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+      <td>
+        <button class="btn-modern btn-small" onclick="openLogMaintenanceModal('${eq.id}')">Log Maintenance</button>
+        <button class="btn-modern btn-small" onclick="openTrackUsageModal('${eq.id}')">Track Usage</button>
+        <select onchange="updateEquipmentStatus('${eq.id}', this.value)" style="padding: 5px; margin-left: 5px;">
+          <option value="available" ${eq.status === 'available' ? 'selected' : ''}>Available</option>
+          <option value="in-use" ${eq.status === 'in-use' ? 'selected' : ''}>In Use</option>
+          <option value="maintenance" ${eq.status === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+          <option value="retired" ${eq.status === 'retired' ? 'selected' : ''}>Retired</option>
+        </select>
+      </td>
+    `;
+  });
+}
+
+document.getElementById('addEquipmentForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = {
+    name: document.getElementById('equipmentName').value,
+    type: document.getElementById('equipmentType').value,
+    purchaseDate: document.getElementById('equipmentPurchaseDate').value,
+    cost: parseFloat(document.getElementById('equipmentCost').value),
+    serialNumber: document.getElementById('equipmentSerial').value || null,
+  };
+  const newEquipment = await equipmentManager.addEquipment(formData);
+  if (newEquipment) {
+    loadEquipmentTable(); // Refresh table
+    e.target.reset();
+  }
+});
+
+async function updateEquipmentStatus(equipmentId, status) {
+  await equipmentManager.setEquipmentStatus(equipmentId, status);
+  loadEquipmentTable(); // Refresh table
+}
+
+// Placeholder for modals - will implement these in HTML later or use prompts
+function openLogMaintenanceModal(equipmentId) {
+  const date = prompt("Enter maintenance date (YYYY-MM-DD):");
+  const notes = prompt("Enter maintenance notes:");
+  const cost = parseFloat(prompt("Enter maintenance cost ($):") || "0");
+  if (date && notes) {
+    equipmentManager.logMaintenance(equipmentId, { date, notes, cost }).then(() => loadEquipmentTable());
+  }
+}
+
+function openTrackUsageModal(equipmentId) {
+  const hours = parseFloat(prompt("Enter usage hours:"));
+  if (!isNaN(hours) && hours > 0) {
+    equipmentManager.trackUsage(equipmentId, hours).then(() => loadEquipmentTable());
+  }
+}
+
+// ----- Materials & Chemical Inventory Functions -----
+async function loadMaterialsTable() {
+  const materialsList = await materialTracker.getAllMaterials();
+  const tableBody = document.querySelector("#materialsTable tbody");
+  if (!tableBody) return;
+  tableBody.innerHTML = ""; // Clear existing rows
+
+  if (materialsList.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="6">No materials found.</td></tr>';
+    return;
+  }
+
+  materialsList.forEach(mat => {
+    const row = tableBody.insertRow();
+    row.innerHTML = `
+      <td>${mat.name}</td>
+      <td>${mat.type}</td>
+      <td>${mat.stockLevel.toFixed(2)}</td>
+      <td>${mat.unit}</td>
+      <td>${mat.reorderPoint.toFixed(2)}</td>
+      <td>
+        <button class="btn-modern btn-small" onclick="openUpdateStockModal('${mat.id}', '${mat.name}')">Update Stock</button>
+        <button class="btn-modern btn-small" onclick="openLogMaterialUsageModal('${mat.id}', '${mat.name}')">Log Usage</button>
+      </td>
+    `;
+  });
+}
+
+document.getElementById('addMaterialForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = {
+    name: document.getElementById('materialName').value,
+    type: document.getElementById('materialType').value,
+    unit: document.getElementById('materialUnit').value,
+    stockLevel: parseFloat(document.getElementById('materialStockLevel').value),
+    reorderPoint: parseFloat(document.getElementById('materialReorderPoint').value),
+    supplierInfo: document.getElementById('materialSupplier').value || null,
+  };
+  const newMaterial = await materialTracker.addMaterial(formData);
+  if (newMaterial) {
+    loadMaterialsTable(); // Refresh table
+    e.target.reset();
+  }
+});
+
+function openUpdateStockModal(materialId, materialName) {
+  const change = parseFloat(prompt(`Enter stock change for ${materialName} (e.g., 10 to add, -5 to subtract):`));
+  const reason = prompt("Reason for stock change (e.g., Received new shipment, Manual correction):");
+  if (!isNaN(change) && reason) {
+    materialTracker.updateStock(materialId, change, reason).then(() => loadMaterialsTable());
+  }
+}
+
+function openLogMaterialUsageModal(materialId, materialName) {
+  const quantityUsed = parseFloat(prompt(`Enter quantity of ${materialName} used:`));
+  const jobId = prompt("Enter Job ID (optional):") || null;
+  if (!isNaN(quantityUsed) && quantityUsed > 0) {
+    materialTracker.logUsage(jobId, materialId, quantityUsed).then(() => loadMaterialsTable());
+  }
+}
+
+// ----- Bids & Proposals Management Functions -----
+async function loadBidsTable() {
+  const tableBody = document.querySelector("#bidsTable tbody");
+  if (!tableBody) {
+    console.log("Bids table body not found"); return;
+  }
+  tableBody.innerHTML = ""; // Clear existing rows
+  try {
+    const bidsList = await biddingSystem.listBids();
+    if (bidsList.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="5">No bids found.</td></tr>';
+      return;
+    }
+    bidsList.forEach(bid => {
+      const row = tableBody.insertRow();
+      row.innerHTML = `
+        <td>${bid.bidNumber}</td>
+        <td>${bid.customerId}</td> 
+        <td>$${bid.estimatedTotal.toFixed(2)}</td>
+        <td><span class="status-badge status-${bid.status.replace('_', '-')}">${bid.status}</span></td>
+        <td>
+          <button class="btn-modern btn-small" onclick="viewBidDetails('${bid.id}')">View/Propose</button>
+          <select onchange="updateBidStatus('${bid.id}', this.value)" class="form-control-small" style="padding: 5px; margin-left: 5px;">
+            <option value="draft" ${bid.status === 'draft' ? 'selected' : ''}>Draft</option>
+            <option value="proposal_generated" ${bid.status === 'proposal_generated' ? 'selected' : ''}>Proposal Generated</option>
+            <option value="sent" ${bid.status === 'sent' ? 'selected' : ''}>Sent</option>
+            <option value="accepted" ${bid.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+            <option value="rejected" ${bid.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+            <option value="archived" ${bid.status === 'archived' ? 'selected' : ''}>Archived</option>
+          </select>
+        </td>
+      `;
+    });
+  } catch (error) {
+    console.error("Error loading bids table:", error);
+    tableBody.innerHTML = '<tr><td colspan="5">Error loading bids.</td></tr>';
+  }
+}
+
+async function viewBidDetails(bidId) {
+  const bid = await biddingSystem.getBidById(bidId);
+  const proposalView = document.getElementById('proposalTextView');
+  const proposalContent = document.getElementById('proposalTextContent');
+  
+  if (bid && proposalView && proposalContent) {
+    const proposalText = biddingSystem.generateProposalText(bid);
+    proposalContent.textContent = proposalText;
+    proposalView.style.display = 'block';
+
+    const existingSaveBtn = proposalView.querySelector('.btn-save-proposal');
+    if(existingSaveBtn) existingSaveBtn.remove();
+
+    const saveButton = document.createElement('button');
+    saveButton.textContent = 'Save This Proposal Text';
+    saveButton.className = 'btn-modern btn-small btn-save-proposal';
+    saveButton.style.marginTop = '10px';
+    saveButton.onclick = async () => {
+        const savedProposal = await biddingSystem.saveProposal(bid.id, proposalText);
+        if (savedProposal) {
+            NotificationSystem.showNotification("Proposal text saved! Bid status updated.", "success");
+            loadBidsTable(); // Refresh table to show new status
+            saveButton.textContent = 'Proposal Saved';
+            saveButton.disabled = true;
+        } else {
+            NotificationSystem.showNotification("Failed to save proposal text.", "error");
+        }
+    };
+    proposalView.appendChild(saveButton);
+    // You might want to show more details in a structured way, not just an alert
+    // For example, populate a modal with bid details.
+    console.log("Viewing bid:", bid);
+
+  } else {
+      if(proposalView) proposalView.style.display = 'none';
+      NotificationSystem.showNotification("Could not load bid details.", "error");
+  }
+}
+
+async function updateBidStatus(bidId, status) {
+  const success = await biddingSystem.updateBid(bidId, { status });
+  if (success) {
+    NotificationSystem.showNotification(`Bid status updated to ${status}.`, "success");
+    loadBidsTable();
+    if (status !== 'proposal_generated' && status !== 'draft') { // Hide if not in a state where proposal text is relevant
+        document.getElementById('proposalTextView').style.display = 'none'; 
+    }
+  } else {
+    NotificationSystem.showNotification("Failed to update bid status.", "error");
+  }
+}
+
+function populateServiceCheckboxesForBids() {
+    const container = document.getElementById('bidServicesCheckboxes');
+    if(!container) return;
+    container.innerHTML = ''; // Clear existing
+    if (typeof serviceRates !== 'undefined') {
+        for (const serviceName in serviceRates) {
+            const checkboxDiv = document.createElement('div');
+            checkboxDiv.className = 'checkbox-item';
+            checkboxDiv.innerHTML = `
+                <label>
+                    <input type="checkbox" name="bidServices" value="${serviceName}">
+                    ${serviceName}
+                </label>
+            `;
+            container.appendChild(checkboxDiv);
+        }
+    } else {
+        console.warn("serviceRates not defined. Cannot populate service checkboxes for bids.")
+    }
+}
+
+async function populateCustomerDropdownsForBids() {
+    const bidCustomerSelect = document.getElementById('bidCustomerId');
+    if (!bidCustomerSelect) return;
+    
+    try {
+        const customersSnapshot = await db.collection("users").where("role", "==", "customer").get();
+        const currentValue = bidCustomerSelect.value;
+        bidCustomerSelect.innerHTML = '<option value="">Select Customer</option>'; 
+        customersSnapshot.forEach(doc => {
+            const customer = { id: doc.id, ...doc.data() };
+            const option = document.createElement('option');
+            option.value = customer.id;
+            option.textContent = `${customer.displayName || customer.email} (ID: ${customer.id})`;
+            bidCustomerSelect.appendChild(option);
+        });
+        bidCustomerSelect.value = currentValue; 
+    } catch (error) {
+        console.error("Error populating customer dropdown for bids:", error);
+    }
+}
+
+document.getElementById('generateBidForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const customerId = document.getElementById('bidCustomerId').value;
+  const propertyAddress = document.getElementById('bidPropertyAddress').value;
+  const propertySizeSqFt = parseFloat(document.getElementById('bidPropertySize').value);
+  const complexity = parseFloat(document.getElementById('bidPropertyComplexity').value);
+  const urgent = document.getElementById('bidUrgent').checked;
+
+  const selectedServices = [];
+  document.querySelectorAll('#bidServicesCheckboxes input[name="bidServices"]:checked').forEach(cb => {
+    selectedServices.push({ type: cb.value, notes: "" }); 
+  });
+
+  if (!customerId) {
+    NotificationSystem.showNotification("Please select a customer for the bid.", "warning");
+    return;
+  }
+  if (selectedServices.length === 0) {
+    NotificationSystem.showNotification("Please select at least one service for the bid.", "warning");
+    return;
+  }
+  if (isNaN(propertySizeSqFt) || propertySizeSqFt <=0) {
+    NotificationSystem.showNotification("Please enter a valid property size.", "warning");
+    return;
+  }
+
+  const bidRequest = {
+    customerId,
+    propertyDetails: { address: propertyAddress, sizeSqFt: propertySizeSqFt, complexity },
+    services: selectedServices,
+    urgent
+  };
+  showLoader();
+  const newBid = await biddingSystem.generateBid(bidRequest);
+  hideLoader();
+  if (newBid) {
+    loadBidsTable();
+    e.target.reset();
+    document.querySelectorAll('#bidServicesCheckboxes input[name="bidServices"]:checked').forEach(cb => cb.checked = false);
+    document.getElementById('proposalTextView').style.display = 'none';
+    NotificationSystem.showNotification("New bid generated successfully!", "success");
+  } else {
+    NotificationSystem.showNotification("Failed to generate bid. Check console for errors.", "error");
+  }
+});
+
+// ----- Customer Loyalty Program Functions -----
+async function loadLoyaltyAccountsTable() {
+  const tableBody = document.querySelector("#loyaltyAccountsTable tbody");
+  if (!tableBody) {
+    console.log("Loyalty accounts table body not found"); return;
+  }
+  tableBody.innerHTML = ""; 
+
+  try {
+    // This is a simplified approach. In a real app with many users, 
+    // you'd paginate or fetch loyalty data more directly if possible.
+    const customersSnapshot = await db.collection('users').where('role', '==', 'customer').get();
+    if (customersSnapshot.empty) {
+        tableBody.innerHTML = '<tr><td colspan="4">No customer accounts found to display loyalty for.</td></tr>';
+        return;
+    }
+
+    let accountsDisplayed = 0;
+    for (const custDoc of customersSnapshot.docs) {
+      const customerId = custDoc.id;
+      const customerData = custDoc.data();
+      const account = await loyaltyProgram.getLoyaltyAccount(customerId);
+      if (account) {
+        accountsDisplayed++;
+        const row = tableBody.insertRow();
+        row.innerHTML = `
+          <td>${customerData.displayName || customerData.email} (ID: ${customerId})</td>
+          <td>${account.points}</td>
+          <td><span class="tier-badge tier-${account.tier}">${account.tier}</span></td>
+          <td>${account.lastUpdated ? new Date(account.lastUpdated.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+        `;
+      }
+    }
+    if (accountsDisplayed === 0) {
+        tableBody.innerHTML = '<tr><td colspan="4">No loyalty accounts found.</td></tr>';
+    }
+  } catch (error) {
+    console.error("Error loading loyalty accounts table:", error);
+    tableBody.innerHTML = '<tr><td colspan="4">Error loading loyalty accounts.</td></tr>';
+  }
+}
+
+async function loadReferralsTable() {
+  const tableBody = document.querySelector("#referralsTable tbody");
+  if (!tableBody) {
+    console.log("Referrals table body not found"); return;
+  }
+  tableBody.innerHTML = "";
+
+  try {
+    const referralsSnapshot = await loyaltyProgram.db.collection(loyaltyProgram.referralsCollection).orderBy('createdAt', 'desc').get();
+    if (referralsSnapshot.empty) {
+        tableBody.innerHTML = '<tr><td colspan="5">No referrals found.</td></tr>';
+        return;
+    }
+
+    referralsSnapshot.docs.forEach(doc => {
+      const ref = { id: doc.id, ...doc.data() };
+      const row = tableBody.insertRow();
+      row.innerHTML = `
+        <td>${ref.referrerCustomerId}</td>
+        <td>${ref.referredCustomerEmail}</td>
+        <td><span class="status-badge status-${ref.status}">${ref.status}</span></td>
+        <td>${ref.createdAt ? new Date(ref.createdAt.seconds * 1000).toLocaleDateString() : 'N/A'}</td>
+        <td>
+          ${ref.status === 'pending' ? `<button class="btn-modern btn-small" onclick="completeReferralAdmin('${ref.id}')">Mark Complete</button>` : (ref.status === 'completed' ? `Completed (${ref.referredCustomerId || 'N/A'})` : '-')}
+        </td>
+      `;
+    });
+  } catch (error) {
+    console.error("Error loading referrals table:", error);
+    tableBody.innerHTML = '<tr><td colspan="5">Error loading referrals.</td></tr>';
+  }
+}
+
+async function completeReferralAdmin(referralId) {
+    const referredNewCustomerId = prompt("Enter the Customer ID of the newly registered referred user (must be an existing user ID in the system):");
+    if (referredNewCustomerId) {
+        showLoader();
+        const result = await loyaltyProgram.completeReferral(referralId, referredNewCustomerId);
+        hideLoader();
+        if (result.success) {
+            NotificationSystem.showNotification("Referral marked complete and points awarded!", "success");
+            loadLoyaltyAccountsTable(); // Refresh points in accounts table
+            loadReferralsTable(); // Refresh status in referrals table
+        } else {
+            NotificationSystem.showNotification(result.error || "Failed to complete referral.", "error");
+        }
+    } else {
+        NotificationSystem.showNotification("Referred Customer ID is required to complete referral.", "warning");
+    }
+}
+
+// ----- Sustainability & Environmental Impact Log Functions -----
+const sustainabilityLogFieldsConfig = {
+    water_usage: [
+        { label: 'Amount (Liters)', id: 'susLogAmount', type: 'number', required: true, step: '0.1' },
+        { label: 'Source (e.g., municipal, rain harvest)', id: 'susLogSource', type: 'text', value: 'municipal' },
+        { label: 'Notes', id: 'susLogNotesWater', type: 'textarea' }
+    ],
+    chemical_application: [
+        { label: 'Material/Chemical Used', id: 'susLogMaterialId', type: 'select', required: true, options: [] }, // Will be populated from MaterialTracker
+        { label: 'Quantity Used', id: 'susLogQuantityUsed', type: 'number', required: true, step: '0.01' },
+        { label: 'Application Area (sq ft, optional)', id: 'susLogAppArea', type: 'number', step: '1' }
+    ],
+    green_waste_management: [
+        { label: 'Amount (kg)', id: 'susLogAmountKg', type: 'number', required: true, step: '0.1' },
+        { label: 'Management Type', id: 'susLogWasteType', type: 'select', required: true, options: [{value: 'composted', text: 'Composted'}, {value: 'recycled', text: 'Recycled'}] }
+    ]
+};
+
+async function populateCustomerDropdownsForSustainability() {
+    const susCustomerSelect = document.getElementById('susLogCustomerId');
+    if (!susCustomerSelect) {
+        console.log("Sustainability customer dropdown not found"); return;
+    }
+    
+    try {
+        const customersSnapshot = await db.collection("users").where("role", "==", "customer").get();
+        const currentValue = susCustomerSelect.value; // Preserve selection if any
+        susCustomerSelect.innerHTML = '<option value="">Select Customer</option>'; 
+        customersSnapshot.forEach(doc => {
+            const customer = { id: doc.id, ...doc.data() };
+            const option = document.createElement('option');
+            option.value = customer.id;
+            option.textContent = `${customer.displayName || customer.email} (ID: ${customer.id})`;
+            susCustomerSelect.appendChild(option);
+        });
+        susCustomerSelect.value = currentValue; 
+    } catch (error) {
+        console.error("Error populating customer dropdown for sustainability:", error);
+    }
+}
+
+async function populateSustainabilityLogFormFields() {
+    const logType = document.getElementById('susLogType')?.value;
+    const fieldsContainer = document.getElementById('sustainabilityLogFields');
+    if (!logType || !fieldsContainer) {
+        console.log("Sustainability log type or fields container not found");
+        if(fieldsContainer) fieldsContainer.innerHTML = ''; // Clear if container exists but no type
+        return;
+    }
+    fieldsContainer.innerHTML = ''; // Clear previous fields
+
+    const fields = sustainabilityLogFieldsConfig[logType];
+    if (fields) {
+        for (const field of fields) {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+            let inputHtml = `<label for="${field.id}">${field.label}</label>`;
+            if (field.type === 'select') {
+                let optionsHtml = '';
+                if (field.id === 'susLogMaterialId') { 
+                    try {
+                        const materials = await materialTracker.getAllMaterials();
+                        materials.forEach(mat => optionsHtml += `<option value="${mat.id}">${mat.name} (${mat.unit || 'N/A'})</option>`);
+                    } catch (e) { console.error("Failed to load materials for dropdown", e);}
+                } else {
+                    field.options.forEach(opt => optionsHtml += `<option value="${opt.value}">${opt.text}</option>`);
+                }
+                inputHtml += `<select id="${field.id}" class="form-control-modern" ${field.required ? 'required' : ''}>${optionsHtml}</select>`;
+            } else if (field.type === 'textarea') {
+                inputHtml += `<textarea id="${field.id}" class="form-control-modern" ${field.required ? 'required' : ''}></textarea>`;
+            } else {
+                inputHtml += `<input type="${field.type}" id="${field.id}" class="form-control-modern" ${field.required ? 'required' : ''} ${field.step ? `step="${field.step}"` : ''} ${field.value ? `value="${field.value}"` : ''}>`;
+            }
+            formGroup.innerHTML = inputHtml;
+            fieldsContainer.appendChild(formGroup);
+        }
+    }
+}
+
+document.getElementById('susLogType')?.addEventListener('change', populateSustainabilityLogFormFields);
+
+document.getElementById('logSustainabilityDataForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const jobId = document.getElementById('susLogJobId')?.value || null;
+    const customerId = document.getElementById('susLogCustomerId')?.value;
+    const logType = document.getElementById('susLogType')?.value;
+    let success = false;
+
+    if (!customerId) {
+        NotificationSystem.showNotification("Please select a customer.", "warning");
+        return;
+    }
+    showLoader();
+    try {
+        if (logType === 'water_usage') {
+            const amountLiters = parseFloat(document.getElementById('susLogAmount').value);
+            const source = document.getElementById('susLogSource').value;
+            const notes = document.getElementById('susLogNotesWater').value;
+            success = await sustainabilityTracker.logWaterUsage(jobId, customerId, amountLiters, source, notes);
+        } else if (logType === 'chemical_application') {
+            const materialId = document.getElementById('susLogMaterialId').value;
+            const quantityUsed = parseFloat(document.getElementById('susLogQuantityUsed').value);
+            const applicationAreaSqFt = document.getElementById('susLogAppArea')?.value ? parseFloat(document.getElementById('susLogAppArea').value) : null;
+            success = await sustainabilityTracker.logChemicalUsage(jobId, customerId, materialId, quantityUsed, applicationAreaSqFt);
+        } else if (logType === 'green_waste_management') {
+            const amountKg = parseFloat(document.getElementById('susLogAmountKg').value);
+            const wasteType = document.getElementById('susLogWasteType').value;
+            success = await sustainabilityTracker.logGreenWaste(jobId, customerId, amountKg, wasteType);
+        }
+
+        if (success) {
+            NotificationSystem.showNotification("Sustainability data logged successfully!", "success");
+            loadSustainabilityLogTable();
+            e.target.reset(); // Reset the form
+            populateSustainabilityLogFormFields(); // Repopulate dynamic fields for current selection (or clear them)
+        } else if (!success && logType) { // Check if success is explicitly false and not just an unhandled type
+             NotificationSystem.showNotification("Failed to log sustainability data. Please check inputs.", "error");
+        }
+    } catch (error) {
+        console.error("Error in logSustainabilityDataForm submission:", error);
+        NotificationSystem.showNotification("Error logging sustainability data: " + error.message, "error");
+    } finally {
+        hideLoader();
+    }
+});
+
+async function loadSustainabilityLogTable() {
+  const tableBody = document.querySelector("#sustainabilityLogTable tbody");
+  if (!tableBody) { console.log("Sustainability log table body not found"); return; }
+  tableBody.innerHTML = "";
+
+  try {
+    const report = await sustainabilityTracker.generateSustainabilityReport();
+    const logs = report ? report.logs : [];
+
+    if (logs.length === 0) {
+      tableBody.innerHTML = '<tr><td colspan="4">No sustainability logs found.</td></tr>';
+      return;
+    }
+    logs.forEach(log => {
+      const row = tableBody.insertRow();
+      let details = '';
+      if (log.type === 'water_usage') details = `${log.amount} ${log.unit} from ${log.source || 'N/A'}`;
+      else if (log.type === 'chemical_application') details = `${log.materialName || 'N/A'}: ${log.quantity} ${log.unit || 'N/A'}`;
+      else if (log.type === 'green_waste_management') details = `${log.managementType || 'N/A'}: ${log.amount} ${log.unit || 'N/A'}`;
+      else details = JSON.stringify(log.details) || 'No details'; // Fallback
+      
+      row.innerHTML = `
+        <td>${log.timestamp ? new Date(log.timestamp.seconds * 1000).toLocaleString() : 'N/A'}</td>
+        <td>${log.type ? log.type.replace(/_/g, ' ') : 'N/A'}</td>
+        <td>${details}</td>
+        <td>${log.jobId ? `Job: ${log.jobId}<br>` : ''}Cust: ${log.customerId || 'N/A'}</td>
+      `;
+    });
+  } catch (error) {
+      console.error("Error loading sustainability log table:", error);
+      tableBody.innerHTML = '<tr><td colspan="4">Error loading sustainability log.</td></tr>';
+  }
+}
+
+async function generateSustainabilityReportAdmin() {
+    showLoader();
+    const report = await sustainabilityTracker.generateSustainabilityReport();
+    hideLoader();
+    const reportView = document.getElementById('sustainabilityReportView');
+    const reportContent = document.getElementById('sustainabilityReportContent');
+
+    if (report && reportView && reportContent) {
+        let reportText = `Sustainability Summary Report:\nGenerated: ${new Date().toLocaleString()}\n\n`;
+        reportText += `Total Green Waste Managed: ${report.totalGreenWasteManagedKg.toFixed(2)} kg\n`;
+        // Add more summary points as calculated in SustainabilityTracker (totalWaterSavedEstimate, totalChemicalsReducedEstimate)
+        reportText += `Total Water Usage Logged (Sum of amounts, unit specific): Some calculation here...\n`; // Placeholder
+        reportText += `\n--- Detailed Logs (${report.logs.length} entries) ---\n`;
+        report.logs.forEach(log => {
+            let detail = '';
+            if(log.type === 'water_usage') detail = `Water: ${log.amount} ${log.unit} (Source: ${log.source})`;
+            else if(log.type === 'chemical_application') detail = `Chemical: ${log.materialName} - ${log.quantity} ${log.unit}`;
+            else if(log.type === 'green_waste_management') detail = `Green Waste: ${log.amount} ${log.unit} (${log.managementType})`;
+            reportText += `${new Date(log.timestamp.seconds * 1000).toLocaleDateString()} - ${log.type.replace('_',' ')} - ${detail} (Cust: ${log.customerId}, Job: ${log.jobId || 'N/A'})\n`;
+        });
+        reportContent.textContent = reportText;
+        reportView.style.display = 'block';
+        NotificationSystem.showNotification("Sustainability report generated.", "info");
+    } else {
+        NotificationSystem.showNotification("Could not generate or display sustainability report.", "error");
+        if(reportView) reportView.style.display = 'none';
+    }
+}
+
+// Centralized Admin Dashboard Initialization function
+function initializeAdminDashboard() {
+    console.log("Initializing Admin Dashboard...");
+    if (localStorage.getItem("darkMode") === "on") {
+        document.body.classList.add("dark");
+    }
+    loadCustomersDropdown(); 
+    updateDashboardStats();
+    loadExpenses(); 
+    loadRecentSmartQuotes(); 
+    
+    loadEquipmentTable();
+    loadMaterialsTable();
+    
+    populateServiceCheckboxesForBids();
+    populateCustomerDropdownsForBids();
+    loadBidsTable();
+
+    loadLoyaltyAccountsTable();
+    loadReferralsTable();
+
+    // Sustainability Tracker Initializations
+    populateCustomerDropdownsForSustainability(); 
+    populateSustainabilityLogFormFields(); // Initial call to set up fields for default log type
+    loadSustainabilityLogTable();
+    
+    console.log("Admin Dashboard Fully Initialized.");
+}
+
+window.onload = initializeAdminDashboard;
