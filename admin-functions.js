@@ -7,46 +7,40 @@ let auth;
 
 // Initialize Firebase DB reference, now always after firebaseReadyPromise
 async function initializeFirebaseDB() {
-  await (window.firebaseReadyPromise || Promise.resolve());
   try {
-    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-      db = firebase.firestore();
-      auth = firebase.auth();
-      return true;
-    }
+    const app = await window.firebaseReadyPromise;
+    db = window.HollidayApp.db;
+    auth = window.HollidayApp.auth;
+    return true;
   } catch (error) {
     console.error('Firebase initialization error:', error);
+    showNotification('Failed to initialize Firebase. Please refresh the page.', 'error');
+    return false;
   }
-  return false;
 }
 
 // Ensure Firebase is ready before executing admin functions
-function ensureFirebaseReady(callback) {
-  (window.firebaseReadyPromise || Promise.resolve()).then(() => {
-    if (initializeFirebaseDB()) {
+async function ensureFirebaseReady(callback) {
+  try {
+    const isInitialized = await initializeFirebaseDB();
+    if (isInitialized) {
       callback();
     } else {
-      setTimeout(() => {
-        if (initializeFirebaseDB()) {
-          callback();
-        } else {
-          console.warn('Firebase not ready - running in offline mode');
-          callback(); // Allow app to continue functioning
-        }
-      }, 1000);
+      showNotification('Firebase is not ready. Please refresh the page.', 'error');
     }
-  }).catch((err) => {
-    showNotification('Firebase failed to initialize: ' + err, 'error');
-  });
+  } catch (error) {
+    console.error('Firebase ready check failed:', error);
+    showNotification('Failed to connect to Firebase. Please refresh the page.', 'error');
+  }
 }
 
 // Authentication state management
 function getCurrentUser() {
-  return auth ? auth.currentUser : null;
+  return window.HollidayApp.currentUser;
 }
 
 function isUserAuthenticated() {
-  return getCurrentUser() !== null;
+  return window.HollidayApp.currentUser !== null;
 }
 
 // Utility Functions
@@ -95,44 +89,45 @@ function showTab(id) {
 }
 
 // Customer Management
-function loadCustomersDropdown() {
-  if (!db) {
-    console.warn('Database not available for customer dropdown');
-    return;
-  }
+async function loadCustomersDropdown() {
+  try {
+    await initializeFirebaseDB();
+    if (!db) {
+      console.warn('Database not available for customer dropdown');
+      return;
+    }
 
-  const dropdownIds = ["requestCustomer", "quoteCustomer", "invoiceCustomer", "customerSelect", "bidCustomerId"];
-  
-  dropdownIds.forEach(id => {
-    const dropdown = document.getElementById(id);
-    if (!dropdown) return;
+    const dropdownIds = ["requestCustomer", "quoteCustomer", "invoiceCustomer", "customerSelect", "bidCustomerId"];
     
-    dropdown.innerHTML = '<option value="">Select Customer</option>';
-    
-    db.collection("users")
-      .where("role", "==", "customer")
-      .where("isActive", "==", true)
-      .orderBy("displayName")
-      .get()
-      .then(snapshot => {
-        if (snapshot.empty) {
-          dropdown.innerHTML += '<option value="" disabled>No customers found</option>';
-          return;
-        }
+    for (const id of dropdownIds) {
+      const dropdown = document.getElementById(id);
+      if (!dropdown) continue;
+      
+      dropdown.innerHTML = '<option value="">Select Customer</option>';
+      
+      const snapshot = await db.collection("users")
+        .where("role", "==", "customer")
+        .where("isActive", "==", true)
+        .orderBy("displayName")
+        .get();
+      
+      if (snapshot.empty) {
+        dropdown.innerHTML += '<option value="" disabled>No customers found</option>';
+        continue;
+      }
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const option = document.createElement("option");
-          option.value = doc.id;
-          option.text = `${data.displayName || 'Unnamed'} (${data.email || 'No email'})`;
-          dropdown.appendChild(option);
-        });
-      })
-      .catch(error => {
-        console.warn(`Customer dropdown error for ${id}:`, error.message);
-        dropdown.innerHTML += '<option value="" disabled>Error loading customers</option>';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.text = `${data.displayName || 'Unnamed'} (${data.email || 'No email'})`;
+        dropdown.appendChild(option);
       });
-  });
+    }
+  } catch (error) {
+    console.error('Customer dropdown error:', error);
+    showNotification('Failed to load customer list', 'error');
+  }
 }
 
 // Service Request Management
@@ -274,42 +269,40 @@ function submitQuote(e) {
 }
 
 // Dashboard Statistics
-function updateDashboardStats() {
-  if (!db) {
-    console.warn('Database not available for dashboard stats');
-    return;
+async function updateDashboardStats() {
+  try {
+    await initializeFirebaseDB();
+    if (!db) {
+      console.warn('Database not available for dashboard stats');
+      return;
+    }
+    
+    const stats = {
+      totalCustomers: 0,
+      activeRequests: 0,
+      pendingQuotes: 0,
+      monthlyRevenue: 0
+    };
+    
+    // Get all stats in parallel
+    const [customers, requests, quotes] = await Promise.all([
+      db.collection("users").where("role", "==", "customer").get(),
+      db.collection("service_requests").where("status", "==", "Pending").get(),
+      db.collection("quotes").where("status", "==", "Pending").get()
+    ]);
+    
+    stats.totalCustomers = customers.size;
+    stats.activeRequests = requests.size;
+    stats.pendingQuotes = quotes.size;
+    
+    // Update UI
+    updateStatDisplay('totalCustomers', stats.totalCustomers);
+    updateStatDisplay('activeRequests', stats.activeRequests);
+    updateStatDisplay('pendingQuotes', stats.pendingQuotes);
+  } catch (error) {
+    console.error('Error updating dashboard stats:', error);
+    showNotification('Failed to update dashboard statistics', 'error');
   }
-  
-  const stats = {
-    totalCustomers: 0,
-    activeRequests: 0,
-    pendingQuotes: 0,
-    monthlyRevenue: 0
-  };
-  
-  // Count customers
-  db.collection("users").where("role", "==", "customer").get()
-    .then(snapshot => {
-      stats.totalCustomers = snapshot.size;
-      updateStatDisplay('totalCustomers', stats.totalCustomers);
-    })
-    .catch(error => console.warn('Error counting customers:', error));
-  
-  // Count active requests
-  db.collection("service_requests").where("status", "==", "Pending").get()
-    .then(snapshot => {
-      stats.activeRequests = snapshot.size;
-      updateStatDisplay('activeRequests', stats.activeRequests);
-    })
-    .catch(error => console.warn('Error counting requests:', error));
-  
-  // Count pending quotes
-  db.collection("quotes").where("status", "==", "Pending").get()
-    .then(snapshot => {
-      stats.pendingQuotes = snapshot.size;
-      updateStatDisplay('pendingQuotes', stats.pendingQuotes);
-    })
-    .catch(error => console.warn('Error counting quotes:', error));
 }
 
 function updateStatDisplay(statId, value) {
@@ -358,108 +351,108 @@ window.addEventListener('load', () => {
       console.log('Admin dashboard initialized successfully');
     } catch (error) {
       console.error('Dashboard initialization error:', error);
+      showNotification('Failed to initialize dashboard. Please refresh the page.', 'error');
     }
   });
 });
 
 // Recent Activity Management
-function loadRecentActivity() {
-  if (!db) {
-    console.warn('Database not available for recent activity');
-    return;
-  }
+async function loadRecentActivity() {
+  try {
+    await initializeFirebaseDB();
+    if (!db) {
+      console.warn('Database not available for recent activity');
+      return;
+    }
 
-  const activityContainer = document.getElementById('recentActivityList');
-  if (!activityContainer) {
-    console.warn('Recent activity container not found');
-    return;
-  }
+    const activityContainer = document.getElementById('recentActivityList');
+    if (!activityContainer) {
+      console.warn('Recent activity container not found');
+      return;
+    }
 
-  // Show loading state
-  activityContainer.innerHTML = `
-    <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
-      <strong>Recent Activity:</strong> Loading...
-      <div style="margin-top: 0.5rem; font-size: 0.875rem;">
-        Checking for recent business activity...
+    // Show loading state
+    activityContainer.innerHTML = `
+      <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
+        <strong>Recent Activity:</strong> Loading...
+        <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+          Checking for recent business activity...
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
-  showLoader();
+    showLoader();
 
-  // Get last 10 items from each collection
-  const promises = [
-    db.collection('service_requests').orderBy('createdAt', 'desc').limit(10).get(),
-    db.collection('quotes').orderBy('createdAt', 'desc').limit(10).get(),
-    db.collection('users').where('role', '==', 'customer').orderBy('createdAt', 'desc').limit(10).get()
-  ];
+    // Get last 10 items from each collection in parallel
+    const [requests, quotes, customers] = await Promise.all([
+      db.collection('service_requests').orderBy('createdAt', 'desc').limit(10).get(),
+      db.collection('quotes').orderBy('createdAt', 'desc').limit(10).get(),
+      db.collection('users').where('role', '==', 'customer').orderBy('createdAt', 'desc').limit(10).get()
+    ]);
 
-  Promise.all(promises)
-    .then(([requests, quotes, customers]) => {
-      const activities = [];
+    const activities = [];
 
-      // Process service requests
-      requests.forEach(doc => {
-        const data = doc.data();
-        activities.push({
-          type: 'request',
-          description: `New service request: ${data.description?.substring(0, 50) || 'No description'}...`,
-          timestamp: data.createdAt?.toDate() || new Date(),
-          icon: '🔧'
-        });
+    // Process all activities
+    requests.forEach(doc => {
+      const data = doc.data();
+      activities.push({
+        type: 'request',
+        description: `New service request: ${data.description?.substring(0, 50) || 'No description'}...`,
+        timestamp: data.createdAt?.toDate() || new Date(),
+        icon: '🔧'
       });
+    });
 
-      // Process quotes
-      quotes.forEach(doc => {
-        const data = doc.data();
-        activities.push({
-          type: 'quote',
-          description: `New quote created for $${data.amount?.toFixed(2) || '0.00'}`,
-          timestamp: data.createdAt?.toDate() || new Date(),
-          icon: '💰'
-        });
+    quotes.forEach(doc => {
+      const data = doc.data();
+      activities.push({
+        type: 'quote',
+        description: `New quote created for $${data.amount?.toFixed(2) || '0.00'}`,
+        timestamp: data.createdAt?.toDate() || new Date(),
+        icon: '💰'
       });
+    });
 
-      // Process new customers
-      customers.forEach(doc => {
-        const data = doc.data();
-        activities.push({
-          type: 'customer',
-          description: `New customer: ${data.displayName || data.email || 'Anonymous'}`,
-          timestamp: data.createdAt?.toDate() || new Date(),
-          icon: '👤'
-        });
+    customers.forEach(doc => {
+      const data = doc.data();
+      activities.push({
+        type: 'customer',
+        description: `New customer: ${data.displayName || data.email || 'Anonymous'}`,
+        timestamp: data.createdAt?.toDate() || new Date(),
+        icon: '👤'
       });
+    });
 
-      // Sort by timestamp
-      activities.sort((a, b) => b.timestamp - a.timestamp);
+    // Sort by timestamp
+    activities.sort((a, b) => b.timestamp - a.timestamp);
 
-      // Update UI
-      if (activities.length === 0) {
-        activityContainer.innerHTML = `
-          <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
-            <strong>Recent Activity:</strong> No recent activity
-            <div style="margin-top: 0.5rem; font-size: 0.875rem;">
-              The system is ready to track new business activities.
-            </div>
+    // Update UI
+    if (activities.length === 0) {
+      activityContainer.innerHTML = `
+        <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
+          <strong>Recent Activity:</strong> No recent activity
+          <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+            The system is ready to track new business activities.
           </div>
-        `;
-      } else {
-        activityContainer.innerHTML = activities.slice(0, 10).map(activity => `
-          <div style="color: #1e293b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #2563eb; margin-bottom: 0.5rem;">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <span style="font-size: 1.25rem;">${activity.icon}</span>
-              <strong>${activity.description}</strong>
-            </div>
-            <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #64748b;">
-              ${activity.timestamp.toLocaleDateString()} at ${activity.timestamp.toLocaleTimeString()}
-            </div>
+        </div>
+      `;
+    } else {
+      activityContainer.innerHTML = activities.slice(0, 10).map(activity => `
+        <div style="color: #1e293b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #2563eb; margin-bottom: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 1.25rem;">${activity.icon}</span>
+            <strong>${activity.description}</strong>
           </div>
-        `).join('');
-      }
-    })
-    .catch(error => {
-      console.error('Error loading recent activity:', error);
+          <div style="margin-top: 0.5rem; font-size: 0.875rem; color: #64748b;">
+            ${activity.timestamp.toLocaleDateString()} at ${activity.timestamp.toLocaleTimeString()}
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (error) {
+    console.error('Error loading recent activity:', error);
+    const activityContainer = document.getElementById('recentActivityList');
+    if (activityContainer) {
       activityContainer.innerHTML = `
         <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
           <strong>Error Loading Activity</strong>
@@ -468,10 +461,10 @@ function loadRecentActivity() {
           </div>
         </div>
       `;
-    })
-    .finally(() => {
-      hideLoader();
-    });
+    }
+  } finally {
+    hideLoader();
+  }
 }
 
 // Customer Management Functions
@@ -724,6 +717,11 @@ async function loadCustomersList() {
   if (!customersList) return;
 
   try {
+    await initializeFirebaseDB();
+    if (!db) {
+      throw new Error('Database not available');
+    }
+
     showLoader();
     
     // Only get real customers from the database
@@ -783,6 +781,7 @@ async function loadCustomersList() {
       <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px;">
         <strong>Error Loading Customers</strong>
         <p>There was a problem loading the customer list. Please try again later.</p>
+        <p class="error-details" style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
       </div>`;
   } finally {
     hideLoader();

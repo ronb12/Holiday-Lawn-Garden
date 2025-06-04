@@ -106,17 +106,17 @@ function googleSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   
   firebase.auth().signInWithPopup(provider)
-    .then((result) => {
-      console.log("Google Sign-In successful for Firebase user:", result.user.email);
-      handleUserLogin(result.user);
-    })
-    .catch((error) => {
-      console.error("Firebase Google Sign-In error:", error);
-      if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
-      if (error.code === 'auth/account-exists-with-different-credential') {
-        if(loginErrorMessage) loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
-      }
-    });
+      .then((result) => {
+        console.log("Google Sign-In successful for Firebase user:", result.user.email);
+        handleUserLogin(result.user);
+      })
+      .catch((error) => {
+        console.error("Firebase Google Sign-In error:", error);
+        if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
+        if (error.code === 'auth/account-exists-with-different-credential') {
+          if(loginErrorMessage) loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
+        }
+      });
 }
 
 // Fade-in animation for sections with class 'fade-in'

@@ -1,103 +1,380 @@
 // Service Rates and Calculations
 const serviceRates = {
-  'Mowing & Trimming': 45,
-  'Landscape Design': 75,
-  'Leaf Removal': 55,
-  'Fertilization & Seeding': 65,
-  'Seasonal Cleanup': 60,
-  'Mulching & Edging': 50,
-  'Commercial Lawn Care': 85,
-  'Pressure Washing': 70
+  'Mowing & Trimming': {
+    baseRate: 45,
+    minSize: 1000,
+    maxSize: 50000,
+    sizeMultiplier: 0.0001, // $0.01 per sq ft
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.25,
+      high: 1.5
+    },
+    minProfitMargin: 0.30, // 30% minimum profit margin
+    fixedCosts: 15, // Base operational costs
+    variableCosts: 0.00005 // $0.005 per sq ft
+  },
+  'Landscape Design': {
+    baseRate: 75,
+    minSize: 1000,
+    maxSize: 100000,
+    sizeMultiplier: 0.0002,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.35,
+      high: 1.7
+    },
+    minProfitMargin: 0.35,
+    fixedCosts: 25,
+    variableCosts: 0.0001
+  },
+  'Leaf Removal': {
+    baseRate: 55,
+    minSize: 1000,
+    maxSize: 50000,
+    sizeMultiplier: 0.00015,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.2,
+      high: 1.4
+    },
+    minProfitMargin: 0.30,
+    fixedCosts: 20,
+    variableCosts: 0.00008
+  },
+  'Fertilization & Seeding': {
+    baseRate: 65,
+    minSize: 1000,
+    maxSize: 50000,
+    sizeMultiplier: 0.00012,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.3,
+      high: 1.6
+    },
+    minProfitMargin: 0.35,
+    fixedCosts: 30,
+    variableCosts: 0.0001
+  },
+  'Seasonal Cleanup': {
+    baseRate: 60,
+    minSize: 1000,
+    maxSize: 50000,
+    sizeMultiplier: 0.00015,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.25,
+      high: 1.5
+    },
+    minProfitMargin: 0.30,
+    fixedCosts: 25,
+    variableCosts: 0.00009
+  },
+  'Mulching & Edging': {
+    baseRate: 50,
+    minSize: 1000,
+    maxSize: 50000,
+    sizeMultiplier: 0.0001,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.2,
+      high: 1.4
+    },
+    minProfitMargin: 0.30,
+    fixedCosts: 20,
+    variableCosts: 0.00007
+  },
+  'Commercial Lawn Care': {
+    baseRate: 85,
+    minSize: 5000,
+    maxSize: 200000,
+    sizeMultiplier: 0.00008,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.3,
+      high: 1.6
+    },
+    minProfitMargin: 0.25,
+    fixedCosts: 35,
+    variableCosts: 0.00006
+  },
+  'Pressure Washing': {
+    baseRate: 70,
+    minSize: 1000,
+    maxSize: 100000,
+    sizeMultiplier: 0.00015,
+    complexityMultipliers: {
+      low: 1.0,
+      medium: 1.25,
+      high: 1.5
+    },
+    minProfitMargin: 0.35,
+    fixedCosts: 30,
+    variableCosts: 0.0001
+  }
 };
 
-// Package Definitions
+// Package Definitions with enhanced pricing
 const servicePackages = {
   basic: {
     name: 'Basic Care',
     services: ['Mowing & Trimming', 'Leaf Removal'],
     frequency: 'bi-weekly',
-    discount: 0.1, // 10% off
-    basePrice: 89.99
+    discount: 0.15, // 15% off
+    basePrice: 89.99,
+    minSize: 1000,
+    maxSize: 50000
   },
   premium: {
     name: 'Premium Care',
     services: ['Mowing & Trimming', 'Fertilization & Seeding', 'Seasonal Cleanup'],
     frequency: 'weekly',
-    discount: 0.15, // 15% off
-    basePrice: 159.99
+    discount: 0.2, // 20% off
+    basePrice: 159.99,
+    minSize: 1000,
+    maxSize: 50000
   },
   commercial: {
     name: 'Commercial',
     services: ['Commercial Lawn Care', 'Landscape Design', 'Seasonal Cleanup'],
     frequency: 'weekly',
-    discount: 0.2, // 20% off
-    basePrice: 299.99
+    discount: 0.25, // 25% off
+    basePrice: 299.99,
+    minSize: 5000,
+    maxSize: 200000
   }
 };
 
 // Enhanced Quote Calculator
 class QuoteCalculator {
   static calculateBaseRate(service, propertySize) {
-    const baseRate = serviceRates[service] || 50;
-    const sizeFactor = this.calculateSizeFactor(propertySize);
-    return baseRate * sizeFactor;
+    const serviceConfig = serviceRates[service];
+    if (!serviceConfig) return 50; // Default rate if service not found
+
+    // Validate property size
+    if (propertySize < serviceConfig.minSize) {
+      throw new Error(`Property size must be at least ${serviceConfig.minSize} sq ft for ${service}`);
+    }
+    if (propertySize > serviceConfig.maxSize) {
+      throw new Error(`Property size cannot exceed ${serviceConfig.maxSize} sq ft for ${service}`);
+    }
+
+    // Calculate total costs
+    const fixedCosts = serviceConfig.fixedCosts;
+    const variableCosts = propertySize * serviceConfig.variableCosts;
+    const totalCosts = fixedCosts + variableCosts;
+
+    // Calculate minimum price to maintain profit margin
+    const minPrice = totalCosts / (1 - serviceConfig.minProfitMargin);
+
+    // Calculate size-based rate
+    const sizeBasedRate = serviceConfig.baseRate + (propertySize * serviceConfig.sizeMultiplier);
+
+    // Use the higher of the two rates to ensure profitability
+    const finalRate = Math.max(minPrice, sizeBasedRate);
+    return Math.round(finalRate * 100) / 100; // Round to 2 decimal places
   }
 
   static calculateSizeFactor(propertySize) {
     if (propertySize < 1000) return 1;
     if (propertySize < 5000) return 1.5;
     if (propertySize < 10000) return 2;
-    return 2.5;
+    if (propertySize < 25000) return 2.5;
+    if (propertySize < 50000) return 3;
+    return 3.5;
   }
 
   static getSeasonalAdjustment() {
     const month = new Date().getMonth();
-    // Peak season (spring/summer) adjustment
-    if (month >= 3 && month <= 8) return 1.2;
-    // Fall adjustment
-    if (month >= 9 && month <= 10) return 1.1;
-    // Winter adjustment
-    return 0.9;
+    const hour = new Date().getHours();
+    const isWeekend = [0, 6].includes(new Date().getDay());
+    
+    // Base seasonal adjustments
+    let seasonalFactor = 1;
+    if (month >= 3 && month <= 8) { // Spring/Summer
+      seasonalFactor = 1.2;
+    } else if (month >= 9 && month <= 10) { // Fall
+      seasonalFactor = 1.1;
+    } else { // Winter
+      seasonalFactor = 0.9;
+    }
+
+    // Time of day adjustment
+    if (hour >= 17 || hour < 8) { // Evening/Night premium
+      seasonalFactor *= 1.15;
+    }
+
+    // Weekend premium
+    if (isWeekend) {
+      seasonalFactor *= 1.1;
+    }
+
+    return seasonalFactor;
+  }
+
+  static getComplexityFactor(complexity) {
+    const complexityLevels = {
+      low: 1.0,
+      medium: 1.25,
+      high: 1.5
+    };
+    return complexityLevels[complexity] || 1.0;
   }
 
   static calculateQuote(service, propertySize, options = {}) {
-    const baseRate = this.calculateBaseRate(service, propertySize);
-    const seasonalFactor = this.getSeasonalAdjustment();
-    const complexityFactor = options.complexity || 1;
-    const urgencyFactor = options.urgent ? 1.25 : 1;
+    try {
+      const baseRate = this.calculateBaseRate(service, propertySize);
+      const serviceConfig = serviceRates[service];
+      
+      // Calculate costs
+      const fixedCosts = serviceConfig.fixedCosts;
+      const variableCosts = propertySize * serviceConfig.variableCosts;
+      const totalCosts = fixedCosts + variableCosts;
 
-    const subtotal = baseRate * seasonalFactor * complexityFactor * urgencyFactor;
-    const discount = options.discount || 0;
+      const seasonalFactor = this.getSeasonalAdjustment();
+      const complexityFactor = this.getComplexityFactor(options.complexity || 'low');
+      const urgencyFactor = options.urgent ? 1.25 : 1;
+      const frequencyFactor = options.frequency === 'weekly' ? 0.9 : 1;
+      const loyaltyFactor = options.loyaltyTier ? (1 - (options.loyaltyTier * 0.05)) : 1;
 
-    return {
-      baseRate,
-      seasonalAdjustment: (seasonalFactor - 1) * 100,
-      complexityAdjustment: (complexityFactor - 1) * 100,
-      urgencyFee: options.urgent ? 25 : 0,
-      subtotal,
-      discount: subtotal * discount,
-      total: subtotal * (1 - discount)
-    };
+      const subtotal = baseRate * seasonalFactor * complexityFactor * urgencyFactor * frequencyFactor * loyaltyFactor;
+      
+      // Ensure minimum profit margin after all adjustments
+      const minPrice = totalCosts / (1 - serviceConfig.minProfitMargin);
+      const adjustedSubtotal = Math.max(subtotal, minPrice);
+      
+      const discount = Math.min(options.discount || 0, 0.2); // Cap discount at 20% to maintain profitability
+
+      // Calculate additional fees
+      const travelFee = options.distance > 10 ? Math.min(50, options.distance * 2) : 0;
+      const equipmentFee = options.specialEquipment ? 25 : 0;
+      const permitFee = options.requiresPermit ? 50 : 0;
+
+      const total = (adjustedSubtotal * (1 - discount)) + travelFee + equipmentFee + permitFee;
+
+      // Calculate actual profit margin
+      const actualProfitMargin = (total - totalCosts) / total;
+
+      return {
+        baseRate,
+        costs: {
+          fixed: fixedCosts,
+          variable: variableCosts,
+          total: totalCosts
+        },
+        seasonalAdjustment: (seasonalFactor - 1) * 100,
+        complexityAdjustment: (complexityFactor - 1) * 100,
+        urgencyFee: options.urgent ? 25 : 0,
+        travelFee,
+        equipmentFee,
+        permitFee,
+        subtotal: adjustedSubtotal,
+        discount: adjustedSubtotal * discount,
+        total: Math.round(total * 100) / 100,
+        profitMargin: Math.round(actualProfitMargin * 100) / 100
+      };
+    } catch (error) {
+      console.error('Quote calculation error:', error);
+      throw error;
+    }
   }
 }
 
-// Package Builder
+// Package Builder with enhanced pricing
 class PackageBuilder {
-  static createCustomPackage(selectedServices, propertySize) {
-    const baseTotal = selectedServices.reduce((total, service) => 
-      total + QuoteCalculator.calculateBaseRate(service, propertySize), 0);
-    
-    const discount = selectedServices.length >= 3 ? 0.15 : 
-                    selectedServices.length >= 2 ? 0.1 : 0;
+  static createCustomPackage(selectedServices, propertySize, options = {}) {
+    try {
+      // Validate property size against service requirements
+      const minSize = Math.max(...selectedServices.map(service => serviceRates[service]?.minSize || 1000));
+      const maxSize = Math.min(...selectedServices.map(service => serviceRates[service]?.maxSize || 50000));
+      
+      if (propertySize < minSize) {
+        throw new Error(`Property size must be at least ${minSize} sq ft for selected services`);
+      }
+      if (propertySize > maxSize) {
+        throw new Error(`Property size cannot exceed ${maxSize} sq ft for selected services`);
+      }
 
-    return {
-      services: selectedServices,
-      basePrice: baseTotal,
-      discount: baseTotal * discount,
-      total: baseTotal * (1 - discount),
-      frequency: selectedServices.length >= 3 ? 'weekly' : 'bi-weekly',
-      savings: baseTotal * discount
-    };
+      // Calculate base total with individual service rates
+      const baseTotal = selectedServices.reduce((total, service) => {
+        const serviceConfig = serviceRates[service];
+        if (!serviceConfig) return total;
+        return total + QuoteCalculator.calculateBaseRate(service, propertySize);
+      }, 0);
+
+      // Calculate total costs
+      const totalCosts = selectedServices.reduce((total, service) => {
+        const serviceConfig = serviceRates[service];
+        if (!serviceConfig) return total;
+        return total + serviceConfig.fixedCosts + (propertySize * serviceConfig.variableCosts);
+      }, 0);
+
+      // Enhanced package discounts with profitability checks
+      let discount = 0;
+      if (selectedServices.length >= 4) discount = 0.25;
+      else if (selectedServices.length >= 3) discount = 0.2;
+      else if (selectedServices.length >= 2) discount = 0.15;
+
+      // Additional discounts with profitability checks
+      const frequencyDiscount = options.frequency === 'weekly' ? 0.1 : 0;
+      const loyaltyDiscount = options.loyaltyTier ? (options.loyaltyTier * 0.05) : 0;
+      const referralDiscount = options.referralCode ? 0.1 : 0;
+
+      // Calculate total discount (capped at 30% to maintain profitability)
+      const totalDiscount = Math.min(0.3, discount + frequencyDiscount + loyaltyDiscount + referralDiscount);
+
+      const finalTotal = baseTotal * (1 - totalDiscount);
+
+      // Calculate actual profit margin
+      const actualProfitMargin = (finalTotal - totalCosts) / finalTotal;
+
+      // Ensure minimum profit margin of 20% for packages
+      if (actualProfitMargin < 0.2) {
+        const adjustedTotal = totalCosts / 0.8; // Target 20% profit margin
+        return {
+          services: selectedServices,
+          basePrice: baseTotal,
+          costs: {
+            total: totalCosts
+          },
+          discounts: {
+            package: discount * 100,
+            frequency: frequencyDiscount * 100,
+            loyalty: loyaltyDiscount * 100,
+            referral: referralDiscount * 100
+          },
+          totalDiscount: totalDiscount * 100,
+          total: Math.round(adjustedTotal * 100) / 100,
+          frequency: options.frequency || (selectedServices.length >= 3 ? 'weekly' : 'bi-weekly'),
+          savings: baseTotal * totalDiscount,
+          profitMargin: 0.2,
+          validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        };
+      }
+
+      return {
+        services: selectedServices,
+        basePrice: baseTotal,
+        costs: {
+          total: totalCosts
+        },
+        discounts: {
+          package: discount * 100,
+          frequency: frequencyDiscount * 100,
+          loyalty: loyaltyDiscount * 100,
+          referral: referralDiscount * 100
+        },
+        totalDiscount: totalDiscount * 100,
+        total: Math.round(finalTotal * 100) / 100,
+        frequency: options.frequency || (selectedServices.length >= 3 ? 'weekly' : 'bi-weekly'),
+        savings: baseTotal * totalDiscount,
+        profitMargin: Math.round(actualProfitMargin * 100) / 100,
+        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      };
+    } catch (error) {
+      console.error('Package creation error:', error);
+      throw error;
+    }
   }
 }
 
