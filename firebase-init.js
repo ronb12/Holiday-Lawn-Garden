@@ -1,18 +1,21 @@
 // firebase-init.js
 // This file now uses the configuration generated during build
 
-// Wait for the configuration to be available
-function initializeFirebase() {
+window.firebaseReadyPromise = new Promise((resolve, reject) => {
+  function initializeFirebase() {
     if (window.firebaseConfig) {
+      if (typeof firebase !== 'undefined' && firebase.apps.length === 0) {
         firebase.initializeApp(window.firebaseConfig);
+      }
+      resolve();
     } else {
-        console.error('Firebase configuration not found. Please ensure the application is built correctly.');
+      reject('Firebase configuration not found. Please ensure the application is built correctly.');
     }
-}
+  }
 
-// Initialize when the configuration is ready
-if (document.readyState === 'loading') {
+  if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeFirebase);
-} else {
+  } else {
     initializeFirebase();
-}
+  }
+});

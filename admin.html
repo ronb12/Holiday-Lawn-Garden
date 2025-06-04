@@ -402,6 +402,108 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      border-radius: 8px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: black;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group input[type="number"],
+    .form-group select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .form-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .customers-list {
+      margin-top: 20px;
+    }
+
+    .customer-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .customer-info {
+      flex: 1;
+    }
+
+    .customer-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body class="admin-page-active">
@@ -414,7 +516,7 @@
     <!-- Header -->
     <div class="admin-header">
       <div>
-        <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard</h1>
         <div class="subtitle">Holliday's Lawn & Garden Management System</div>
       </div>
       <div class="admin-header-actions">
@@ -511,18 +613,18 @@
           <div class="form-section">
             <h3>Quick Quote Calculator</h3>
             <form id="quickQuoteForm" class="form-modern">
-              <div class="form-group">
+          <div class="form-group">
                 <label for="quickServiceType">Service Type</label>
                 <select id="quickServiceType" class="form-control" required>
-                  <option value="">-- Select Service --</option>
-                  <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
-                  <option value="Landscape Design">🌸 Landscape Design</option>
-                  <option value="Leaf Removal">🍂 Leaf Removal</option>
-                  <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
-                  <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
-                </select>
-              </div>
-              <div class="form-group">
+              <option value="">-- Select Service --</option>
+              <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
+              <option value="Landscape Design">🌸 Landscape Design</option>
+              <option value="Leaf Removal">🍂 Leaf Removal</option>
+              <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+              <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+            </select>
+          </div>
+          <div class="form-group">
                 <label for="quickPropertySize">Property Size (sq ft)</label>
                 <input type="number" id="quickPropertySize" class="form-control" required min="100" step="100">
               </div>
@@ -546,7 +648,7 @@
           </div>
         </div>
       </div>
-    </div>
+  </div>
 
     <!-- Tab Content: Service Requests -->
     <div id="requests-tab" class="tab-content">
@@ -575,8 +677,8 @@
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+            </div>
+  </div>
 
     <!-- Tab Content: Quotes & Bids -->
     <div id="quotes-tab" class="tab-content">
@@ -607,10 +709,15 @@
                   <!-- Checkboxes will be populated here -->
                 </div>
               </div>
+              <div class="form-group">
+                <label for="quoteAmount">Quote Amount ($)</label>
+                <input type="number" id="quoteAmount" class="form-control" required min="0" step="0.01">
+                <small id="minQuoteWarning" style="color: #dc2626; display: none;"></small>
+              </div>
               <button type="submit" class="btn-primary">Generate Quote</button>
             </form>
           </div>
-          
+
           <div class="form-section">
             <h3>Quote Calculator</h3>
             <form id="quoteCalculatorForm">
@@ -634,7 +741,7 @@
                 <input type="number" id="complexityFactor" class="form-control" min="1" max="3" step="0.1" value="1">
               </div>
               <button type="submit" class="btn-primary">Calculate Quote</button>
-            </form>
+        </form>
             <div id="quoteBreakdown"></div>
           </div>
         </div>
@@ -678,7 +785,7 @@
                 <label for="invoiceAmount">Amount ($)</label>
                 <input type="number" id="invoiceAmount" class="form-control" required min="0" step="0.01">
               </div>
-              <div class="form-group">
+        <div class="form-group">
                 <label for="invoiceDueDate">Due Date</label>
                 <input type="date" id="invoiceDueDate" class="form-control" required>
               </div>
@@ -689,60 +796,221 @@
 
         <div class="search-bar" style="margin-top: 2rem;">
           <input type="text" id="invoiceSearch" class="search-input" placeholder="Search by customer, email, or invoice #..." onkeyup="filterInvoicesTable()">
-        </div>
+  </div>
         
         <div class="table-container">
           <table id="adminInvoicesTable" class="table">
-            <thead>
-              <tr>
-                <th>Invoice #</th>
-                <th>Customer</th>
-                <th>Email</th>
-                <th>Amount</th>
-                <th>Due Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminInvoicesTableBody">
-              <!-- Invoice rows will be populated here -->
-            </tbody>
-          </table>
-        </div>
+      <thead>
+        <tr>
+              <th>Invoice #</th>
+          <th>Customer</th>
+              <th>Email</th>
+          <th>Amount</th>
+              <th>Due Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+          <tbody id="adminInvoicesTableBody">
+            <!-- Invoice rows will be populated here -->
+          </tbody>
+    </table>
       </div>
-    </div>
+            </div>
+          </div>
 
     <!-- Tab Content: Customers -->
     <div id="customers-tab" class="tab-content">
-      <div class="tab-content-header">
+      <div class="section-header">
         <h2>Customer Management</h2>
-        <p>View and manage customer information and history</p>
+        <button onclick="document.getElementById('addCustomerModal').style.display='block'" class="btn btn-primary">
+          Add New Customer
+        </button>
       </div>
-      <div class="tab-content-body">
-        <div class="form-group">
-          <select id="customerSelect" class="form-control" onchange="loadCustomerDetails(this.value)" style="max-width: 400px;">
-            <option value="">Select Customer</option>
-          </select>
-        </div>
-        <div id="customerDetails"></div>
 
-        <!-- Loyalty Program Section -->
-        <div style="margin-top: 3rem;">
-          <h3>Customer Loyalty Program</h3>
-          <div class="table-container">
-            <table id="loyaltyAccountsTable" class="table">
-              <thead>
-                <tr>
-                  <th>Customer ID</th>
-                  <th>Points</th>
-                  <th>Tier</th>
-                  <th>Last Updated</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+      <div class="customers-list">
+        <!-- Customer list will be populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('addCustomerModal').style.display='none'">&times;</span>
+        <h2>Add New Customer</h2>
+        <form id="addCustomerForm" onsubmit="addCustomer(event)">
+          <div class="form-group">
+            <label for="customerEmail">Email*</label>
+            <input type="email" id="customerEmail" required>
           </div>
-        </div>
+          <div class="form-group">
+            <label for="customerName">Full Name*</label>
+            <input type="text" id="customerName" required>
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">Phone*</label>
+            <input type="tel" id="customerPhone" required>
+          </div>
+          
+          <h3>Address</h3>
+          <div class="form-group">
+            <label for="customerStreet">Street</label>
+            <input type="text" id="customerStreet">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerCity">City</label>
+              <input type="text" id="customerCity">
+            </div>
+            <div class="form-group">
+              <label for="customerState">State</label>
+              <input type="text" id="customerState">
+            </div>
+            <div class="form-group">
+              <label for="customerZip">ZIP</label>
+              <input type="text" id="customerZip">
+            </div>
+          </div>
+          
+          <h3>Property Details</h3>
+          <div class="form-group">
+            <label for="propertySizeSqFt">Property Size (sq ft)</label>
+            <input type="number" id="propertySizeSqFt">
+          </div>
+          <div class="form-group">
+            <label for="propertyType">Property Type</label>
+            <select id="propertyType">
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="hasPool">
+              Has Pool
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="hasSprinklers">
+              Has Sprinklers
+            </label>
+          </div>
+          
+          <h3>Preferences</h3>
+          <div class="form-group">
+            <label for="communicationMethod">Preferred Communication</label>
+            <select id="communicationMethod">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="text">Text</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="serviceFrequency">Service Frequency</label>
+            <select id="serviceFrequency">
+              <option value="weekly">Weekly</option>
+              <option value="bi-weekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Customer</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('addCustomerModal').style.display='none'">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div id="editCustomerModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('editCustomerModal').style.display='none'">&times;</span>
+        <h2>Edit Customer</h2>
+        <form id="editCustomerForm" onsubmit="editCustomer(event)">
+          <input type="hidden" id="editCustomerId">
+          <div class="form-group">
+            <label for="editCustomerEmail">Email*</label>
+            <input type="email" id="editCustomerEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="editCustomerName">Full Name*</label>
+            <input type="text" id="editCustomerName" required>
+          </div>
+          <div class="form-group">
+            <label for="editCustomerPhone">Phone*</label>
+            <input type="tel" id="editCustomerPhone" required>
+          </div>
+          
+          <h3>Address</h3>
+          <div class="form-group">
+            <label for="editCustomerStreet">Street</label>
+            <input type="text" id="editCustomerStreet">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editCustomerCity">City</label>
+              <input type="text" id="editCustomerCity">
+            </div>
+            <div class="form-group">
+              <label for="editCustomerState">State</label>
+              <input type="text" id="editCustomerState">
+            </div>
+            <div class="form-group">
+              <label for="editCustomerZip">ZIP</label>
+              <input type="text" id="editCustomerZip">
+            </div>
+          </div>
+          
+          <h3>Property Details</h3>
+          <div class="form-group">
+            <label for="editPropertySizeSqFt">Property Size (sq ft)</label>
+            <input type="number" id="editPropertySizeSqFt">
+          </div>
+          <div class="form-group">
+            <label for="editPropertyType">Property Type</label>
+            <select id="editPropertyType">
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="editHasPool">
+              Has Pool
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="editHasSprinklers">
+              Has Sprinklers
+            </label>
+          </div>
+          
+          <h3>Preferences</h3>
+          <div class="form-group">
+            <label for="editCommunicationMethod">Preferred Communication</label>
+            <select id="editCommunicationMethod">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="text">Text</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="editServiceFrequency">Service Frequency</label>
+            <select id="editServiceFrequency">
+              <option value="weekly">Weekly</option>
+              <option value="bi-weekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('editCustomerModal').style.display='none'">Cancel</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -755,22 +1023,22 @@
       <div class="tab-content-body">
         <div class="form-grid">
           <div class="form-section">
-            <h3>Add New Equipment</h3>
-            <form id="addEquipmentForm">
-              <div class="form-group">
-                <label for="equipmentName">Equipment Name</label>
+          <h3>Add New Equipment</h3>
+          <form id="addEquipmentForm">
+            <div class="form-group">
+              <label for="equipmentName">Equipment Name</label>
                 <input type="text" id="equipmentName" class="form-control" required>
-              </div>
-              <div class="form-group">
+            </div>
+            <div class="form-group">
                 <label for="equipmentType">Equipment Type</label>
                 <input type="text" id="equipmentType" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="equipmentPurchaseDate">Purchase Date</label>
+            </div>
+            <div class="form-group">
+              <label for="equipmentPurchaseDate">Purchase Date</label>
                 <input type="date" id="equipmentPurchaseDate" class="form-control" required>
-              </div>
-              <div class="form-group">
-                <label for="equipmentCost">Cost ($)</label>
+            </div>
+            <div class="form-group">
+              <label for="equipmentCost">Cost ($)</label>
                 <input type="number" id="equipmentCost" class="form-control" min="0" step="0.01" required>
               </div>
               <button type="submit" class="btn-primary">Add Equipment</button>
@@ -791,62 +1059,62 @@
               <div class="form-group">
                 <label for="materialStockLevel">Stock Level</label>
                 <input type="number" id="materialStockLevel" class="form-control" min="0" step="0.01" required>
-              </div>
-              <div class="form-group">
+            </div>
+            <div class="form-group">
                 <label for="materialUnit">Unit</label>
                 <input type="text" id="materialUnit" class="form-control" required>
-              </div>
+            </div>
               <button type="submit" class="btn-primary">Add Material</button>
-            </form>
+          </form>
           </div>
-        </div>
+  </div>
 
         <div style="margin-top: 2rem;">
           <h3>Equipment Inventory</h3>
           <div class="table-container">
             <table id="equipmentTable" class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Usage Hours</th>
-                  <th>Next Maintenance</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+      <thead>
+        <tr>
+              <th>Name</th>
+              <th>Type</th>
+          <th>Status</th>
+              <th>Usage Hours</th>
+              <th>Next Maintenance</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
               <tbody></tbody>
-            </table>
-          </div>
-        </div>
+    </table>
+  </div>
+  </div>
 
         <div style="margin-top: 2rem;">
           <h3>Materials Inventory</h3>
           <div class="table-container">
             <table id="materialsTable" class="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Stock Level</th>
-                  <th>Unit</th>
+      <thead>
+        <tr>
+          <th>Name</th>
+              <th>Type</th>
+              <th>Stock Level</th>
+              <th>Unit</th>
                   <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
+              <th>Actions</th>
+        </tr>
+      </thead>
               <tbody></tbody>
-            </table>
-          </div>
-        </div>
+        </table>
       </div>
-    </div>
+            </div>
+            </div>
+            </div>
 
     <!-- Tab Content: Reports -->
     <div id="reports-tab" class="tab-content">
       <div class="tab-content-header">
         <h2>Reports & Analytics</h2>
         <p>Generate reports and view business analytics</p>
-      </div>
+            </div>
       <div class="tab-content-body">
         <div class="form-grid">
           <div class="form-section">
@@ -854,7 +1122,7 @@
             <button class="btn-primary" style="margin-bottom: 1rem; display: block;">Monthly Revenue Report</button>
             <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Outstanding Invoices</button>
             <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Profit & Loss Statement</button>
-          </div>
+              </div>
 
           <div class="form-section">
             <h3>Sustainability Reports</h3>
@@ -862,7 +1130,7 @@
             <div id="sustainabilityReportView" style="margin-top: 1rem; display: none;">
               <pre id="sustainabilityReportContent" style="background: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem;"></pre>
             </div>
-          </div>
+            </div>
         </div>
 
         <div style="margin-top: 2rem;">
@@ -877,8 +1145,8 @@
                   <th>Job/Customer</th>
                 </tr>
               </thead>
-              <tbody></tbody>
-            </table>
+          <tbody></tbody>
+        </table>
           </div>
         </div>
       </div>

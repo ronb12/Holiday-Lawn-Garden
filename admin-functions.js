@@ -5,8 +5,9 @@
 let db;
 let auth;
 
-// Initialize Firebase DB reference
-function initializeFirebaseDB() {
+// Initialize Firebase DB reference, now always after firebaseReadyPromise
+async function initializeFirebaseDB() {
+  await (window.firebaseReadyPromise || Promise.resolve());
   try {
     if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
       db = firebase.firestore();
@@ -21,18 +22,22 @@ function initializeFirebaseDB() {
 
 // Ensure Firebase is ready before executing admin functions
 function ensureFirebaseReady(callback) {
-  if (initializeFirebaseDB()) {
-    callback();
-  } else {
-    setTimeout(() => {
-      if (initializeFirebaseDB()) {
-        callback();
-      } else {
-        console.warn('Firebase not ready - running in offline mode');
-        callback(); // Allow app to continue functioning
-      }
-    }, 1000);
-  }
+  (window.firebaseReadyPromise || Promise.resolve()).then(() => {
+    if (initializeFirebaseDB()) {
+      callback();
+    } else {
+      setTimeout(() => {
+        if (initializeFirebaseDB()) {
+          callback();
+        } else {
+          console.warn('Firebase not ready - running in offline mode');
+          callback(); // Allow app to continue functioning
+        }
+      }, 1000);
+    }
+  }).catch((err) => {
+    showNotification('Firebase failed to initialize: ' + err, 'error');
+  });
 }
 
 // Authentication state management
@@ -95,7 +100,7 @@ function loadCustomersDropdown() {
     console.warn('Database not available for customer dropdown');
     return;
   }
-  
+
   const dropdownIds = ["requestCustomer", "quoteCustomer", "invoiceCustomer", "customerSelect", "bidCustomerId"];
   
   dropdownIds.forEach(id => {
@@ -104,18 +109,22 @@ function loadCustomersDropdown() {
     
     dropdown.innerHTML = '<option value="">Select Customer</option>';
     
-    db.collection("users").where("role", "==", "customer").get()
+    db.collection("users")
+      .where("role", "==", "customer")
+      .where("isActive", "==", true)
+      .orderBy("displayName")
+      .get()
       .then(snapshot => {
         if (snapshot.empty) {
           dropdown.innerHTML += '<option value="" disabled>No customers found</option>';
           return;
         }
-        
+
         snapshot.forEach(doc => {
           const data = doc.data();
           const option = document.createElement("option");
           option.value = doc.id;
-          option.text = data.displayName || data.email || "Customer";
+          option.text = `${data.displayName || 'Unnamed'} (${data.email || 'No email'})`;
           dropdown.appendChild(option);
         });
       })
@@ -190,14 +199,42 @@ function submitQuote(e) {
   }
   
   try {
-    const customerUID = document.getElementById("quoteCustomer")?.value;
+    const customerUID = document.getElementById("bidCustomerId")?.value;
+    const propertySize = parseFloat(document.getElementById("bidPropertySize")?.value);
     const amount = parseFloat(document.getElementById("quoteAmount")?.value);
-    
-    if (!customerUID || isNaN(amount)) {
+    // Get selected services
+    const serviceCheckboxes = document.querySelectorAll('#bidServicesCheckboxes input[type=checkbox]:checked');
+    const selectedServices = Array.from(serviceCheckboxes).map(cb => cb.value);
+
+    if (!customerUID || isNaN(amount) || isNaN(propertySize) || selectedServices.length === 0) {
       showNotification('Please fill in all required fields', 'error');
       return;
     }
-    
+
+    // Calculate minimum profitable price using PackageBuilder
+    let minPrice = 0;
+    try {
+      const packageQuote = window.PackageBuilder.createCustomPackage(selectedServices, propertySize);
+      minPrice = packageQuote.total;
+    } catch (err) {
+      showNotification('Error calculating minimum price: ' + err.message, 'error');
+      return;
+    }
+
+    // Show warning if below minimum
+    const minWarning = document.getElementById('minQuoteWarning');
+    if (amount < minPrice) {
+      if (minWarning) {
+        minWarning.textContent = `Entered amount ($${amount.toFixed(2)}) is below the minimum profitable price ($${minPrice.toFixed(2)}). Please increase the quote amount.`;
+        minWarning.style.display = 'block';
+      }
+      showNotification(`Quote amount must be at least $${minPrice.toFixed(2)} to ensure profitability.`, 'error');
+      return;
+    } else if (minWarning) {
+      minWarning.textContent = '';
+      minWarning.style.display = 'none';
+    }
+
     if (!db) {
       showNotification('Database not available', 'error');
       return;
@@ -208,6 +245,8 @@ function submitQuote(e) {
     const quoteData = {
       customerId: customerUID,
       amount: amount,
+      propertySize: propertySize,
+      services: selectedServices,
       status: "Pending",
       createdAt: new Date(),
       submittedBy: 'admin'
@@ -310,7 +349,8 @@ window.addEventListener('load', () => {
         document.body.classList.add("dark");
       }
       
-      // Load initial data
+      // Load real customer data
+      loadCustomersList();
       loadCustomersDropdown();
       updateDashboardStats();
       loadRecentActivity();
@@ -434,6 +474,238 @@ function loadRecentActivity() {
     });
 }
 
+// Customer Management Functions
+async function addCustomer(e) {
+  e.preventDefault();
+  
+  if (!isUserAuthenticated()) {
+    showNotification('Please log in to manage customers', 'error');
+    return;
+  }
+
+  try {
+    const customerData = {
+      email: document.getElementById("customerEmail").value,
+      displayName: document.getElementById("customerName").value,
+      phone: document.getElementById("customerPhone").value,
+      address: {
+        street: document.getElementById("customerStreet").value,
+        city: document.getElementById("customerCity").value,
+        state: document.getElementById("customerState").value,
+        zip: document.getElementById("customerZip").value
+      },
+      propertyDetails: {
+        sizeSqFt: parseFloat(document.getElementById("propertySizeSqFt").value),
+        propertyType: document.getElementById("propertyType").value,
+        hasPool: document.getElementById("hasPool").checked,
+        hasSprinklers: document.getElementById("hasSprinklers").checked
+      },
+      preferences: {
+        communicationMethod: document.getElementById("communicationMethod").value,
+        serviceFrequency: document.getElementById("serviceFrequency").value
+      },
+      role: 'customer',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      isActive: true
+    };
+
+    // Validate required fields
+    if (!customerData.email || !customerData.displayName || !customerData.phone) {
+      showNotification('Please fill in all required fields', 'error');
+      return;
+    }
+
+    showLoader();
+    
+    // Create user in Firebase Auth if email is provided
+    let userCredential;
+    try {
+      userCredential = await firebase.auth().createUserWithEmailAndPassword(customerData.email, generateTempPassword());
+      // Send password reset email to customer
+      await firebase.auth().sendPasswordResetEmail(customerData.email);
+    } catch (authError) {
+      console.error('Auth error:', authError);
+      showNotification('Error creating customer account: ' + authError.message, 'error');
+      hideLoader();
+      return;
+    }
+
+    // Add customer data to Firestore
+    await db.collection("users").doc(userCredential.user.uid).set(customerData);
+    
+    showNotification('Customer added successfully', 'success');
+    document.getElementById("addCustomerForm").reset();
+    loadCustomersDropdown(); // Refresh customer list
+    updateDashboardStats();
+  } catch (error) {
+    console.error('Add customer error:', error);
+    showNotification('Failed to add customer: ' + error.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+async function editCustomer(e) {
+  e.preventDefault();
+  
+  if (!isUserAuthenticated()) {
+    showNotification('Please log in to manage customers', 'error');
+    return;
+  }
+
+  try {
+    const customerId = document.getElementById("editCustomerId").value;
+    const customerData = {
+      email: document.getElementById("editCustomerEmail").value,
+      displayName: document.getElementById("editCustomerName").value,
+      phone: document.getElementById("editCustomerPhone").value,
+      address: {
+        street: document.getElementById("editCustomerStreet").value,
+        city: document.getElementById("editCustomerCity").value,
+        state: document.getElementById("editCustomerState").value,
+        zip: document.getElementById("editCustomerZip").value
+      },
+      propertyDetails: {
+        sizeSqFt: parseFloat(document.getElementById("editPropertySizeSqFt").value),
+        propertyType: document.getElementById("editPropertyType").value,
+        hasPool: document.getElementById("editHasPool").checked,
+        hasSprinklers: document.getElementById("editHasSprinklers").checked
+      },
+      preferences: {
+        communicationMethod: document.getElementById("editCommunicationMethod").value,
+        serviceFrequency: document.getElementById("editServiceFrequency").value
+      }
+    };
+
+    if (!customerId || !customerData.email || !customerData.displayName) {
+      showNotification('Please fill in all required fields', 'error');
+      return;
+    }
+
+    showLoader();
+    
+    await db.collection("users").doc(customerId).update(customerData);
+    
+    showNotification('Customer updated successfully', 'success');
+    document.getElementById("editCustomerForm").reset();
+    document.getElementById("editCustomerModal").style.display = "none";
+    loadCustomersDropdown(); // Refresh customer list
+  } catch (error) {
+    console.error('Edit customer error:', error);
+    showNotification('Failed to update customer: ' + error.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+async function deleteCustomer(customerId) {
+  if (!isUserAuthenticated()) {
+    showNotification('Please log in to manage customers', 'error');
+    return;
+  }
+
+  if (!confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    showLoader();
+    
+    // Get customer data to check if they have active services
+    const customerDoc = await db.collection("users").doc(customerId).get();
+    if (!customerDoc.exists) {
+      showNotification('Customer not found', 'error');
+      return;
+    }
+
+    // Check for active service requests
+    const activeRequests = await db.collection("service_requests")
+      .where("customerId", "==", customerId)
+      .where("status", "in", ["Pending", "In Progress"])
+      .get();
+
+    if (!activeRequests.empty) {
+      showNotification('Cannot delete customer with active service requests', 'error');
+      return;
+    }
+
+    // Delete customer auth account
+    const customerData = customerDoc.data();
+    if (customerData.email) {
+      try {
+        // Get user by email and delete
+        const userRecord = await firebase.auth().getUserByEmail(customerData.email);
+        await firebase.auth().deleteUser(userRecord.uid);
+      } catch (authError) {
+        console.warn('Auth deletion error:', authError);
+        // Continue with Firestore deletion even if auth deletion fails
+      }
+    }
+
+    // Delete customer document
+    await db.collection("users").doc(customerId).delete();
+    
+    showNotification('Customer deleted successfully', 'success');
+    loadCustomersDropdown(); // Refresh customer list
+    updateDashboardStats();
+  } catch (error) {
+    console.error('Delete customer error:', error);
+    showNotification('Failed to delete customer: ' + error.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
+// Utility function for new customer creation
+function generateTempPassword() {
+  const length = 12;
+  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return password;
+}
+
+// Load customer details for editing
+async function loadCustomerForEdit(customerId) {
+  try {
+    showLoader();
+    
+    const customerDoc = await db.collection("users").doc(customerId).get();
+    if (!customerDoc.exists) {
+      showNotification('Customer not found', 'error');
+      return;
+    }
+
+    const data = customerDoc.data();
+    
+    // Populate edit form
+    document.getElementById("editCustomerId").value = customerId;
+    document.getElementById("editCustomerEmail").value = data.email || '';
+    document.getElementById("editCustomerName").value = data.displayName || '';
+    document.getElementById("editCustomerPhone").value = data.phone || '';
+    document.getElementById("editCustomerStreet").value = data.address?.street || '';
+    document.getElementById("editCustomerCity").value = data.address?.city || '';
+    document.getElementById("editCustomerState").value = data.address?.state || '';
+    document.getElementById("editCustomerZip").value = data.address?.zip || '';
+    document.getElementById("editPropertySizeSqFt").value = data.propertyDetails?.sizeSqFt || '';
+    document.getElementById("editPropertyType").value = data.propertyDetails?.propertyType || 'residential';
+    document.getElementById("editHasPool").checked = data.propertyDetails?.hasPool || false;
+    document.getElementById("editHasSprinklers").checked = data.propertyDetails?.hasSprinklers || false;
+    document.getElementById("editCommunicationMethod").value = data.preferences?.communicationMethod || 'email';
+    document.getElementById("editServiceFrequency").value = data.preferences?.serviceFrequency || 'bi-weekly';
+    
+    // Show edit modal
+    document.getElementById("editCustomerModal").style.display = "block";
+  } catch (error) {
+    console.error('Load customer error:', error);
+    showNotification('Failed to load customer details: ' + error.message, 'error');
+  } finally {
+    hideLoader();
+  }
+}
+
 // Export functions for global access
 window.showTab = showTab;
 window.toggleDarkMode = toggleDarkMode;
@@ -442,3 +714,77 @@ window.submitQuote = submitQuote;
 window.loadCustomersDropdown = loadCustomersDropdown;
 window.updateDashboardStats = updateDashboardStats;
 window.loadRecentActivity = loadRecentActivity;
+window.addCustomer = addCustomer;
+window.editCustomer = editCustomer;
+window.deleteCustomer = deleteCustomer;
+window.loadCustomerForEdit = loadCustomerForEdit;
+
+async function loadCustomersList() {
+  const customersList = document.querySelector('.customers-list');
+  if (!customersList) return;
+
+  try {
+    showLoader();
+    
+    // Only get real customers from the database
+    const snapshot = await db.collection("users")
+      .where("role", "==", "customer")
+      .where("isActive", "==", true)  // Only get active customers
+      .orderBy("createdAt", "desc")   // Show newest customers first
+      .get();
+    
+    if (snapshot.empty) {
+      customersList.innerHTML = `
+        <div style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 8px;">
+          <h3 style="color: #64748b; margin-bottom: 1rem;">No Customers Found</h3>
+          <p style="color: #94a3b8;">Add your first customer using the "Add New Customer" button above.</p>
+        </div>`;
+      return;
+    }
+
+    const customersHTML = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const address = [
+        data.address?.street,
+        data.address?.city,
+        data.address?.state,
+        data.address?.zip
+      ].filter(Boolean).join(', ');
+      
+      customersHTML.push(`
+        <div class="customer-card">
+          <div class="customer-info">
+            <h3>${data.displayName || 'Unnamed Customer'}</h3>
+            <p>
+              <strong>Contact:</strong> ${data.email || 'No email'} | ${data.phone || 'No phone'}
+            </p>
+            <p>
+              <strong>Address:</strong> ${address || 'No address provided'}
+            </p>
+            <p>
+              <strong>Property:</strong> ${data.propertyDetails?.sizeSqFt || 'N/A'} sq ft | 
+              ${data.propertyDetails?.propertyType || 'N/A'} |
+              Service: ${data.preferences?.serviceFrequency || 'Not specified'}
+            </p>
+          </div>
+          <div class="customer-actions">
+            <button onclick="loadCustomerForEdit('${doc.id}')" class="btn btn-secondary">Edit</button>
+            <button onclick="deleteCustomer('${doc.id}')" class="btn btn-danger">Delete</button>
+          </div>
+        </div>
+      `);
+    });
+
+    customersList.innerHTML = customersHTML.join('');
+  } catch (error) {
+    console.error('Load customers error:', error);
+    customersList.innerHTML = `
+      <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px;">
+        <strong>Error Loading Customers</strong>
+        <p>There was a problem loading the customer list. Please try again later.</p>
+      </div>`;
+  } finally {
+    hideLoader();
+  }
+}
