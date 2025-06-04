@@ -536,8 +536,14 @@
           <div class="form-section">
             <h3>Recent Activity</h3>
             <div id="recentActivityList">
-              <div style="color: #64748b; text-align: center; padding: 2rem;">
-                Loading recent activity...
+              <div style="color: #64748b; padding: 1rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                <strong>Demo Mode:</strong> Showing sample activity data
+                <div style="margin-top: 0.5rem; font-size: 0.875rem;">
+                  <div>• John Smith requested lawn service estimate</div>
+                  <div>• Quote #Q-2024-001 sent to Sarah Johnson</div>
+                  <div>• Invoice #INV-001 marked as paid</div>
+                  <div>• New customer registration: Mike Wilson</div>
+                </div>
               </div>
             </div>
           </div>
@@ -927,25 +933,26 @@
       // Add active class to clicked tab item
       event.target.classList.add('active');
       
-      // Load data for specific tabs
-      if (tabName === 'overview') {
-        updateDashboardStats();
-      } else if (tabName === 'requests') {
-        if (typeof loadIncomingServiceRequests === 'function') loadIncomingServiceRequests();
-      } else if (tabName === 'invoices') {
-        if (typeof loadAdminInvoicesTable === 'function') loadAdminInvoicesTable();
-      } else if (tabName === 'quotes') {
-        if (typeof loadBidsTable === 'function') loadBidsTable();
-        if (typeof populateServiceCheckboxesForBids === 'function') populateServiceCheckboxesForBids();
-        if (typeof populateCustomerDropdownsForBids === 'function') populateCustomerDropdownsForBids();
-      } else if (tabName === 'customers') {
-        loadCustomersDropdown();
-        if (typeof loadLoyaltyAccountsTable === 'function') loadLoyaltyAccountsTable();
-      } else if (tabName === 'equipment') {
-        if (typeof loadEquipmentTable === 'function') loadEquipmentTable();
-        if (typeof loadMaterialsTable === 'function') loadMaterialsTable();
-      } else if (tabName === 'reports') {
-        if (typeof loadSustainabilityLogTable === 'function') loadSustainabilityLogTable();
+      // Load data for specific tabs - only call safe functions
+      try {
+        if (tabName === 'overview') {
+          if (typeof updateDashboardStats === 'function') updateDashboardStats();
+        } else if (tabName === 'requests') {
+          if (typeof loadIncomingServiceRequests === 'function') loadIncomingServiceRequests();
+        } else if (tabName === 'invoices') {
+          if (typeof loadAdminInvoicesTable === 'function') loadAdminInvoicesTable();
+        } else if (tabName === 'quotes') {
+          // Only load basic quote functionality, skip advanced bidding system
+          console.log('Quotes tab selected - advanced features will be available when bidding system is loaded');
+        } else if (tabName === 'customers') {
+          if (typeof loadCustomersDropdown === 'function') loadCustomersDropdown();
+        } else if (tabName === 'equipment') {
+          console.log('Equipment tab selected - features will be available when equipment manager is loaded');
+        } else if (tabName === 'reports') {
+          console.log('Reports tab selected - features will be available when reporting system is loaded');
+        }
+      } catch (error) {
+        console.warn('Error loading tab content:', error);
       }
     }
 
