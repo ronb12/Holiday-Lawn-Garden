@@ -1,8 +1,8 @@
 // ✅ Firebase Initialization
 const firebaseConfig = {
-  apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
-  authDomain: "mobile-debt-crusher.firebaseapp.com",
-  projectId: "mobile-debt-crusher"
+  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN || "mobile-debt-crusher.firebaseapp.com",
+  projectId: process.env.FIREBASE_PROJECT_ID || "mobile-debt-crusher"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -232,4 +232,172 @@ function exportTableToPDF(tableId, title) {
     if (y > 270) { doc.addPage(); y = 20; }
   });
   doc.save(`${title}.pdf`);
+}
+
+// ✅ Enhanced Quote Calculator Implementation
+async function calculateEnhancedQuote(e) {
+  e.preventDefault();
+  const service = document.getElementById("serviceType").value;
+  const propertySize = parseFloat(document.getElementById("propertySize").value);
+  const complexity = parseFloat(document.getElementById("complexityFactor").value) || 1;
+  const urgent = document.getElementById("urgentService").checked;
+  
+  const quote = QuoteCalculator.calculateQuote(service, propertySize, {
+    complexity,
+    urgent,
+    discount: 0
+  });
+
+  // Update quote display
+  document.getElementById("quoteBreakdown").innerHTML = `
+    <div class="card">
+      <h3>Quote Breakdown</h3>
+      <p>Base Rate: $${quote.baseRate.toFixed(2)}</p>
+      <p>Seasonal Adjustment: ${quote.seasonalAdjustment > 0 ? '+' : ''}${quote.seasonalAdjustment.toFixed(1)}%</p>
+      <p>Complexity Adjustment: ${quote.complexityAdjustment > 0 ? '+' : ''}${quote.complexityAdjustment.toFixed(1)}%</p>
+      ${quote.urgencyFee ? `<p>Urgency Fee: +$${quote.urgencyFee.toFixed(2)}</p>` : ''}
+      <hr>
+      <p><strong>Total: $${quote.total.toFixed(2)}</strong></p>
+    </div>
+  `;
+
+  // Save quote to database
+  await db.collection("quotes").add({
+    ...quote,
+    service,
+    propertySize,
+    createdAt: new Date(),
+    status: "pending"
+  });
+
+  NotificationSystem.showNotification("Quote generated successfully!", "success");
+}
+
+// ✅ Package Builder Implementation
+function buildCustomPackage(e) {
+  e.preventDefault();
+  const selectedServices = Array.from(document.querySelectorAll('input[name="package-services"]:checked'))
+    .map(checkbox => checkbox.value);
+  const propertySize = parseFloat(document.getElementById("packagePropertySize").value);
+
+  const package = PackageBuilder.createCustomPackage(selectedServices, propertySize);
+
+  document.getElementById("packageBreakdown").innerHTML = `
+    <div class="card">
+      <h3>Package Details</h3>
+      <p>Selected Services: ${package.services.join(", ")}</p>
+      <p>Base Price: $${package.basePrice.toFixed(2)}</p>
+      <p>Discount: -$${package.discount.toFixed(2)}</p>
+      <p>Frequency: ${package.frequency}</p>
+      <hr>
+      <p><strong>Total: $${package.total.toFixed(2)}</strong></p>
+      <p class="text-success">You save: $${package.savings.toFixed(2)}!</p>
+    </div>
+  `;
+}
+
+// ✅ Enhanced Customer Management
+async function loadCustomerDetails(customerId) {
+  showLoader();
+  try {
+    const doc = await db.collection("customers").doc(customerId).get();
+    const data = doc.data();
+    
+    // Load service history
+    const history = await db.collection("services")
+      .where("customerId", "==", customerId)
+      .orderBy("date", "desc")
+      .get();
+
+    const serviceHistory = history.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      date: doc.data().date.toDate().toLocaleDateString()
+    }));
+
+    // Update customer details view
+    document.getElementById("customerDetails").innerHTML = `
+      <div class="card">
+        <h3>${data.name}</h3>
+        <p>Email: ${data.email}</p>
+        <p>Phone: ${data.phone || 'N/A'}</p>
+        <p>Address: ${data.address || 'N/A'}</p>
+        
+        <h4>Service History</h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Service</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${serviceHistory.map(service => `
+              <tr>
+                <td>${service.date}</td>
+                <td>${service.type}</td>
+                <td>$${service.amount.toFixed(2)}</td>
+                <td><span class="status-badge status-${service.status.toLowerCase()}">${service.status}</span></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } catch (error) {
+    console.error("Error loading customer details:", error);
+    NotificationSystem.showNotification("Error loading customer details", "error");
+  } finally {
+    hideLoader();
+  }
+}
+
+// ✅ Enhanced Invoice Management
+async function createInvoice(e) {
+  e.preventDefault();
+  const formData = {
+    customerId: document.getElementById("invoiceCustomer").value,
+    amount: parseFloat(document.getElementById("invoiceAmount").value),
+    dueDate: document.getElementById("invoiceDueDate").value,
+    services: Array.from(document.querySelectorAll('input[name="invoice-services"]:checked'))
+      .map(checkbox => checkbox.value)
+  };
+
+  const validation = FormValidator.validateForm(formData, {
+    customerId: { required: true },
+    amount: { required: true },
+    dueDate: { required: true },
+    services: { required: true }
+  });
+
+  if (!validation.isValid) {
+    Object.entries(validation.errors).forEach(([field, error]) => {
+      NotificationSystem.showNotification(error, "error");
+    });
+    return;
+  }
+
+  try {
+    const invoiceRef = await db.collection("invoices").add({
+      ...formData,
+      status: "pending",
+      createdAt: new Date(),
+      paid: false
+    });
+
+    // Send notification to customer
+    await NotificationSystem.sendNotification(
+      formData.customerId,
+      "invoice",
+      `New invoice created for $${formData.amount.toFixed(2)}`
+    );
+
+    NotificationSystem.showNotification("Invoice created successfully!", "success");
+    document.getElementById("createInvoiceForm").reset();
+  } catch (error) {
+    console.error("Error creating invoice:", error);
+    NotificationSystem.showNotification("Error creating invoice", "error");
+  }
 }
