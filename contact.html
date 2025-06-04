@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Holliday's Lawn & Garden</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Contact Us</h2>
+    <p>Have a question, need a quote, or ready to schedule your service? We're here to help! Send us a message below and we’ll get back to you as soon as possible.</p>
+
+    <form id="contactForm">
+      <label for="name">Name:</label><br>
+      <input type="text" id="name" name="name" required><br><br>
+
+      <label for="email">Email:</label><br>
+      <input type="email" id="email" name="email" required><br><br>
+
+      <label for="phone">Phone Number:</label><br>
+      <input type="text" id="phone" name="phone"><br><br>
+
+      <label for="service">What is this about?</label><br>
+      <select id="service" name="service" required>
+        <option value="">-- Select a Service --</option>
+        <option value="Lawn Mowing">Lawn Mowing</option>
+        <option value="Leaf Cleanup">Leaf Cleanup</option>
+        <option value="Hedge Trimming">Hedge Trimming</option>
+        <option value="Fertilizing">Fertilizing</option>
+        <option value="Quote Request">Quote Request</option>
+        <option value="General Question">General Question</option>
+      </select><br><br>
+
+      <label for="message">Message:</label><br>
+      <textarea id="message" name="message" rows="4" required></textarea><br><br>
+
+      <button type="submit">Send Message</button>
+    </form>
+
+    <div style="margin-top: 2em;">
+      <h3>Other Ways to Reach Us:</h3>
+      <p><strong>Email:</strong> 7holliday@gmail.com</p>
+      <p><strong>Phone:</strong> (504) 717-1887</p>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
+  <!-- Contact Form Submit Script -->
+  <script>
+    const db = firebase.firestore();
+
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const notes = document.getElementById('message').value;
+      const service = document.getElementById('service').value;
+
+      try {
+        await db.collection('service_requests').add({
+          name,
+          email,
+          phone,
+          service,
+          notes,
+          status: "New",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("✅ Message sent successfully! We’ll be in touch.");
+        document.getElementById('contactForm').reset();
+      } catch (error) {
+        console.error("❌ Error sending message:", error);
+        alert("An error occurred. Please try again.");
+      }
+    });
+  </script>
+
+</body>
+</html>

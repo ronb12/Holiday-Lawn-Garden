@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receipt - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .receipt-container {
+      max-width: 700px;
+      margin: 4em auto;
+      background: white;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    h1 { color: #228B22; }
+    .receipt-details {
+      text-align: left;
+      margin-top: 2em;
+    }
+    .receipt-details table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .receipt-details th, .receipt-details td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    .download-btn {
+      margin-top: 2em;
+      background: #228B22;
+      color: white;
+      padding: 0.7em 2em;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .download-btn:hover {
+      background: #006400;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height: 80px; margin-top: 10px;">
+</header>
+
+<main>
+  <div class="receipt-container fade-in">
+    <h1>✅ Payment Receipt</h1>
+    <p>Thank you for your payment! Your invoice has been marked <strong>PAID</strong>.</p>
+
+    <div class="receipt-details" id="receiptArea"></div>
+
+    <button class="download-btn" onclick="generatePDF()">📄 Download PDF</button>
+  </div>
+</main>
+
+<footer style="text-align:center; margin-top: 2em;">
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  const db = firebase.firestore();
+
+  let invoiceData = null;
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const params = new URLSearchParams(window.location.search);
+      const invoiceNum = params.get("invoice");
+
+      if (!invoiceNum) return alert("Missing invoice number.");
+
+      db.collection("invoices")
+        .where("invoiceNumber", "==", invoiceNum)
+        .where("customerEmail", "==", user.email)
+        .limit(1)
+        .get()
+        .then(snapshot => {
+          if (snapshot.empty) return alert("Invoice not found.");
+
+          const doc = snapshot.docs[0];
+          invoiceData = doc.data();
+          renderReceipt(invoiceData);
+        });
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  function renderReceipt(data) {
+    const container = document.getElementById("receiptArea");
+    let html = `
+      <p><strong>Invoice #: </strong>${data.invoiceNumber}</p>
+      <p><strong>Email: </strong>${data.customerEmail}</p>
+      <p><strong>Due Date: </strong>${data.dueDate}</p>
+      <p><strong>Status: </strong><span style="color: green;">PAID</span></p>
+
+      <table>
+        <thead>
+          <tr><th>Description</th><th>Amount</th></tr>
+        </thead>
+        <tbody>`;
+
+    data.services.forEach(s => {
+      html += `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`;
+    });
+
+    html += `
+        <tr><td><strong>Subtotal</strong></td><td>$${data.subtotal.toFixed(2)}</td></tr>
+        <tr><td><strong>Tax</strong></td><td>$${data.tax.toFixed(2)}</td></tr>
+        <tr><td><strong>Total Paid</strong></td><td><strong>$${data.grandTotal.toFixed(2)}</strong></td></tr>
+        </tbody>
+      </table>
+    `;
+    container.innerHTML = html;
+  }
+
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const data = invoiceData;
+    if (!data) return;
+
+    doc.addImage("Hollidays_Lawn_Garden_Logo.png", "PNG", 10, 10, 40, 20);
+    doc.setFontSize(18);
+    doc.text("RECEIPT", 105, 40, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text(`Invoice #: ${data.invoiceNumber}`, 20, 60);
+    doc.text(`Customer: ${data.customerEmail}`, 20, 68);
+    doc.text(`Due Date: ${data.dueDate}`, 20, 76);
+    doc.text(`Status: PAID`, 20, 84);
+
+    let y = 100;
+    doc.text("Itemized Services", 20, y);
+    y += 10;
+
+    data.services.forEach(service => {
+      doc.text(`${service.description}`, 25, y);
+      doc.text(`$${service.amount.toFixed(2)}`, 160, y, { align: "right" });
+      y += 10;
+    });
+
+    doc.line(20, y, 190, y); y += 10;
+    doc.text(`Subtotal: $${data.subtotal.toFixed(2)}`, 160, y, { align: "right" }); y += 10;
+    doc.text(`Tax: $${data.tax.toFixed(2)}`, 160, y, { align: "right" }); y += 10;
+    doc.text(`Total Paid: $${data.grandTotal.toFixed(2)}`, 160, y, { align: "right" });
+
+    doc.save(`Receipt_${data.invoiceNumber}.pdf`);
+  }
+</script>
+
+</body>
+</html>
