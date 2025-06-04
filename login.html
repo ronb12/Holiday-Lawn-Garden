@@ -10,8 +10,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="firebase-init.js"></script>
+  <script src="firebase-config.js" onerror="console.error('Firebase config failed to load')"></script>
+  <script src="firebase-init.js" onerror="console.error('Firebase init failed to load')"></script>
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -63,7 +63,32 @@
       margin-top: 1em;
       min-height: 1.2em; /* Reserve space to prevent layout shifts */
     }
+    
+    /* Ensure page is visible even if scripts fail */
+    body {
+      background: #f4f9f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      visibility: visible !important;
+    }
+    
+    header, footer {
+      background-color: #228B22;
+      color: white;
+      padding: 1em;
+      text-align: center;
+    }
   </style>
+  
+  <noscript>
+    <style>
+      .g_id_signin { display: none; }
+      #loginErrorMessage::after {
+        content: "JavaScript is required for full functionality.";
+        color: orange;
+      }
+    </style>
+  </noscript>
 </head>
 <body>
 

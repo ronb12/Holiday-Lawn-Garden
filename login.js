@@ -1,8 +1,27 @@
 const loginErrorMessage = document.getElementById('loginErrorMessage');
-const db = firebase.firestore(); // Make sure db is initialized (should be from firebase-init.js)
+let db; // Initialize later when Firebase is ready
+
+// Wait for Firebase to be ready
+function initializeFirebaseLogin() {
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+      db = firebase.firestore();
+      console.log("Firebase initialized for login");
+    } else {
+      console.error("Firebase not initialized");
+      if(loginErrorMessage) loginErrorMessage.textContent = "Authentication service not available. Please refresh the page.";
+    }
+  } catch (error) {
+    console.error("Error initializing Firebase:", error);
+    if(loginErrorMessage) loginErrorMessage.textContent = "Authentication service error. Please refresh the page.";
+  }
+}
 
 // Initialize Google Sign-In
 window.onload = function () {
+  // Initialize Firebase first
+  initializeFirebaseLogin();
+  
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
     // Use the Google Client ID from the configuration
     const clientId = window.googleClientId || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
@@ -58,6 +77,13 @@ async function handleUserLogin(firebaseUser) {
 // Email/Password Login with role-based redirect
 function emailPasswordLogin() {
   if(loginErrorMessage) loginErrorMessage.textContent = ""; // Clear previous errors
+  
+  // Check if Firebase is ready
+  if (!db || typeof firebase === 'undefined') {
+    if(loginErrorMessage) loginErrorMessage.textContent = "Authentication service not ready. Please refresh the page.";
+    return;
+  }
+  
   const emailInput = document.getElementById('loginEmail');
   const passwordInput = document.getElementById('loginPassword');
   
