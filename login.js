@@ -4,8 +4,11 @@ const db = firebase.firestore(); // Make sure db is initialized (should be from 
 // Initialize Google Sign-In
 window.onload = function () {
   if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+    // Use the Google Client ID from the configuration
+    const clientId = window.googleClientId || "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+    
     google.accounts.id.initialize({
-      client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com", // <!-- REPLACE WITH YOUR ACTUAL GOOGLE CLIENT ID -->
+      client_id: clientId,
       callback: handleGoogleSignInCallback 
     });
     // The button is already configured with data-callback, so explicit renderButton may not be needed

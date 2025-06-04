@@ -1,7 +1,14 @@
 // Route Optimization System
 class RouteOptimizer {
   constructor() {
-    this.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+    // CRITICAL: API Key Management for Google Maps API
+    // The Google Maps API key should NOT be stored directly in client-side code like this.
+    // Google Maps Platform APIs can incur significant costs, and exposing an unrestricted key is a major security risk.
+    // Recommendation: Implement a backend proxy (e.g., a Firebase Cloud Function) for all Google Maps API calls
+    // (Geocoding, Directions, Distance Matrix, etc.). The client-side code should call your backend proxy,
+    // and the proxy will securely make the request to Google Maps using the key stored on the server.
+    // Also, ensure you have enabled API restrictions (e.g., HTTP referrers, specific API services) in your Google Cloud Console.
+    this.googleMapsApiKey = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your actual key ONLY if using a secure (e.g., build-time) injection for a specific, restricted key. Otherwise, this is a placeholder for backend use.
     this.directionsService = null;
     this.geocoder = null;
   }

@@ -1,12 +1,18 @@
 // firebase-init.js
-const firebaseConfig = {
-  apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
-  authDomain: "holiday-lawn-and-garden.firebaseapp.com",
-  projectId: "holiday-lawn-and-garden",
-  storageBucket: "holiday-lawn-and-garden.appspot.com", // ✅ fixed
-  messagingSenderId: "135322230444",
-  appId: "1:135322230444:web:1a487b25a48aae07368909",
-  measurementId: "G-KD6TBWR4ZT"
-};
+// This file now uses the configuration generated during build
 
-firebase.initializeApp(firebaseConfig);
+// Wait for the configuration to be available
+function initializeFirebase() {
+    if (window.firebaseConfig) {
+        firebase.initializeApp(window.firebaseConfig);
+    } else {
+        console.error('Firebase configuration not found. Please ensure the application is built correctly.');
+    }
+}
+
+// Initialize when the configuration is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeFirebase);
+} else {
+    initializeFirebase();
+}

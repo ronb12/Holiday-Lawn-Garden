@@ -2,8 +2,8 @@
 
 // ✅ Firebase Setup
 const firebaseConfig = {
-  apiKey: "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
-  authDomain: "mobile-debt-crusher.firebaseapp.com",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
   projectId: "mobile-debt-crusher"
 };
 firebase.initializeApp(firebaseConfig);

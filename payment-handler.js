@@ -1,8 +1,17 @@
 // Payment Handler Class
 class PaymentHandler {
   constructor() {
-    this.paypalClientId = process.env.PAYPAL_CLIENT_ID;
-    this.stripePublicKey = process.env.STRIPE_PUBLIC_KEY;
+    // PayPal Client ID: This should be your actual PayPal Client ID.
+    // For production, ensure this is your live client ID. For testing, you can use a sandbox ID.
+    // If using a build process, consider loading this from an environment variable.
+    this.paypalClientId = "YOUR_PAYPAL_CLIENT_ID"; // Replace with your actual PayPal Client ID
+
+    // Stripe Public Key: This is intended to be public.
+    // Ensure this is your actual Stripe Public Key (e.g., pk_live_... or pk_test_...).
+    this.stripePublicKey = "YOUR_STRIPE_PUBLIC_KEY"; // Replace with your actual Stripe Public Key
+
+    // IMPORTANT for Stripe: The Stripe Secret Key MUST be kept on a backend server.
+    // This class assumes a backend endpoint (e.g., /api/create-stripe-session) handles operations requiring the Secret Key.
   }
 
   // Initialize payment providers
@@ -101,6 +110,7 @@ class PaymentHandler {
   // Create Stripe session
   async createStripeSession(amount, invoiceId) {
     try {
+      // This function calls your backend. Your backend securely uses your Stripe SECRET Key.
       const response = await fetch('/api/create-stripe-session', {
         method: 'POST',
         headers: {

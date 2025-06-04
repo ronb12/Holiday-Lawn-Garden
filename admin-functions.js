@@ -1,3 +1,9 @@
+// Admin Functions Module
+// Handles core administrative functionality for Holliday's Lawn & Garden
+
+// Firebase configuration should be loaded from environment variables
+// Do not hardcode credentials here
+
 // const firebaseConfig = { // Commenting out redundant Firebase initialization
 //   apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDrdga_hOO52nicYN3AwqqDjSbcnre6iM4",
 //   authDomain: process.env.FIREBASE_AUTH_DOMAIN || "mobile-debt-crusher.firebaseapp.com",
@@ -30,6 +36,14 @@ window.onload = () => {
 
 // ✅ Customer Dropdown
 function loadCustomersDropdown() {
+  // DATA MODEL REFACTORING NOTE (Customers):
+  // This function currently uses the "customers" collection.
+  // The application has customer-related data in multiple places:
+  // 1. "users" collection (Firebase Auth UID linked, stores roles like 'admin', 'customer').
+  // 2. "profiles" collection (used in customer-dashboard.html for detailed profile info - UID linked).
+  // 3. This "customers" collection.
+  // Consider consolidating customer data into a primary collection (e.g., extending "users" or "profiles")
+  // to simplify data management, reduce redundancy, and ensure consistency.
   const ids = ["requestCustomer", "quoteCustomer", "invoiceCustomer"];
   ids.forEach(id => {
     const dropdown = document.getElementById(id);
@@ -64,6 +78,12 @@ function submitRequest(e) {
 
 // ✅ Submit Quote
 function submitQuote(e) {
+  // DATA MODEL REFACTORING NOTE (Quotes/Proposals):
+  // This function (and others like the basic `calculateQuote`) appears to be part of an older quoting system
+  // interacting with `customers/{uid}/quotes` and a general `quotes` collection.
+  // The more current system seems to be the `BiddingSystem` class (in bidding-system.js) which uses the `bids` collection.
+  // Consider standardizing all quote/proposal functionality on the `BiddingSystem` and the `bids` collection.
+  // This would involve updating `updateDashboardStats` and phasing out older quote-related collections and functions.
   e.preventDefault();
   const customerUID = document.getElementById("quoteCustomer").value;
   const amount = parseFloat(document.getElementById("quoteAmount").value);
@@ -149,15 +169,41 @@ function deleteExpense(id) {
 
 // ✅ Dashboard Stats
 function updateDashboardStats() {
+  // DATA MODEL REFACTORING NOTE (Dashboard Stats Accuracy - Quotes):
+  // This function currently fetches quote counts from the "quotes" collection.
+  // For accuracy, if the `BiddingSystem` and `bids` collection become the standard for quotes/proposals,
+  // this section should be updated to count documents in the `bids` collection (e.g., with status 'sent' or 'accepted').
+  // UPDATE: This section has been updated to use biddingSystem.listBids().
   const now = new Date();
   const m = now.getMonth(), y = now.getFullYear();
   let mp = 0, yp = 0, td = 0, ti = 0, em = 0, ey = 0;
   db.collection("service_requests").get().then(snap => {
     document.getElementById("statRequests").innerText = `📝 Requests: ${snap.size}`;
   });
-  db.collection("quotes").get().then(snap => {
-    document.getElementById("statQuotes").innerText = `💬 Quotes: ${snap.size}`;
-  });
+  // db.collection("quotes").get().then(snap => { // Old method
+  //   document.getElementById("statQuotes").innerText = `💬 Quotes: ${snap.size}`;
+  // });
+  if (typeof biddingSystem !== 'undefined' && biddingSystem.listBids) {
+    biddingSystem.listBids().then(bidsList => {
+      const statQuotesElement = document.getElementById("statQuotes");
+      if (statQuotesElement) {
+        statQuotesElement.innerText = `💬 Quotes: ${bidsList.length}`;
+      }
+    }).catch(error => {
+      console.error("Error fetching bids for dashboard stats:", error);
+      const statQuotesElement = document.getElementById("statQuotes");
+      if (statQuotesElement) {
+        statQuotesElement.innerText = `💬 Quotes: Error`;
+      }
+    });
+  } else {
+    console.warn("biddingSystem not available for dashboard stats.");
+    const statQuotesElement = document.getElementById("statQuotes");
+    if (statQuotesElement) {
+      statQuotesElement.innerText = `💬 Quotes: N/A`;
+    }
+  }
+
   db.collection("invoices").get().then(snap => {
     snap.forEach(doc => {
       const d = doc.data();
@@ -388,11 +434,11 @@ async function createInvoice(e) {
     });
 
     // Send notification to customer
-    // await NotificationSystem.sendNotification( // Commenting out as sendNotification is not on the current NotificationSystem object
-    //   formData.customerId,
-    //   "invoice",
-    //   `New invoice created for $${formData.amount.toFixed(2)}`
-    // );
+    await NotificationSystem.sendNotification(
+      formData.customerId,
+      "invoice_created", // Changed type to be more specific
+      `New invoice #${invoiceRef.id.substring(0,8).toUpperCase()} for $${formData.amount.toFixed(2)} has been created.`
+    );
 
     NotificationSystem.showNotification("Invoice created successfully!", "success");
     document.getElementById("createInvoiceForm").reset();

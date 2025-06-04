@@ -661,3 +661,571 @@ h4 { font-size: 1.125rem; /* 18px */ margin-top: var(--spacing-sm); }
     padding: var(--spacing-md);
   }
 } 
+
+/* === Styles from admin.html === */
+:root {
+  /* Re-define some key variables here if modern-styles.css is not fully applied or to override */
+  --admin-bg-light: #f8f9fa; /* Light grey page background */
+  --admin-text-dark: #212529; /* Darker text for readability */
+  --admin-primary-color: #228B22; /* Keep consistent with modern-styles if possible */
+  --admin-primary-dark: #006400;
+  --admin-card-bg: #ffffff;
+  --admin-border-color: #e9ecef; /* Subtle border color */
+  --admin-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --admin-shadow-md: 0 4px 8px rgba(0,0,0,0.07);
+  --admin-radius-md: 8px;
+  --admin-radius-lg: 12px;
+  --admin-spacing-sm: 0.5rem;
+  --admin-spacing-md: 1rem;
+  --admin-spacing-lg: 1.5rem;
+}
+
+body.admin-page-active { /* Add a specific class to body in admin.html if these are admin-only body styles */
+  background-color: var(--admin-bg-light);
+  color: var(--admin-text-dark);
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.admin-page-active .container {
+  width: 90%;
+  max-width: 1400px; /* Wider max-width for admin */
+  margin: 0 auto;
+  padding: var(--admin-spacing-lg) var(--admin-spacing-sm);
+}
+
+.admin-page-active .header {
+  background-color: var(--admin-card-bg);
+  padding: var(--admin-spacing-md) 0;
+  box-shadow: var(--admin-shadow-sm);
+  border-bottom: 1px solid var(--admin-border-color);
+  margin-bottom: var(--admin-spacing-lg);
+}
+.admin-page-active .header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.admin-page-active .header-content h1 {
+  font-size: 1.5rem;
+  color: var(--admin-primary-dark);
+  margin: 0;
+  font-weight: 500;
+}
+
+.admin-page-active .card {
+  background-color: var(--admin-card-bg);
+  border-radius: var(--admin-radius-lg);
+  box-shadow: var(--admin-shadow-md);
+  margin-bottom: var(--admin-spacing-lg);
+  padding: var(--admin-spacing-lg);
+  border: 1px solid var(--admin-border-color);
+}
+.admin-page-active .card h2 {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--admin-primary-dark);
+  margin-top: 0;
+  margin-bottom: var(--admin-spacing-md);
+  padding-bottom: var(--admin-spacing-md);
+  border-bottom: 1px solid var(--admin-border-color);
+}
+.admin-page-active .card h3 {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--admin-text-dark);
+    margin-top: var(--admin-spacing-lg); 
+    margin-bottom: var(--admin-spacing-sm);
+}
+.admin-page-active .card-content {
+  padding-top: 0;
+}
+.admin-page-active .card .grid .card {
+    box-shadow: var(--admin-shadow-sm);
+    border: 1px solid var(--admin-border-color);
+    padding: var(--admin-spacing-md);
+    font-size: 0.95rem;
+}
+
+.admin-page-active .table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--admin-spacing-md);
+  font-size: 0.9rem;
+}
+.admin-page-active .table thead th {
+  background-color: #f1f5f9;
+  color: var(--admin-text-dark);
+  font-weight: 500;
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  text-align: left;
+  border-bottom: 2px solid var(--admin-border-color);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+.admin-page-active .table tbody td {
+  padding: var(--admin-spacing-sm) var(--admin-spacing-md);
+  border-bottom: 1px solid var(--admin-border-color);
+  vertical-align: middle;
+}
+.admin-page-active .table tbody tr:nth-child(even) {
+  background-color: var(--admin-bg-light);
+}
+.admin-page-active .table tbody tr:hover {
+  background-color: #e9ecef;
+}
+.admin-page-active .table .btn-modern.btn-small {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+.admin-page-active .table select.form-control-small {
+    padding: 5px 8px;
+    font-size: 0.85rem;
+}
+
+.admin-page-active .form-modern .form-group {
+  margin-bottom: var(--admin-spacing-lg);
+}
+.admin-page-active .form-modern label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: var(--admin-spacing-sm);
+}
+.admin-page-active .form-modern input,
+.admin-page-active .form-modern select,
+.admin-page-active .form-modern textarea {
+    border-radius: var(--admin-radius-md);
+    border: 1px solid #ced4da;
+    padding: 10px;
+}
+.admin-page-active .form-modern input:focus,
+.admin-page-active .form-modern select:focus,
+.admin-page-active .form-modern textarea:focus {
+    border-color: var(--admin-primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(34, 139, 34, 0.2);
+}
+
+/* These .btn-modern styles were commented out in admin.html, 
+   assuming they are covered by the main modern-styles.css definition.
+   If not, they can be uncommented or merged. */
+/*
+.admin-page-active .btn-modern {
+}
+.admin-page-active .btn-modern:hover {
+}
+*/
+
+.admin-page-active .modal-content {
+  border-radius: var(--admin-radius-lg);
+  padding: var(--admin-spacing-lg);
+  box-shadow: var(--admin-shadow-md);
+}
+.admin-page-active .modal-content h3 {
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--admin-primary-dark);
+  margin-top: 0;
+  padding-bottom: var(--admin-spacing-md);
+  border-bottom: 1px solid var(--admin-border-color);
+  margin-bottom: var(--admin-spacing-lg);
+}
+.admin-page-active .chat-messages-container {
+    border-radius: var(--admin-radius-md);
+    background-color: var(--admin-bg-light);
+    padding: var(--admin-spacing-md);
+}
+
+/* Loading Overlay from admin.html, ensure it doesn't conflict if already in modern-styles.css */
+.admin-page-active #loadingOverlay {
+  /* background-color default is rgba(0, 0, 0, 0.5) in modern-styles.css */
+  /* This was more specific: background-color: rgba(248, 249, 250, 0.85); */
+}
+.admin-page-active .loading-spinner {
+  /* border-top color default is var(--primary-color) in modern-styles.css */
+  /* This was more specific: border-top: 3px solid var(--admin-primary-color); */
+}
+
+.admin-page-active .status-badge { 
+    font-size: 0.75rem; 
+    padding: 3px 10px; 
+    /* border-radius default is var(--radius-full) in modern-styles.css */
+}
+.admin-page-active .status-badge.status-paid {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+.admin-page-active .status-badge.status-unpaid {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* === Styles from customer-dashboard.html === */
+.customer-page-active :root {
+      --customer-primary-color: #28a745; /* A slightly friendlier green */
+      --customer-primary-dark: #1e7e34;
+      --customer-primary-light: #a2d2ff; /* Accent from admin */
+      --customer-text-dark: #212529;
+      --customer-text-light: #ffffff;
+      --customer-bg-light: #f8f9fa;
+      --customer-card-bg: #ffffff;
+      --customer-border-color: #e9ecef;
+      --customer-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+      --customer-shadow-md: 0 4px 8px rgba(0,0,0,0.07);
+      --customer-radius-md: 8px;
+      --customer-radius-lg: 12px;
+      --customer-spacing-xs: 0.25rem;
+      --customer-spacing-sm: 0.5rem;
+      --customer-spacing-md: 1rem;
+      --customer-spacing-lg: 1.5rem;
+      --customer-font-family: 'Roboto', Arial, sans-serif;
+}
+
+.customer-page-active body { 
+      font-family: var(--customer-font-family);
+      background: var(--customer-bg-light);
+      color: var(--customer-text-dark);
+      margin: 0;
+      padding: 0; /* Remove default padding */
+}
+
+.customer-page-active .dashboard-container { 
+        width: 90%;
+        max-width: 1200px;
+        margin: var(--customer-spacing-lg) auto;
+        padding: 0 var(--customer-spacing-sm); 
+        display: grid; 
+        gap: var(--customer-spacing-lg);
+}
+
+.customer-page-active .header-bar {
+      background-color: var(--customer-card-bg);
+      padding: var(--customer-spacing-md) var(--customer-spacing-lg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--customer-border-color);
+      box-shadow: var(--customer-shadow-sm);
+}
+.customer-page-active .header-bar h1 {
+      color: var(--customer-primary-dark);
+      font-size: 1.5rem;
+      margin: 0;
+      font-weight: 500;
+}
+.customer-page-active .header-actions {
+        display: flex;
+        align-items: center;
+        gap: var(--customer-spacing-md);
+}
+.customer-page-active .header-actions .btn-icon {
+        background: none;
+        border: none;
+        font-size: 1.5rem; 
+        color: var(--customer-text-dark);
+        cursor: pointer;
+        padding: var(--customer-spacing-xs);
+}
+.customer-page-active .header-actions .btn-icon:hover {
+        color: var(--customer-primary-color);
+}
+.customer-page-active .logout-btn, .customer-page-active .btn-text {
+      background: transparent;
+      color: var(--customer-primary-color);
+      border: none;
+      cursor: pointer;
+      padding: var(--customer-spacing-sm) 0; 
+      font-weight: 500;
+      font-size: 0.95rem;
+}
+.customer-page-active .logout-btn:hover, .customer-page-active .btn-text:hover {
+      color: var(--customer-primary-dark);
+      text-decoration: underline;
+}
+.customer-page-active .profile-toggle {
+      font-size: 1.5rem; 
+      color: var(--customer-text-dark);
+      cursor: pointer;
+}
+.customer-page-active  .profile-toggle:hover {
+        color: var(--customer-primary-color);
+}
+
+.customer-page-active .dashboard-section-card, .customer-page-active .modern-form, .customer-page-active .stat-card, .customer-page-active #profileModal, .customer-page-active #paypalModal, .customer-page-active #chatModal { 
+      background: var(--customer-card-bg);
+      padding: var(--customer-spacing-lg);
+      border-radius: var(--customer-radius-lg);
+      box-shadow: var(--customer-shadow-md);
+      border: 1px solid var(--customer-border-color);
+      margin-bottom: var(--customer-spacing-lg); 
+}
+    
+.customer-page-active body > .dashboard-section-card {  
+        width: 90%; max-width: 1200px; margin: var(--customer-spacing-lg) auto;
+}
+
+
+.customer-page-active h2 { 
+      color: var(--customer-primary-dark);
+      font-size: 1.35rem;
+      font-weight: 500;
+      margin-top: 0; 
+      margin-bottom: var(--customer-spacing-md);
+      padding-bottom: var(--customer-spacing-md);
+      border-bottom: 1px solid var(--customer-border-color);
+}
+.customer-page-active h3.card-subtitle { 
+        font-size: 1.1rem;
+        color: var(--customer-text-dark);
+        margin-top: var(--customer-spacing-lg);
+        margin-bottom: var(--customer-spacing-sm);
+        font-weight: 500;
+}
+
+.customer-page-active table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      margin-top: var(--customer-spacing-md);
+      font-size: 0.9rem;
+}
+.customer-page-active th, .customer-page-active td { 
+      border: 1px solid var(--customer-border-color); 
+      padding: var(--customer-spacing-sm) var(--customer-spacing-md);
+      text-align: left; 
+      vertical-align: middle;
+}
+.customer-page-active th { 
+      background: #f1f5f9; 
+      color: var(--customer-text-dark);
+      font-weight: 500;
+      text-transform: capitalize;
+}
+.customer-page-active table tbody tr:nth-child(even) {
+      background-color: var(--customer-bg-light); 
+}
+
+.customer-page-active input, .customer-page-active textarea, .customer-page-active select {
+      width: 100%; 
+      padding: 10px;
+      margin-top: var(--customer-spacing-sm);
+      margin-bottom: var(--customer-spacing-sm); 
+      box-sizing: border-box;
+      border-radius: var(--customer-radius-md);
+      border: 1px solid #ced4da; 
+      font-family: var(--customer-font-family);
+      font-size: 0.95rem;
+}
+.customer-page-active input:focus, .customer-page-active textarea:focus, .customer-page-active select:focus {
+        border-color: var(--customer-primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.2);
+        outline: none;
+}
+.customer-page-active .form-group {
+      margin-bottom: var(--customer-spacing-md);
+}
+.customer-page-active .form-group label {
+      display: block;
+      margin-bottom: var(--customer-spacing-xs);
+      color: var(--customer-text-dark);
+      font-weight: 500;
+      font-size: 0.9rem;
+}
+    
+.customer-page-active button, .customer-page-active .btn-modern { 
+      background: var(--customer-primary-color);
+      color: var(--customer-text-light);
+      border: none; 
+      cursor: pointer;
+      padding: 10px 20px;
+      border-radius: var(--customer-radius-md);
+      font-family: var(--customer-font-family);
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      display: inline-block; 
+      text-align: center;
+}
+.customer-page-active button:hover, .customer-page-active .btn-modern:hover {
+      background: var(--customer-primary-dark);
+      transform: translateY(-1px);
+}
+.customer-page-active .btn-modern.btn-secondary { 
+        background-color: #6c757d; 
+}
+.customer-page-active .btn-modern.btn-secondary:hover {
+        background-color: #5a6268;
+}
+.customer-page-active .btn-modern.btn-small {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+}
+
+.customer-page-active #profileModal, .customer-page-active #paypalModal, .customer-page-active #chatModal { 
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); 
+      z-index: 1050; 
+      width: 90%;
+      max-width: 450px; 
+}
+.customer-page-active .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: var(--customer-spacing-sm);
+        margin-bottom: var(--customer-spacing-md);
+        border-bottom: 1px solid var(--customer-border-color);
+}
+.customer-page-active .modal-header h3 {
+        color: var(--customer-primary-dark);
+        font-size: 1.25rem;
+        margin:0;
+        font-weight: 500;
+}
+.customer-page-active .modal-header .close-btn {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #6c757d;
+        background: none; border: none; padding:0;
+        cursor: pointer;
+}
+.customer-page-active .modal-header .close-btn:hover { color: var(--customer-text-dark); }
+.customer-page-active .modal-body {
+        padding-top: var(--customer-spacing-sm); 
+}
+
+.customer-page-active #modalOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); 
+      z-index: 1040; 
+}
+
+.customer-page-active .profile-info label {
+      font-weight: 500; 
+      display: block;
+      margin-top: var(--customer-spacing-sm);
+      font-size: 0.9rem;
+}
+.customer-page-active .profile-info div {
+        margin-bottom: var(--customer-spacing-xs);
+        padding-left: var(--customer-spacing-xs); 
+}
+.customer-page-active #editProfileForm button[type="submit"] { 
+        width: 100%;
+        margin-top: var(--customer-spacing-md);
+}
+
+.customer-page-active #chatMessages, .customer-page-active .chat-messages-container {
+      background: var(--customer-bg-light);
+      height: 250px; 
+      overflow-y: auto;
+      padding: var(--customer-spacing-md);
+      margin-bottom: var(--customer-spacing-md);
+      border: 1px solid var(--customer-border-color);
+      border-radius: var(--customer-radius-md);
+}
+.customer-page-active .chat-bubble {
+      max-width: 80%; 
+      padding: var(--customer-spacing-sm) var(--customer-spacing-md);
+      border-radius: var(--customer-radius-md); 
+      margin-bottom: var(--customer-spacing-sm);
+      line-height: 1.4;
+      word-wrap: break-word;
+}
+.customer-page-active .chat-bubble.customer { 
+      background: #e9ecef; 
+      color: var(--customer-text-dark);
+      margin-right: auto; 
+}
+.customer-page-active .chat-bubble.admin { 
+      background: var(--customer-primary-color); 
+      color: var(--customer-text-light);
+      margin-left: auto; 
+}
+.customer-page-active .chat-input-area {
+        display: flex;
+        gap: var(--customer-spacing-sm);
+        align-items: center;
+}
+.customer-page-active .chat-input-area textarea {
+        flex-grow: 1;
+        margin:0; 
+}
+.customer-page-active .chat-input-area button {
+        flex-shrink: 0; 
+        margin:0;
+}
+
+.customer-page-active .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+      gap: var(--customer-spacing-lg);
+      margin: var(--customer-spacing-lg) 0; 
+}
+.customer-page-active .stat-card { 
+      padding: var(--customer-spacing-md); 
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.customer-page-active .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--customer-shadow-md); 
+}
+.customer-page-active .stat-card h4 {
+        font-size: 1rem;
+        color: var(--customer-text-dark);
+        margin-bottom: var(--customer-spacing-xs);
+        font-weight: 500;
+}
+.customer-page-active .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--customer-primary-color);
+        margin: var(--customer-spacing-sm) 0;
+}
+.customer-page-active .stat-card .stat-link {
+        font-size: 0.85rem;
+        color: var(--customer-primary-dark);
+        text-decoration: none;
+        display: block;
+        margin-top: var(--customer-spacing-sm);
+}
+.customer-page-active .stat-card .stat-link:hover { text-decoration: underline; }
+.customer-page-active .loyalty-tier-badge {
+        display: inline-block;
+        padding: var(--customer-spacing-xs) var(--customer-spacing-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+        background-color: var(--customer-primary-light);
+        color: var(--customer-primary-dark);
+        border-radius: var(--customer-radius-md);
+}
+
+.customer-page-active .table-responsive {
+        overflow-x: auto;
+        margin-top: var(--customer-spacing-md);
+        border: 1px solid var(--customer-border-color);
+        border-radius: var(--customer-radius-md);
+}
+.customer-page-active .table-responsive table {
+        margin-top: 0; 
+        border: none; 
+}
+
+.customer-page-active #requestForm, .customer-page-active #quickQuoteForm { 
+
+}
+
+.customer-page-active body input, .customer-page-active body textarea, .customer-page-active body select, .customer-page-active body button {
+
+} 

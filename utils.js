@@ -101,37 +101,6 @@ class PackageBuilder {
   }
 }
 
-// Notification System
-// class NotificationSystem { // Commenting out the class version to avoid conflict with the object literal below
-//   static async sendNotification(userId, type, message) {
-//     const notification = {
-//       userId,
-//       type,
-//       message,
-//       timestamp: new Date(),
-//       read: false
-//     };
-
-//     try {
-//       await db.collection('notifications').add(notification);
-//       this.showNotification(message); // This would call the class's showNotification
-//     } catch (error) {
-//       console.error('Notification error:', error);
-//     }
-//   }
-
-//   static showNotification(message, type = 'info') { // Simpler version, now superseded by the object literal
-//     const notification = document.createElement('div');
-//     notification.className = `notification notification-${type}`;
-//     notification.textContent = message;
-//     document.body.appendChild(notification);
-
-//     setTimeout(() => {
-//       notification.remove();
-//     }, 5000);
-//   }
-// }
-
 // Form Validation
 class FormValidator {
   static validateEmail(email) {
@@ -172,73 +141,78 @@ class FormValidator {
   }
 }
 
-// Export all utilities
-window.QuoteCalculator = QuoteCalculator;
-window.PackageBuilder = PackageBuilder;
-window.NotificationSystem = NotificationSystem;
-window.FormValidator = FormValidator;
-window.serviceRates = serviceRates;
-window.servicePackages = servicePackages;
-
-// --- Notification System ---
+// Notification System
 const NotificationSystem = {
-  showNotification: function(message, type = 'info', duration = 3500) {
-    const container = document.getElementById('notification-container-dynamic') || this.createContainer();
+  showNotification: function(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('notification-container');
+    if (!container) {
+      console.warn('Notification container not found. Please add <div id="notification-container"></div> to your HTML.');
+      alert(`${type.toUpperCase()}: ${message}`); // Fallback to alert
+      return;
+    }
 
     const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
+    notification.className = `notification ${type}`;
     notification.textContent = message;
-
-    // Add close button
-    const closeButton = document.createElement('span');
-    closeButton.innerHTML = '&times;';
-    closeButton.className = 'notification-close-btn';
-    closeButton.onclick = () => {
-      notification.classList.remove('show');
-      setTimeout(() => {
-        if (notification.parentNode === container) {
-           container.removeChild(notification);
-        }
-        if (container.children.length === 0 && container.id === 'notification-container-dynamic') {
-            container.remove();
-        }
-      }, 500); // Match CSS transition time
-    };
-    notification.appendChild(closeButton);
 
     container.appendChild(notification);
 
-    // Trigger fade in
-    setTimeout(() => {
-      notification.classList.add('show');
-    }, 10); // Small delay to allow CSS transition
+    // Trigger reflow for animation
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    });
 
-    // Auto-dismiss timer
     setTimeout(() => {
-      if (notification.classList.contains('show')) { // Check if not already closed by button
-        notification.classList.remove('show');
-        setTimeout(() => {
-          if (notification.parentNode === container) {
-             container.removeChild(notification);
-          }
-          if (container.children.length === 0 && container.id === 'notification-container-dynamic') {
-              container.remove();
-          }
-        }, 500); // Match CSS transition time
-      }
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateY(-20px)';
+      setTimeout(() => {
+        if (container.contains(notification)) {
+            container.removeChild(notification);
+        }
+      }, 500); // Match animation duration
     }, duration);
   },
 
-  createContainer: function() {
-    let container = document.getElementById('notification-container-dynamic');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'notification-container-dynamic';
-        document.body.appendChild(container);
+  // Method to send (store) a notification in Firestore
+  sendNotification: async function(userId, type, message, details = {}) {
+    if (!userId || !type || !message) {
+      console.error("sendNotification: Missing userId, type, or message");
+      return { success: false, error: "Missing required fields." };
     }
-    return container;
+    try {
+      const db = firebase.firestore(); // Assuming firebase is globally available
+      await db.collection("users").doc(userId).collection("notifications").add({
+        type: type, // e.g., 'invoice_due', 'service_completed', 'quote_accepted', 'low_stock', 'new_message'
+        message: message,
+        details: details, // Optional: e.g., { invoiceId: 'xyz', serviceId: 'abc' }
+        isRead: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`Notification sent to user ${userId}: ${message}`);
+      // Optionally, also show a UI notification to the sender if it's an admin action
+      // this.showNotification(`Notification sent to user ${userId}.`, 'success');
+      return { success: true };
+    } catch (error) {
+      console.error("Error sending notification to Firestore:", error);
+      // this.showNotification("Failed to send notification. See console.", "error");
+      return { success: false, error: error.message };
+    }
   }
 };
 
-// Make it globally available if not using modules
-window.NotificationSystem = NotificationSystem; 
+// Dark Mode Toggle Utility
+const darkModeUtils = {
+  // ... existing code ...
+};
+
+// Make utilities available if modules are not strictly used (e.g. loaded via <script> tags)
+if (typeof window !== 'undefined') {
+  window.QuoteCalculator = QuoteCalculator;
+  window.PackageBuilder = PackageBuilder;
+  window.FormValidator = FormValidator;
+  window.NotificationSystem = NotificationSystem;
+  window.darkModeUtils = darkModeUtils;
+  window.serviceRates = serviceRates;
+  window.servicePackages = servicePackages;
+} 

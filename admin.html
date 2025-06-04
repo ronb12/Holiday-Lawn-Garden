@@ -14,208 +14,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="firebase-init.js"></script>
   <script src="utils.js"></script>
-  <style>
-    :root {
-      /* Re-define some key variables here if modern-styles.css is not fully applied or to override */
-      --admin-bg-light: #f8f9fa; /* Light grey page background */
-      --admin-text-dark: #212529; /* Darker text for readability */
-      --admin-primary-color: #228B22; /* Keep consistent with modern-styles if possible */
-      --admin-primary-dark: #006400;
-      --admin-card-bg: #ffffff;
-      --admin-border-color: #e9ecef; /* Subtle border color */
-      --admin-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-      --admin-shadow-md: 0 4px 8px rgba(0,0,0,0.07);
-      --admin-radius-md: 8px;
-      --admin-radius-lg: 12px;
-      --admin-spacing-sm: 0.5rem;
-      --admin-spacing-md: 1rem;
-      --admin-spacing-lg: 1.5rem;
-    }
-
-    body {
-      background-color: var(--admin-bg-light);
-      color: var(--admin-text-dark);
-      font-family: 'Roboto', sans-serif;
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 1400px; /* Wider max-width for admin */
-      margin: 0 auto;
-      padding: var(--admin-spacing-lg) var(--admin-spacing-sm);
-    }
-
-    .header {
-      background-color: var(--admin-card-bg);
-      padding: var(--admin-spacing-md) 0;
-      box-shadow: var(--admin-shadow-sm);
-      border-bottom: 1px solid var(--admin-border-color);
-      margin-bottom: var(--admin-spacing-lg);
-    }
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 90%;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-    .header-content h1 {
-      font-size: 1.5rem;
-      color: var(--admin-primary-dark);
-      margin: 0;
-      font-weight: 500;
-    }
-
-    .card {
-      background-color: var(--admin-card-bg);
-      border-radius: var(--admin-radius-lg);
-      box-shadow: var(--admin-shadow-md);
-      margin-bottom: var(--admin-spacing-lg);
-      padding: var(--admin-spacing-lg);
-      border: 1px solid var(--admin-border-color);
-    }
-    .card h2 {
-      font-size: 1.35rem;
-      font-weight: 500;
-      color: var(--admin-primary-dark);
-      margin-top: 0; /* Remove default top margin for h2 in card */
-      margin-bottom: var(--admin-spacing-md);
-      padding-bottom: var(--admin-spacing-md);
-      border-bottom: 1px solid var(--admin-border-color);
-    }
-    .card h3 {
-        font-size: 1.15rem;
-        font-weight: 500;
-        color: var(--admin-text-dark);
-        margin-top: var(--admin-spacing-lg); 
-        margin-bottom: var(--admin-spacing-sm);
-    }
-    .card-content {
-      padding-top: 0; /* Reset as card h2 has padding-bottom now */
-    }
-    .card .grid .card { /* Nested cards like stats */
-        box-shadow: var(--admin-shadow-sm);
-        border: 1px solid var(--admin-border-color);
-        padding: var(--admin-spacing-md);
-        font-size: 0.95rem;
-    }
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: var(--admin-spacing-md);
-      font-size: 0.9rem;
-    }
-    .table thead th {
-      background-color: #f1f5f9; /* Lighter, neutral header */
-      color: var(--admin-text-dark);
-      font-weight: 500; /* Less heavy than 600 */
-      padding: var(--admin-spacing-sm) var(--admin-spacing-md);
-      text-align: left;
-      border-bottom: 2px solid var(--admin-border-color);
-      text-transform: capitalize; /* More readable */
-      letter-spacing: 0.02em;
-    }
-    .table tbody td {
-      padding: var(--admin-spacing-sm) var(--admin-spacing-md);
-      border-bottom: 1px solid var(--admin-border-color);
-      vertical-align: middle;
-    }
-    .table tbody tr:nth-child(even) {
-      background-color: var(--admin-bg-light); /* Subtle striping */
-    }
-    .table tbody tr:hover {
-      background-color: #e9ecef; /* Subtle hover */
-    }
-    .table .btn-modern.btn-small {
-        padding: 5px 10px;
-        font-size: 0.8rem;
-    }
-    .table select.form-control-small {
-        padding: 5px 8px;
-        font-size: 0.85rem;
-    }
-
-    /* Form refinement (assuming .form-modern is still styled by external CSS) */
-    .form-modern .form-group {
-      margin-bottom: var(--admin-spacing-lg);
-    }
-    .form-modern label {
-      font-weight: 500;
-      font-size: 0.9rem;
-      margin-bottom: var(--admin-spacing-sm);
-    }
-    .form-modern input, .form-modern select, .form-modern textarea {
-        border-radius: var(--admin-radius-md);
-        border: 1px solid #ced4da;
-        padding: 10px;
-    }
-    .form-modern input:focus, .form-modern select:focus, .form-modern textarea:focus {
-        border-color: var(--admin-primary-color);
-        box-shadow: 0 0 0 0.2rem rgba(34, 139, 34, 0.2);
-    }
-
-    .btn-modern { /* Adjust if necessary to fit new design */
-      /* Example: background-color: var(--admin-primary-color); */
-      /* color: white; */
-      /* padding: 10px 20px; */
-      /* border-radius: var(--admin-radius-md); */
-      /* box-shadow: var(--admin-shadow-sm); */
-    }
-    .btn-modern:hover {
-      /* background-color: var(--admin-primary-dark); */
-    }
-
-    /* Modal styling to ensure consistency */
-    .modal-content {
-      border-radius: var(--admin-radius-lg);
-      padding: var(--admin-spacing-lg);
-      box-shadow: var(--admin-shadow-md);
-    }
-    .modal-content h3 { /* Modal titles */
-      font-size: 1.35rem;
-      font-weight: 500;
-      color: var(--admin-primary-dark);
-      margin-top: 0;
-      padding-bottom: var(--admin-spacing-md);
-      border-bottom: 1px solid var(--admin-border-color);
-      margin-bottom: var(--admin-spacing-lg);
-    }
-    .chat-messages-container {
-        border-radius: var(--admin-radius-md);
-        background-color: var(--admin-bg-light);
-        padding: var(--admin-spacing-md);
-    }
-
-    /* Loading Overlay */
-    #loadingOverlay {
-      background-color: rgba(248, 249, 250, 0.85); /* Match light background */
-    }
-    .loading-spinner {
-      border-top: 3px solid var(--admin-primary-color);
-    }
-    
-    /* Ensure specificity for status badges if modern-styles.css has issues */
-    .status-badge { 
-        font-size: 0.75rem; padding: 3px 10px; border-radius: var(--admin-radius-full); 
-    }
-    .status-badge.status-paid {
-        background-color: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    .status-badge.status-unpaid {
-        background-color: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-
-  </style>
 </head>
-<body>
+<body class="admin-page-active">
   <!-- Loading Overlay -->
   <div id="loadingOverlay" style="display: none;">
     <div class="loading-spinner"></div>
@@ -279,8 +79,8 @@
             <label>
               <input type="checkbox" id="urgentService">
               Urgent Service (+25% fee)
-            </label>
-          </div>
+    </label>
+  </div>
 
           <button type="submit" class="btn-modern">Calculate Quote</button>
         </form>
@@ -314,12 +114,12 @@
                 🌾 Fertilization & Seeding
               </label>
             </div>
-          </div>
+  </div>
 
           <div class="form-group">
             <label for="packagePropertySize">Property Size (sq ft)</label>
             <input type="number" id="packagePropertySize" required min="100" step="100">
-          </div>
+  </div>
 
           <button type="submit" class="btn-modern">Build Package</button>
         </form>
@@ -345,23 +145,23 @@
       <div class="card-content">
         <div class="form-group">
           <input type="text" id="invoiceSearch" class="form-control-modern" placeholder="Search by customer, email, or invoice #..." onkeyup="filterInvoicesTable()">
-        </div>
+  </div>
         <table id="adminInvoicesTable" class="table" style="width:100%; margin-top: 1rem;">
-          <thead>
-            <tr>
+      <thead>
+        <tr>
               <th>Invoice #</th>
-              <th>Customer</th>
+          <th>Customer</th>
               <th>Email</th>
-              <th>Amount</th>
+          <th>Amount</th>
               <th>Due Date</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
           <tbody id="adminInvoicesTableBody">
             <!-- Invoice rows will be populated here -->
           </tbody>
-        </table>
+    </table>
       </div>
     </section>
 
@@ -434,25 +234,25 @@
             </div>
             <button type="submit" class="btn-modern">Add Equipment</button>
           </form>
-        </div>
+  </div>
 
         <h3 style="margin-top: 2rem;">Existing Equipment</h3>
         <table id="equipmentTable" class="table" style="width:100%; margin-top: 1rem;">
-          <thead>
-            <tr>
+      <thead>
+        <tr>
               <th>Name</th>
               <th>Type</th>
-              <th>Status</th>
+          <th>Status</th>
               <th>Usage Hours</th>
               <th>Next Maintenance</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
+          <th>Actions</th>
+        </tr>
+      </thead>
           <tbody>
             <!-- Equipment rows will be populated here -->
           </tbody>
-        </table>
-      </div>
+    </table>
+  </div>
     </section>
 
     <!-- Materials & Chemical Inventory -->
@@ -488,20 +288,20 @@
             </div>
             <button type="submit" class="btn-modern">Add Material</button>
           </form>
-        </div>
+  </div>
 
         <h3 style="margin-top: 2rem;">Current Inventory</h3>
         <table id="materialsTable" class="table" style="width:100%; margin-top: 1rem;">
-          <thead>
-            <tr>
-              <th>Name</th>
+      <thead>
+        <tr>
+          <th>Name</th>
               <th>Type</th>
               <th>Stock Level</th>
               <th>Unit</th>
               <th>Reorder Point</th>
               <th>Actions</th>
-            </tr>
-          </thead>
+        </tr>
+      </thead>
           <tbody>
             <!-- Material rows will be populated here -->
           </tbody>
@@ -569,9 +369,9 @@
         <h3 style="margin-top: 2rem;">Referrals</h3>
         <table id="referralsTable" class="table" style="width:100%; margin-top: 1rem;">
           <thead><tr><th>Referrer ID</th><th>Referred Email</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
+      <tbody></tbody>
+    </table>
+  </div>
     </section>
 
     <!-- Sustainability & Environmental Impact Log -->
@@ -601,7 +401,7 @@
             <div id="sustainabilityLogFields"></div> 
             <button type="submit" class="btn-modern">Log Data</button>
           </form>
-        </div>
+  </div>
         <h3 style="margin-top: 2rem;">Sustainability Log Entries</h3>
         <table id="sustainabilityLogTable" class="table" style="width:100%; margin-top: 1rem;">
           <thead><tr><th>Date</th><th>Type</th><th>Details</th><th>Job/Customer</th></tr></thead>
@@ -611,8 +411,8 @@
         <div id="sustainabilityReportView" class="card" style="margin-top:1rem; display:none;">
           <h4>Sustainability Report</h4>
           <pre id="sustainabilityReportContent"></pre>
-        </div>
-      </div>
+    </div>
+  </div>
     </section>
 
     <!-- Incoming Service Requests -->
