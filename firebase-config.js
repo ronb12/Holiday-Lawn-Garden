@@ -7,7 +7,7 @@ const firebaseConfig = {
   messagingSenderId: "1098127322593",
   appId: "1:1098127322593:web:e6c9a9c4d899c94f7e1ad8",
   measurementId: "G-QWZQXV9QY6",
-  databaseURL: "https://holiday-lawn-and-garden.firebaseio.com"
+  databaseURL: "https://holliday-lawn-garden.firebaseio.com"
 };
 
 // Initialize Firebase with explicit options for GitHub Pages
