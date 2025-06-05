@@ -25,18 +25,19 @@ async function initializeFirebase() {
         measurementId: "G-KD6TBWR4ZT"
       });
       console.log('✅ Firebase initialized successfully');
+      
+      // Configure Firestore settings before initializing
+      const settings = {
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+        cache: 'persistent',
+        merge: true
+      };
+      firebase.firestore().settings(settings);
     }
 
-    // Initialize services with updated cache settings
+    // Initialize services
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    // Set cache settings using the recommended approach with merge option
-    db.settings({
-      cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-      cache: 'persistent',
-      merge: true  // Add merge option to prevent host override warnings
-    });
 
     // Export Firebase instances
     window.HollidayApp.db = db;
