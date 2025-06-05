@@ -5,64 +5,68 @@ class BiddingSystem {
     this.bidsCollection = "bids";
     this.proposalsCollection = "proposals";
     this.quoteCalculator = new QuoteCalculator(); // Assuming QuoteCalculator is globally available
+    this.baseRates = {
+      'Lawn Mowing & Trimming': 0.05,
+      'Landscape Design': 0.15,
+      'Leaf Removal': 0.08,
+      'Fertilization & Seeding': 0.12,
+      'Seasonal Cleanup': 0.10
+    };
   }
 
   // Generate a detailed bid/proposal based on service requirements
-  async generateBid(bidRequest) {
-    // bidRequest: { customerId, propertyDetails: { address, sizeSqFt, complexity (1-3) }, services: [{ type, notes }], urgent }
+  async generateBid(quoteData) {
     try {
-      const { customerId, propertyDetails, services, urgent } = bidRequest;
-
-      if (!customerId || !propertyDetails || !services || services.length === 0) {
-        throw new Error("Missing required information for bid generation.");
-      }
-
-      let totalEstimatedCost = 0;
-      const serviceBreakdown = [];
+      const { services, propertyDetails, customerId, urgent } = quoteData;
+      
+      // Calculate base cost
+      let totalCost = 0;
+      const lineItems = [];
 
       for (const service of services) {
-        const quote = this.quoteCalculator.calculateQuote(service.type, propertyDetails.sizeSqFt, {
-          complexity: propertyDetails.complexity,
-          urgent: urgent || false,
-          // No discount at individual service level for bids, package discount applied later if applicable
+        const baseRate = this.baseRates[service.type] || 0.07;
+        const serviceCost = Math.round(propertyDetails.sizeSqFt * baseRate * propertyDetails.complexity);
+        
+        lineItems.push({
+          service: service.type,
+          notes: service.notes,
+          cost: serviceCost
         });
-        serviceBreakdown.push({
-          serviceType: service.type,
-          notes: service.notes || "",
-          ...quote,
-        });
-        totalEstimatedCost += quote.total;
+        
+        totalCost += serviceCost;
       }
-      
-      // Apply a package discount if multiple services are selected
-      let packageDiscount = 0;
-      if (services.length >= 3) packageDiscount = 0.15; // 15% for 3+ services
-      else if (services.length === 2) packageDiscount = 0.1; // 10% for 2 services
 
-      const finalTotal = totalEstimatedCost * (1 - packageDiscount);
+      // Apply urgency multiplier
+      if (urgent) {
+        totalCost = Math.round(totalCost * 1.25);
+      }
 
-      const bidData = {
+      // Create bid object
+      const bid = {
         customerId,
+        services: lineItems,
         propertyDetails,
-        services: serviceBreakdown,
-        estimatedSubtotal: totalEstimatedCost,
-        packageDiscountPercentage: packageDiscount * 100,
-        packageDiscountAmount: totalEstimatedCost * packageDiscount,
-        estimatedTotal: finalTotal,
-        status: "draft", // draft, sent, accepted, rejected, archived
-        createdAt: new Date(),
-        urgent: urgent || false,
-        bidNumber: `BID-${Date.now().toString().slice(-6)}${Math.random().toString(36).slice(-2).toUpperCase()}`
+        estimatedTotal: totalCost,
+        urgent: !!urgent,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
       };
 
-      const docRef = await this.db.collection(this.bidsCollection).add(bidData);
-      NotificationSystem.showNotification("Bid generated successfully!", "success");
-      return { id: docRef.id, ...bidData };
-
+      return bid;
     } catch (error) {
-      console.error("Error generating bid:", error);
-      NotificationSystem.showNotification(error.message || "Error generating bid.", "error");
-      return null;
+      console.error('Error generating bid:', error);
+      throw error;
+    }
+  }
+
+  calculateQuickQuote(serviceType, propertySize) {
+    try {
+      const baseRate = this.baseRates[serviceType] || 0.07;
+      return Math.round(propertySize * baseRate);
+    } catch (error) {
+      console.error('Error calculating quick quote:', error);
+      throw error;
     }
   }
 

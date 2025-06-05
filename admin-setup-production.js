@@ -269,4 +269,133 @@ window.productionSetup = {
 
 console.log('🔧 PRODUCTION setup script loaded!');
 console.log('🚀 Run productionSetup.runProductionSetup() to set up for real business use.');
-console.log('👥 Use productionSetup.addRealCustomer({...}) to manually add customers.'); 
+console.log('👥 Use productionSetup.addRealCustomer({...}) to manually add customers.');
+
+// Production Setup Helper
+const productionSetup = {
+  // Admin credentials for testing
+  adminEmail: 'admin@hollidaylawnandgarden.com',
+  adminPassword: 'admin123!@#',
+
+  async runProductionSetup() {
+    try {
+      console.log('🚀 Starting production setup...');
+      
+      // Wait for Firebase initialization
+      await this.waitForFirebase();
+      
+      // Create admin user if doesn't exist
+      await this.setupAdminUser();
+      
+      console.log('✅ Production setup completed successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Production setup failed:', error);
+      throw error;
+    }
+  },
+
+  async waitForFirebase() {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 20;
+      const interval = setInterval(() => {
+        if (window.firebase && window.HollidayApp && window.HollidayApp.db) {
+          clearInterval(interval);
+          resolve(true);
+        }
+        attempts++;
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+          reject(new Error('Firebase initialization timeout'));
+        }
+      }, 500);
+    });
+  },
+
+  async setupAdminUser() {
+    try {
+      // Check if admin user exists
+      const adminQuery = await window.HollidayApp.db
+        .collection('users')
+        .where('email', '==', this.adminEmail)
+        .where('role', '==', 'admin')
+        .get();
+
+      if (adminQuery.empty) {
+        // Create admin user in Authentication
+        const userCredential = await firebase.auth()
+          .createUserWithEmailAndPassword(this.adminEmail, this.adminPassword);
+
+        // Add admin user to Firestore
+        await window.HollidayApp.db.collection('users').doc(userCredential.user.uid).set({
+          email: this.adminEmail,
+          role: 'admin',
+          displayName: 'System Administrator',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        console.log('✅ Admin user created successfully');
+      } else {
+        console.log('✅ Admin user already exists');
+      }
+    } catch (error) {
+      if (error.code === 'auth/email-already-in-use') {
+        console.log('✅ Admin user exists in Authentication');
+      } else {
+        throw error;
+      }
+    }
+  },
+
+  async loginAsAdmin() {
+    try {
+      await firebase.auth().signInWithEmailAndPassword(this.adminEmail, this.adminPassword);
+      console.log('✅ Logged in as admin');
+      return true;
+    } catch (error) {
+      console.error('❌ Admin login failed:', error);
+      throw error;
+    }
+  },
+
+  async addRealCustomer(customerData) {
+    try {
+      // Validate customer data
+      if (!customerData.email || !customerData.displayName) {
+        throw new Error('Customer email and name are required');
+      }
+
+      // Create user account
+      const userCredential = await firebase.auth()
+        .createUserWithEmailAndPassword(customerData.email, 'TempPass123!');
+
+      // Add customer data to Firestore
+      await window.HollidayApp.db.collection('users').doc(userCredential.user.uid).set({
+        ...customerData,
+        role: 'customer',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      console.log('✅ Customer added successfully:', userCredential.user.uid);
+      return userCredential.user.uid;
+    } catch (error) {
+      console.error('❌ Failed to add customer:', error);
+      throw error;
+    }
+  },
+
+  async updateSecurityRules() {
+    // This would typically be done through Firebase Console or deployment
+    console.log('⚠️ Security rules must be updated through Firebase Console');
+    return true;
+  }
+};
+
+// Make productionSetup available globally
+window.productionSetup = productionSetup;
+
+// Auto-initialize when the script loads
+document.addEventListener('DOMContentLoaded', () => {
+  productionSetup.runProductionSetup().catch(console.error);
+}); 

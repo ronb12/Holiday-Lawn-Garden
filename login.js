@@ -93,30 +93,45 @@ function emailPasswordLogin() {
     });
 }
 
-// Simple Firebase Google Sign-In
-function googleSignIn() {
-  if(loginErrorMessage) loginErrorMessage.textContent = ""; // Clear previous errors
-  
-  // Check if Firebase is ready
-  if (!db || typeof firebase === 'undefined') {
-    if(loginErrorMessage) loginErrorMessage.textContent = "Authentication service not ready. Please refresh the page.";
-    return;
-  }
+// Google Sign-In function
+async function googleSignIn() {
+  try {
+    // Check if we're running on a supported protocol
+    if (!window.location.protocol.match(/^(https?|chrome-extension):/)) {
+      console.warn('⚠️ Google Sign-In requires HTTPS. Falling back to email/password login.');
+      document.getElementById('googleSignInError').textContent = 
+        'Google Sign-In is only available when accessing the site via HTTPS. Please use email/password login or access the site through a proper web server.';
+      return;
+    }
 
-  const provider = new firebase.auth.GoogleAuthProvider();
-  
-  firebase.auth().signInWithPopup(provider)
-      .then((result) => {
-        console.log("Google Sign-In successful for Firebase user:", result.user.email);
-        handleUserLogin(result.user);
-      })
-      .catch((error) => {
-        console.error("Firebase Google Sign-In error:", error);
-        if(loginErrorMessage) loginErrorMessage.textContent = "Google Sign-In failed: " + error.message;
-        if (error.code === 'auth/account-exists-with-different-credential') {
-          if(loginErrorMessage) loginErrorMessage.textContent += " Try logging in with the original method you used for this email.";
-        }
-      });
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    
+    try {
+      // Try popup first
+      await firebase.auth().signInWithPopup(provider);
+    } catch (popupError) {
+      console.warn('Popup failed, trying redirect:', popupError);
+      // Fall back to redirect
+      await firebase.auth().signInWithRedirect(provider);
+    }
+  } catch (error) {
+    console.error('Firebase Google Sign-In error:', error);
+    document.getElementById('googleSignInError').textContent = 
+      'Google Sign-In failed. Please try again or use email/password login.';
+  }
+}
+
+// Regular email/password sign in
+async function emailPasswordSignIn(email, password) {
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, password);
+    window.location.href = 'admin.html';
+  } catch (error) {
+    console.error('Email/Password Sign-In error:', error);
+    document.getElementById('loginError').textContent = 
+      'Login failed. Please check your email and password.';
+  }
 }
 
 // Fade-in animation for sections with class 'fade-in'

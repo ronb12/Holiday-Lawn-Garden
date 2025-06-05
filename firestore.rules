@@ -1,119 +1,57 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper function to check if user is admin
-    function isAdmin() {
-      return request.auth != null && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Helper function to check if user is authenticated
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Helper function to check if user owns the document
-    function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Users collection - users can read/write their own data, admins can read all
+    // Users collection
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
-      allow read, write: if isAdmin();
-      allow create: if isAuthenticated(); // Allow account creation
-    }
-    
-    // Profiles collection - similar rules to users
-    match /profiles/{userId} {
-      allow read, write: if isOwner(userId);
-      allow read, write: if isAdmin();
-    }
-    
-    // Service requests - customers can create and read their own, admins can read/write all
-    match /service_requests/{requestId} {
-      allow create: if isAuthenticated();
-      allow read, write: if isAdmin();
-      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-      allow write: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-      
-      // Messages subcollection for service request chat
-      match /messages/{messageId} {
-        allow read, write: if isAdmin();
-        allow read, write: if isAuthenticated() && 
-                           get(/databases/$(database)/documents/service_requests/$(requestId)).data.customerId == request.auth.uid;
-      }
-    }
-    
-    // Quotes/Bids - customers can read their own, admins can read/write all
-    match /quotes/{quoteId} {
-      allow read, write: if isAdmin();
-      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-    }
-    
-    match /bids/{bidId} {
-      allow read, write: if isAdmin();
-      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-    }
-    
-    // Invoices - customers can read their own, admins can read/write all
-    match /invoices/{invoiceId} {
-      allow read, write: if isAdmin();
-      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-    }
-    
-    // Admin-only collections
-    match /expenses/{expenseId} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /equipment/{equipmentId} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /materials/{materialId} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /smartQuotes/{quoteId} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /sustainability_logs/{logId} {
-      allow read, write: if isAdmin();
-    }
-    
-    match /loyalty_accounts/{accountId} {
-      allow read, write: if isAdmin();
-      allow read: if isAuthenticated() && resource.data.customerId == request.auth.uid;
-    }
-    
-    match /referrals/{referralId} {
-      allow read, write: if isAdmin();
-      allow read, create: if isAuthenticated();
-    }
-    
-    // Customer subcollections (legacy structure)
-    match /customers/{customerId} {
-      allow read, write: if isAdmin();
-      allow read, write: if isOwner(customerId);
-      
-      match /{subcollection=**} {
-        allow read, write: if isAdmin();
-        allow read, write: if isOwner(customerId);
-      }
-    }
-    
-    // Public read access for certain collections (like services catalog)
-    match /services/{serviceId} {
-      allow read: if true; // Public read
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
       allow write: if isAdmin();
     }
     
-    // Default deny rule for any other collections
-    match /{document=**} {
-      allow read, write: if false;
+    // Service requests
+    match /service_requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+    
+    // Bids/Quotes
+    match /bids/{bidId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Invoices
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Equipment
+    match /equipment/{equipmentId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Business settings
+    match /business_settings/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // System status
+    match /system_status/{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 } 
