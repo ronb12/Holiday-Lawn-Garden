@@ -19,15 +19,36 @@ async function initializeFirebase() {
     window.HollidayApp.storage = firebase.storage();
     window.HollidayApp.analytics = firebase.analytics();
 
-    // Enable offline persistence
-    await window.HollidayApp.db.enablePersistence()
-      .catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code === 'unimplemented') {
-          console.warn('The current browser does not support persistence.');
-        }
+    // Add authentication helper functions
+    window.HollidayApp.isAuthenticated = () => {
+      return window.HollidayApp.auth.currentUser !== null;
+    };
+
+    window.HollidayApp.isAdmin = async () => {
+      const user = window.HollidayApp.auth.currentUser;
+      if (!user) return false;
+      
+      try {
+        const userDoc = await window.HollidayApp.db.collection('users').doc(user.uid).get();
+        return userDoc.exists && userDoc.data().role === 'admin';
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+      }
+    };
+
+    // Enable offline persistence before any other Firestore calls
+    try {
+      await window.HollidayApp.db.enablePersistence({
+        synchronizeTabs: true
       });
+    } catch (err) {
+      if (err.code === 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+      } else if (err.code === 'unimplemented') {
+        console.warn('The current browser does not support persistence.');
+      }
+    }
 
     // Set up auth state listener
     window.HollidayApp.auth.onAuthStateChanged((user) => {
@@ -57,11 +78,15 @@ async function initializeFirebase() {
     return true;
   } catch (error) {
     console.error('❌ Firebase initialization error:', error);
-    // Show error message to user
-    const errorDiv = document.getElementById('firebaseError');
-    if (errorDiv) {
-      errorDiv.textContent = `Firebase initialization failed: ${error.message}`;
-      errorDiv.style.display = 'block';
+    if (window.errorHandler) {
+      window.errorHandler.handleFirebaseError(error);
+    } else {
+      // Fallback error display
+      const errorDiv = document.getElementById('firebaseError');
+      if (errorDiv) {
+        errorDiv.textContent = `Firebase initialization failed: ${error.message}`;
+        errorDiv.style.display = 'block';
+      }
     }
     return false;
   }
