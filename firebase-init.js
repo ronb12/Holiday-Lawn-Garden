@@ -31,10 +31,11 @@ async function initializeFirebase() {
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Set cache settings using the recommended approach
+    // Set cache settings using the recommended approach with merge option
     db.settings({
       cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-      cache: 'persistent'
+      cache: 'persistent',
+      merge: true  // Add merge option to prevent host override warnings
     });
 
     // Export Firebase instances
