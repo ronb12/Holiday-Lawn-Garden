@@ -1,46 +1,31 @@
 // Service Rates and Calculations
 const serviceRates = {
-  'Mowing & Trimming': {
-    baseRate: 45,
+  'Lawn Mowing & Trimming': {
+    baseRate: 0.05,
     minSize: 1000,
     maxSize: 50000,
-    sizeMultiplier: 0.0001, // $0.01 per sq ft
-    complexityMultipliers: {
-      low: 1.0,
-      medium: 1.25,
-      high: 1.5
-    },
-    minProfitMargin: 0.30, // 30% minimum profit margin
-    fixedCosts: 15, // Base operational costs
-    variableCosts: 0.00005 // $0.005 per sq ft
+    fixedCosts: 25,
+    variableCosts: 0.02,
+    sizeMultiplier: 0.001,
+    minProfitMargin: 0.2
   },
   'Landscape Design': {
-    baseRate: 75,
-    minSize: 1000,
-    maxSize: 100000,
-    sizeMultiplier: 0.0002,
-    complexityMultipliers: {
-      low: 1.0,
-      medium: 1.35,
-      high: 1.7
-    },
-    minProfitMargin: 0.35,
-    fixedCosts: 25,
-    variableCosts: 0.0001
+    baseRate: 0.15,
+    minSize: 500,
+    maxSize: 25000,
+    fixedCosts: 100,
+    variableCosts: 0.05,
+    sizeMultiplier: 0.002,
+    minProfitMargin: 0.3
   },
   'Leaf Removal': {
-    baseRate: 55,
+    baseRate: 0.08,
     minSize: 1000,
-    maxSize: 50000,
-    sizeMultiplier: 0.00015,
-    complexityMultipliers: {
-      low: 1.0,
-      medium: 1.2,
-      high: 1.4
-    },
-    minProfitMargin: 0.30,
-    fixedCosts: 20,
-    variableCosts: 0.00008
+    maxSize: 40000,
+    fixedCosts: 35,
+    variableCosts: 0.03,
+    sizeMultiplier: 0.001,
+    minProfitMargin: 0.25
   },
   'Fertilization & Seeding': {
     baseRate: 65,
@@ -118,7 +103,7 @@ const serviceRates = {
 const servicePackages = {
   basic: {
     name: 'Basic Care',
-    services: ['Mowing & Trimming', 'Leaf Removal'],
+    services: ['Lawn Mowing & Trimming', 'Leaf Removal'],
     frequency: 'bi-weekly',
     discount: 0.15, // 15% off
     basePrice: 89.99,
@@ -127,7 +112,7 @@ const servicePackages = {
   },
   premium: {
     name: 'Premium Care',
-    services: ['Mowing & Trimming', 'Fertilization & Seeding', 'Seasonal Cleanup'],
+    services: ['Lawn Mowing & Trimming', 'Fertilization & Seeding', 'Seasonal Cleanup'],
     frequency: 'weekly',
     discount: 0.2, // 20% off
     basePrice: 159.99,
@@ -323,56 +308,26 @@ class PackageBuilder {
       // Calculate total discount (capped at 30% to maintain profitability)
       const totalDiscount = Math.min(0.3, discount + frequencyDiscount + loyaltyDiscount + referralDiscount);
 
-      const finalTotal = baseTotal * (1 - totalDiscount);
+      // Calculate final price
+      const finalPrice = baseTotal * (1 - totalDiscount);
 
-      // Calculate actual profit margin
-      const actualProfitMargin = (finalTotal - totalCosts) / finalTotal;
-
-      // Ensure minimum profit margin of 20% for packages
-      if (actualProfitMargin < 0.2) {
-        const adjustedTotal = totalCosts / 0.8; // Target 20% profit margin
-        return {
-          services: selectedServices,
-          basePrice: baseTotal,
-          costs: {
-            total: totalCosts
-          },
-          discounts: {
-            package: discount * 100,
-            frequency: frequencyDiscount * 100,
-            loyalty: loyaltyDiscount * 100,
-            referral: referralDiscount * 100
-          },
-          totalDiscount: totalDiscount * 100,
-          total: Math.round(adjustedTotal * 100) / 100,
-          frequency: options.frequency || (selectedServices.length >= 3 ? 'weekly' : 'bi-weekly'),
-          savings: baseTotal * totalDiscount,
-          profitMargin: 0.2,
-          validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        };
-      }
+      // Ensure minimum profit margin
+      const minPrice = totalCosts / (1 - 0.2); // Minimum 20% profit margin
+      const adjustedPrice = Math.max(finalPrice, minPrice);
 
       return {
         services: selectedServices,
-        basePrice: baseTotal,
-        costs: {
-          total: totalCosts
-        },
-        discounts: {
-          package: discount * 100,
-          frequency: frequencyDiscount * 100,
-          loyalty: loyaltyDiscount * 100,
-          referral: referralDiscount * 100
-        },
+        baseTotal,
+        totalCosts,
+        packageDiscount: discount * 100,
+        frequencyDiscount: frequencyDiscount * 100,
+        loyaltyDiscount: loyaltyDiscount * 100,
+        referralDiscount: referralDiscount * 100,
         totalDiscount: totalDiscount * 100,
-        total: Math.round(finalTotal * 100) / 100,
-        frequency: options.frequency || (selectedServices.length >= 3 ? 'weekly' : 'bi-weekly'),
-        savings: baseTotal * totalDiscount,
-        profitMargin: Math.round(actualProfitMargin * 100) / 100,
-        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        total: Math.round(adjustedPrice * 100) / 100
       };
     } catch (error) {
-      console.error('Package creation error:', error);
+      console.error('Error creating package:', error);
       throw error;
     }
   }

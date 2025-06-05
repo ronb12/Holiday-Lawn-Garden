@@ -16,24 +16,22 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
   
-  <!-- Firebase Config and Initialization -->
-  <script src="firebase-config.js" onerror="console.error('Failed to load Firebase config'); document.getElementById('initError').style.display = 'block';"></script>
-  <script src="js/services/firebase-init.js" onerror="console.error('Failed to load Firebase initialization'); document.getElementById('initError').style.display = 'block';"></script>
+  <!-- Firebase Config -->
+  <script src="firebase-config.js"></script>
   
   <!-- Service Classes -->
+  <script src="js/services/quote-calculator.js"></script>
   <script src="js/services/bidding-system.js"></script>
   <script src="js/services/invoice-service.js"></script>
-  <script src="js/services/production-setup.js"></script>
   
-  <!-- Test Scripts -->
-  <script src="js/test/comprehensive-test.js"></script>
-  <script src="js/test/test-customer.js"></script>
+  <!-- Error Handler -->
+  <script src="js/error-handler.js"></script>
   
-  <!-- Main Admin Script -->
-  <script src="js/admin.js"></script>
+  <!-- Admin Functions -->
+  <script src="js/admin-functions.js"></script>
   
   <!-- Styles -->
-  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="css/admin-styles.css">
   
   <style>
     body {
@@ -1248,6 +1246,50 @@
   </div>
 
   <script>
+    // Initialize QuoteCalculator
+    const quoteCalculator = new QuoteCalculator();
+
+    // Quick Quote Form Handler
+    document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const serviceType = document.getElementById('quickServiceType').value;
+      const propertySize = parseInt(document.getElementById('quickPropertySize').value);
+      
+      const quote = quoteCalculator.calculateQuote(serviceType, propertySize);
+      document.getElementById('quickQuoteAmount').textContent = '$' + quote.total;
+      document.getElementById('quickQuoteResult').style.display = 'block';
+    });
+
+    // Full Quote Calculator Form Handler
+    document.getElementById('quoteCalculatorForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const serviceType = document.getElementById('serviceType').value;
+      const propertySize = parseInt(document.getElementById('propertySize').value);
+      const complexity = parseFloat(document.getElementById('complexityFactor').value);
+      
+      const quote = quoteCalculator.calculateQuote(serviceType, propertySize, {
+        complexity: complexity
+      });
+      
+      // Display detailed breakdown
+      const breakdown = document.getElementById('quoteBreakdown');
+      breakdown.innerHTML = `
+        <div class="quote-result">
+          <h4>Quote Breakdown</h4>
+          <table>
+            <tr><td>Base Amount:</td><td>$${quote.baseAmount}</td></tr>
+            <tr><td>Complexity Factor:</td><td>${quote.complexityFactor}x</td></tr>
+            <tr><td>Seasonal Adjustment:</td><td>${quote.seasonalAdjustment.toFixed(1)}%</td></tr>
+            ${quote.urgentSurcharge ? `<tr><td>Urgency Surcharge:</td><td>${quote.urgentSurcharge}%</td></tr>` : ''}
+            ${quote.travelFee ? `<tr><td>Travel Fee:</td><td>$${quote.travelFee}</td></tr>` : ''}
+            ${quote.equipmentFee ? `<tr><td>Equipment Fee:</td><td>$${quote.equipmentFee}</td></tr>` : ''}
+            ${quote.permitFee ? `<tr><td>Permit Fee:</td><td>$${quote.permitFee}</td></tr>` : ''}
+            <tr><td><strong>Total:</strong></td><td><strong>$${quote.total}</strong></td></tr>
+          </table>
+        </div>
+      `;
+    });
+
     // Tab switching functionality
     function showTab(tabName) {
       // Hide all tab contents
@@ -1328,28 +1370,6 @@
         document.getElementById('initError').style.display = 'block';
       }
     }, true);
-
-    // Quick quote calculator
-    document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const serviceType = document.getElementById('quickServiceType').value;
-      const propertySize = parseInt(document.getElementById('quickPropertySize').value);
-      
-      // Simple calculation logic
-      let baseRate = 0;
-      switch(serviceType) {
-        case 'Mowing & Trimming': baseRate = 0.05; break;
-        case 'Landscape Design': baseRate = 0.15; break;
-        case 'Leaf Removal': baseRate = 0.08; break;
-        case 'Fertilization & Seeding': baseRate = 0.12; break;
-        case 'Seasonal Cleanup': baseRate = 0.10; break;
-        default: baseRate = 0.07;
-      }
-      
-      const estimate = Math.round(propertySize * baseRate);
-      document.getElementById('quickQuoteAmount').textContent = '$' + estimate;
-      document.getElementById('quickQuoteResult').style.display = 'block';
-    });
 
     // Logout function
     function logout() {

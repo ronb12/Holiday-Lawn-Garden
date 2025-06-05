@@ -4,65 +4,100 @@ class BiddingSystem {
       throw new Error('Firebase must be initialized before creating BiddingSystem');
     }
     this.db = window.HollidayApp.db;
-  }
-
-  // Calculate base price based on property size and service type
-  calculateBasePrice(propertySize, serviceType) {
-    const rates = {
-      'Lawn Mowing & Trimming': 0.02,
-      'Landscaping': 0.03,
-      'Tree Service': 0.04,
-      'Irrigation': 0.025
-    };
-    
-    const rate = rates[serviceType] || 0.02;
-    return propertySize * rate;
-  }
-
-  // Apply adjustments based on property complexity and urgency
-  applyAdjustments(basePrice, complexity, urgent) {
-    let adjustedPrice = basePrice;
-    
-    // Complexity multiplier (1.0 to 1.5)
-    adjustedPrice *= (1 + (complexity * 0.1));
-    
-    // Urgency multiplier (1.0 or 1.2)
-    if (urgent) {
-      adjustedPrice *= 1.2;
-    }
-    
-    return Math.round(adjustedPrice * 100) / 100;
+    this.quoteCalculator = new QuoteCalculator();
   }
 
   // Generate a complete bid
   async generateBid(quoteData) {
     try {
-      const basePrice = this.calculateBasePrice(
-        quoteData.propertyDetails.sizeSqFt,
-        quoteData.services[0].type
-      );
+      const quotes = quoteData.services.map(service => {
+        return this.quoteCalculator.calculateQuote(
+          service.type,
+          quoteData.propertyDetails.sizeSqFt,
+          {
+            complexity: quoteData.propertyDetails.complexity,
+            urgent: quoteData.urgent,
+            frequency: quoteData.frequency || 'once',
+            loyaltyTier: quoteData.loyaltyTier || 0,
+            distance: quoteData.distance || 0,
+            specialEquipment: service.specialEquipment || false,
+            requiresPermit: service.requiresPermit || false
+          }
+        );
+      });
 
-      const totalPrice = this.applyAdjustments(
-        basePrice,
-        quoteData.propertyDetails.complexity,
-        quoteData.urgent
-      );
+      // Calculate totals
+      const baseTotal = quotes.reduce((sum, quote) => sum + quote.baseAmount, 0);
+      const totalBeforeDiscount = quotes.reduce((sum, quote) => sum + quote.total, 0);
+      
+      // Apply package discount if multiple services
+      let packageDiscount = 0;
+      if (quotes.length >= 4) packageDiscount = 0.25;
+      else if (quotes.length >= 3) packageDiscount = 0.2;
+      else if (quotes.length >= 2) packageDiscount = 0.15;
+      
+      const finalTotal = Math.round(totalBeforeDiscount * (1 - packageDiscount));
 
       const bid = {
         customerId: quoteData.customerId,
-        services: quoteData.services,
+        services: quoteData.services.map((service, index) => ({
+          ...service,
+          quote: quotes[index]
+        })),
         propertyDetails: quoteData.propertyDetails,
-        basePrice: basePrice,
-        estimatedTotal: totalPrice,
+        baseTotal,
+        totalBeforeDiscount,
+        packageDiscount: packageDiscount * 100,
+        estimatedTotal: finalTotal,
+        urgent: !!quoteData.urgent,
+        frequency: quoteData.frequency || 'once',
         status: 'pending',
         createdAt: new Date(),
-        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Valid for 7 days
+        validUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
       };
 
       return bid;
     } catch (error) {
       console.error('Error generating bid:', error);
       throw new Error('Failed to generate bid');
+    }
+  }
+
+  // Save bid to database
+  async saveBid(bid) {
+    try {
+      const bidRef = await this.db.collection('bids').add(bid);
+      return bidRef.id;
+    } catch (error) {
+      console.error('Error saving bid:', error);
+      throw new Error('Failed to save bid');
+    }
+  }
+
+  // Get bid by ID
+  async getBid(bidId) {
+    try {
+      const bidDoc = await this.db.collection('bids').doc(bidId).get();
+      if (!bidDoc.exists) {
+        throw new Error('Bid not found');
+      }
+      return bidDoc.data();
+    } catch (error) {
+      console.error('Error retrieving bid:', error);
+      throw new Error('Failed to retrieve bid');
+    }
+  }
+
+  // Update bid status
+  async updateBidStatus(bidId, status) {
+    try {
+      await this.db.collection('bids').doc(bidId).update({
+        status: status,
+        updatedAt: new Date()
+      });
+    } catch (error) {
+      console.error('Error updating bid status:', error);
+      throw new Error('Failed to update bid status');
     }
   }
 }
