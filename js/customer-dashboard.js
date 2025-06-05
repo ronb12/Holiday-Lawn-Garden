@@ -459,7 +459,7 @@ async function exportInvoicesPDF() {
 // --- Reschedule Service ---
 async function rescheduleService(serviceId) {
     const modalContainerId = `rescheduleModalContainer-${serviceId}`;
-    let existingModal = document.getElementById(modalContainerId);
+    const existingModal = document.getElementById(modalContainerId);
     if (existingModal) existingModal.remove();
 
     const modalContainer = document.createElement("div");

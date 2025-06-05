@@ -208,7 +208,7 @@ class QuoteCalculator {
 
   static calculateQuote(service, propertySize, options = {}) {
     try {
-      const baseRate = this.calculateBaseRate(service, propertySize);
+    const baseRate = this.calculateBaseRate(service, propertySize);
       const serviceConfig = serviceRates[service];
       
       // Calculate costs
@@ -216,9 +216,9 @@ class QuoteCalculator {
       const variableCosts = propertySize * serviceConfig.variableCosts;
       const totalCosts = fixedCosts + variableCosts;
 
-      const seasonalFactor = this.getSeasonalAdjustment();
+    const seasonalFactor = this.getSeasonalAdjustment();
       const complexityFactor = this.getComplexityFactor(options.complexity || 'low');
-      const urgencyFactor = options.urgent ? 1.25 : 1;
+    const urgencyFactor = options.urgent ? 1.25 : 1;
       const frequencyFactor = options.frequency === 'weekly' ? 0.9 : 1;
       const loyaltyFactor = options.loyaltyTier ? (1 - (options.loyaltyTier * 0.05)) : 1;
 
@@ -240,16 +240,16 @@ class QuoteCalculator {
       // Calculate actual profit margin
       const actualProfitMargin = (total - totalCosts) / total;
 
-      return {
-        baseRate,
+    return {
+      baseRate,
         costs: {
           fixed: fixedCosts,
           variable: variableCosts,
           total: totalCosts
         },
-        seasonalAdjustment: (seasonalFactor - 1) * 100,
-        complexityAdjustment: (complexityFactor - 1) * 100,
-        urgencyFee: options.urgent ? 25 : 0,
+      seasonalAdjustment: (seasonalFactor - 1) * 100,
+      complexityAdjustment: (complexityFactor - 1) * 100,
+      urgencyFee: options.urgent ? 25 : 0,
         travelFee,
         equipmentFee,
         permitFee,
@@ -315,8 +315,8 @@ class PackageBuilder {
       const minPrice = totalCosts / (1 - 0.2); // Minimum 20% profit margin
       const adjustedPrice = Math.max(finalPrice, minPrice);
 
-      return {
-        services: selectedServices,
+    return {
+      services: selectedServices,
         baseTotal,
         totalCosts,
         packageDiscount: discount * 100,

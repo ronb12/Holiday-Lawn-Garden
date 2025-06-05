@@ -132,7 +132,7 @@ class RouteOptimizer {
     visited[0] = true;
 
     for (let i = 1; i < n; i++) {
-      let lastPoint = route[route.length - 1];
+      const lastPoint = route[route.length - 1];
       let nextPoint = -1;
       let minDistance = Infinity;
 
