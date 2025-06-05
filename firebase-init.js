@@ -21,17 +21,15 @@ async function initializeFirebase() {
         return false;
       }
 
+      // Check if config is available
+      if (!window.firebaseConfig) {
+        console.error('Firebase configuration not found');
+        return false;
+      }
+
       // Initialize Firebase if not already initialized
       if (firebase.apps.length === 0) {
-        firebase.initializeApp({
-          apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
-          authDomain: "holiday-lawn-and-garden.firebaseapp.com",
-          projectId: "holiday-lawn-and-garden",
-          storageBucket: "holiday-lawn-and-garden.firebasestorage.app",
-          messagingSenderId: "135322230444",
-          appId: "1:135322230444:web:1a487b25a48aae07368909",
-          measurementId: "G-KD6TBWR4ZT"
-        });
+        firebase.initializeApp(window.firebaseConfig);
         console.log('✅ Firebase initialized successfully');
         
         // Configure Firestore settings before initializing
@@ -82,3 +80,11 @@ const firebaseReady = initializeFirebase();
 
 // Export the initialization promise
 window.firebaseReadyPromise = firebaseReady;
+
+// Add error event listener for failed script loads
+window.addEventListener('error', function(e) {
+  if (e.target.src && e.target.src.includes('firebase')) {
+    console.error('Failed to load Firebase script:', e.target.src);
+    showNotification('Failed to load Firebase. Please check your internet connection and refresh the page.', 'error');
+  }
+}, true);

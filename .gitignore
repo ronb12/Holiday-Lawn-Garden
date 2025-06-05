@@ -46,4 +46,7 @@ coverage/
 .cache/
 .temp/
 *.pem
-.env*.local 
+.env*.local
+
+# Firebase configuration
+firebase-config.js 
