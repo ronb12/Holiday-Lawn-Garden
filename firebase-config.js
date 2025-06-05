@@ -11,33 +11,51 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase with explicit options for GitHub Pages
-if (typeof firebase !== 'undefined') {
+async function initializeFirebase() {
   try {
-    // Initialize with explicit config for GitHub Pages
-    if (!firebase.apps.length) {
+    // Check if Firebase is already initialized
+    if (firebase.apps.length === 0) {
       firebase.initializeApp(firebaseConfig);
     }
-    
-    // Initialize services
+
+    // Initialize services with error handling
     const auth = firebase.auth();
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
     const firestore = firebase.firestore();
+    await firestore.enablePersistence({ synchronizeTabs: true })
+      .catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
+        } else if (err.code === 'unimplemented') {
+          console.warn('The current browser does not support persistence.');
+        }
+      });
+
     const storage = firebase.storage();
     const analytics = firebase.analytics();
-    
+
     // Make services available globally
     window.HollidayApp = {
       auth,
       db: firestore,
       storage,
       analytics,
-      config: firebaseConfig
+      config: firebaseConfig,
+      initialized: true
     };
-    
-    console.log('✅ Firebase configuration loaded successfully');
+
+    console.log('✅ Firebase services initialized successfully');
+    return true;
   } catch (error) {
     console.error('❌ Firebase initialization error:', error);
+    throw error;
   }
 }
 
-// Make config available globally
-window.firebaseConfig = firebaseConfig; 
+// Initialize Firebase when the script loads
+initializeFirebase().catch(console.error);
+
+// Make config and initialization function available globally
+window.firebaseConfig = firebaseConfig;
+window.initializeFirebase = initializeFirebase; 

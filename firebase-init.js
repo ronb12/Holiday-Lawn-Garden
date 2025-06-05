@@ -79,18 +79,21 @@ async function initializeFirebaseDB() {
         // Don't throw error as analytics is optional
       }
 
-      // Configure Firestore settings
+      // Configure Firestore settings with new cache configuration
       const settings = {
         cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-        merge: true
+        merge: true,
+        cache: {
+          tabManager: {
+            multiClientEnabled: true
+          }
+        }
       };
       window.HollidayApp.db.settings(settings);
 
-      // Enable offline persistence with correct method for Firebase 9.x
+      // Enable offline persistence
       try {
-        await window.HollidayApp.db.enablePersistence({
-          synchronizeTabs: true
-        });
+        await window.HollidayApp.db.enablePersistence();
         console.log('✅ Offline persistence enabled');
       } catch (err) {
         if (err.code === 'failed-precondition') {

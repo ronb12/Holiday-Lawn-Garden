@@ -8,43 +8,32 @@
   <link rel="icon" href="icons/icon-192.png" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="modern-styles.css" />
+  
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-functions-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-performance-compat.js"></script>
   
-  <!-- App Configuration and Initialization -->
-  <script src="firebase-config.js"></script>
-  <script src="firebase-init.js"></script>
-  <script src="errorHandler.js"></script>
+  <!-- Firebase Config and Initialization -->
+  <script src="firebase-config.js" onerror="console.error('Failed to load Firebase config'); document.getElementById('initError').style.display = 'block';"></script>
+  <script src="js/services/firebase-init.js" onerror="console.error('Failed to load Firebase initialization'); document.getElementById('initError').style.display = 'block';"></script>
   
-  <!-- Core Services -->
-  <script src="utils.js"></script>
-  <script src="quote-calculator.js"></script>
-  <script src="bidding-system.js"></script>
-  <script src="invoice-service.js"></script>
-  
-  <!-- Admin Setup and Functions -->
-  <script src="admin-functions.js"></script>
-  <script src="admin-setup-production.js"></script>
+  <!-- Service Classes -->
+  <script src="js/services/bidding-system.js"></script>
+  <script src="js/services/invoice-service.js"></script>
+  <script src="js/services/production-setup.js"></script>
   
   <!-- Test Scripts -->
-  <script src="test-customer.js"></script>
-  <script src="auto-test.js"></script>
-  <script src="comprehensive-test.js"></script>
+  <script src="js/test/comprehensive-test.js"></script>
+  <script src="js/test/test-customer.js"></script>
   
-  <!-- Initialize Firebase Performance Monitoring -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof firebase !== 'undefined' && typeof firebase.performance === 'function') {
-        firebase.performance();
-      }
-    });
-  </script>
+  <!-- Main Admin Script -->
+  <script src="js/admin.js"></script>
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/admin.css">
   
   <style>
     body {
@@ -565,6 +554,17 @@
       line-height: 1.5;
       color: #1e293b;
     }
+
+    #initError {
+      display: none;
+      background: #fee2e2;
+      border: 1px solid #ef4444;
+      color: #b91c1c;
+      padding: 1rem;
+      margin: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body class="admin-page-active">
@@ -573,11 +573,16 @@
     <div class="loading-spinner"></div>
   </div>
 
+  <!-- Initialization Error Message -->
+  <div id="initError">
+    <strong>Error:</strong> Failed to initialize the admin dashboard. Please check your internet connection and refresh the page.
+  </div>
+
   <div class="admin-container">
     <!-- Header -->
     <div class="admin-header">
       <div>
-    <h1>Admin Dashboard</h1>
+        <h1>Admin Dashboard</h1>
         <div class="subtitle">Holliday's Lawn & Garden Management System</div>
       </div>
       <div class="admin-header-actions">
@@ -674,18 +679,18 @@
           <div class="form-section">
             <h3>Quick Quote Calculator</h3>
             <form id="quickQuoteForm" class="form-modern">
-          <div class="form-group">
+              <div class="form-group">
                 <label for="quickServiceType">Service Type</label>
                 <select id="quickServiceType" class="form-control" required>
-              <option value="">-- Select Service --</option>
-              <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
-              <option value="Landscape Design">🌸 Landscape Design</option>
-              <option value="Leaf Removal">🍂 Leaf Removal</option>
-              <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
-              <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
-            </select>
-          </div>
-          <div class="form-group">
+                  <option value="">-- Select Service --</option>
+                  <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
+                  <option value="Landscape Design">🌸 Landscape Design</option>
+                  <option value="Leaf Removal">🍂 Leaf Removal</option>
+                  <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+                  <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="quickPropertySize">Property Size (sq ft)</label>
                 <input type="number" id="quickPropertySize" class="form-control" required min="100" step="100">
               </div>
@@ -709,7 +714,7 @@
           </div>
         </div>
       </div>
-  </div>
+    </div>
 
     <!-- Tab Content: Service Requests -->
     <div id="requests-tab" class="tab-content">
@@ -738,8 +743,8 @@
             </tbody>
           </table>
         </div>
-            </div>
-  </div>
+      </div>
+    </div>
 
     <!-- Tab Content: Quotes & Bids -->
     <div id="quotes-tab" class="tab-content">
@@ -802,7 +807,7 @@
                 <input type="number" id="complexityFactor" class="form-control" min="1" max="3" step="0.1" value="1">
               </div>
               <button type="submit" class="btn-primary">Calculate Quote</button>
-        </form>
+            </form>
             <div id="quoteBreakdown"></div>
           </div>
         </div>
@@ -846,7 +851,7 @@
                 <label for="invoiceAmount">Amount ($)</label>
                 <input type="number" id="invoiceAmount" class="form-control" required min="0" step="0.01">
               </div>
-        <div class="form-group">
+              <div class="form-group">
                 <label for="invoiceDueDate">Due Date</label>
                 <input type="date" id="invoiceDueDate" class="form-control" required>
               </div>
@@ -857,28 +862,28 @@
 
         <div class="search-bar" style="margin-top: 2rem;">
           <input type="text" id="invoiceSearch" class="search-input" placeholder="Search by customer, email, or invoice #..." onkeyup="filterInvoicesTable()">
-  </div>
+        </div>
         
         <div class="table-container">
           <table id="adminInvoicesTable" class="table">
-      <thead>
-        <tr>
-              <th>Invoice #</th>
-          <th>Customer</th>
-              <th>Email</th>
-          <th>Amount</th>
-              <th>Due Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-          <tbody id="adminInvoicesTableBody">
-            <!-- Invoice rows will be populated here -->
-          </tbody>
-    </table>
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminInvoicesTableBody">
+              <!-- Invoice rows will be populated here -->
+            </tbody>
+          </table>
+        </div>
       </div>
-            </div>
-          </div>
+    </div>
 
     <!-- Tab Content: Customers -->
     <div id="customers-tab" class="tab-content">
@@ -1084,22 +1089,22 @@
       <div class="tab-content-body">
         <div class="form-grid">
           <div class="form-section">
-          <h3>Add New Equipment</h3>
-          <form id="addEquipmentForm">
-            <div class="form-group">
-              <label for="equipmentName">Equipment Name</label>
+            <h3>Add New Equipment</h3>
+            <form id="addEquipmentForm">
+              <div class="form-group">
+                <label for="equipmentName">Equipment Name</label>
                 <input type="text" id="equipmentName" class="form-control" required>
-            </div>
-            <div class="form-group">
+              </div>
+              <div class="form-group">
                 <label for="equipmentType">Equipment Type</label>
                 <input type="text" id="equipmentType" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="equipmentPurchaseDate">Purchase Date</label>
+              </div>
+              <div class="form-group">
+                <label for="equipmentPurchaseDate">Purchase Date</label>
                 <input type="date" id="equipmentPurchaseDate" class="form-control" required>
-            </div>
-            <div class="form-group">
-              <label for="equipmentCost">Cost ($)</label>
+              </div>
+              <div class="form-group">
+                <label for="equipmentCost">Cost ($)</label>
                 <input type="number" id="equipmentCost" class="form-control" min="0" step="0.01" required>
               </div>
               <button type="submit" class="btn-primary">Add Equipment</button>
@@ -1120,62 +1125,62 @@
               <div class="form-group">
                 <label for="materialStockLevel">Stock Level</label>
                 <input type="number" id="materialStockLevel" class="form-control" min="0" step="0.01" required>
-            </div>
-            <div class="form-group">
+              </div>
+              <div class="form-group">
                 <label for="materialUnit">Unit</label>
                 <input type="text" id="materialUnit" class="form-control" required>
-            </div>
+              </div>
               <button type="submit" class="btn-primary">Add Material</button>
-          </form>
+            </form>
           </div>
-  </div>
+        </div>
 
         <div style="margin-top: 2rem;">
           <h3>Equipment Inventory</h3>
           <div class="table-container">
             <table id="equipmentTable" class="table">
-      <thead>
-        <tr>
-              <th>Name</th>
-              <th>Type</th>
-          <th>Status</th>
-              <th>Usage Hours</th>
-              <th>Next Maintenance</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Usage Hours</th>
+                  <th>Next Maintenance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody></tbody>
-    </table>
-  </div>
-  </div>
+            </table>
+          </div>
+        </div>
 
         <div style="margin-top: 2rem;">
           <h3>Materials Inventory</h3>
           <div class="table-container">
             <table id="materialsTable" class="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-              <th>Type</th>
-              <th>Stock Level</th>
-              <th>Unit</th>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Stock Level</th>
+                  <th>Unit</th>
                   <th>Status</th>
-              <th>Actions</th>
-        </tr>
-      </thead>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody></tbody>
-        </table>
+            </table>
+          </div>
+        </div>
       </div>
-            </div>
-            </div>
-            </div>
+    </div>
 
     <!-- Tab Content: Reports -->
     <div id="reports-tab" class="tab-content">
       <div class="tab-content-header">
         <h2>Reports & Analytics</h2>
         <p>Generate reports and view business analytics</p>
-            </div>
+      </div>
       <div class="tab-content-body">
         <div class="form-grid">
           <div class="form-section">
@@ -1183,7 +1188,7 @@
             <button class="btn-primary" style="margin-bottom: 1rem; display: block;">Monthly Revenue Report</button>
             <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Outstanding Invoices</button>
             <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Profit & Loss Statement</button>
-              </div>
+          </div>
 
           <div class="form-section">
             <h3>Sustainability Reports</h3>
@@ -1191,7 +1196,7 @@
             <div id="sustainabilityReportView" style="margin-top: 1rem; display: none;">
               <pre id="sustainabilityReportContent" style="background: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem;"></pre>
             </div>
-            </div>
+          </div>
         </div>
 
         <div style="margin-top: 2rem;">
@@ -1206,8 +1211,8 @@
                   <th>Job/Customer</th>
                 </tr>
               </thead>
-          <tbody></tbody>
-        </table>
+              <tbody></tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1289,22 +1294,40 @@
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        // Initialize Firebase
-        const dbInitialized = await initializeFirebaseDB();
-        if (!dbInitialized) {
-          throw new Error('Failed to initialize database');
+        // Check if Firebase SDK is loaded
+        if (typeof firebase === 'undefined') {
+          throw new Error('Firebase SDK failed to load');
         }
+
+        // Initialize Firebase
+        await initializeFirebase();
         
-        // Load initial data
-        updateDashboardStats();
-        loadCustomersList();
+        // Initialize ProductionSetup
+        window.productionSetup = new ProductionSetup();
         
-        console.log('Admin dashboard initialized successfully');
+        // Run system tests
+        await runComprehensiveTests();
+
+        // Hide error message if initialization succeeds
+        document.getElementById('initError').style.display = 'none';
       } catch (error) {
-        console.error('Dashboard initialization error:', error);
-        showNotification('Failed to initialize dashboard. Please refresh the page.', 'error');
+        console.error('Initialization error:', error);
+        document.getElementById('initError').style.display = 'block';
+        document.getElementById('test-output').innerHTML = `
+          <div class="error-message">
+            Error initializing system: ${error.message}
+          </div>
+        `;
       }
     });
+
+    // Add error event listener for failed script loads
+    window.addEventListener('error', function(e) {
+      if (e.target.src && e.target.src.includes('firebase')) {
+        console.error('Failed to load script:', e.target.src);
+        document.getElementById('initError').style.display = 'block';
+      }
+    }, true);
 
     // Quick quote calculator
     document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
