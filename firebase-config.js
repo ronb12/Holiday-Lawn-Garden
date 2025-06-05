@@ -1,12 +1,12 @@
 // Firebase configuration for GitHub Pages deployment
 const firebaseConfig = {
-  apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
-  authDomain: "holiday-lawn-and-garden.firebaseapp.com",
-  projectId: "holiday-lawn-and-garden",
-  storageBucket: "holiday-lawn-and-garden.appspot.com",
-  messagingSenderId: "135322230444",
-  appId: "1:135322230444:web:1a487b25a48aae07368909",
-  measurementId: "G-KD6TBWR4ZT",
+  apiKey: "AIzaSyDGBZnNBEVZXuuDUkQxQvFmQPzEXCGYzwE",
+  authDomain: "holliday-lawn-garden.firebaseapp.com",
+  projectId: "holliday-lawn-garden",
+  storageBucket: "holliday-lawn-garden.appspot.com",
+  messagingSenderId: "1098127322593",
+  appId: "1:1098127322593:web:e6c9a9c4d899c94f7e1ad8",
+  measurementId: "G-QWZQXV9QY6",
   databaseURL: "https://holiday-lawn-and-garden.firebaseio.com"
 };
 
