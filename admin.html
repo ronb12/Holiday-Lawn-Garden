@@ -18,6 +18,7 @@
   
   <!-- Firebase Config -->
   <script src="firebase-config.js"></script>
+  <script src="js/services/firebase-init.js"></script>
   
   <!-- Service Classes -->
   <script src="js/services/quote-calculator.js"></script>
@@ -566,14 +567,16 @@
   </style>
 </head>
 <body class="admin-page-active">
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay" style="display: none;">
-    <div class="loading-spinner"></div>
+  <!-- Error Messages -->
+  <div id="firebaseError" class="error-message" style="display: none;"></div>
+  <div id="initError" class="error-message" style="display: none;">
+    Failed to initialize the application. Please check your internet connection and try again.
   </div>
 
-  <!-- Initialization Error Message -->
-  <div id="initError">
-    <strong>Error:</strong> Failed to initialize the admin dashboard. Please check your internet connection and refresh the page.
+  <!-- Loading Indicator -->
+  <div id="loadingIndicator" class="loading" style="display: none;">
+    <div class="spinner"></div>
+    <p>Loading...</p>
   </div>
 
   <div class="admin-container">
@@ -1246,135 +1249,73 @@
   </div>
 
   <script>
-    // Initialize QuoteCalculator
-    const quoteCalculator = new QuoteCalculator();
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
 
-    // Quick Quote Form Handler
-    document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const serviceType = document.getElementById('quickServiceType').value;
-      const propertySize = parseInt(document.getElementById('quickPropertySize').value);
+    // Wait for Firebase initialization
+    window.addEventListener('firebaseInitialized', () => {
+      // Hide loading indicator
+      document.getElementById('loadingIndicator').style.display = 'none';
+      // Show main content
+      document.getElementById('mainContent').style.display = 'block';
       
-      const quote = quoteCalculator.calculateQuote(serviceType, propertySize);
-      document.getElementById('quickQuoteAmount').textContent = '$' + quote.total;
-      document.getElementById('quickQuoteResult').style.display = 'block';
-    });
+      // Initialize QuoteCalculator
+      const quoteCalculator = new QuoteCalculator();
 
-    // Full Quote Calculator Form Handler
-    document.getElementById('quoteCalculatorForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const serviceType = document.getElementById('serviceType').value;
-      const propertySize = parseInt(document.getElementById('propertySize').value);
-      const complexity = parseFloat(document.getElementById('complexityFactor').value);
-      
-      const quote = quoteCalculator.calculateQuote(serviceType, propertySize, {
-        complexity: complexity
+      // Quick Quote Form Handler
+      document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const serviceType = document.getElementById('quickServiceType').value;
+        const propertySize = parseInt(document.getElementById('quickPropertySize').value);
+        
+        const quote = quoteCalculator.calculateQuote(serviceType, propertySize);
+        document.getElementById('quickQuoteAmount').textContent = '$' + quote.total;
+        document.getElementById('quickQuoteResult').style.display = 'block';
       });
-      
-      // Display detailed breakdown
-      const breakdown = document.getElementById('quoteBreakdown');
-      breakdown.innerHTML = `
-        <div class="quote-result">
-          <h4>Quote Breakdown</h4>
-          <table>
-            <tr><td>Base Amount:</td><td>$${quote.baseAmount}</td></tr>
-            <tr><td>Complexity Factor:</td><td>${quote.complexityFactor}x</td></tr>
-            <tr><td>Seasonal Adjustment:</td><td>${quote.seasonalAdjustment.toFixed(1)}%</td></tr>
-            ${quote.urgentSurcharge ? `<tr><td>Urgency Surcharge:</td><td>${quote.urgentSurcharge}%</td></tr>` : ''}
-            ${quote.travelFee ? `<tr><td>Travel Fee:</td><td>$${quote.travelFee}</td></tr>` : ''}
-            ${quote.equipmentFee ? `<tr><td>Equipment Fee:</td><td>$${quote.equipmentFee}</td></tr>` : ''}
-            ${quote.permitFee ? `<tr><td>Permit Fee:</td><td>$${quote.permitFee}</td></tr>` : ''}
-            <tr><td><strong>Total:</strong></td><td><strong>$${quote.total}</strong></td></tr>
-          </table>
-        </div>
-      `;
-    });
 
-    // Tab switching functionality
-    function showTab(tabName) {
-      // Hide all tab contents
-      const tabContents = document.querySelectorAll('.tab-content');
-      tabContents.forEach(tab => tab.classList.remove('active'));
-      
-      // Remove active class from all tab items
-      const tabItems = document.querySelectorAll('.tab-item');
-      tabItems.forEach(item => item.classList.remove('active'));
-      
-      // Show selected tab content
-      const selectedTab = document.getElementById(tabName + '-tab');
-      if (selectedTab) {
-        selectedTab.classList.add('active');
+      // Full Quote Calculator Form Handler
+      document.getElementById('quoteCalculatorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const serviceType = document.getElementById('serviceType').value;
+        const propertySize = parseInt(document.getElementById('propertySize').value);
+        const complexity = parseFloat(document.getElementById('complexityFactor').value);
         
-        // Add active class to clicked tab item
-        if (event && event.target) {
-          event.target.classList.add('active');
-        }
+        const quote = quoteCalculator.calculateQuote(serviceType, propertySize, {
+          complexity: complexity
+        });
         
-        // Load data for specific tabs
-        try {
-          console.log(`Loading data for ${tabName} tab`);
-          if (tabName === 'overview') {
-            updateDashboardStats();
-          } else if (tabName === 'customers') {
-            console.log('Loading customers list...');
-            loadCustomersList();
-            loadCustomersDropdown();
-          } else if (tabName === 'requests') {
-            loadIncomingServiceRequests();
-          } else if (tabName === 'invoices') {
-            loadAdminInvoicesTable();
-          }
-        } catch (error) {
-          console.error(`Error loading ${tabName} tab data:`, error);
-          showNotification(`Failed to load ${tabName} data. Please try again.`, 'error');
-        }
-      } else {
-        console.error(`Tab content not found: ${tabName}-tab`);
-      }
-    }
-
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // Check if Firebase SDK is loaded
-        if (typeof firebase === 'undefined') {
-          throw new Error('Firebase SDK failed to load');
-        }
-
-        // Initialize Firebase
-        await initializeFirebase();
-        
-        // Initialize ProductionSetup
-        window.productionSetup = new ProductionSetup();
-        
-        // Run system tests
-        await runComprehensiveTests();
-
-        // Hide error message if initialization succeeds
-        document.getElementById('initError').style.display = 'none';
-      } catch (error) {
-        console.error('Initialization error:', error);
-        document.getElementById('initError').style.display = 'block';
-        document.getElementById('test-output').innerHTML = `
-          <div class="error-message">
-            Error initializing system: ${error.message}
+        // Display detailed breakdown
+        const breakdown = document.getElementById('quoteBreakdown');
+        breakdown.innerHTML = `
+          <div class="quote-result">
+            <h4>Quote Breakdown</h4>
+            <table>
+              <tr><td>Base Amount:</td><td>$${quote.baseAmount}</td></tr>
+              <tr><td>Complexity Factor:</td><td>${quote.complexityFactor}x</td></tr>
+              <tr><td>Seasonal Adjustment:</td><td>${quote.seasonalAdjustment.toFixed(1)}%</td></tr>
+              ${quote.urgentSurcharge ? `<tr><td>Urgency Surcharge:</td><td>${quote.urgentSurcharge}%</td></tr>` : ''}
+              ${quote.travelFee ? `<tr><td>Travel Fee:</td><td>$${quote.travelFee}</td></tr>` : ''}
+              ${quote.equipmentFee ? `<tr><td>Equipment Fee:</td><td>$${quote.equipmentFee}</td></tr>` : ''}
+              ${quote.permitFee ? `<tr><td>Permit Fee:</td><td>$${quote.permitFee}</td></tr>` : ''}
+              <tr><td><strong>Total:</strong></td><td><strong>$${quote.total}</strong></td></tr>
+            </table>
           </div>
         `;
-      }
+      });
     });
 
-    // Add error event listener for failed script loads
+    // Error handling for script loading
     window.addEventListener('error', function(e) {
-      if (e.target.src && e.target.src.includes('firebase')) {
-        console.error('Failed to load script:', e.target.src);
+      if (e.filename && e.filename.includes('firebase')) {
         document.getElementById('initError').style.display = 'block';
+        document.getElementById('loadingIndicator').style.display = 'none';
       }
     }, true);
 
     // Logout function
     function logout() {
-      if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().signOut().then(() => {
+      if (window.HollidayApp?.auth) {
+        window.HollidayApp.auth.signOut().then(() => {
           window.location.href = 'login.html';
         }).catch((error) => {
           console.error('Logout error:', error);
