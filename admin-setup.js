@@ -2,30 +2,29 @@
 // Run this script in the browser console after logging into the admin account
 
 // Wait for Firebase to be ready
-function waitForFirebase() {
-  return new Promise((resolve) => {
-    const checkFirebase = () => {
-      if (typeof firebase !== 'undefined' && firebase.apps.length > 0 && firebase.firestore) {
-        resolve(firebase.firestore());
-      } else {
-        setTimeout(checkFirebase, 100);
-      }
-    };
-    checkFirebase();
-  });
+async function waitForFirebase() {
+  try {
+    const initialized = await window.firebaseReadyPromise;
+    if (!initialized) {
+      throw new Error('Firebase failed to initialize');
+    }
+    return window.HollidayApp.db;
+  } catch (error) {
+    console.error('Error waiting for Firebase:', error);
+    throw error;
+  }
 }
 
 // Setup admin user role
-async function setupAdminUser(userEmail) {
-  const db = await waitForFirebase();
-  const currentUser = firebase.auth().currentUser;
-  
-  if (!currentUser) {
-    console.error('No user is currently logged in. Please log in first.');
-    return false;
-  }
-  
+async function setupAdminUser() {
   try {
+    const db = await waitForFirebase();
+    const currentUser = window.HollidayApp.currentUser;
+    
+    if (!currentUser) {
+      throw new Error('No user is currently logged in. Please log in first.');
+    }
+    
     await db.collection('users').doc(currentUser.uid).set({
       email: currentUser.email,
       displayName: currentUser.displayName || 'Administrator',
@@ -52,152 +51,121 @@ async function setupAdminUser(userEmail) {
   }
 }
 
-// Add sample customers to the database
+// Add sample customers for testing
 async function addSampleCustomers() {
-  const db = await waitForFirebase();
-  
-  const sampleCustomers = [
-    {
-      email: 'john.doe@email.com',
-      displayName: 'John Doe',
-      role: 'customer',
-      phone: '(555) 123-4567',
-      address: {
-        street: '123 Oak Street',
-        city: 'Springdale',
-        state: 'FL',
-        zip: '32789'
-      },
-      propertyDetails: {
-        sizeSqFt: 7500,
-        propertyType: 'residential',
-        hasPool: false,
-        hasSprinklers: true
-      },
-      preferences: {
-        communicationMethod: 'email',
-        serviceFrequency: 'bi-weekly'
-      },
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      isActive: true
-    },
-    {
-      email: 'sarah.johnson@email.com',
-      displayName: 'Sarah Johnson',
-      role: 'customer',
-      phone: '(555) 234-5678',
-      address: {
-        street: '456 Pine Avenue',
-        city: 'Winter Park',
-        state: 'FL',
-        zip: '32792'
-      },
-      propertyDetails: {
-        sizeSqFt: 12000,
-        propertyType: 'residential',
-        hasPool: true,
-        hasSprinklers: false
-      },
-      preferences: {
-        communicationMethod: 'phone',
-        serviceFrequency: 'weekly'
-      },
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      isActive: true
-    },
-    {
-      email: 'mike.wilson@email.com',
-      displayName: 'Mike Wilson',
-      role: 'customer',
-      phone: '(555) 345-6789',
-      address: {
-        street: '789 Maple Drive',
-        city: 'Orlando',
-        state: 'FL',
-        zip: '32803'
-      },
-      propertyDetails: {
-        sizeSqFt: 5000,
-        propertyType: 'residential',
-        hasPool: false,
-        hasSprinklers: false
-      },
-      preferences: {
-        communicationMethod: 'email',
-        serviceFrequency: 'monthly'
-      },
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      isActive: true
-    },
-    {
-      email: 'lisa.brown@email.com',
-      displayName: 'Lisa Brown',
-      role: 'customer',
-      phone: '(555) 456-7890',
-      address: {
-        street: '321 Cedar Lane',
-        city: 'Altamonte Springs',
-        state: 'FL',
-        zip: '32714'
-      },
-      propertyDetails: {
-        sizeSqFt: 9000,
-        propertyType: 'residential',
-        hasPool: true,
-        hasSprinklers: true
-      },
-      preferences: {
-        communicationMethod: 'text',
-        serviceFrequency: 'bi-weekly'
-      },
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      isActive: true
-    },
-    {
-      email: 'david.miller@email.com',
-      displayName: 'David Miller',
-      role: 'customer',
-      phone: '(555) 567-8901',
-      address: {
-        street: '654 Birch Boulevard',
-        city: 'Kissimmee',
-        state: 'FL',
-        zip: '34741'
-      },
-      propertyDetails: {
-        sizeSqFt: 15000,
-        propertyType: 'commercial',
-        hasPool: false,
-        hasSprinklers: true
-      },
-      preferences: {
-        communicationMethod: 'email',
-        serviceFrequency: 'weekly'
-      },
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      isActive: true
-    }
-  ];
-  
-  console.log('Adding sample customers...');
-  
   try {
+    const db = await waitForFirebase();
+    
+    const sampleCustomers = [
+      {
+        email: 'john.doe@example.com',
+        displayName: 'John Doe',
+        role: 'customer',
+        phone: '(504) 555-0123',
+        address: {
+          street: '123 Oak Street',
+          city: 'New Orleans',
+          state: 'LA',
+          zip: '70112'
+        },
+        propertyDetails: {
+          sizeSqFt: 5000,
+          propertyType: 'residential',
+          hasPool: false,
+          hasSprinklers: true
+        },
+        preferences: {
+          communicationMethod: 'email',
+          serviceFrequency: 'bi-weekly'
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        isActive: true
+      },
+      {
+        email: 'jane.smith@example.com',
+        displayName: 'Jane Smith',
+        role: 'customer',
+        phone: '(504) 555-0456',
+        address: {
+          street: '456 Maple Ave',
+          city: 'Metairie',
+          state: 'LA',
+          zip: '70001'
+        },
+        propertyDetails: {
+          sizeSqFt: 7500,
+          propertyType: 'residential',
+          hasPool: true,
+          hasSprinklers: true
+        },
+        preferences: {
+          communicationMethod: 'text',
+          serviceFrequency: 'weekly'
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        isActive: true
+      }
+    ];
+
+    console.log('Adding sample customers...');
+    
     const batch = db.batch();
     
-    sampleCustomers.forEach(customer => {
-      const customerRef = db.collection('users').doc(); // Auto-generate UID
-      batch.set(customerRef, customer);
-    });
+    for (const customer of sampleCustomers) {
+      // Create auth user first
+      try {
+        const userCredential = await firebase.auth().createUserWithEmailAndPassword(
+          customer.email, 
+          'TempPass123!'  // Temporary password
+        );
+        
+        // Add customer data to Firestore
+        const customerRef = db.collection('users').doc(userCredential.user.uid);
+        batch.set(customerRef, customer);
+        
+        // Send password reset email
+        await firebase.auth().sendPasswordResetEmail(customer.email);
+        
+        console.log(`✅ Created customer: ${customer.displayName}`);
+      } catch (error) {
+        if (error.code === 'auth/email-already-in-use') {
+          console.log(`Customer ${customer.email} already exists, skipping...`);
+          
+          // Try to get the existing user's UID
+          try {
+            const userRecord = await firebase.auth().getUserByEmail(customer.email);
+            const customerRef = db.collection('users').doc(userRecord.uid);
+            batch.set(customerRef, customer, { merge: true });
+            console.log(`Updated existing customer: ${customer.displayName}`);
+          } catch (e) {
+            console.error(`Error updating existing customer ${customer.email}:`, e);
+          }
+        } else {
+          console.error(`Error creating customer ${customer.email}:`, error);
+        }
+      }
+    }
     
     await batch.commit();
     console.log('✅ Sample customers added successfully!');
-    console.log(`Added ${sampleCustomers.length} customers to the database.`);
     return true;
   } catch (error) {
     console.error('❌ Error adding sample customers:', error);
     return false;
   }
 }
+
+// Add a button to the admin interface to add sample customers
+document.addEventListener('DOMContentLoaded', () => {
+  const adminHeader = document.querySelector('.section-header');
+  if (adminHeader) {
+    const addSampleBtn = document.createElement('button');
+    addSampleBtn.className = 'btn btn-secondary';
+    addSampleBtn.textContent = 'Add Sample Customers';
+    addSampleBtn.onclick = addSampleCustomers;
+    adminHeader.appendChild(addSampleBtn);
+  }
+});
 
 // Add sample service requests
 async function addSampleServiceRequests() {
@@ -288,38 +256,45 @@ async function addSampleServiceRequests() {
 async function runCompleteSetup() {
   console.log('🚀 Starting Holliday\'s Lawn & Garden Admin Setup...');
   
-  if (!firebase.auth().currentUser) {
-    console.error('❌ Please log in as an admin user first, then run this script.');
-    return;
-  }
-  
-  const steps = [
-    { name: 'Setting up admin user role', fn: () => setupAdminUser() },
-    { name: 'Adding sample customers', fn: addSampleCustomers },
-    { name: 'Adding sample service requests', fn: addSampleServiceRequests }
-  ];
-  
-  for (let i = 0; i < steps.length; i++) {
-    const step = steps[i];
-    console.log(`\n📋 Step ${i + 1}: ${step.name}...`);
+  try {
+    const db = await waitForFirebase();
+    const currentUser = window.HollidayApp.currentUser;
     
-    try {
-      const success = await step.fn();
-      if (success) {
-        console.log(`✅ Step ${i + 1} completed successfully!`);
-      } else {
-        console.log(`⚠️ Step ${i + 1} had issues - check the logs above.`);
-      }
-    } catch (error) {
-      console.error(`❌ Step ${i + 1} failed:`, error);
+    if (!currentUser) {
+      console.error('❌ Please log in as an admin user first, then run this script.');
+      return;
     }
+    
+    const steps = [
+      { name: 'Setting up admin user role', fn: setupAdminUser },
+      { name: 'Adding sample customers', fn: addSampleCustomers },
+      { name: 'Adding sample service requests', fn: addSampleServiceRequests }
+    ];
+    
+    for (let i = 0; i < steps.length; i++) {
+      const step = steps[i];
+      console.log(`\n📋 Step ${i + 1}: ${step.name}...`);
+      
+      try {
+        const success = await step.fn();
+        if (success) {
+          console.log(`✅ Step ${i + 1} completed successfully!`);
+        } else {
+          console.log(`⚠️ Step ${i + 1} had issues - check the logs above.`);
+        }
+      } catch (error) {
+        console.error(`❌ Step ${i + 1} failed:`, error);
+      }
+    }
+    
+    console.log('\n🎉 Admin setup completed! Your Holliday\'s Lawn & Garden admin dashboard is ready to use.');
+    console.log('\n📋 Next steps:');
+    console.log('1. Deploy your Firestore rules using: firebase deploy --only firestore:rules');
+    console.log('2. Refresh your admin dashboard to see the new data');
+    console.log('3. Test the admin functionality with the sample data');
+  } catch (error) {
+    console.error('❌ Setup failed:', error);
   }
-  
-  console.log('\n🎉 Admin setup completed! Your Holliday\'s Lawn & Garden admin dashboard is ready to use.');
-  console.log('\n📋 Next steps:');
-  console.log('1. Deploy your Firestore rules using: firebase deploy --only firestore:rules');
-  console.log('2. Refresh your admin dashboard to see the new data');
-  console.log('3. Test the admin functionality with the sample data');
 }
 
 // Make functions available globally for console usage
@@ -330,4 +305,12 @@ window.adminSetup = {
   addSampleServiceRequests
 };
 
-console.log('🔧 Admin setup script loaded! Run adminSetup.runCompleteSetup() to begin setup.'); 
+// Initialize when page loads
+window.addEventListener('load', async () => {
+  try {
+    await waitForFirebase();
+    console.log('🔧 Admin setup script loaded! Run adminSetup.runCompleteSetup() to begin setup.');
+  } catch (error) {
+    console.error('❌ Failed to initialize admin setup:', error);
+  }
+}); 

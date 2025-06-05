@@ -5,13 +5,37 @@
 let db;
 let auth;
 
-// Initialize Firebase DB reference, now always after firebaseReadyPromise
+// Initialize Firebase DB reference
 async function initializeFirebaseDB() {
   try {
-    const app = await window.firebaseReadyPromise;
-    db = window.HollidayApp.db;
-    auth = window.HollidayApp.auth;
-    return true;
+    if (typeof firebase === 'undefined') {
+      console.error('Firebase SDK not loaded');
+      showNotification('Firebase SDK not loaded. Please refresh the page.', 'error');
+      return false;
+    }
+
+    if (firebase.apps.length === 0) {
+      if (!window.firebaseConfig) {
+        console.error('Firebase configuration not found');
+        showNotification('Firebase configuration missing. Please check setup.', 'error');
+        return false;
+      }
+      firebase.initializeApp(window.firebaseConfig);
+    }
+
+    db = firebase.firestore();
+    auth = firebase.auth();
+
+    // Test database connection
+    try {
+      await db.collection('users').limit(1).get();
+      console.log('✅ Firebase DB initialized and connected successfully');
+      return true;
+    } catch (dbError) {
+      console.error('Database connection test failed:', dbError);
+      showNotification('Could not connect to database. Please check your connection.', 'error');
+      return false;
+    }
   } catch (error) {
     console.error('Firebase initialization error:', error);
     showNotification('Failed to initialize Firebase. Please refresh the page.', 'error');
@@ -85,6 +109,94 @@ function showTab(id) {
     }
   } catch (error) {
     console.warn('Tab switching error:', error);
+  }
+}
+
+// Customer Management
+async function loadCustomersList() {
+  const customersList = document.querySelector('.customers-list');
+  if (!customersList) {
+    console.warn('Customers list container not found');
+    return;
+  }
+
+  try {
+    showLoader();
+    
+    // Use the proper Firebase reference
+    const db = window.HollidayApp.db;
+    if (!db) {
+      throw new Error('Database not available or not initialized');
+    }
+
+    console.log('Loading customers from database...');
+    
+    // Only get real customers from the database
+    const snapshot = await db.collection("users")
+      .where("role", "==", "customer")
+      .where("isActive", "==", true)  // Only get active customers
+      .orderBy("createdAt", "desc")   // Show newest customers first
+      .get();
+    
+    console.log(`Found ${snapshot.size} customers in database`);
+    
+    if (snapshot.empty) {
+      customersList.innerHTML = `
+        <div style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 8px;">
+          <h3 style="color: #64748b; margin-bottom: 1rem;">No Customers Found</h3>
+          <p style="color: #94a3b8;">Add your first customer using the "Add New Customer" button above.</p>
+        </div>`;
+      return;
+    }
+
+    const customersHTML = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      console.log('Customer data:', { id: doc.id, ...data });
+      
+      const address = [
+        data.address?.street,
+        data.address?.city,
+        data.address?.state,
+        data.address?.zip
+      ].filter(Boolean).join(', ');
+      
+      customersHTML.push(`
+        <div class="customer-card">
+          <div class="customer-info">
+            <h3>${data.displayName || 'Unnamed Customer'}</h3>
+            <p>
+              <strong>Contact:</strong> ${data.email || 'No email'} | ${data.phone || 'No phone'}
+            </p>
+            <p>
+              <strong>Address:</strong> ${address || 'No address provided'}
+            </p>
+            <p>
+              <strong>Property:</strong> ${data.propertyDetails?.sizeSqFt || 'N/A'} sq ft | 
+              ${data.propertyDetails?.propertyType || 'N/A'} |
+              Service: ${data.preferences?.serviceFrequency || 'Not specified'}
+            </p>
+          </div>
+          <div class="customer-actions">
+            <button onclick="loadCustomerForEdit('${doc.id}')" class="btn btn-secondary">Edit</button>
+            <button onclick="deleteCustomer('${doc.id}')" class="btn btn-danger">Delete</button>
+          </div>
+        </div>
+      `);
+    });
+
+    customersList.innerHTML = customersHTML.join('');
+    console.log('✅ Customers list updated successfully');
+  } catch (error) {
+    console.error('Load customers error:', error);
+    customersList.innerHTML = `
+      <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px;">
+        <strong>Error Loading Customers</strong>
+        <p>There was a problem loading the customer list. Please try again later.</p>
+        <p class="error-details" style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
+      </div>`;
+  } finally {
+    hideLoader();
   }
 }
 
@@ -334,26 +446,43 @@ placeholderFunctions.forEach(funcName => {
 });
 
 // Initialize when DOM is ready
-window.addEventListener('load', () => {
-  ensureFirebaseReady(() => {
-    try {
-      // Apply saved theme
-      if (localStorage.getItem("darkMode") === "on") {
-        document.body.classList.add("dark");
-      }
-      
-      // Load real customer data
-      loadCustomersList();
-      loadCustomersDropdown();
-      updateDashboardStats();
-      loadRecentActivity();
-      
-      console.log('Admin dashboard initialized successfully');
-    } catch (error) {
-      console.error('Dashboard initialization error:', error);
-      showNotification('Failed to initialize dashboard. Please refresh the page.', 'error');
+window.addEventListener('load', async () => {
+  try {
+    // Wait for Firebase to initialize
+    const dbInitialized = await window.firebaseReadyPromise;
+    if (!dbInitialized) {
+      throw new Error('Failed to initialize database');
     }
-  });
+    
+    // Check if user is authenticated
+    const user = window.HollidayApp.currentUser;
+    if (!user) {
+      console.warn('No user authenticated, redirecting to login...');
+      window.location.href = 'login.html';
+      return;
+    }
+
+    // Check if user is admin
+    const userDoc = await window.HollidayApp.db.collection('users').doc(user.uid).get();
+    if (!userDoc.exists || userDoc.data().role !== 'admin') {
+      console.warn('User is not an admin, redirecting...');
+      window.location.href = 'login.html';
+      return;
+    }
+    
+    // Load initial data
+    await Promise.all([
+      loadCustomersList(),
+      loadCustomersDropdown(),
+      updateDashboardStats(),
+      loadRecentActivity()
+    ]);
+    
+    console.log('✅ Admin dashboard initialized successfully');
+  } catch (error) {
+    console.error('Dashboard initialization error:', error);
+    showNotification('Failed to initialize dashboard. Please refresh the page.', 'error');
+  }
 });
 
 // Recent Activity Management
@@ -711,79 +840,3 @@ window.addCustomer = addCustomer;
 window.editCustomer = editCustomer;
 window.deleteCustomer = deleteCustomer;
 window.loadCustomerForEdit = loadCustomerForEdit;
-
-async function loadCustomersList() {
-  const customersList = document.querySelector('.customers-list');
-  if (!customersList) return;
-
-  try {
-    await initializeFirebaseDB();
-    if (!db) {
-      throw new Error('Database not available');
-    }
-
-    showLoader();
-    
-    // Only get real customers from the database
-    const snapshot = await db.collection("users")
-      .where("role", "==", "customer")
-      .where("isActive", "==", true)  // Only get active customers
-      .orderBy("createdAt", "desc")   // Show newest customers first
-      .get();
-    
-    if (snapshot.empty) {
-      customersList.innerHTML = `
-        <div style="text-align: center; padding: 2rem; background: #f8fafc; border-radius: 8px;">
-          <h3 style="color: #64748b; margin-bottom: 1rem;">No Customers Found</h3>
-          <p style="color: #94a3b8;">Add your first customer using the "Add New Customer" button above.</p>
-        </div>`;
-      return;
-    }
-
-    const customersHTML = [];
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const address = [
-        data.address?.street,
-        data.address?.city,
-        data.address?.state,
-        data.address?.zip
-      ].filter(Boolean).join(', ');
-      
-      customersHTML.push(`
-        <div class="customer-card">
-          <div class="customer-info">
-            <h3>${data.displayName || 'Unnamed Customer'}</h3>
-            <p>
-              <strong>Contact:</strong> ${data.email || 'No email'} | ${data.phone || 'No phone'}
-            </p>
-            <p>
-              <strong>Address:</strong> ${address || 'No address provided'}
-            </p>
-            <p>
-              <strong>Property:</strong> ${data.propertyDetails?.sizeSqFt || 'N/A'} sq ft | 
-              ${data.propertyDetails?.propertyType || 'N/A'} |
-              Service: ${data.preferences?.serviceFrequency || 'Not specified'}
-            </p>
-          </div>
-          <div class="customer-actions">
-            <button onclick="loadCustomerForEdit('${doc.id}')" class="btn btn-secondary">Edit</button>
-            <button onclick="deleteCustomer('${doc.id}')" class="btn btn-danger">Delete</button>
-          </div>
-        </div>
-      `);
-    });
-
-    customersList.innerHTML = customersHTML.join('');
-  } catch (error) {
-    console.error('Load customers error:', error);
-    customersList.innerHTML = `
-      <div style="color: #ef4444; padding: 1rem; background: #fef2f2; border-radius: 8px;">
-        <strong>Error Loading Customers</strong>
-        <p>There was a problem loading the customer list. Please try again later.</p>
-        <p class="error-details" style="font-size: 0.875rem; margin-top: 0.5rem;">${error.message}</p>
-      </div>`;
-  } finally {
-    hideLoader();
-  }
-}

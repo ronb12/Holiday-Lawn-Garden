@@ -1193,33 +1193,57 @@
       tabItems.forEach(item => item.classList.remove('active'));
       
       // Show selected tab content
-      document.getElementById(tabName + '-tab').classList.add('active');
-      
-      // Add active class to clicked tab item
-      event.target.classList.add('active');
-      
-      // Load data for specific tabs - only call safe functions
-      try {
-        if (tabName === 'overview') {
-          if (typeof updateDashboardStats === 'function') updateDashboardStats();
-        } else if (tabName === 'requests') {
-          if (typeof loadIncomingServiceRequests === 'function') loadIncomingServiceRequests();
-        } else if (tabName === 'invoices') {
-          if (typeof loadAdminInvoicesTable === 'function') loadAdminInvoicesTable();
-        } else if (tabName === 'quotes') {
-          // Only load basic quote functionality, skip advanced bidding system
-          console.log('Quotes tab selected - advanced features will be available when bidding system is loaded');
-        } else if (tabName === 'customers') {
-          if (typeof loadCustomersDropdown === 'function') loadCustomersDropdown();
-        } else if (tabName === 'equipment') {
-          console.log('Equipment tab selected - features will be available when equipment manager is loaded');
-        } else if (tabName === 'reports') {
-          console.log('Reports tab selected - features will be available when reporting system is loaded');
+      const selectedTab = document.getElementById(tabName + '-tab');
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+        
+        // Add active class to clicked tab item
+        if (event && event.target) {
+          event.target.classList.add('active');
         }
-      } catch (error) {
-        console.warn('Error loading tab content:', error);
+        
+        // Load data for specific tabs
+        try {
+          console.log(`Loading data for ${tabName} tab`);
+          if (tabName === 'overview') {
+            updateDashboardStats();
+          } else if (tabName === 'customers') {
+            console.log('Loading customers list...');
+            loadCustomersList();
+            loadCustomersDropdown();
+          } else if (tabName === 'requests') {
+            loadIncomingServiceRequests();
+          } else if (tabName === 'invoices') {
+            loadAdminInvoicesTable();
+          }
+        } catch (error) {
+          console.error(`Error loading ${tabName} tab data:`, error);
+          showNotification(`Failed to load ${tabName} data. Please try again.`, 'error');
+        }
+      } else {
+        console.error(`Tab content not found: ${tabName}-tab`);
       }
     }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Initialize Firebase
+        const dbInitialized = await initializeFirebaseDB();
+        if (!dbInitialized) {
+          throw new Error('Failed to initialize database');
+        }
+        
+        // Load initial data
+        updateDashboardStats();
+        loadCustomersList();
+        
+        console.log('Admin dashboard initialized successfully');
+      } catch (error) {
+        console.error('Dashboard initialization error:', error);
+        showNotification('Failed to initialize dashboard. Please refresh the page.', 'error');
+      }
+    });
 
     // Quick quote calculator
     document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
@@ -1258,15 +1282,6 @@
         window.location.href = 'login.html';
       }
     }
-
-    // Initialize dashboard
-    window.onload = function() {
-      // Wait for Firebase to be ready
-      setTimeout(() => {
-        if (typeof updateDashboardStats === 'function') updateDashboardStats();
-        if (typeof loadCustomersDropdown === 'function') loadCustomersDropdown();
-      }, 1500);
-    };
   </script>
 
   <script src="admin-functions.js"></script>
