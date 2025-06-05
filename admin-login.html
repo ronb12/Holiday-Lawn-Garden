@@ -84,7 +84,26 @@
       .then((userCredential) => {
         const user = userCredential.user;
         if (allowedAdmins.includes(user.email)) {
-          window.location.href = "admin.html"; // ✅ Send to Admin Dashboard
+          // Check if 2FA is enabled
+          if (!user.multiFactor.enrolledFactors.length) {
+            // Redirect to 2FA setup if not enabled
+            window.location.href = "admin-2fa-setup.html";
+            return;
+          }
+          
+          // Verify 2FA
+          const provider = new firebase.auth.PhoneAuthProvider();
+          provider.verifyPhoneNumber()
+            .then((verificationId) => {
+              // Store verification ID
+              window.sessionStorage.setItem('verificationId', verificationId);
+              // Show 2FA verification dialog
+              document.getElementById('twoFactorDialog').style.display = 'block';
+            })
+            .catch((error) => {
+              console.error(error);
+              errorMessage.innerText = "2FA verification failed. Please try again.";
+            });
         } else {
           firebase.auth().signOut();
           errorMessage.innerText = "Access Denied: Not an authorized admin.";
@@ -93,6 +112,34 @@
       .catch((error) => {
         console.error(error);
         errorMessage.innerText = error.message;
+      });
+  }
+
+  // Verify 2FA code
+  function verify2FACode() {
+    const code = document.getElementById('twoFactorCode').value.trim();
+    const verificationId = window.sessionStorage.getItem('verificationId');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    if (!code || !verificationId) {
+      errorMessage.innerText = "Please enter the verification code.";
+      return;
+    }
+
+    const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+    firebase.auth().currentUser.multiFactor.getSession()
+      .then((multiFactorSession) => {
+        const phoneAuthCredential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+        const multiFactorAssertion = firebase.auth.PhoneMultiFactorGenerator.assertion(phoneAuthCredential);
+        return firebase.auth().currentUser.multiFactor.enroll(multiFactorAssertion, "Phone Number");
+      })
+      .then(() => {
+        // Successful 2FA verification
+        window.location.href = "admin.html";
+      })
+      .catch((error) => {
+        console.error(error);
+        errorMessage.innerText = "Invalid verification code. Please try again.";
       });
   }
 

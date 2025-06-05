@@ -59,32 +59,56 @@ class PaymentHandler {
   // Process PayPal payment
   async processPayPalPayment(amount, invoiceId) {
     try {
+      NotificationSystem.showNotification('Processing payment...', 'info');
+      
       const paypalButtons = await paypal.Buttons({
         createOrder: (data, actions) => {
           return actions.order.create({
             purchase_units: [{
               amount: {
-                value: amount.toFixed(2)
+                value: amount.toFixed(2),
+                currency_code: 'USD'
               },
-              custom_id: invoiceId
+              custom_id: invoiceId,
+              description: `Invoice #${invoiceId} - Holliday's Lawn & Garden`
             }]
           });
         },
         onApprove: async (data, actions) => {
-          const order = await actions.order.capture();
-          await this.handleSuccessfulPayment(invoiceId, 'paypal', order.id);
-          return order;
+          try {
+            NotificationSystem.showNotification('Finalizing payment...', 'info');
+            const order = await actions.order.capture();
+            
+            // Update invoice and create payment record
+            await this.handleSuccessfulPayment(invoiceId, 'paypal', order.id);
+            
+            // Generate and send receipt
+            const receiptData = await this.generateReceipt(order.id);
+            await this.emailReceipt(receiptData);
+            
+            NotificationSystem.showNotification('Payment successful! Receipt sent to your email.', 'success');
+            return order;
+          } catch (error) {
+            console.error('PayPal payment processing error:', error);
+            NotificationSystem.showNotification('Payment processed but there was an error updating records. Please contact support.', 'error');
+            throw error;
+          }
         },
         onError: (err) => {
           console.error('PayPal payment error:', err);
-          NotificationSystem.showNotification('Payment failed. Please try again.', 'error');
+          NotificationSystem.showNotification('Payment failed. Please try again or use a different payment method.', 'error');
+          throw err;
+        },
+        onCancel: () => {
+          NotificationSystem.showNotification('Payment cancelled. Please try again when ready.', 'info');
         }
       });
 
       return paypalButtons;
     } catch (error) {
       console.error('PayPal payment processing error:', error);
-      throw new Error('PayPal payment processing failed');
+      NotificationSystem.showNotification('Unable to process payment. Please try again later.', 'error');
+      throw error;
     }
   }
 

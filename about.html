@@ -4,42 +4,351 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - Holliday's Lawn & Garden</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="manifest" href="manifest.json">
-</head>
-<body>
 
-  <header>
-    <h1>Holliday's Lawn & Garden</h1>
-    <nav>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Learn about Holliday's Lawn & Garden's history, mission, and experienced team of lawn care professionals. Serving our community with quality landscaping services.">
+  <meta name="keywords" content="lawn care company, landscaping team, about holliday's lawn & garden, professional landscapers">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="About Us - Holliday's Lawn & Garden">
+  <meta property="og:description" content="Professional lawn care and landscaping team serving our community with quality services since our founding.">
+  <meta property="og:image" content="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png">
+  <meta property="og:type" content="website">
+
+  <!-- PWA Meta -->
+  <link rel="manifest" href="/Holliday-Lawn-Garden/manifest.json" />
+  <link rel="icon" href="/Holliday-Lawn-Garden/icons/icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/Holliday-Lawn-Garden/icons/icon-192.png" />
+  <meta name="theme-color" content="#228B22" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/Holliday-Lawn-Garden/modern-styles.css" />
+  <link rel="stylesheet" href="/Holliday-Lawn-Garden/style.css" />
+
+  <style>
+    /* About Page Specific Styles */
+    .about-hero {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                  url('/Holliday-Lawn-Garden/assets/about-hero.jpg') no-repeat center/cover;
+      padding: var(--spacing-xxl) var(--spacing-lg);
+      color: var(--text-light);
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .about-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--spacing-xl) var(--spacing-lg);
+    }
+
+    .mission-values {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .value-card {
+      background: var(--background-card);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+
+    .value-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .value-icon {
+      font-size: 2.5em;
+      color: var(--primary-color);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .team-section {
+      background: var(--background-light);
+      padding: var(--spacing-xxl) var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-xl);
+    }
+
+    .team-member {
+      background: var(--background-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      transition: transform 0.3s ease;
+    }
+
+    .team-member:hover {
+      transform: translateY(-5px);
+    }
+
+    .team-member img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+    }
+
+    .team-member-info {
+      padding: var(--spacing-lg);
+      text-align: center;
+    }
+
+    .team-member-info h3 {
+      color: var(--primary-dark);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .team-member-info .role {
+      color: var(--neutral-dark);
+      font-size: 0.9em;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .why-choose-us {
+      background: var(--background-card);
+      padding: var(--spacing-xl);
+      border-radius: var(--radius-lg);
+      margin: var(--spacing-xl) auto;
+      max-width: 800px;
+    }
+
+    .benefits-list {
+      list-style-type: none;
+      padding: 0;
+      margin: var(--spacing-lg) 0;
+    }
+
+    .benefits-list li {
+      display: flex;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+      padding: var(--spacing-sm);
+      background: var(--background-light);
+      border-radius: var(--radius-md);
+      transition: transform 0.3s ease;
+    }
+
+    .benefits-list li:hover {
+      transform: translateX(10px);
+    }
+
+    .benefits-list li::before {
+      content: "✅";
+      margin-right: var(--spacing-sm);
+      font-size: 1.2em;
+    }
+
+    @media (max-width: 768px) {
+      .about-hero {
+        padding: var(--spacing-xl) var(--spacing-md);
+      }
+
+      .team-member img {
+        height: 250px;
+      }
+
+      .benefits-list li {
+        font-size: 0.9em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Skip to main content link for accessibility -->
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
+
+  <header role="banner">
+    <img src="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png" 
+         alt="Holliday's Lawn & Garden Logo" 
+         width="160" 
+         height="80" />
+    
+    <button class="hamburger" 
+            onclick="toggleMenu()" 
+            aria-label="Toggle menu" 
+            aria-expanded="false" 
+            aria-controls="navLinks">☰</button>
+    
+    <nav class="nav-links" id="navLinks" role="navigation" aria-label="Main navigation">
       <a href="index.html">Home</a>
       <a href="services.html">Services</a>
-      <a href="about.html">About</a>
+      <a href="about.html" aria-current="page">About</a>
       <a href="contact.html">Contact</a>
+      <a href="pay-your-bill.html">Pay Your Bill</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
+      <a href="admin-login.html" id="adminLink">Admin</a>
+      <button class="refresh-button" id="refreshButton" aria-label="Refresh page">
+        <span class="icon" aria-hidden="true">🔄</span>
+        <span>Refresh</span>
+      </button>
     </nav>
   </header>
 
-  <main>
-    <h2>About Us</h2>
-    <p>Holliday's Lawn & Garden was founded with a simple mission: to provide high-quality lawn care and landscaping services at affordable prices. We take pride in our attention to detail, customer service, and dedication to making your outdoor spaces beautiful.</p>
+  <main id="main-content">
+    <section class="about-hero" role="banner">
+      <h1>About Holliday's Lawn & Garden</h1>
+      <p class="hero-subtitle">Transforming outdoor spaces with expertise and dedication since our founding</p>
+    </section>
 
-    <p>Our team has years of experience in residential and commercial landscaping, lawn maintenance, and seasonal cleanup services. Whether it’s a small front yard or a large commercial property, we approach every project with professionalism and care.</p>
+    <section class="about-section">
+      <h2>Our Story</h2>
+      <p>Holliday's Lawn & Garden was founded with a simple mission: to provide high-quality lawn care and landscaping services at affordable prices. We take pride in our attention to detail, customer service, and dedication to making your outdoor spaces beautiful.</p>
 
-    <p>We are proud to serve our community and build lasting relationships with our clients. When you choose Holiday Lawn & Garden, you’re choosing reliable service, friendly professionals, and results you can trust.</p>
+      <p>Our team has years of experience in residential and commercial landscaping, lawn maintenance, and seasonal cleanup services. Whether it's a small front yard or a large commercial property, we approach every project with professionalism and care.</p>
 
-    <h3>Why Choose Us?</h3>
-    <ul style="list-style-type: none; padding: 0;">
-      <li>✅ Experienced Lawn Care Professionals</li>
-      <li>✅ Reliable, On-Time Service</li>
-      <li>✅ Competitive Pricing</li>
-      <li>✅ 100% Satisfaction Guarantee</li>
-    </ul>
+      <div class="mission-values">
+        <div class="value-card">
+          <span class="value-icon" aria-hidden="true">🎯</span>
+          <h3>Our Mission</h3>
+          <p>To create and maintain beautiful outdoor spaces that enhance our clients' lives and property values.</p>
+        </div>
+        <div class="value-card">
+          <span class="value-icon" aria-hidden="true">💚</span>
+          <h3>Our Values</h3>
+          <p>Quality, integrity, and customer satisfaction drive everything we do.</p>
+        </div>
+        <div class="value-card">
+          <span class="value-icon" aria-hidden="true">🌱</span>
+          <h3>Our Promise</h3>
+          <p>Professional service, attention to detail, and results you can trust.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="team-section">
+      <h2>Meet Our Team</h2>
+      <div class="team-grid">
+        <article class="team-member">
+          <img src="/Holliday-Lawn-Garden/assets/team/owner.jpg" 
+               alt="Karl Holliday - Owner"
+               loading="lazy">
+          <div class="team-member-info">
+            <h3>Karl Holliday</h3>
+            <p class="role">Owner & Lead Landscaper</p>
+            <p>20+ years of experience in landscape design and maintenance.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="why-choose-us">
+      <h2>Why Choose Us?</h2>
+      <ul class="benefits-list">
+        <li>Experienced Lawn Care Professionals with Over 20 Years Combined Experience</li>
+        <li>Reliable, On-Time Service with Clear Communication</li>
+        <li>Competitive Pricing and Transparent Quotes</li>
+        <li>100% Satisfaction Guarantee on All Services</li>
+        <li>Eco-Friendly Practices and Products</li>
+        <li>Licensed, Bonded, and Insured</li>
+      </ul>
+    </section>
   </main>
 
-  <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  <footer role="contentinfo">
+    <p>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</p>
   </footer>
 
+  <!-- Pull to Refresh Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pulltorefreshjs/0.1.22/pulltorefresh.min.js"></script>
+
+  <!-- Firebase Scripts -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script type="module" src="/Holliday-Lawn-Garden/firebase-init.js"></script>
+
+  <!-- Main Script -->
+  <script type="module">
+    // Menu Toggle
+    function toggleMenu() {
+      const navLinks = document.getElementById('navLinks');
+      const hamburger = document.querySelector('.hamburger');
+      const isExpanded = navLinks.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', isExpanded);
+    }
+    window.toggleMenu = toggleMenu;
+
+    // Admin Access Control
+    const allowedAdmins = ["ronellbradley@bradleyvs.com"];
+    import { getAuth, onAuthStateChanged } from 'firebase/auth';
+    
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      document.getElementById('adminLink').style.display =
+        user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
+    });
+
+    // Pull to Refresh Setup
+    if (typeof PullToRefresh !== 'undefined') {
+      PullToRefresh.init({
+        mainElement: 'body',
+        distThreshold: 70,
+        distMax: 90,
+        distReload: 70,
+        instructionsPullToRefresh: "Pull down to refresh",
+        instructionsReleaseToRefresh: "Release to refresh",
+        instructionsRefreshing: "Refreshing",
+        onRefresh() {
+          return new Promise((resolve) => {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+              setTimeout(() => {
+                window.location.reload();
+                resolve();
+              }, 500);
+            } else {
+              window.location.reload();
+              resolve();
+            }
+          });
+        }
+      });
+    }
+
+    // Manual Refresh Button
+    const refreshButton = document.getElementById('refreshButton');
+    refreshButton.addEventListener('click', async () => {
+      refreshButton.classList.add('refreshing');
+      
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.update();
+          navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Refresh failed:', error);
+        window.location.reload();
+      } finally {
+        refreshButton.classList.remove('refreshing');
+      }
+    });
+
+    // Service Worker Message Handler
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data.action === 'reload') {
+        window.location.reload();
+      }
+    });
+  </script>
 </body>
 </html>
 

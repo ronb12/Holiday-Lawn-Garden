@@ -606,61 +606,328 @@ h4 { font-size: 1.125rem; /* 18px */ margin-top: var(--spacing-sm); }
 
 /* Responsive Design - Refined */
 @media (max-width: 768px) {
+  :root {
+    /* Adjust spacing for mobile */
+    --spacing-xs: 0.2rem;
+    --spacing-sm: 0.4rem;
+    --spacing-md: 0.8rem;
+    --spacing-lg: 1.2rem;
+    --spacing-xl: 1.6rem;
+    --spacing-xxl: 2.4rem;
+  }
+
+  /* Container adjustments */
   .container {
     width: 95%;
     padding: var(--spacing-md) 0;
   }
+
+  /* Header adjustments */
   .header-content {
     flex-direction: column;
-    gap: var(--spacing-sm);
+    text-align: center;
+    gap: var(--spacing-md);
   }
+
   .header-content h1 {
     font-size: 1.5rem;
   }
+
   .header-actions {
     width: 100%;
     display: flex;
-    justify-content: space-around;
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
 
+  /* Card adjustments */
   .card {
-    margin: var(--spacing-md) 0;
     padding: var(--spacing-md);
-  }
-  .card h2 {
-      font-size: 1.3rem;
-      margin-bottom: var(--spacing-md);
-  }
-  .card h3 {
-      font-size: 1.1rem;
-      margin-bottom: var(--spacing-sm);
-  }
-  
-  .btn-modern {
-    padding: var(--spacing-sm) var(--spacing-md); /* 10px 16px */
-    width: 100%; /* Make buttons full width on mobile for forms */
-    margin-bottom: var(--spacing-sm); /* Add some space between full-width buttons */
-  }
-  .header-actions .btn-modern { /* Don't make header buttons full width */
-      width: auto;
-      margin-bottom: 0;
-  }
-  .table .btn-modern, .table .btn-modern.btn-small { /* Don't make table action buttons full width */
-      width: auto;
-      margin-bottom: 0;
+    margin-bottom: var(--spacing-md);
   }
 
+  .card h2 {
+    font-size: 1.25rem;
+  }
+
+  .card h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Button adjustments */
+  .btn-modern {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: 1rem;
+    height: 44px; /* Minimum touch target size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Keep some buttons inline */
+  .header-actions .btn-modern,
+  .table .btn-modern,
+  .table .btn-modern.btn-small,
+  .modal-actions .btn-modern {
+    width: auto;
+  }
+
+  /* Grid adjustments */
   .grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--spacing-md);
+  }
+
+  /* Modal adjustments */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm);
+  }
+
+  /* Table adjustments */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 calc(-1 * var(--spacing-md));
+    padding: 0 var(--spacing-md);
+  }
+
+  .table {
+    min-width: 600px; /* Ensure table can be scrolled on mobile */
+  }
+
+  .table th,
+  .table td {
+    padding: var(--spacing-sm);
+    font-size: 0.9rem;
+  }
+
+  /* Form adjustments */
+  .form-modern .form-group {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .form-modern label {
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .form-modern input[type="text"],
+  .form-modern input[type="email"],
+  .form-modern input[type="password"],
+  .form-modern input[type="number"],
+  .form-modern input[type="tel"],
+  .form-modern input[type="date"],
+  .form-modern select,
+  .form-modern textarea {
+    padding: var(--spacing-sm);
+    font-size: 16px; /* Prevent zoom on iOS */
+    height: 44px; /* Minimum touch target size */
+  }
+
+  .form-modern textarea {
+    height: auto;
+    min-height: 88px;
+  }
+
+  /* Status badges */
+  .status-badge {
+    width: 100%;
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* Chat interface */
+  .chat-messages-container {
+    height: 60vh;
+  }
+
+  .chat-bubble {
+    max-width: 85%;
+    padding: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .chat-input-area {
+    padding: var(--spacing-sm);
+  }
+
+  /* Customer dashboard specific */
+  .customer-page-active .dashboard-grid {
     grid-template-columns: 1fr;
     gap: var(--spacing-md);
   }
 
-  .modal-content {
-    width: 95%;
-    margin: 10% auto;
+  .customer-page-active .stat-card {
     padding: var(--spacing-md);
   }
-} 
+
+  .customer-page-active .header-bar {
+    padding: var(--spacing-sm);
+  }
+
+  .customer-page-active .profile-toggle {
+    position: fixed;
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    z-index: 1000;
+  }
+
+  /* Admin dashboard specific */
+  .admin-page-active .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-page-active .card-content {
+    padding: var(--spacing-sm);
+  }
+
+  /* Navigation improvements */
+  nav {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  nav a {
+    width: 100%;
+    text-align: center;
+    padding: var(--spacing-sm);
+  }
+
+  /* Loading overlay */
+  #loadingOverlay {
+    padding: var(--spacing-xl);
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Notification adjustments */
+  #notification-container-dynamic {
+    width: 90%;
+    max-width: none;
+    bottom: var(--spacing-md);
+    right: 5%;
+  }
+
+  .notification {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  /* Modal improvements */
+  .modal {
+    padding: var(--spacing-sm);
+  }
+
+  .modal-content {
+    max-width: 95%;
+    margin: var(--spacing-sm) auto;
+  }
+
+  /* Form validation messages */
+  .error-message {
+    font-size: 0.85rem;
+    padding: var(--spacing-xs) 0;
+  }
+
+  /* Accessibility improvements */
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Touch feedback */
+  .btn-modern:active,
+  .card:active,
+  .nav a:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    width: 90%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .card {
+    padding: var(--spacing-lg);
+  }
+
+  .btn-modern {
+    padding: var(--spacing-sm) var(--spacing-lg);
+  }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-light: #1a1a1a;
+    --background-card: #2d2d2d;
+    --text-dark: #ffffff;
+    --text-light: #e0e0e0;
+    --neutral-lighter: #2d2d2d;
+    --neutral-light: #404040;
+    --neutral-medium: #666666;
+  }
+
+  .card,
+  .modal-content,
+  .form-modern input,
+  .form-modern select,
+  .form-modern textarea {
+    background: var(--background-card);
+    color: var(--text-light);
+  }
+
+  .table tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .status-badge {
+    border: 1px solid var(--neutral-light);
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .container {
+    width: 100%;
+    padding: 0;
+  }
+
+  .card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .table {
+    border-collapse: collapse;
+  }
+
+  .table th,
+  .table td {
+    border: 1px solid #ddd;
+  }
+}
 
 /* === Styles from admin.html === */
 :root {

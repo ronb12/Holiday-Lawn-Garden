@@ -1,22 +1,49 @@
-# Environment files
-.env
-.env.local
-.env.*.local
-
-# Build output
-dist/
-
 # Dependencies
 node_modules/
+.pnp
+.pnp.js
 
-# IDE files
-.vscode/
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+.firebaserc
+firebase-adminsdk.json
+
+# Build files
+build/
+dist/
+out/
+.next/
+
+# IDE and editor files
 .idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
 
 # Logs
+logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Operating System
-.DS_Store
-Thumbs.db 
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+.cache/
+.temp/
+*.pem
+.env*.local 

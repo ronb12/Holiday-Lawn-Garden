@@ -3,7 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Holliday's Lawn & Garden</title>
+  <title>Holliday's Lawn & Garden - Professional Landscaping Services</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Professional lawn care and landscaping services by Holliday's Lawn & Garden. Offering mowing, trimming, landscape design, and commercial lawn care.">
+  <meta name="keywords" content="lawn care, landscaping, garden maintenance, mowing, trimming, pressure washing">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Holliday's Lawn & Garden">
+  <meta property="og:description" content="Professional lawn care and landscaping services">
+  <meta property="og:image" content="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png">
+  <meta property="og:type" content="website">
 
   <!-- PWA Meta -->
   <link rel="manifest" href="/Holliday-Lawn-Garden/manifest.json" />
@@ -14,118 +24,507 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png" as="image">
+  <link rel="preload" href="/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg" as="image">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/Holliday-Lawn-Garden/modern-styles.css" />
   <link rel="stylesheet" href="/Holliday-Lawn-Garden/style.css" />
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #f4f9f4; }
-    header {
-      background-color: #228B22; color: white; text-align: center;
-      padding: 1em 0; position: relative;
+    /* Accessibility */
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
-    header img { max-height: 80px; margin-top: 10px; }
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary-color);
+      color: white;
+      padding: 8px;
+      z-index: 100;
+      transition: top 0.2s ease;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* Base Styles */
+    body { 
+      margin: 0; 
+      font-family: var(--font-family-sans);
+      background: var(--background-light);
+    }
+
+    /* Header */
+    header {
+      background-color: var(--primary-color);
+      color: var(--text-light);
+      text-align: center;
+      padding: var(--spacing-md) 0;
+      position: relative;
+      box-shadow: var(--shadow-md);
+    }
+    header img {
+      max-height: 80px;
+      margin-top: var(--spacing-sm);
+      transition: transform 0.3s ease;
+    }
+    header img:hover {
+      transform: scale(1.05);
+    }
+    .tagline {
+      margin-top: var(--spacing-sm);
+      font-size: 1.1em;
+      color: var(--text-light);
+    }
+
+    /* Navigation */
     .hamburger {
-      display: none; font-size: 2em; position: absolute; top: 20px; right: 20px;
-      cursor: pointer; z-index: 1001;
+      display: none;
+      font-size: 2em;
+      position: absolute;
+      top: var(--spacing-md);
+      right: var(--spacing-md);
+      cursor: pointer;
+      z-index: 1001;
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      padding: var(--spacing-xs);
+      transition: transform 0.3s ease;
+    }
+    .hamburger:hover {
+      transform: scale(1.1);
     }
     .nav-links {
-      margin-top: 10px; display: flex; flex-wrap: wrap;
-      justify-content: center; gap: 15px;
+      margin-top: var(--spacing-sm);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: var(--spacing-sm);
     }
     .nav-links a {
-      color: white; text-decoration: none; font-weight: bold; font-size: 1em;
-    }
-    .nav-links a:hover { text-decoration: underline; }
-
-    @media (max-width: 768px) {
-      .hamburger { display: block; }
-      .nav-links {
-        display: none; flex-direction: column;
-        background-color: #228B22; width: 100%;
-      }
-      .nav-links.active { display: flex; }
-    }
-
-    .hero {
-      background: url('/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg') no-repeat center center/cover;
-      height: 400px; display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-      color: white; text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-    }
-    .hero h1 { font-size: 2.5em; margin-bottom: 0.5em; }
-    .cta-button {
-      background-color: #32CD32; padding: 1em 2em;
-      border: none; border-radius: 30px; font-size: 1.2em;
-      font-weight: bold; cursor: pointer;
-      animation: pulse 2s infinite; color: white;
+      color: var(--text-light);
       text-decoration: none;
+      font-weight: var(--font-weight-medium);
+      font-size: 1em;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      transition: background-color 0.3s ease;
     }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+    .nav-links a:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .nav-links a[aria-current="page"] {
+      background-color: rgba(255, 255, 255, 0.2);
     }
 
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                  url('/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg') no-repeat center center/cover;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: var(--text-light);
+      text-align: center;
+      padding: var(--spacing-xl);
+    }
+    .hero h1 {
+      font-size: 2.5em;
+      margin-bottom: var(--spacing-md);
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    .hero-subtitle {
+      font-size: 1.2em;
+      margin-bottom: var(--spacing-lg);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+    .cta-button {
+      background-color: var(--accent-color);
+      padding: var(--spacing-md) var(--spacing-xl);
+      border: none;
+      border-radius: var(--radius-full);
+      font-size: 1.2em;
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text-light);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      box-shadow: var(--shadow-md);
+    }
+    .cta-button:hover {
+      transform: translateY(-2px);
+      background-color: var(--destructive-color);
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Services Section */
     .services-section {
-      padding: 3em 1em; background: #fff; text-align: center;
+      padding: var(--spacing-xxl) var(--spacing-md);
+      background: var(--background-card);
+      text-align: center;
     }
     .services-cards {
-      display: flex; flex-wrap: wrap; justify-content: center;
-      gap: 20px; margin-top: 2em;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+      padding: 0 var(--spacing-md);
     }
     .service-card {
-      background: #f9f9f9; padding: 1.5em; border-radius: 8px;
-      width: 220px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      transition: 0.3s;
+      background: var(--background-light);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-sm);
     }
-    .service-card:hover { transform: translateY(-5px); }
+    .service-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+    }
     .service-card i {
-      font-size: 2em; margin-bottom: 0.5em; color: #228B22;
+      font-size: 2.5em;
+      margin-bottom: var(--spacing-sm);
+      color: var(--primary-color);
+    }
+    .service-card h3 {
+      color: var(--primary-dark);
+      margin: var(--spacing-sm) 0;
+    }
+    .service-card p {
+      color: var(--neutral-dark);
+      margin-bottom: var(--spacing-md);
+    }
+    .service-link {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: var(--font-weight-medium);
+      transition: color 0.3s ease;
+    }
+    .service-link:hover {
+      color: var(--primary-dark);
     }
 
+    /* Testimonials */
     .testimonials {
-      background: #f4f9f4; padding: 3em 1em; text-align: center;
+      background: var(--background-light);
+      padding: var(--spacing-xxl) var(--spacing-md);
+      text-align: center;
+    }
+    .testimonials-container {
+      max-width: 800px;
+      margin: var(--spacing-xl) auto;
+      display: grid;
+      gap: var(--spacing-xl);
     }
     .testimonial {
-      max-width: 600px; margin: 0 auto 2em;
-      font-style: italic; font-size: 1.1em;
+      background: var(--background-card);
+      padding: var(--spacing-lg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      margin: 0;
+      position: relative;
+    }
+    .testimonial::before {
+      content: '"';
+      position: absolute;
+      top: -0.5em;
+      left: 0.5em;
+      font-size: 4em;
+      color: var(--primary-color);
+      opacity: 0.2;
+    }
+    .testimonial p {
+      font-style: italic;
+      font-size: 1.1em;
+      margin-bottom: var(--spacing-md);
+      color: var(--neutral-dark);
+    }
+    .testimonial footer {
+      font-size: 0.9em;
+      color: var(--neutral-dark);
+    }
+    .testimonial .rating {
+      display: block;
+      margin-top: var(--spacing-xs);
+      color: var(--warning-color);
     }
 
+    /* Floating Elements */
     .sticky-contact {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #228B22; color: white;
-      padding: 0.7em 1.5em; border-radius: 30px;
-      font-weight: bold; text-decoration: none;
-      font-size: 1em; z-index: 1000;
+      position: fixed;
+      bottom: var(--spacing-lg);
+      right: var(--spacing-lg);
+      background: var(--primary-color);
+      color: var(--text-light);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border-radius: var(--radius-full);
+      font-weight: var(--font-weight-semibold);
+      text-decoration: none;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+      z-index: 1000;
+    }
+    .sticky-contact:hover {
+      transform: translateY(-2px);
+      background-color: var(--primary-dark);
     }
 
     #installBtn {
-      position: fixed; bottom: 80px; right: 20px;
-      padding: 12px 20px; background: #228B22;
-      color: white; border: none; border-radius: 30px;
-      font-size: 1em; font-weight: bold; display: none;
+      position: fixed;
+      bottom: calc(var(--spacing-lg) + 60px);
+      right: var(--spacing-lg);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      background: var(--primary-color);
+      color: var(--text-light);
+      border: none;
+      border-radius: var(--radius-full);
+      font-weight: var(--font-weight-semibold);
+      display: none;
       z-index: 1000;
+      box-shadow: var(--shadow-lg);
+      transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+    #installBtn:hover {
+      transform: translateY(-2px);
+      background-color: var(--primary-dark);
     }
 
     #updateBanner {
-      display: none; position: fixed; bottom: 0;
-      width: 100%; background: #228B22; color: white;
-      text-align: center; padding: 1em; font-weight: bold;
-      cursor: pointer; z-index: 2000;
+      display: none;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: var(--primary-color);
+      color: var(--text-light);
+      text-align: center;
+      padding: var(--spacing-md);
+      font-weight: var(--font-weight-semibold);
+      cursor: pointer;
+      z-index: 2000;
+      box-shadow: var(--shadow-lg);
     }
 
+    /* Footer */
     footer {
-      background: #eee; text-align: center;
-      padding: 1em; font-size: 0.9em;
-      color: #555; margin-top: 2em;
+      background: var(--neutral-lighter);
+      text-align: center;
+      padding: var(--spacing-lg);
+      color: var(--neutral-dark);
+      margin-top: var(--spacing-xl);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .hamburger {
+        display: block;
+      }
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--primary-color);
+        padding: var(--spacing-md);
+        box-shadow: var(--shadow-md);
+      }
+      .nav-links.active {
+        display: flex;
+      }
+      .nav-links a {
+        padding: var(--spacing-sm);
+        width: 100%;
+        text-align: center;
+      }
+      
+      .hero {
+        height: 400px;
+        padding: var(--spacing-lg);
+      }
+      .hero h1 {
+        font-size: 2em;
+      }
+      .hero-subtitle {
+        font-size: 1.1em;
+      }
+      
+      .services-cards {
+        grid-template-columns: 1fr;
+        padding: 0;
+      }
+      
+      .testimonials-container {
+        padding: 0 var(--spacing-sm);
+      }
+      
+      .sticky-contact {
+        bottom: var(--spacing-md);
+        right: var(--spacing-md);
+        padding: var(--spacing-xs) var(--spacing-md);
+      }
+      
+      #installBtn {
+        bottom: calc(var(--spacing-md) + 50px);
+        right: var(--spacing-md);
+      }
+    }
+
+    /* Dark Mode Support */
+    @media (prefers-color-scheme: dark) {
+      .hero {
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                    url('/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg') no-repeat center center/cover;
+      }
+      
+      .service-card {
+        background: var(--background-card);
+      }
+      
+      .testimonial {
+        background: var(--background-card);
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      .sticky-contact,
+      #installBtn,
+      #updateBanner,
+      .hamburger {
+        display: none !important;
+      }
+      
+      .hero {
+        height: auto;
+        padding: var(--spacing-lg);
+        background: none;
+        color: var(--text-dark);
+      }
+      
+      .service-card,
+      .testimonial {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--neutral-light);
+      }
+    }
+
+    /* Pull to Refresh Styles */
+    .ptr--ptr {
+      box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.12);
+      pointer-events: none;
+      font-size: 0.85em;
+      font-weight: bold;
+      top: 0;
+      height: 0;
+      transition: height 0.3s, min-height 0.3s;
+      text-align: center;
+      width: 100%;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      align-content: stretch;
+      background: var(--background-light);
+    }
+    .ptr--box {
+      padding: 10px;
+      flex-basis: 100%;
+    }
+    .ptr--pull {
+      transition: none;
+    }
+    .ptr--text {
+      margin-top: .33em;
+      color: var(--primary-color);
+    }
+    .ptr--icon {
+      color: var(--primary-color);
+      transition: transform .3s;
+      font-size: 1.5em;
+      margin-bottom: 4px;
+    }
+    .ptr--refresh .ptr--icon {
+      transform: rotate(180deg);
+    }
+
+    /* Refresh Button Styles */
+    .refresh-button {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      color: var(--text-light);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--radius-sm);
+      font-weight: var(--font-weight-medium);
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+    .refresh-button:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .refresh-button .icon {
+      transition: transform 0.3s ease;
+    }
+    .refresh-button:active .icon {
+      transform: rotate(180deg);
+    }
+    .refresh-button.refreshing .icon {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Add this to your existing media queries */
+    @media (max-width: 768px) {
+      .refresh-button {
+        width: 100%;
+        justify-content: center;
+        padding: var(--spacing-sm);
+      }
     }
   </style>
 </head>
 
 <body>
-  <header>
-    <img src="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" />
-    <div class="hamburger" onclick="toggleMenu()">☰</div>
-    <nav class="nav-links" id="navLinks">
-      <a href="index.html">Home</a>
+  <!-- Skip to main content link for accessibility -->
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
+
+  <header role="banner">
+    <img src="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png" 
+         alt="Holliday's Lawn & Garden Logo" 
+         width="160" 
+         height="80" />
+    
+    <button class="hamburger" 
+            onclick="toggleMenu()" 
+            aria-label="Toggle menu" 
+            aria-expanded="false" 
+            aria-controls="navLinks">☰</button>
+    
+    <nav class="nav-links" id="navLinks" role="navigation" aria-label="Main navigation">
+      <a href="index.html" aria-current="page">Home</a>
       <a href="services.html">Services</a>
       <a href="about.html">About</a>
       <a href="contact.html">Contact</a>
@@ -133,53 +532,118 @@
       <a href="gallery.html">Gallery</a>
       <a href="login.html">Login</a>
       <a href="admin-login.html" id="adminLink">Admin</a>
+      <button class="refresh-button" id="refreshButton" aria-label="Refresh page">
+        <span class="icon" aria-hidden="true">🔄</span>
+        <span>Refresh</span>
+      </button>
     </nav>
-    <p style="margin-top: 10px;">Professional Lawn Care & Landscaping Services</p>
+    <p class="tagline">Professional Lawn Care & Landscaping Services</p>
   </header>
 
-  <section class="hero">
-    <h1>Welcome to Holliday's Lawn & Garden</h1>
-    <a href="contact.html" class="cta-button">Get a Free Estimate</a>
-  </section>
+  <main id="main-content">
+    <section class="hero" role="banner">
+      <h1>Expert Lawn Care & Landscaping Services</h1>
+      <p class="hero-subtitle">Transform your outdoor space with our professional services</p>
+      <a href="contact.html" class="cta-button" role="button">Get Your Free Estimate Today</a>
+    </section>
 
-  <section class="services-section">
-    <h2>Our Services</h2>
-    <div class="services-cards">
-      <div class="service-card"><i>🌿</i><h3>Mowing & Trimming</h3></div>
-      <div class="service-card"><i>🏡</i><h3>Landscape Design</h3></div>
-      <div class="service-card"><i>🧹</i><h3>Pressure Washing</h3></div>
-      <div class="service-card"><i>🏢</i><h3>Commercial Lawn Care</h3></div>
-    </div>
-  </section>
+    <section class="services-section" aria-labelledby="services-title">
+      <h2 id="services-title">Our Services</h2>
+      <div class="services-cards">
+        <div class="service-card">
+          <i aria-hidden="true">🌿</i>
+          <h3>Mowing & Trimming</h3>
+          <p>Professional lawn maintenance for a perfectly manicured yard</p>
+          <a href="services.html#mowing" class="service-link">Learn More</a>
+        </div>
+        <div class="service-card">
+          <i aria-hidden="true">🏡</i>
+          <h3>Landscape Design</h3>
+          <p>Custom landscape designs to enhance your property's beauty</p>
+          <a href="services.html#landscape-design" class="service-link">Learn More</a>
+        </div>
+        <div class="service-card">
+          <i aria-hidden="true">🧹</i>
+          <h3>Pressure Washing</h3>
+          <p>Restore the beauty of your outdoor surfaces</p>
+          <a href="services.html#pressure-washing" class="service-link">Learn More</a>
+        </div>
+        <div class="service-card">
+          <i aria-hidden="true">🏢</i>
+          <h3>Commercial Lawn Care</h3>
+          <p>Professional maintenance for businesses and properties</p>
+          <a href="services.html#commercial" class="service-link">Learn More</a>
+        </div>
+      </div>
+    </section>
 
-  <section class="testimonials">
-    <h2>What Our Customers Say</h2>
-    <div class="testimonial">"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service." — ⭐⭐⭐⭐⭐</div>
-    <div class="testimonial">"Reliable, friendly, and the best landscaping crew I’ve ever hired!" — ⭐⭐⭐⭐⭐</div>
-  </section>
+    <section class="testimonials" aria-labelledby="testimonials-title">
+      <h2 id="testimonials-title">Customer Testimonials</h2>
+      <div class="testimonials-container">
+        <blockquote class="testimonial">
+          <p>"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service."</p>
+          <footer>
+            <cite>— John D. <span class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</span></cite>
+          </footer>
+        </blockquote>
+        <blockquote class="testimonial">
+          <p>"Reliable, friendly, and the best landscaping crew I've ever hired!"</p>
+          <footer>
+            <cite>— Sarah M. <span class="rating" aria-label="5 out of 5 stars">⭐⭐⭐⭐⭐</span></cite>
+          </footer>
+        </blockquote>
+      </div>
+    </section>
+  </main>
 
-  <a href="contact.html" class="sticky-contact">📞 Contact Us</a>
-  <button id="installBtn">📲 Install App</button>
-  <div id="updateBanner">🔄 New update available – Tap to refresh</div>
+  <a href="contact.html" class="sticky-contact" aria-label="Contact Us">
+    <span aria-hidden="true">📞</span>
+    <span>Contact Us</span>
+  </a>
 
-  <footer>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+  <button id="installBtn" aria-label="Install application">
+    <span aria-hidden="true">📲</span>
+    <span>Install App</span>
+  </button>
 
-  <!-- Firebase + PWA Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-  <script src="/Holliday-Lawn-Garden/firebase-init.js"></script>
+  <div id="updateBanner" role="alert">
+    🔄 New update available – Tap to refresh
+  </div>
 
-  <script>
+  <footer role="contentinfo">
+    <p>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+  </footer>
+
+  <!-- Add before the Firebase Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pulltorefreshjs/0.1.22/pulltorefresh.min.js"></script>
+
+  <!-- Firebase Scripts -->
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script type="module" src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script type="module" src="/Holliday-Lawn-Garden/firebase-init.js"></script>
+
+  <!-- Main Script -->
+  <script type="module">
+    // Menu Toggle
     function toggleMenu() {
-      document.getElementById('navLinks').classList.toggle('active');
+      const navLinks = document.getElementById('navLinks');
+      const hamburger = document.querySelector('.hamburger');
+      const isExpanded = navLinks.classList.toggle('active');
+      hamburger.setAttribute('aria-expanded', isExpanded);
     }
+    window.toggleMenu = toggleMenu;
 
+    // Admin Access Control
     const allowedAdmins = ["ronellbradley@bradleyvs.com"];
-    firebase.auth().onAuthStateChanged(user => {
+    import { getAuth, onAuthStateChanged } from 'firebase/auth';
+    
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
       document.getElementById('adminLink').style.display =
         user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
     });
 
+    // PWA Installation
     let deferredPrompt;
     const installBtn = document.getElementById('installBtn');
 
@@ -189,20 +653,26 @@
       installBtn.style.display = 'block';
     });
 
-    installBtn.addEventListener('click', () => {
+    installBtn.addEventListener('click', async () => {
       installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(choice => {
-        console.log(choice.outcome === 'accepted' ? '✅ Installed' : '❌ Dismissed');
-        deferredPrompt = null;
-      });
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(outcome === 'accepted' ? '✅ App installed' : '❌ Installation declined');
+      } catch (error) {
+        console.error('Installation error:', error);
+      }
+      deferredPrompt = null;
     });
 
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js').then(reg => {
-        reg.onupdatefound = () => {
-          const newWorker = reg.installing;
-          newWorker.onstatechange = () => {
+      try {
+        const registration = await navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js');
+        
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               const banner = document.getElementById('updateBanner');
               banner.style.display = 'block';
@@ -210,17 +680,79 @@
                 newWorker.postMessage({ action: 'skipWaiting' });
               });
             }
-          };
-        };
-      });
+          });
+        });
 
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (refreshing) return;
-        window.location.reload();
-        refreshing = true;
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+          window.location.reload();
+          refreshing = true;
+        });
+      } catch (error) {
+        console.error('Service worker registration failed:', error);
+      }
+    }
+
+    // Pull to Refresh Setup
+    if (typeof PullToRefresh !== 'undefined') {
+      PullToRefresh.init({
+        mainElement: 'body',
+        distThreshold: 70,
+        distMax: 90,
+        distReload: 70,
+        instructionsPullToRefresh: "Pull down to refresh",
+        instructionsReleaseToRefresh: "Release to refresh",
+        instructionsRefreshing: "Refreshing",
+        onRefresh() {
+          return new Promise((resolve) => {
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              // Check for updates
+              navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+              setTimeout(() => {
+                window.location.reload();
+                resolve();
+              }, 500);
+            } else {
+              window.location.reload();
+              resolve();
+            }
+          });
+        }
       });
     }
+
+    // Manual Refresh Button
+    const refreshButton = document.getElementById('refreshButton');
+    refreshButton.addEventListener('click', async () => {
+      refreshButton.classList.add('refreshing');
+      
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          // Check for updates
+          const registration = await navigator.serviceWorker.ready;
+          await registration.update();
+          
+          // Force immediate update if available
+          navigator.serviceWorker.controller.postMessage({ action: 'skipWaiting' });
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Refresh failed:', error);
+        window.location.reload();
+      } finally {
+        refreshButton.classList.remove('refreshing');
+      }
+    });
+
+    // Add this to the existing service worker code
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data.action === 'reload') {
+        window.location.reload();
+      }
+    });
   </script>
 </body>
 </html>

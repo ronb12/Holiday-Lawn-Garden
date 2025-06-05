@@ -375,137 +375,84 @@ function loadInvoices() {
 // --- PDF Export Functions ---
 async function exportQuotesPDF() {
     if (!currentUser || typeof jsPDF === 'undefined') {
-        alert("Cannot generate PDF. User not logged in or PDF library not loaded."); return;
+        alert("Cannot generate PDF. User not logged in or PDF library not loaded.");
+        return;
     }
-    const { jsPDF } = window.jspdf;
-    const companyName = "Holliday's Lawn & Garden";
-    const companyAddress = "123 Green St, Meadowville, FL 12345";
-    const companyContact = "contact@hollidaylawn.com | (555) 123-4567";
-
-    const doc = new jsPDF();
-    let yPos = 20;
-    const lineSpacing = 7;
-    const sectionSpacing = 10;
-    const leftMargin = 15;
-    const rightMargin = doc.internal.pageSize.getWidth() - leftMargin;
-
-    // PDF Header
-    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
-    doc.text(companyName, leftMargin, yPos); yPos += lineSpacing;
-    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-    doc.text(companyAddress, leftMargin, yPos); yPos += lineSpacing - 2;
-    doc.text(companyContact, leftMargin, yPos); yPos += sectionSpacing;
-
-    doc.setFontSize(16); doc.setFont('helvetica', 'bold');
-    doc.text("Customer Quotes Summary", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' });
-    yPos += sectionSpacing;
-
-    // Customer Details
-    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
-    doc.text("Prepared for:", leftMargin, yPos); yPos += lineSpacing - 2;
-    doc.setFont('helvetica', 'normal');
-    doc.text(currentUser.displayName || "Valued Customer", leftMargin, yPos); yPos += lineSpacing - 2;
-    doc.text(currentUser.email, leftMargin, yPos); yPos += sectionSpacing;
-    doc.setFontSize(10);
-    doc.text(`Date Generated: ${new Date().toLocaleDateString()}`, rightMargin, yPos - (sectionSpacing * 1.5), { align: 'right' });
-
-    const tableHeaders = ["Bid #", "Date", "Service(s)", "Amount", "Status"];
-    const colWidths = [30, 25, 70, 30, 30]; // Adjusted colWidths
-
-    function drawQTableHeader() {
-        doc.setFont('helvetica', 'bold'); doc.setFillColor(230, 230, 230);
-        doc.rect(leftMargin, yPos, rightMargin - leftMargin, lineSpacing + 2, 'F');
-        let currentX = leftMargin + 2;
-        tableHeaders.forEach((header, i) => {
-            doc.text(header, currentX, yPos + lineSpacing - 1); currentX += colWidths[i];
-        });
-        yPos += lineSpacing + 2;
-    }
-
-    drawQTableHeader();
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
 
     try {
+        const pdfService = new PDFService();
         const quotesSnapshot = await db.collection("bids")
             .where("customerId", "==", currentUser.uid)
             .orderBy("createdAt", "desc")
             .get();
-        if (quotesSnapshot.empty) {
-            doc.text("No quotes found.", leftMargin, yPos + lineSpacing);
-        } else {
-            quotesSnapshot.forEach(quoteDoc => {
-                const quote = quoteDoc.data();
-                if (yPos > 260) { doc.addPage(); yPos = 20; drawQTableHeader(); doc.setFont('helvetica', 'normal'); doc.setFontSize(9); }
-                
-                const quoteDate = quote.createdAt && quote.createdAt.toDate ? quote.createdAt.toDate().toLocaleDateString() : 'N/A';
-                const services = Array.isArray(quote.services) ? quote.services.map(s => s.serviceType || s.name).join(", ") : (quote.serviceType || "N/A");
-                const amount = quote.estimatedTotal ? `$${quote.estimatedTotal.toFixed(2)}` : 'N/A';
-                const status = quote.status || 'Pending';
-                const bidNumber = quote.bidNumber || quoteDoc.id.substring(0,8).toUpperCase();
-                
-                let currentX = leftMargin + 2;
-                const rowData = [bidNumber, quoteDate, services, amount, status];
-                const serviceTextLines = doc.splitTextToSize(services, colWidths[2] - 4);
-                const rowHeight = Math.max(lineSpacing + 1, (serviceTextLines.length * (lineSpacing * 0.7)) + 3);
 
-                rowData.forEach((cell, i) => {
-                    if (i === 2) doc.text(serviceTextLines, currentX, yPos + lineSpacing - 2);
-                    else doc.text(cell ? cell.toString() : '', currentX, yPos + lineSpacing - 2);
-                    currentX += colWidths[i];
-                });
-                yPos += rowHeight;
-                doc.line(leftMargin, yPos - (rowHeight - lineSpacing) + 1 , rightMargin, yPos - (rowHeight-lineSpacing)+1 );
-            });
+        if (quotesSnapshot.empty) {
+            alert("No quotes found to export.");
+            return;
         }
+
+        const quotes = [];
+        quotesSnapshot.forEach(doc => {
+            quotes.push({
+                ...doc.data(),
+                id: doc.id
+            });
+        });
+
+        const doc = await pdfService.generateQuotePDF(quotes[0]); // Generate first quote
+        
+        // Add remaining quotes as new pages
+        for (let i = 1; i < quotes.length; i++) {
+            doc.addPage();
+            await pdfService.generateQuotePDF(quotes[i], doc);
+        }
+
+        doc.save("customer_quotes.pdf");
     } catch (error) {
-        console.error("Error fetching quotes for PDF:", error);
-        doc.text("Error fetching quotes.", leftMargin, yPos + lineSpacing);
+        console.error("Error generating quotes PDF:", error);
+        alert("Error generating PDF. Please try again.");
     }
-    // PDF Footer
-    const pageCountQ = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCountQ; i++) { doc.setPage(i); doc.setFontSize(8); doc.text(`Page ${i} of ${pageCountQ}`, doc.internal.pageSize.getWidth()/2, 285, {align:'center'}); }
-    doc.save("customer_quotes_summary.pdf");
 }
 
 async function exportInvoicesPDF() {
-    if (!currentUser || typeof jsPDF === 'undefined') { /* ... alert ... */ return; }
-    const { jsPDF } = window.jspdf;
-    const companyName = "Holliday's Lawn & Garden"; /* ... */
-    const doc = new jsPDF();
-    let yPos = 20; /* ... */
-    const leftMargin = 15;
-    const rightMargin = doc.internal.pageSize.getWidth() - leftMargin;
-    const lineSpacing = 7;
-    const sectionSpacing = 10;
-
-    // PDF Header & Customer Details (similar to exportQuotesPDF, using currentUser and profile lookup for address)
-     doc.setFontSize(18); doc.setFont('helvetica', 'bold'); doc.text(companyName, leftMargin, yPos); yPos += lineSpacing;
-    // ... (rest of company header)
-    doc.text("INVOICE SUMMARY", doc.internal.pageSize.getWidth() / 2, yPos, { align: 'center' }); yPos += sectionSpacing;
-    // ... (customer details section)
-
-    const tableHeaders = ["Invoice #", "Issued", "Due", "Service(s)", "Amount", "Status"];
-    const colWidths = [25, 25, 25, 65, 25, 25]; // Adjusted
-
-    function drawInvTableHeader() { /* ... */ }
-    drawInvTableHeader();
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    if (!currentUser || typeof jsPDF === 'undefined') {
+        alert("Cannot generate PDF. User not logged in or PDF library not loaded.");
+        return;
+    }
 
     try {
+        const pdfService = new PDFService();
         const invoicesSnapshot = await db.collection("invoices")
             .where("customerId", "==", currentUser.uid)
-            .orderBy("createdAt", "desc").get();
-        if (invoicesSnapshot.empty) { /* ... no invoices text ... */ }
-        else {
-            invoicesSnapshot.forEach(invDoc => {
-                 // ... (similar row drawing logic as exportQuotesPDF, using invoice data fields) ...
-            });
+            .orderBy("createdAt", "desc")
+            .get();
+
+        if (invoicesSnapshot.empty) {
+            alert("No invoices found to export.");
+            return;
         }
-    } catch (error) { /* ... error handling ... */ }
-    // PDF Footer
-    const pageCountI = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCountI; i++) { /* ... */ }
-    doc.save("customer_invoices_summary.pdf");
+
+        const invoices = [];
+        invoicesSnapshot.forEach(doc => {
+            invoices.push({
+                ...doc.data(),
+                id: doc.id
+            });
+        });
+
+        const doc = await pdfService.generateInvoicePDF(invoices[0]); // Generate first invoice
+        
+        // Add remaining invoices as new pages
+        for (let i = 1; i < invoices.length; i++) {
+            doc.addPage();
+            await pdfService.generateInvoicePDF(invoices[i], doc);
+        }
+
+        doc.save("customer_invoices.pdf");
+    } catch (error) {
+        console.error("Error generating invoices PDF:", error);
+        alert("Error generating PDF. Please try again.");
+    }
 }
 
 

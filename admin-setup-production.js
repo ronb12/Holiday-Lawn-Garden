@@ -67,13 +67,9 @@ async function initializeBusinessSettings() {
     // Create business configuration document
     await db.collection('business_settings').doc('company_info').set({
       name: "Holliday's Lawn & Garden",
-      address: {
-        street: '',
-        city: '',
-        state: 'FL',
-        zip: '',
-        phone: '',
-        email: 'contact@hollidaylawn.com'
+      contact: {
+        email: '7holliday@gmail.com',
+        phone: '(504) 717-1887'
       },
       services: [
         {
