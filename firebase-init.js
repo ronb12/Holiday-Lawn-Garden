@@ -27,19 +27,15 @@ async function initializeFirebase() {
       console.log('✅ Firebase initialized successfully');
     }
 
-    // Initialize services
+    // Initialize services with updated cache settings
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // Enable offline persistence
-    await db.enablePersistence()
-      .catch((err) => {
-        if (err.code === 'failed-precondition') {
-          console.warn('Multiple tabs open, persistence can only be enabled in one tab at a time.');
-        } else if (err.code === 'unimplemented') {
-          console.warn('The current browser does not support offline persistence');
-        }
-      });
+    // Set cache settings using the recommended approach
+    db.settings({
+      cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+      cache: 'persistent'
+    });
 
     // Export Firebase instances
     window.HollidayApp.db = db;
