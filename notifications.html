@@ -53,33 +53,4 @@ document.addEventListener('DOMContentLoaded', () => {
 <!-- Firebase Scripts -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="firebase-init.js"></script>
-<script>
-  const db = firebase.firestore();
-
-  firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-      loadNotifications();
-    } else {
-      window.location.href = "login.html";
-    }
-  });
-
-  function loadNotifications() {
-    const list = document.getElementById("notificationsList");
-    db.collection("notifications").where("status", "==", "unread")
-      .orderBy("timestamp", "desc")
-      .onSnapshot(snapshot => {
-        list.innerHTML = "";
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          const li = document.createElement("li");
-          li.textContent = data.message || "No message content.";
-          list.appendChild(li);
-        });
-      });
-  }
-</script>
-</body>
-</html>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-comp
