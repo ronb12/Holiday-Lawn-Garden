@@ -3,149 +3,176 @@ const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 const API_CACHE = 'api-v1';
 
+const BASE_PATH = '/Holliday-Lawn-Garden';
+
 // Assets to cache immediately
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/modern-styles.css',
-  '/variables.css',
-  '/firebase-config.js',
-  '/firebase-init.js',
-  '/recaptcha-config.js',
-  '/assets/images/Hollidays_Lawn_Garden_Logo.png',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/offline.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
+  `${BASE_PATH}/`,
+  `${BASE_PATH}/index.html`,
+  `${BASE_PATH}/about.html`,
+  `${BASE_PATH}/services.html`,
+  `${BASE_PATH}/contact.html`,
+  `${BASE_PATH}/modern-styles.css`,
+  `${BASE_PATH}/variables.css`,
+  `${BASE_PATH}/js/main.js`,
+  `${BASE_PATH}/js/firebase-config.js`,
+  `${BASE_PATH}/js/firebase-init.js`,
+  `${BASE_PATH}/js/auth.js`,
+  `${BASE_PATH}/js/dashboard.js`,
+  `${BASE_PATH}/assets/images/Hollidays_Lawn_Garden_Logo.png`,
+  `${BASE_PATH}/assets/images/hero-bg.jpg`,
+  `${BASE_PATH}/icons/icon-192.png`,
+  `${BASE_PATH}/icons/icon-512.png`
 ];
 
 // Firebase SDKs to cache
 const FIREBASE_SDKS = [
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js'
+  'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js',
+  'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js',
+  'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js',
+  'https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js',
+  'https://www.gstatic.com/firebasejs/9.6.0/firebase-messaging.js'
 ];
 
-// Install Service Worker
-self.addEventListener('install', (event) => {
+// Install event - cache static assets
+self.addEventListener('install', event => {
   event.waitUntil(
     Promise.all([
-      // Cache static assets
-      caches.open(STATIC_CACHE).then((cache) => {
-        console.log('Caching static assets');
-        return cache.addAll(STATIC_ASSETS);
-      }),
-      // Cache Firebase SDKs
-      caches.open(DYNAMIC_CACHE).then((cache) => {
-        console.log('Caching Firebase SDKs');
-        return cache.addAll(FIREBASE_SDKS);
-      }),
-      // Skip waiting to activate immediately
-      self.skipWaiting()
+      caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS)),
+      caches.open(DYNAMIC_CACHE).then(cache => cache.addAll(FIREBASE_SDKS))
     ])
   );
 });
 
-// Activate Service Worker
-self.addEventListener('activate', (event) => {
+// Activate event - clean up old caches
+self.addEventListener('activate', event => {
   event.waitUntil(
-    Promise.all([
-      // Clean up old caches
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE && cacheName !== API_CACHE) {
-              console.log('Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
-      // Claim clients to ensure the service worker is in control
-      self.clients.claim()
-    ])
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== STATIC_CACHE && 
+              cacheName !== DYNAMIC_CACHE && 
+              cacheName !== API_CACHE) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
 
-// Background sync for offline actions
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-service-request') {
-    event.waitUntil(syncServiceRequest());
+// Background sync for offline form submissions
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-service-requests') {
+    event.waitUntil(syncServiceRequests());
   }
 });
 
-// Fetch Event with Network-First Strategy for API requests
-self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
+// Fetch event - handle different types of requests
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  const url = new URL(request.url);
+
+  // Handle API requests
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(handleApiRequest(request));
     return;
   }
 
-  // Handle API requests with network-first strategy
-  if (event.request.url.includes('/api/')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Cache the response
-          const responseToCache = response.clone();
-          caches.open(API_CACHE).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
-        })
-        .catch(() => {
-          // If network fails, try to serve from cache
-          return caches.match(event.request).then((response) => {
-            if (response) {
-              return response;
-            }
-            // If not in cache, show offline page
-            return caches.match('/offline.html');
-          });
-        })
-    );
+  // Handle static assets
+  if (STATIC_ASSETS.includes(url.pathname) || FIREBASE_SDKS.includes(url.href)) {
+    event.respondWith(handleStaticRequest(request));
     return;
   }
 
-  // Handle static assets with cache-first strategy
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
+  // Handle other requests with network-first strategy
+  event.respondWith(handleOtherRequest(request));
+});
+
+// Handle API requests with network-first strategy
+async function handleApiRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(API_CACHE);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
+
+// Handle static requests with cache-first strategy
+async function handleStaticRequest(request) {
+  const cachedResponse = await caches.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  return fetch(request);
+}
+
+// Handle other requests with network-first strategy
+async function handleOtherRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    const cache = await caches.open(DYNAMIC_CACHE);
+    cache.put(request, networkResponse.clone());
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
+
+// Sync service requests with IndexedDB
+async function syncServiceRequests() {
+  const db = await openDB();
+  const requests = await db.getAll('serviceRequests');
+  
+  for (const request of requests) {
+    if (!request.synced) {
+      try {
+        const response = await fetch('/api/service-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(request)
+        });
+
+        if (response.ok) {
+          request.synced = true;
+          await db.put('serviceRequests', request);
         }
+      } catch (error) {
+        console.error('Error syncing service request:', error);
+      }
+    }
+  }
+}
 
-        return fetch(event.request)
-          .then((response) => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response
-            const responseToCache = response.clone();
-
-            // Determine which cache to use
-            const cacheName = STATIC_ASSETS.includes(event.request.url) ? STATIC_CACHE : DYNAMIC_CACHE;
-
-            caches.open(cacheName)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(() => {
-            // If fetch fails, show offline page
-            return caches.match('/offline.html');
-          });
-      })
-  );
-});
+// Open IndexedDB
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('HollidayLawnGarden', 1);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+    
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('serviceRequests')) {
+        db.createObjectStore('serviceRequests', { keyPath: 'id' });
+      }
+    };
+  });
+}
 
 // Push notification handling
 self.addEventListener('push', (event) => {
@@ -187,47 +214,4 @@ self.addEventListener('notificationclick', (event) => {
     );
   }
 });
-
-// Helper function to sync service requests
-async function syncServiceRequest() {
-  try {
-    const db = await openIndexedDB();
-    const offlineRequests = await db.getAll('offlineRequests');
-    
-    for (const request of offlineRequests) {
-      try {
-        // Attempt to sync the request
-        await fetch('/api/service-requests', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(request)
-        });
-        
-        // Remove from offline storage if successful
-        await db.delete('offlineRequests', request.id);
-      } catch (error) {
-        console.error('Failed to sync request:', error);
-      }
-    }
-  } catch (error) {
-    console.error('Sync error:', error);
-  }
-}
-
-// Helper function to open IndexedDB
-function openIndexedDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('offlineStorage', 1);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      db.createObjectStore('offlineRequests', { keyPath: 'id' });
-    };
-  });
-}
    

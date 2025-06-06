@@ -64,17 +64,17 @@ header {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/images/hero-bg.jpg');
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg');
   background-size: cover;
   background-position: center;
   min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
-  color: var(--background-light);
-  margin-top: 80px;
-  padding: var(--spacing-xl) var(--spacing-md);
+  color: white;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .hero-content {

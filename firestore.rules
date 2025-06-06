@@ -1,0 +1,107 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        request.auth.token.email in ['ronellbradley@bradleyvs.com'];
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidServiceRequest() {
+      return request.resource.data.keys().hasAll(['customerId', 'serviceType', 'status', 'createdAt']) &&
+        request.resource.data.customerId is string &&
+        request.resource.data.serviceType is string &&
+        request.resource.data.status in ['pending', 'approved', 'completed', 'cancelled'] &&
+        request.resource.data.createdAt is timestamp;
+    }
+    
+    function isValidQuote() {
+      return request.resource.data.keys().hasAll(['serviceRequestId', 'amount', 'status', 'createdAt']) &&
+        request.resource.data.serviceRequestId is string &&
+        request.resource.data.amount is number &&
+        request.resource.data.status in ['pending', 'accepted', 'rejected'] &&
+        request.resource.data.createdAt is timestamp;
+    }
+    
+    function isValidInvoice() {
+      return request.resource.data.keys().hasAll(['quoteId', 'amount', 'status', 'dueDate', 'createdAt']) &&
+        request.resource.data.quoteId is string &&
+        request.resource.data.amount is number &&
+        request.resource.data.status in ['pending', 'paid', 'overdue'] &&
+        request.resource.data.dueDate is timestamp &&
+        request.resource.data.createdAt is timestamp;
+    }
+
+    // User profiles
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Service requests
+    match /serviceRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow create: if isAuthenticated() && isValidServiceRequest();
+      allow update: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Quotes
+    match /quotes/{quoteId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow create: if isAdmin() && isValidQuote();
+      allow update: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Invoices
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow create: if isAdmin() && isValidInvoice();
+      allow update: if isAuthenticated() && (
+        isOwner(resource.data.customerId) || isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Chat messages
+    match /chats/{chatId} {
+      allow read: if isAuthenticated() && (
+        isOwner(resource.data.senderId) || 
+        isOwner(resource.data.receiverId) || 
+        isAdmin()
+      );
+      allow create: if isAuthenticated() && 
+        request.resource.data.senderId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Settings and configurations
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+} 

@@ -55,23 +55,17 @@
     });
 
     // Service Worker Registration
-    window.addEventListener('load', () => {
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => {
-            console.log('✅ Service Worker registered:', reg.scope);
-            reg.addEventListener('updatefound', () => {
-              const updateBanner = document.getElementById('updateBanner');
-              if (updateBanner) {
-                updateBanner.style.display = 'block';
-              }
-            });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
           })
-          .catch(error => {
-            console.warn('⚠️ Service Worker registration failed:', error);
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
           });
-      }
-    });
+      });
+    }
 
     // PWA Installation
     let deferredPrompt;
@@ -125,7 +119,7 @@
 <body>
   <header>
     <div class="header-content">
-      <img src="assets/images/Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      <img src="/Holliday-Lawn-Garden/assets/hollidays-logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
       <div class="hamburger" onclick="toggleMenu()">☰</div>
       <nav class="nav-links" id="navLinks">
         <a href="index.html" class="active">Home</a>

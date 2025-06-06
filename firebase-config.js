@@ -1,6 +1,6 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY || "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "holliday-lawn-garden.firebaseapp.com",
   projectId: "holliday-lawn-garden",
   storageBucket: "holliday-lawn-garden.appspot.com",
@@ -12,21 +12,18 @@ const firebaseConfig = {
 // Validate configuration
 function validateConfig(config) {
   const requiredFields = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-  const missingFields = requiredFields.filter(field => !config[field]);
-  
-  if (missingFields.length > 0) {
-    throw new Error(`Missing required Firebase configuration fields: ${missingFields.join(', ')}`);
+  for (const field of requiredFields) {
+    if (!config[field]) {
+      throw new Error(`Missing required Firebase config field: ${field}`);
+    }
   }
-  
-  return config;
 }
 
-// Make config available globally with validation
+// Initialize Firebase
 try {
-  const validatedConfig = validateConfig(firebaseConfig);
-  window.firebaseConfig = validatedConfig;
-  window.firebaseReadyPromise = Promise.resolve(validatedConfig);
+  validateConfig(firebaseConfig);
+  window.firebaseConfig = firebaseConfig;
 } catch (error) {
   console.error('Firebase configuration error:', error);
-  window.firebaseReadyPromise = Promise.reject(error);
+  throw error;
 } 
