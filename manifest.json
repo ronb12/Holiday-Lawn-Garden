@@ -1,0 +1,38 @@
+{
+  "name": "Holliday's Lawn & Garden",
+  "short_name": "Holliday Lawn",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/Holliday-Lawn-Garden/index.html",
+  "display": "standalone",
+  "background_color": "#228B22",
+  "theme_color": "#228B22",
+  "orientation": "portrait-primary",
+  "scope": "/Holliday-Lawn-Garden/",
+  "description": "Professional lawn care and landscaping services",
+  "icons": [
+    {
+      "src": "/Holliday-Lawn-Garden/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Holliday-Lawn-Garden/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Holliday-Lawn-Garden/assets/app-screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Homescreen of Holliday's Lawn & Garden"
+    }
+  ],
+  "categories": ["business", "lifestyle"],
+  "prefer_related_applications": false
+}
