@@ -48,6 +48,12 @@ header {
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius-sm);
   transition: var(--transition-fast);
+  position: relative;
+}
+
+.nav-links a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .nav-links a:hover,
@@ -58,16 +64,17 @@ header {
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('assets/hero-bg.jpg');
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/images/hero-bg.jpg');
   background-size: cover;
   background-position: center;
-  height: 80vh;
+  min-height: 60vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: var(--background-light);
   margin-top: 80px;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 .hero-content {
@@ -76,8 +83,9 @@ header {
 }
 
 .hero h1 {
-  font-size: 3rem;
+  font-size: clamp(2rem, 5vw, 3rem);
   margin-bottom: var(--spacing-md);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
 }
 
 .cta-button {
@@ -89,11 +97,15 @@ header {
   border-radius: var(--border-radius-md);
   transition: var(--transition-fast);
   margin-top: var(--spacing-lg);
+  border: 2px solid transparent;
 }
 
-.cta-button:hover {
+.cta-button:hover,
+.cta-button:focus {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
+  outline: none;
+  border-color: var(--background-light);
 }
 
 /* Services Section */
@@ -110,7 +122,7 @@ header {
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: var(--spacing-lg);
   margin-top: var(--spacing-xl);
 }
@@ -122,11 +134,14 @@ header {
   box-shadow: var(--shadow-md);
   text-align: center;
   transition: var(--transition-normal);
+  border: 1px solid transparent;
 }
 
-.service-card:hover {
+.service-card:hover,
+.service-card:focus-within {
   transform: translateY(-5px);
   box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
 }
 
 .service-icon {
@@ -151,6 +166,7 @@ header {
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-md);
+  border: 1px solid var(--primary-light);
 }
 
 .rating {
@@ -179,10 +195,13 @@ footer {
   font-size: 1.5rem;
   margin-right: var(--spacing-md);
   transition: var(--transition-fast);
+  padding: var(--spacing-sm);
 }
 
-.social-links a:hover {
+.social-links a:hover,
+.social-links a:focus {
   color: var(--accent-color);
+  outline: none;
 }
 
 .copyright {
@@ -200,6 +219,7 @@ footer {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  z-index: 900;
 }
 
 .floating-button {
@@ -211,11 +231,15 @@ footer {
   cursor: pointer;
   box-shadow: var(--shadow-md);
   transition: var(--transition-fast);
+  border: 2px solid transparent;
 }
 
-.floating-button:hover {
+.floating-button:hover,
+.floating-button:focus {
   background-color: var(--primary-dark);
   transform: translateY(-2px);
+  outline: none;
+  border-color: var(--background-light);
 }
 
 /* Update Banner */
@@ -230,6 +254,7 @@ footer {
   padding: var(--spacing-md);
   cursor: pointer;
   z-index: 1000;
+  box-shadow: var(--shadow-lg);
 }
 
 /* Mobile Menu */
@@ -237,6 +262,16 @@ footer {
   display: none;
   font-size: 1.5rem;
   cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-fast);
+}
+
+.hamburger:hover,
+.hamburger:focus {
+  background-color: var(--primary-light);
+  color: var(--background-light);
+  outline: none;
 }
 
 @media (max-width: 768px) {
@@ -260,12 +295,34 @@ footer {
     display: flex;
   }
 
-  .hero h1 {
-    font-size: 2rem;
+  .hero {
+    min-height: 50vh;
   }
 
   .floating-buttons {
     bottom: var(--spacing-md);
     right: var(--spacing-md);
+  }
+
+  .service-card,
+  .testimonial {
+    margin: 0 var(--spacing-sm);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .floating-buttons,
+  .update-banner,
+  .hamburger {
+    display: none;
+  }
+
+  header {
+    position: static;
+  }
+
+  .hero {
+    margin-top: 0;
   }
 } 

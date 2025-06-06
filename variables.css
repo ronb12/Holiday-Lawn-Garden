@@ -1,24 +1,25 @@
 :root {
   /* Primary Colors */
-  --primary-color: #4CAF50;
-  --primary-dark: #388E3C;
-  --primary-light: #81C784;
+  --primary-color: #2E7D32;
+  --primary-dark: #1B5E20;
+  --primary-light: #4CAF50;
   
   /* Secondary Colors */
-  --secondary-color: #228B22;
-  --secondary-dark: #1B5E20;
-  --secondary-light: #66BB6A;
+  --secondary-color: #1B5E20;
+  --secondary-dark: #0D2E13;
+  --secondary-light: #388E3C;
   
   /* Neutral Colors */
   --text-primary: #212121;
-  --text-secondary: #757575;
+  --text-secondary: #424242;
   --background-light: #FFFFFF;
   --background-dark: #F5F5F5;
   
   /* Accent Colors */
-  --accent-color: #FFC107;
+  --accent-color: #FFA000;
   --error-color: #D32F2F;
-  --success-color: #388E3C;
+  --success-color: #2E7D32;
+  --warning-color: #F57C00;
   
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -26,23 +27,40 @@
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
+  --spacing-xxl: 3rem;
   
   /* Typography */
-  --font-family-primary: 'Arial', sans-serif;
-  --font-family-secondary: 'Georgia', serif;
+  --font-family-primary: 'Arial', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-secondary: 'Georgia', 'Times New Roman', serif;
+  
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
   
   /* Border Radius */
   --border-radius-sm: 4px;
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
   
   /* Shadows */
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
   --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
   --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+  --shadow-xl: 0 12px 24px rgba(0,0,0,0.1);
   
   /* Transitions */
   --transition-fast: 0.2s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
+  
+  /* Z-index layers */
+  --z-index-base: 1;
+  --z-index-header: 1000;
+  --z-index-modal: 2000;
+  --z-index-tooltip: 3000;
 } 
