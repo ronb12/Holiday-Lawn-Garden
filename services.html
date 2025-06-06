@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+  <header>
+    <h1>Holliday's Lawn & Garden</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Our Services</h2>
+    <p>We offer a full range of lawn care and landscaping services to keep your property looking its best year-round.</p>
+
+    <section style="margin-top: 2em;">
+      <ul style="list-style-type: none; padding: 0;">
+       <li>🌿 <strong>Mowing & Trimming</strong> — Regular lawn maintenance to keep your yard neat and healthy.</li>
+<li>🌸 <strong>Landscape Design</strong> — Customized garden and yard designs to enhance your outdoor space.</li>
+<li>🍂 <strong>Leaf Removal</strong> — Fast, affordable cleanup during fall and seasonal changes.</li>
+<li>🌾 <strong>Fertilization & Seeding</strong> — Boost lawn growth with nutrient-rich treatments and overseeding.</li>
+<li>🧹 <strong>Seasonal Cleanup</strong> — Full yard cleanup services for spring and fall transitions.</li>
+<li>🚜 <strong>Mulching & Edging</strong> — Professional mulch installation and clean edging for a crisp look.</li>
+<li>🏡 <strong>Commercial Lawn Care</strong> — Reliable service packages for commercial properties and HOAs.</li>
+<li>💦 <strong>Pressure Washing</strong> — Professional cleaning of driveways, patios, sidewalks, fences, and exterior surfaces (excluding roofs).</li>
+      </ul>
+    </section>
+
+    <p style="margin-top: 2em;">Looking for a service not listed? Contact us — we're happy to create a custom plan that fits your needs!</p>
+  </main>
+
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
+
+</body>
+</html>
+

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header>
+  <h1>Holliday's Lawn & Garden</h1>
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="gallery.html">Gallery</a>
+    <a href="login.html">Login</a>
+  </nav>
+  <p>Pay Your Bill</p>
+</header>
+
+<main>
+  <div class="pay-container">
+    <h2>Guest Checkout</h2>
+    <div style="margin-bottom: 1em;">
+      <a href="index.html">🏠 Home</a> |
+      <a href="services.html">🛠️ Services</a> |
+      <a href="gallery.html">📸 Gallery</a> |
+      <a href="contact.html">📞 Contact</a>
+    </div>
+
+    <p>Enter your invoice number, email, and amount to pay:</p>
+
+    <input type="text" id="invoiceNumberInput" placeholder="Invoice Number" required>
+    <input type="email" id="payerEmailInput" placeholder="Your Email Address" required>
+    <input type="number" id="paypalAmount" placeholder="Amount ($)" min="1" step="0.01" required>
+
+    <div id="paypal-button-container" style="margin-top: 1em;"></div>
+
+    <div id="thank-you">
+      <h3>✅ Thank you for your payment!</h3>
+    </div>
+
+    <div id="payment-confirmation">
+      <h3>📄 Payment Receipt</h3>
+      <p><strong>Invoice:</strong> <span id="confirm-invoice">N/A</span></p>
+      <p><strong>Amount Paid:</strong> $<span id="confirm-amount">0.00</span></p>
+      <p><strong>Date:</strong> <span id="confirm-date">-</span></p>
+      <p><strong>Paid By:</strong> <span id="confirm-email">-</span></p>
+    </div>
+
+    <div style="margin-top: 3em;">
+      <h3>Other Ways to Pay (Coming Soon):</h3>
+      <p><strong>CashApp:</strong> Coming Soon</p>
+      <p><strong>Zelle:</strong> Coming Soon</p>
+    </div>
+  </div>
+</main>
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  function showThankYou() {
+    document.getElementById('thank-you').style.display = 'block';
+  }
+
+  paypal.Buttons({
+    style: {
+      layout: 'vertical',
+      color: 'blue',
+      shape: 'rect',
+      label: 'paypal'
+    },
+    createOrder: function(data, actions) {
+      const amount = document.getElementById('paypalAmount').value || '1.00';
+      return actions.order.create({
+        purchase_units: [{
+          amount: { value: amount },
+          description: 'Invoice Payment - Holliday’s Lawn & Garden'
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      return actions.order.capture().then(async function(details) {
+        const amount = parseFloat(details.purchase_units[0].amount.value);
+        const payerEmail = document.getElementById('payerEmailInput').value.trim();
+        const invoiceNumber = document.getElementById('invoiceNumberInput').value.trim();
+        const paidAt = new Date().toLocaleString();
+
+        showThankYou();
+        document.getElementById('payment-confirmation').style.display = 'block';
+        document.getElementById('confirm-amount').innerText = amount.toFixed(2);
+        document.getElementById('confirm-date').innerText = paidAt;
+        document.getElementById('confirm-email').innerText = payerEmail;
+        document.getElementById('confirm-invoice').innerText = invoiceNumber;
+
+        try {
+          const db = firebase.firestore();
+          const invoiceQuery = await db.collection("invoices")
+            .where("invoiceNumber", "==", invoiceNumber)
+            .limit(1)
+            .get();
+
+          if (!invoiceQuery.empty) {
+            const docRef = invoiceQuery.docs[0].ref;
+
+            await docRef.update({
+              paid: true,
+              paidAt: firebase.firestore.FieldValue.serverTimestamp(),
+              paymentMethod: "PayPal (Guest)",
+              paidAmount: amount,
+              paypalPayer: payerEmail
+            });
+
+            await db.collection("notifications").add({
+              type: "payment",
+              message: `💰 $${amount.toFixed(2)} received for invoice #${invoiceNumber}`,
+              customer: payerEmail,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              status: "unread"
+            });
+
+            console.log("✅ Invoice updated and admin notified.");
+          } else {
+            alert("⚠️ Invoice number not found. Please check and try again.");
+          }
+        } catch (err) {
+          console.error("❌ Firestore error:", err);
+          alert("❌ Payment succeeded, but invoice update failed. Contact support.");
+        }
+      });
+    },
+    onError: function(err) {
+      console.error("❌ PayPal error:", err);
+      alert("❌ PayPal Checkout failed.");
+    }
+  }).render('#paypal-button-container');
+</script>
+
+</body>
+</html>

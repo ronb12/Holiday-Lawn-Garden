@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header>
+  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+  <p>Admin Login</p>
+</header>
+
+<main>
+  <div class="login-container fade-in">
+    <h2>Admin Login</h2>
+
+    <input type="email" id="adminEmail" placeholder="Admin Email" required><br>
+    <input type="password" id="adminPassword" placeholder="Password" required><br>
+    <button onclick="adminLogin()">Login</button>
+
+    <div id="errorMessage" class="error"></div>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  const allowedAdmins = [
+    "ronellbradley@bradleyvs.com" // ✅ Replace with your real admin email(s)
+  ];
+
+  function adminLogin() {
+    const email = document.getElementById('adminEmail').value.trim();
+    const password = document.getElementById('adminPassword').value.trim();
+    const errorMessage = document.getElementById('errorMessage');
+    errorMessage.innerText = "";
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        if (allowedAdmins.includes(user.email)) {
+          // Check if 2FA is enabled
+          if (!user.multiFactor.enrolledFactors.length) {
+            // Redirect to 2FA setup if not enabled
+            window.location.href = "admin-2fa-setup.html";
+            return;
+          }
+          
+          // Verify 2FA
+          const provider = new firebase.auth.PhoneAuthProvider();
+          provider.verifyPhoneNumber()
+            .then((verificationId) => {
+              // Store verification ID
+              window.sessionStorage.setItem('verificationId', verificationId);
+              // Show 2FA verification dialog
+              document.getElementById('twoFactorDialog').style.display = 'block';
+            })
+            .catch((error) => {
+              console.error(error);
+              errorMessage.innerText = "2FA verification failed. Please try again.";
+            });
+        } else {
+          firebase.auth().signOut();
+          errorMessage.innerText = "Access Denied: Not an authorized admin.";
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        errorMessage.innerText = error.message;
+      });
+  }
+
+  // Verify 2FA code
+  function verify2FACode() {
+    const code = document.getElementById('twoFactorCode').value.trim();
+    const verificationId = window.sessionStorage.getItem('verificationId');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    if (!code || !verificationId) {
+      errorMessage.innerText = "Please enter the verification code.";
+      return;
+    }
+
+    const credential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+    firebase.auth().currentUser.multiFactor.getSession()
+      .then((multiFactorSession) => {
+        const phoneAuthCredential = firebase.auth.PhoneAuthProvider.credential(verificationId, code);
+        const multiFactorAssertion = firebase.auth.PhoneMultiFactorGenerator.assertion(phoneAuthCredential);
+        return firebase.auth().currentUser.multiFactor.enroll(multiFactorAssertion, "Phone Number");
+      })
+      .then(() => {
+        // Successful 2FA verification
+        window.location.href = "admin.html";
+      })
+      .catch((error) => {
+        console.error(error);
+        errorMessage.innerText = "Invalid verification code. Please try again.";
+      });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(section => {
+    observer.observe(section);
+  });
+</script>
+
+</body>
+</html>

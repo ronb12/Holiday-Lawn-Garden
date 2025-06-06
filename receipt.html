@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header>
+  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Logo" style="max-height: 80px; margin-top: 10px;">
+</header>
+
+<main>
+  <div class="receipt-container fade-in">
+    <h1>✅ Payment Receipt</h1>
+    <p>Thank you for your payment! Your invoice has been marked <strong>PAID</strong>.</p>
+
+    <div class="receipt-details" id="receiptArea"></div>
+
+    <button class="download-btn" onclick="generatePDF()">📄 Download PDF</button>
+  </div>
+</main>
+
+<footer style="text-align:center; margin-top: 2em;">
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  const db = firebase.firestore();
+
+  let invoiceData = null;
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const params = new URLSearchParams(window.location.search);
+      const invoiceNum = params.get("invoice");
+
+      if (!invoiceNum) return alert("Missing invoice number.");
+
+      db.collection("invoices")
+        .where("invoiceNumber", "==", invoiceNum)
+        .where("customerEmail", "==", user.email)
+        .limit(1)
+        .get()
+        .then(snapshot => {
+          if (snapshot.empty) return alert("Invoice not found.");
+
+          const doc = snapshot.docs[0];
+          invoiceData = doc.data();
+          renderReceipt(invoiceData);
+        });
+    } else {
+      window.location.href = "login.html";
+    }
+  });
+
+  function renderReceipt(data) {
+    const container = document.getElementById("receiptArea");
+    let html = `
+      <p><strong>Invoice #: </strong>${data.invoiceNumber}</p>
+      <p><strong>Email: </strong>${data.customerEmail}</p>
+      <p><strong>Due Date: </strong>${data.dueDate}</p>
+      <p><strong>Status: </strong><span style="color: green;">PAID</span></p>
+
+      <table>
+        <thead>
+          <tr><th>Description</th><th>Amount</th></tr>
+        </thead>
+        <tbody>`;
+
+    data.services.forEach(s => {
+      html += `<tr><td>${s.description}</td><td>$${s.amount.toFixed(2)}</td></tr>`;
+    });
+
+    html += `
+        <tr><td><strong>Subtotal</strong></td><td>$${data.subtotal.toFixed(2)}</td></tr>
+        <tr><td><strong>Tax</strong></td><td>$${data.tax.toFixed(2)}</td></tr>
+        <tr><td><strong>Total Paid</strong></td><td><strong>$${data.grandTotal.toFixed(2)}</strong></td></tr>
+        </tbody>
+      </table>
+    `;
+    container.innerHTML = html;
+  }
+
+  async function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const data = invoiceData;
+    if (!data) return;
+
+    doc.addImage("Hollidays_Lawn_Garden_Logo.png", "PNG", 10, 10, 40, 20);
+    doc.setFontSize(18);
+    doc.text("RECEIPT", 105, 40, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.text(`Invoice #: ${data.invoiceNumber}`, 20, 60);
+    doc.text(`Customer: ${data.customerEmail}`, 20, 68);
+    doc.text(`Due Date: ${data.dueDate}`, 20, 76);
+    doc.text(`Status: PAID`, 20, 84);
+
+    let y = 100;
+    doc.text("Itemized Services", 20, y);
+    y += 10;
+
+    data.services.forEach(service => {
+      doc.text(`${service.description}`, 25, y);
+      doc.text(`$${service.amount.toFixed(2)}`, 160, y, { align: "right" });
+      y += 10;
+    });
+
+    doc.line(20, y, 190, y); y += 10;
+    doc.text(`Subtotal: $${data.subtotal.toFixed(2)}`, 160, y, { align: "right" }); y += 10;
+    doc.text(`Tax: $${data.tax.toFixed(2)}`, 160, y, { align: "right" }); y += 10;
+    doc.text(`Total Paid: $${data.grandTotal.toFixed(2)}`, 160, y, { align: "right" });
+
+    doc.save(`Receipt_${data.invoiceNumber}.pdf`);
+  }
+</script>
+
+</body>
+</html>

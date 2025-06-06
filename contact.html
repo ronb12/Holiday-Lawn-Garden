@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+  <header>
+    <h1>Holliday's Lawn & Garden</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="pay-your-bill.html">Pay Your Bill</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="contact-grid">
+      <div>
+    <h2>Contact Us</h2>
+        <p>Have a question, need a quote, or ready to schedule your service? We're here to help! Send us a message below and we'll get back to you as soon as possible.</p>
+
+        <div class="auth-section">
+          <h3>Track Your Service Requests</h3>
+          <p>Sign in to track your service requests and get updates.</p>
+          <div id="authStatus">
+            <div class="auth-buttons">
+              <button onclick="signInWithGoogle()">
+                <i class="fab fa-google"></i> Sign in with Google
+              </button>
+              <button onclick="signInWithEmail()">
+                <i class="fas fa-envelope"></i> Sign in with Email
+              </button>
+            </div>
+          </div>
+          <div id="userInfo" style="display: none;">
+            <p>Welcome, <span id="userName"></span>!</p>
+            <button onclick="signOut()">Sign Out</button>
+          </div>
+        </div>
+
+        <div id="requestHistory" class="request-history">
+          <h3>Your Service Request History</h3>
+          <div id="requestList"></div>
+        </div>
+
+        <div id="successMessage" class="success-message">
+          Thank you for your message! We'll be in touch shortly.
+        </div>
+
+    <form id="contactForm">
+          <div class="form-group">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" required pattern="[A-Za-z\s]+" minlength="2">
+            <div class="error-message" id="nameError">Please enter a valid name (letters and spaces only)</div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required>
+            <div class="error-message" id="emailError">Please enter a valid email address</div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" pattern="[0-9()-\s]+" title="Please enter a valid phone number">
+            <div class="error-message" id="phoneError">Please enter a valid phone number</div>
+          </div>
+
+          <div class="form-group">
+            <label for="service">Service Needed:</label>
+      <select id="service" name="service" required>
+        <option value="">-- Select a Service --</option>
+              <option value="🌿 Mowing & Trimming">🌿 Mowing & Trimming</option>
+              <option value="🌸 Landscape Design">🌸 Landscape Design</option>
+              <option value="🍂 Leaf Removal">🍂 Leaf Removal</option>
+              <option value="🌾 Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+              <option value="🧹 Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+              <option value="🚜 Mulching & Edging">🚜 Mulching & Edging</option>
+              <option value="🏡 Commercial Lawn Care">🏡 Commercial Lawn Care</option>
+              <option value="💦 Pressure Washing">💦 Pressure Washing (excluding roofs)</option>
+              <option value="🛠️ Custom Job">🛠️ Custom Job</option>
+              <option value="💬 General Question">💬 General Question</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="preferredTime">Preferred Contact Time:</label>
+            <select id="preferredTime" name="preferredTime">
+              <option value="morning">Morning (8AM - 12PM)</option>
+              <option value="afternoon">Afternoon (12PM - 4PM)</option>
+              <option value="evening">Evening (4PM - 7PM)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="4" required minlength="10"></textarea>
+            <div class="error-message" id="messageError">Please enter a message (minimum 10 characters)</div>
+          </div>
+
+          <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_SITE_KEY"></div>
+
+          <button type="submit">
+            Send Message
+            <span class="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+            </span>
+          </button>
+    </form>
+      </div>
+
+      <div class="contact-info">
+      <h3>Other Ways to Reach Us:</h3>
+        <p><i class="fas fa-user"></i> <strong>Owner:</strong> Karl Holliday</p>
+        <p><i class="fas fa-envelope"></i> <strong>Email:</strong> 7holliday@gmail.com</p>
+        <p><i class="fas fa-phone"></i> <strong>Phone:</strong> (504) 717-1887</p>
+
+        <div class="business-hours">
+          <h3><i class="fas fa-clock"></i> Business Hours</h3>
+          <table>
+            <tr><td>Monday - Friday</td><td>8:00 AM - 5:00 PM</td></tr>
+            <tr><td>Saturday</td><td>8:00 AM - 3:00 PM</td></tr>
+            <tr><td>Sunday</td><td>Closed</td></tr>
+          </table>
+        </div>
+
+        <div class="emergency-contact">
+          <h4><i class="fas fa-exclamation-triangle"></i> Emergency Service</h4>
+          <p>For urgent matters outside business hours, please call or text:</p>
+          <p><strong>(504) 717-1887</strong></p>
+        </div>
+
+        <div class="social-links">
+          <h3>Follow Us</h3>
+          <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+          <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+        </div>
+
+        <div class="location">
+          <h3><i class="fas fa-map-marker-alt"></i> Service Area</h3>
+          <p>We proudly serve the greater New Orleans area and surrounding communities.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+  </footer>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
+  <!-- Contact Form Submit Script -->
+  <script>
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    let currentUser = null;
+
+    // Auth state observer
+    auth.onAuthStateChanged((user) => {
+      currentUser = user;
+      if (user) {
+        document.getElementById('authStatus').style.display = 'none';
+        document.getElementById('userInfo').style.display = 'block';
+        document.getElementById('userName').textContent = user.displayName || user.email;
+        document.getElementById('requestHistory').style.display = 'block';
+        loadUserRequests(user.uid);
+        
+        // Pre-fill form with user info
+        document.getElementById('name').value = user.displayName || '';
+        document.getElementById('email').value = user.email || '';
+      } else {
+        document.getElementById('authStatus').style.display = 'block';
+        document.getElementById('userInfo').style.display = 'none';
+        document.getElementById('requestHistory').style.display = 'none';
+        document.getElementById('contactForm').reset();
+      }
+    });
+
+    // Sign in with Google
+    async function signInWithGoogle() {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+      } catch (error) {
+        console.error('Google sign-in error:', error);
+        alert('Error signing in with Google. Please try again.');
+      }
+    }
+
+    // Sign in with email
+    async function signInWithEmail() {
+      const email = prompt('Enter your email:');
+      if (!email) return;
+
+      try {
+        const actionCodeSettings = {
+          url: window.location.href,
+          handleCodeInApp: true
+        };
+        await auth.sendSignInLinkToEmail(email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', email);
+        alert('Check your email for the sign-in link!');
+      } catch (error) {
+        console.error('Email sign-in error:', error);
+        alert('Error sending sign-in email. Please try again.');
+      }
+    }
+
+    // Sign out
+    async function signOut() {
+      try {
+        await auth.signOut();
+      } catch (error) {
+        console.error('Sign out error:', error);
+        alert('Error signing out. Please try again.');
+      }
+    }
+
+    // Load user's service requests
+    async function loadUserRequests(userId) {
+      try {
+        const requestList = document.getElementById('requestList');
+        requestList.innerHTML = '';
+
+        const snapshot = await db.collection('service_requests')
+          .where('userId', '==', userId)
+          .orderBy('createdAt', 'desc')
+          .limit(5)
+          .get();
+
+        if (snapshot.empty) {
+          requestList.innerHTML = '<p>No service requests yet.</p>';
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const date = data.createdAt?.toDate()?.toLocaleDateString() || 'Unknown date';
+          const statusClass = `status-${data.status.toLowerCase()}`;
+          
+          requestList.innerHTML += `
+            <div class="request-card">
+              <span class="status-badge ${statusClass}">${data.status}</span>
+              <h4>${data.service}</h4>
+              <p><strong>Date:</strong> ${date}</p>
+              <p><strong>Message:</strong> ${data.notes}</p>
+            </div>
+          `;
+        });
+      } catch (error) {
+        console.error('Error loading requests:', error);
+        alert('Error loading your service requests. Please try again.');
+      }
+    }
+
+    // Form validation
+    function validateForm() {
+      let isValid = true;
+      const name = document.getElementById('name');
+      const email = document.getElementById('email');
+      const phone = document.getElementById('phone');
+      const message = document.getElementById('message');
+
+      // Name validation
+      if (!name.value.match(/^[A-Za-z\s]+$/)) {
+        document.getElementById('nameError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('nameError').style.display = 'none';
+      }
+
+      // Email validation
+      if (!email.value.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        document.getElementById('emailError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('emailError').style.display = 'none';
+      }
+
+      // Phone validation (if provided)
+      if (phone.value && !phone.value.match(/^[\d\s()-]+$/)) {
+        document.getElementById('phoneError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('phoneError').style.display = 'none';
+      }
+
+      // Message validation
+      if (message.value.length < 10) {
+        document.getElementById('messageError').style.display = 'block';
+        isValid = false;
+      } else {
+        document.getElementById('messageError').style.display = 'none';
+      }
+
+      return isValid;
+    }
+
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
+
+      // Rate limiting check
+      const now = Date.now();
+      const lastSubmission = localStorage.getItem('lastFormSubmission');
+      const SUBMISSION_COOLDOWN = 60000; // 1 minute cooldown
+
+      if (lastSubmission && (now - parseInt(lastSubmission)) < SUBMISSION_COOLDOWN) {
+        alert('Please wait a minute before submitting another request.');
+        return;
+      }
+
+      // Show loading state
+      const button = this.querySelector('button[type="submit"]');
+      const loading = document.querySelector('.loading');
+      button.disabled = true;
+      loading.style.display = 'inline-block';
+
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const notes = document.getElementById('message').value;
+      const service = document.getElementById('service').value;
+      const preferredTime = document.getElementById('preferredTime').value;
+
+      try {
+        const requestData = {
+          name,
+          email,
+          phone,
+          service,
+          notes,
+          preferredTime,
+          status: "New",
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          userId: currentUser ? currentUser.uid : null,
+          ipAddress: null, // Will be set by Cloud Function
+          submissionCount: firebase.firestore.FieldValue.increment(1)
+        };
+
+        const docRef = await db.collection('service_requests').add(requestData);
+
+        // Store submission timestamp for rate limiting
+        localStorage.setItem('lastFormSubmission', now.toString());
+
+        // Create notification for admin
+        await db.collection('notifications').add({
+          type: 'new_request',
+          requestId: docRef.id,
+          message: `New service request from ${name} for ${service}`,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          status: 'unread'
+        });
+
+        // Show success message
+        document.getElementById('successMessage').style.display = 'block';
+        document.getElementById('contactForm').reset();
+
+        // If user is logged in, refresh their request history
+        if (currentUser) {
+          loadUserRequests(currentUser.uid);
+        }
+
+        // Scroll to success message
+        document.getElementById('successMessage').scrollIntoView({ behavior: 'smooth' });
+
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          document.getElementById('successMessage').style.display = 'none';
+        }, 5000);
+
+      } catch (error) {
+        console.error("❌ Error sending message:", error);
+        alert("An error occurred. Please try again.");
+      } finally {
+        // Reset button state
+        button.disabled = false;
+        loading.style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>

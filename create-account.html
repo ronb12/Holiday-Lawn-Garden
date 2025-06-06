@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header>
+  <h1>Create Account</h1>
+</header>
+
+<main>
+  <div class="create-container fade-in">
+    <form onsubmit="register(event)">
+      <input type="text" id="fullName" placeholder="Full Name" required><br>
+      <input type="email" id="email" placeholder="Email Address" required><br>
+      <input type="password" id="password" placeholder="Password" required><br>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required><br>
+      <hr>
+      <input type="text" id="street" placeholder="Street Address" required><br>
+      <input type="text" id="city" placeholder="City" required><br>
+      <input type="text" id="state" placeholder="State" required><br>
+      <input type="text" id="zip" placeholder="ZIP Code" required><br>
+      <button type="submit">Create Account</button>
+    </form>
+    <div class="login-links">
+      <p>Already have an account? <a href="login.html">Login here</a>.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  async function register(e) {
+    e.preventDefault();
+    const name = document.getElementById("fullName").value;
+    const email = document.getElementById("email").value;
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const street = document.getElementById("street").value;
+    const city = document.getElementById("city").value;
+    const state = document.getElementById("state").value;
+    const zip = document.getElementById("zip").value;
+
+    if (pass !== confirm) {
+      alert("❌ Passwords do not match.");
+      return;
+    }
+
+    try {
+      const userCred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+      const uid = userCred.user.uid;
+
+      await firebase.firestore().collection("users").doc(uid).set({
+        fullName: name,
+        email,
+        displayName: name,
+        uid: uid,
+        role: "customer",
+        address: {
+          street,
+          city,
+          state,
+          zip
+        },
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      alert("✅ Account created successfully!");
+      window.location.href = "customer-dashboard.html";
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  }
+</script>
+
+</body>
+</html>

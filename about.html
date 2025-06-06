@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+
+<body>
+  <header role="banner">
+    <img src="/Holliday-Lawn-Garden/Hollidays_Lawn_Garden_Logo.png" alt="Company logo for Holliday's Lawn & Garden" class="logo">
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <nav class="nav-links" id="navLinks">
+      <a href="index.html">Home</a>
+      <a href="services.html">Services</a>
+      <a href="about.html" class="active">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="pay-your-bill.html">Pay Your Bill</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="login.html">Login</a>
+      <a href="admin-login.html" id="adminLink" style="display:none;">Admin</a>
+    </nav>
+  </header>
+
+  <div class="about-container">
+    <div class="about-section">
+      <h1>About Us</h1>
+      <p>Holliday's Lawn & Garden was founded with a simple mission: to provide high-quality lawn care and landscaping services at affordable prices. We take pride in our attention to detail, customer service, and dedication to making your outdoor spaces beautiful.</p>
+
+      <p>Our team has years of experience in residential and commercial landscaping, lawn maintenance, and seasonal cleanup services. Whether it's a small front yard or a large commercial property, we approach every project with professionalism and care.</p>
+      
+      <p>We are proud to serve our community and build lasting relationships with our clients. When you choose Holliday's Lawn & Garden, you're choosing reliable service, friendly professionals, and results you can trust.</p>
+    </div>
+
+    <div class="about-section">
+      <h2>Why Choose Us?</h2>
+      <ul class="benefits-list">
+        <li>Experienced Lawn Care Professionals</li>
+        <li>Reliable, On-Time Service</li>
+        <li>Competitive Pricing</li>
+        <li>100% Satisfaction Guarantee</li>
+        <li>Licensed and Insured</li>
+        <li>Eco-Friendly Practices</li>
+      </ul>
+    </div>
+
+    <div class="team-section about-section">
+      <h2>Our Team</h2>
+      <div class="team-member">
+        <img src="/Holliday-Lawn-Garden/assets/team/owner.jpg" alt="Karl Holliday - Owner">
+        <h3>Karl Holliday</h3>
+        <p>Owner & Lead Landscaper</p>
+        <p>20+ years of experience in landscape design and maintenance</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+  </footer>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+  <script src="/Holliday-Lawn-Garden/firebase-config.js"></script>
+  <script src="/Holliday-Lawn-Garden/firebase-init.js"></script>
+
+  <script>
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const allowedAdmins = ["ronellbradley@bradleyvs.com"];
+
+      function checkFirebase() {
+        if (typeof firebase !== "undefined" && firebase.auth) {
+          firebase.auth().onAuthStateChanged(user => {
+            document.getElementById('adminLink').style.display =
+              user && allowedAdmins.includes(user.email) ? 'inline-block' : 'none';
+          });
+        } else {
+          setTimeout(checkFirebase, 100); // Retry if firebase not ready yet
+        }
+      }
+
+      checkFirebase();
+    });
+  </script>
+</body>
+</html>
