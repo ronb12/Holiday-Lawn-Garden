@@ -15,7 +15,7 @@ service cloud.firestore {
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
-    
+
     function isValidServiceRequest() {
       return request.resource.data.keys().hasAll(['customerId', 'serviceType', 'status', 'createdAt']) &&
         request.resource.data.customerId is string &&

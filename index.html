@@ -15,19 +15,16 @@
   <link rel="stylesheet" href="modern-styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-  <!-- Firebase SDK -->
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
-  <!-- Configurations -->
-  <script defer src="firebase-config.js"></script>
-  <script defer src="recaptcha-config.js"></script>
-  <script defer src="firebase-init.js"></script>
+  <!-- Firebase Configuration -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-init.js"></script>
 
   <!-- Service Worker & Install Prompt -->
   <script>
@@ -46,23 +43,58 @@
         floatingButtons.appendChild(installBtn);
       }
       
-      // Initialize Firebase after config is loaded
-      if (window.firebaseConfig) {
-        initializeFirebaseDB().catch(console.error);
-      } else {
-        console.error('Firebase configuration not found');
-      }
+      // Initialize Firebase when the document is ready
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          // Initialize services
+          const { auth, db, storage, analytics } = await initializeFirebaseDB();
+          
+          // Store Firebase services globally
+          window.HollidayApp = { auth, db, storage, analytics };
+          
+          // Handle auth state changes
+          auth.onAuthStateChanged((user) => {
+            if (user) {
+              console.log('User is signed in:', user.email);
+              document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'block');
+              document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'none');
+              
+              // Check for admin access
+              const adminLink = document.getElementById('adminLink');
+              if (adminLink) {
+                const allowedAdmins = ["ronellbradley@bradleyvs.com"];
+                if (allowedAdmins.includes(user.email)) {
+                  adminLink.style.display = 'block';
+                }
+              }
+            } else {
+              console.log('User is signed out');
+              document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'none');
+              document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'block');
+              
+              // Hide admin link
+              const adminLink = document.getElementById('adminLink');
+              if (adminLink) {
+                adminLink.style.display = 'none';
+              }
+            }
+          });
+        } catch (error) {
+          console.error('Failed to initialize Firebase:', error);
+          showError('Failed to initialize the application. Please refresh the page.');
+        }
+      });
     });
 
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js')
+        navigator.serviceWorker.register('service-worker.js')
           .then(registration => {
             console.log('ServiceWorker registration successful');
           })
           .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
+            console.error('ServiceWorker registration failed:', err);
           });
       });
     }
@@ -101,25 +133,19 @@
       refreshing = true;
     });
 
-    // Admin link visibility
-    window.addEventListener('DOMContentLoaded', () => {
-      const adminLink = document.getElementById('adminLink');
-      if (adminLink) {
-        window.firebaseReadyPromise?.then(() => {
-          const allowedAdmins = ["ronellbradley@bradleyvs.com"];
-          const user = window.HollidayApp?.auth?.currentUser;
-          if (user && allowedAdmins.includes(user.email)) {
-            adminLink.style.display = 'block';
-          }
-        });
-      }
-    });
+    // Error handling
+    function showError(message) {
+      const errorBanner = document.createElement('div');
+      errorBanner.className = 'error-banner';
+      errorBanner.textContent = message;
+      document.body.appendChild(errorBanner);
+    }
   </script>
 </head>
 <body>
   <header>
     <div class="header-content">
-      <img src="/Holliday-Lawn-Garden/assets/hollidays-logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      <img src="assets/hollidays-logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
       <div class="hamburger" onclick="toggleMenu()">☰</div>
       <nav class="nav-links" id="navLinks">
         <a href="index.html" class="active">Home</a>

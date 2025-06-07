@@ -3,6 +3,7 @@ const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 const API_CACHE = 'api-v1';
 
+// Base path for GitHub Pages
 const BASE_PATH = '/Holliday-Lawn-Garden';
 
 // Assets to cache immediately
@@ -19,19 +20,19 @@ const STATIC_ASSETS = [
   `${BASE_PATH}/js/firebase-init.js`,
   `${BASE_PATH}/js/auth.js`,
   `${BASE_PATH}/js/dashboard.js`,
-  `${BASE_PATH}/assets/images/Hollidays_Lawn_Garden_Logo.png`,
-  `${BASE_PATH}/assets/images/hero-bg.jpg`,
+  `${BASE_PATH}/assets/hollidays-logo.png`,
+  `${BASE_PATH}/assets/hero-garden-landscaping.jpg`,
   `${BASE_PATH}/icons/icon-192.png`,
   `${BASE_PATH}/icons/icon-512.png`
 ];
 
 // Firebase SDKs to cache
 const FIREBASE_SDKS = [
-  'https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/9.6.0/firebase-auth.js',
-  'https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore.js',
-  'https://www.gstatic.com/firebasejs/9.6.0/firebase-storage.js',
-  'https://www.gstatic.com/firebasejs/9.6.0/firebase-messaging.js'
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js'
 ];
 
 // Install event - cache static assets
