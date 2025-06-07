@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - Holliday's Lawn & Garden</title>
+    <meta name="description" content="View our portfolio of lawn care and landscaping projects. See the quality of our work and get inspired for your own outdoor space.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    ">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+            </a>
+            <nav>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="services.html">Services</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="pay-your-bill.html">Pay Your Bill</a>
+                    <a href="gallery.html" class="active">Gallery</a>
+                    <a href="login.html">Login</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Our Gallery</h1>
+            <p>See the quality of our work and get inspired</p>
+        </div>
+    </section>
+
+    <section class="gallery-section">
+        <div class="container">
+            <div class="gallery-filters">
+                <button class="filter-button active" data-filter="all">All</button>
+                <button class="filter-button" data-filter="lawn">Lawn Care</button>
+                <button class="filter-button" data-filter="landscaping">Landscaping</button>
+                <button class="filter-button" data-filter="pressure-washing">Pressure Washing</button>
+            </div>
+
+            <div class="gallery-grid">
+                <!-- Lawn Care -->
+                <div class="gallery-item" data-category="lawn">
+                    <img src="images/gallery/lawn-1.jpg" alt="Beautiful manicured lawn">
+                    <div class="gallery-overlay">
+                        <h3>Lawn Maintenance</h3>
+                        <p>Regular mowing and edging for a pristine look</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="lawn">
+                    <img src="images/gallery/lawn-2.jpg" alt="Freshly cut grass">
+                    <div class="gallery-overlay">
+                        <h3>Lawn Care</h3>
+                        <p>Professional lawn maintenance services</p>
+                    </div>
+                </div>
+
+                <!-- Landscaping -->
+                <div class="gallery-item" data-category="landscaping">
+                    <img src="images/gallery/landscape-1.jpg" alt="Garden design">
+                    <div class="gallery-overlay">
+                        <h3>Garden Design</h3>
+                        <p>Custom landscape design and installation</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="landscaping">
+                    <img src="images/gallery/landscape-2.jpg" alt="Outdoor living space">
+                    <div class="gallery-overlay">
+                        <h3>Outdoor Living</h3>
+                        <p>Creating beautiful outdoor spaces</p>
+                    </div>
+                </div>
+
+                <!-- Pressure Washing -->
+                <div class="gallery-item" data-category="pressure-washing">
+                    <img src="images/gallery/washing-1.jpg" alt="Clean driveway">
+                    <div class="gallery-overlay">
+                        <h3>Driveway Cleaning</h3>
+                        <p>Professional pressure washing services</p>
+                    </div>
+                </div>
+                <div class="gallery-item" data-category="pressure-washing">
+                    <img src="images/gallery/washing-2.jpg" alt="Clean patio">
+                    <div class="gallery-overlay">
+                        <h3>Patio Cleaning</h3>
+                        <p>Restoring outdoor surfaces to their original beauty</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Transform Your Property?</h2>
+                <p class="cta-description">Contact us today for a free consultation and estimate</p>
+                <a href="contact.html" class="cta-button">Get Your Free Estimate</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p><strong>Owner:</strong> Karl Holliday</p>
+                <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+                <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+            </div>
+            <div class="hours">
+                <h4>Hours</h4>
+                <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+                <p>Sat: 8:00 AM - 3:00 PM</p>
+                <p>Sun: Closed</p>
+            </div>
+            <div class="social-links">
+                <h4>Follow Us</h4>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="floating-buttons">
+        <a href="tel:+15047171887" class="floating-button">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="mailto:7holliday@gmail.com" class="floating-button">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Gallery filtering
+        const filterButtons = document.querySelectorAll('.filter-button');
+        const galleryItems = document.querySelectorAll('.gallery-item');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                const filter = button.getAttribute('data-filter');
+
+                galleryItems.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+  <div id="error-container"></div>
+  <div id="firebaseError" class="admin-alert admin-alert-error" style="display: none;"></div>
+  <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="admin-container">
+    <header class="admin-header">
+      <div>
+    <h1>Admin Dashboard</h1>
+        <p class="subtitle">Manage your lawn care business</p>
+      </div>
+      <div class="admin-header-actions">
+        <div class="user-info">
+          <div class="user-name" id="userName"></div>
+          <div class="user-role">Administrator</div>
+        </div>
+        <button class="btn-logout" onclick="window.HollidayApp.auth.signOut()">Logout</button>
+    </div>
+  </header>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <div class="tab-nav">
+        <button class="tab-item active" onclick="showTab('overview')">
+          <span class="tab-icon">📊</span>
+          <span>Overview</span>
+        </button>
+        <button class="tab-item" onclick="showTab('requests')">
+          <span class="tab-icon">📝</span>
+          <span>Requests</span>
+        </button>
+        <button class="tab-item" onclick="showTab('quotes')">
+          <span class="tab-icon">💬</span>
+          <span>Quotes</span>
+        </button>
+        <button class="tab-item" onclick="showTab('invoices')">
+          <span class="tab-icon">💰</span>
+          <span>Invoices</span>
+        </button>
+        <button class="tab-item" onclick="showTab('customers')">
+          <span class="tab-icon">👥</span>
+          <span>Customers</span>
+        </button>
+        <button class="tab-item" onclick="showTab('equipment')">
+          <span class="tab-icon">🚜</span>
+          <span>Equipment</span>
+        </button>
+        <button class="tab-item" onclick="showTab('reports')">
+          <span class="tab-icon">📈</span>
+          <span>Reports</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content: Overview -->
+    <div id="overview-tab" class="tab-content active">
+      <div class="tab-content-header">
+        <h2>Dashboard Overview</h2>
+        <p>Key metrics and quick access to important functions</p>
+      </div>
+      <div class="tab-content-body">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card requests">
+            <div class="stat-header">
+              <div class="stat-icon requests">📝</div>
+            </div>
+            <div class="stat-value" id="statRequestsValue">-</div>
+            <div class="stat-label">Service Requests</div>
+            <div class="stat-change positive" id="statRequestsChange">+0 this week</div>
+          </div>
+          
+          <div class="stat-card quotes">
+            <div class="stat-header">
+              <div class="stat-icon quotes">💬</div>
+            </div>
+            <div class="stat-value" id="statQuotesValue">-</div>
+            <div class="stat-label">Active Quotes</div>
+            <div class="stat-change positive" id="statQuotesChange">+0 pending</div>
+          </div>
+          
+          <div class="stat-card invoices">
+            <div class="stat-header">
+              <div class="stat-icon invoices">💰</div>
+            </div>
+            <div class="stat-value" id="statInvoicesValue">-</div>
+            <div class="stat-label">Outstanding Invoices</div>
+            <div class="stat-change negative" id="statInvoicesChange">$0 overdue</div>
+          </div>
+          
+          <div class="stat-card revenue">
+            <div class="stat-header">
+              <div class="stat-icon revenue">📈</div>
+            </div>
+            <div class="stat-value" id="statRevenueValue">$0</div>
+            <div class="stat-label">Monthly Revenue</div>
+            <div class="stat-change positive" id="statRevenueChange">+0% vs last month</div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="form-grid">
+          <div class="form-section">
+            <h3>Quick Quote Calculator</h3>
+            <form id="quickQuoteForm" class="form-modern">
+          <div class="form-group">
+                <label for="quickServiceType">Service Type</label>
+                <select id="quickServiceType" class="form-control" required>
+              <option value="">-- Select Service --</option>
+              <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
+              <option value="Landscape Design">🌸 Landscape Design</option>
+              <option value="Leaf Removal">🍂 Leaf Removal</option>
+              <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+              <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+            </select>
+          </div>
+          <div class="form-group">
+                <label for="quickPropertySize">Property Size (sq ft)</label>
+                <input type="number" id="quickPropertySize" class="form-control" required min="100" step="100">
+              </div>
+              <button type="submit" class="btn-primary">Calculate Quote</button>
+            </form>
+            <div id="quickQuoteResult" style="margin-top: 1rem; padding: 1rem; background: #f0f9ff; border-radius: 8px; display: none;">
+              <strong>Estimated Quote: <span id="quickQuoteAmount">$0</span></strong>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h3>Recent Activity</h3>
+            <div id="recentActivityList">
+              <div style="color: #64748b; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #64748b;">
+                <strong>Recent Activity:</strong> Loading...
+                <div style="margin-top: 0.5rem; font-size: 0.875rem;" id="activityContent">
+                  Checking for recent business activity...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+          </div>
+
+    <!-- Tab Content: Service Requests -->
+    <div id="requests-tab" class="tab-content">
+      <div class="tab-content-header">
+        <h2>Service Requests</h2>
+        <p>Manage incoming service requests from customers</p>
+      </div>
+      <div class="tab-content-body">
+        <div class="search-bar">
+          <input type="text" id="serviceRequestSearch" class="search-input" placeholder="Search by customer, email, or service..." onkeyup="filterServiceRequestsTable()">
+        </div>
+        <div class="table-container">
+          <table id="incomingRequestsTable" class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Service Type</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="incomingRequestsTableBody">
+              <!-- Rows will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+  </div>
+
+    <!-- Tab Content: Quotes & Bids -->
+    <div id="quotes-tab" class="tab-content">
+      <div class="tab-content-header">
+        <h2>Quotes & Bids Management</h2>
+        <p>Create and manage quotes and proposals for customers</p>
+      </div>
+      <div class="tab-content-body">
+        <div class="form-grid">
+          <div class="form-section">
+            <h3>Generate New Quote</h3>
+            <form id="generateBidForm">
+              <div class="form-group">
+                <label for="bidCustomerId">Customer</label>
+                <select id="bidCustomerId" class="form-control" required></select>
+              </div>
+              <div class="form-group">
+                <label for="bidPropertyAddress">Property Address</label>
+                <input type="text" id="bidPropertyAddress" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="bidPropertySize">Property Size (sq ft)</label>
+                <input type="number" id="bidPropertySize" class="form-control" required min="100">
+              </div>
+              <div class="form-group">
+                <label>Services (select multiple)</label>
+                <div id="bidServicesCheckboxes" class="checkbox-group">
+                  <!-- Checkboxes will be populated here -->
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="quoteAmount">Quote Amount ($)</label>
+                <input type="number" id="quoteAmount" class="form-control" required min="0" step="0.01">
+                <small id="minQuoteWarning" style="color: #dc2626; display: none;"></small>
+              </div>
+              <button type="submit" class="btn-primary">Generate Quote</button>
+        </form>
+      </div>
+
+          <div class="form-section">
+            <h3>Quote Calculator</h3>
+            <form id="quoteCalculatorForm">
+          <div class="form-group">
+                <label for="serviceType">Service Type</label>
+                <select id="serviceType" class="form-control" required>
+                  <option value="">-- Select Service --</option>
+                  <option value="Mowing & Trimming">🌿 Mowing & Trimming</option>
+                  <option value="Landscape Design">🌸 Landscape Design</option>
+                  <option value="Leaf Removal">🍂 Leaf Removal</option>
+                  <option value="Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+                  <option value="Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+                </select>
+            </div>
+              <div class="form-group">
+                <label for="propertySize">Property Size (sq ft)</label>
+                <input type="number" id="propertySize" class="form-control" required min="100" step="100">
+  </div>
+          <div class="form-group">
+                <label for="complexityFactor">Property Complexity (1-3)</label>
+                <input type="number" id="complexityFactor" class="form-control" min="1" max="3" step="0.1" value="1">
+  </div>
+              <button type="submit" class="btn-primary">Calculate Quote</button>
+        </form>
+            <div id="quoteBreakdown"></div>
+      </div>
+        </div>
+
+        <div class="table-container" style="margin-top: 2rem;">
+          <table id="bidsTable" class="table">
+            <thead>
+              <tr>
+                <th>Quote #</th>
+                <th>Customer</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Date Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Quotes will be populated here -->
+            </tbody>
+          </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Invoices -->
+    <div id="invoices-tab" class="tab-content">
+      <div class="tab-content-header">
+        <h2>Invoice Management</h2>
+        <p>Create, track, and manage customer invoices</p>
+      </div>
+      <div class="tab-content-body">
+        <div class="form-grid">
+          <div class="form-section">
+            <h3>Create New Invoice</h3>
+            <form id="createInvoiceForm">
+        <div class="form-group">
+                <label for="invoiceCustomer">Customer</label>
+                <select id="invoiceCustomer" class="form-control" required></select>
+  </div>
+              <div class="form-group">
+                <label for="invoiceAmount">Amount ($)</label>
+                <input type="number" id="invoiceAmount" class="form-control" required min="0" step="0.01">
+              </div>
+              <div class="form-group">
+                <label for="invoiceDueDate">Due Date</label>
+                <input type="date" id="invoiceDueDate" class="form-control" required>
+              </div>
+              <button type="submit" class="btn-primary">Create Invoice</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="search-bar" style="margin-top: 2rem;">
+          <input type="text" id="invoiceSearch" class="search-input" placeholder="Search by customer, email, or invoice #..." onkeyup="filterInvoicesTable()">
+        </div>
+        
+        <div class="table-container">
+          <table id="adminInvoicesTable" class="table">
+      <thead>
+        <tr>
+              <th>Invoice #</th>
+          <th>Customer</th>
+              <th>Email</th>
+          <th>Amount</th>
+              <th>Due Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+          <tbody id="adminInvoicesTableBody">
+            <!-- Invoice rows will be populated here -->
+          </tbody>
+    </table>
+      </div>
+      </div>
+    </div>
+
+    <!-- Tab Content: Customers -->
+    <div id="customers-tab" class="tab-content">
+      <div class="section-header">
+        <h2>Customer Management</h2>
+        <button onclick="document.getElementById('addCustomerModal').style.display='block'" class="btn btn-primary">
+          Add New Customer
+        </button>
+      </div>
+
+      <div class="customers-list">
+        <!-- Customer list will be populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('addCustomerModal').style.display='none'">&times;</span>
+        <h2>Add New Customer</h2>
+        <form id="addCustomerForm" onsubmit="addCustomer(event)">
+          <div class="form-group">
+            <label for="customerEmail">Email*</label>
+            <input type="email" id="customerEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="customerName">Full Name*</label>
+            <input type="text" id="customerName" required>
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">Phone*</label>
+            <input type="tel" id="customerPhone" required>
+          </div>
+
+          <h3>Address</h3>
+          <div class="form-group">
+            <label for="customerStreet">Street</label>
+            <input type="text" id="customerStreet">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="customerCity">City</label>
+              <input type="text" id="customerCity">
+            </div>
+            <div class="form-group">
+              <label for="customerState">State</label>
+              <input type="text" id="customerState">
+            </div>
+            <div class="form-group">
+              <label for="customerZip">ZIP</label>
+              <input type="text" id="customerZip">
+            </div>
+          </div>
+          
+          <h3>Property Details</h3>
+          <div class="form-group">
+            <label for="propertySizeSqFt">Property Size (sq ft)</label>
+            <input type="number" id="propertySizeSqFt">
+          </div>
+          <div class="form-group">
+            <label for="propertyType">Property Type</label>
+            <select id="propertyType">
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+            </select>
+          </div>
+          <div class="form-group">
+              <label>
+              <input type="checkbox" id="hasPool">
+              Has Pool
+              </label>
+          </div>
+          <div class="form-group">
+              <label>
+              <input type="checkbox" id="hasSprinklers">
+              Has Sprinklers
+              </label>
+          </div>
+
+          <h3>Preferences</h3>
+          <div class="form-group">
+            <label for="communicationMethod">Preferred Communication</label>
+            <select id="communicationMethod">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="text">Text</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="serviceFrequency">Service Frequency</label>
+            <select id="serviceFrequency">
+              <option value="weekly">Weekly</option>
+              <option value="bi-weekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Add Customer</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('addCustomerModal').style.display='none'">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div id="editCustomerModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="document.getElementById('editCustomerModal').style.display='none'">&times;</span>
+        <h2>Edit Customer</h2>
+        <form id="editCustomerForm" onsubmit="editCustomer(event)">
+          <input type="hidden" id="editCustomerId">
+            <div class="form-group">
+            <label for="editCustomerEmail">Email*</label>
+            <input type="email" id="editCustomerEmail" required>
+            </div>
+            <div class="form-group">
+            <label for="editCustomerName">Full Name*</label>
+            <input type="text" id="editCustomerName" required>
+            </div>
+            <div class="form-group">
+            <label for="editCustomerPhone">Phone*</label>
+            <input type="tel" id="editCustomerPhone" required>
+            </div>
+          
+          <h3>Address</h3>
+            <div class="form-group">
+            <label for="editCustomerStreet">Street</label>
+            <input type="text" id="editCustomerStreet">
+            </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editCustomerCity">City</label>
+              <input type="text" id="editCustomerCity">
+            </div>
+            <div class="form-group">
+              <label for="editCustomerState">State</label>
+              <input type="text" id="editCustomerState">
+  </div>
+            <div class="form-group">
+              <label for="editCustomerZip">ZIP</label>
+              <input type="text" id="editCustomerZip">
+  </div>
+          </div>
+          
+          <h3>Property Details</h3>
+            <div class="form-group">
+            <label for="editPropertySizeSqFt">Property Size (sq ft)</label>
+            <input type="number" id="editPropertySizeSqFt">
+            </div>
+            <div class="form-group">
+            <label for="editPropertyType">Property Type</label>
+            <select id="editPropertyType">
+              <option value="residential">Residential</option>
+              <option value="commercial">Commercial</option>
+            </select>
+            </div>
+            <div class="form-group">
+            <label>
+              <input type="checkbox" id="editHasPool">
+              Has Pool
+            </label>
+            </div>
+            <div class="form-group">
+            <label>
+              <input type="checkbox" id="editHasSprinklers">
+              Has Sprinklers
+            </label>
+            </div>
+          
+          <h3>Preferences</h3>
+            <div class="form-group">
+            <label for="editCommunicationMethod">Preferred Communication</label>
+            <select id="editCommunicationMethod">
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+              <option value="text">Text</option>
+            </select>
+            </div>
+            <div class="form-group">
+            <label for="editServiceFrequency">Service Frequency</label>
+            <select id="editServiceFrequency">
+              <option value="weekly">Weekly</option>
+              <option value="bi-weekly">Bi-Weekly</option>
+              <option value="monthly">Monthly</option>
+            </select>
+            </div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('editCustomerModal').style.display='none'">Cancel</button>
+          </div>
+          </form>
+  </div>
+      </div>
+
+    <!-- Tab Content: Equipment -->
+    <div id="equipment-tab" class="tab-content">
+      <div class="tab-content-header">
+        <h2>Equipment & Inventory Management</h2>
+        <p>Track equipment, materials, and maintenance schedules</p>
+      </div>
+      <div class="tab-content-body">
+        <div class="form-grid">
+          <div class="form-section">
+            <h3>Add New Equipment</h3>
+            <form id="addEquipmentForm">
+            <div class="form-group">
+                <label for="equipmentName">Equipment Name</label>
+                <input type="text" id="equipmentName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="equipmentType">Equipment Type</label>
+                <input type="text" id="equipmentType" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="equipmentPurchaseDate">Purchase Date</label>
+                <input type="date" id="equipmentPurchaseDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="equipmentCost">Cost ($)</label>
+                <input type="number" id="equipmentCost" class="form-control" min="0" step="0.01" required>
+            </div>
+              <button type="submit" class="btn-primary">Add Equipment</button>
+            </form>
+          </div>
+
+          <div class="form-section">
+            <h3>Add Material/Chemical</h3>
+            <form id="addMaterialForm">
+            <div class="form-group">
+                <label for="materialName">Material Name</label>
+                <input type="text" id="materialName" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label for="materialType">Type</label>
+                <input type="text" id="materialType" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="materialStockLevel">Stock Level</label>
+                <input type="number" id="materialStockLevel" class="form-control" min="0" step="0.01" required>
+            </div>
+              <div class="form-group">
+                <label for="materialUnit">Unit</label>
+                <input type="text" id="materialUnit" class="form-control" required>
+              </div>
+              <button type="submit" class="btn-primary">Add Material</button>
+          </form>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <h3>Equipment Inventory</h3>
+          <div class="table-container">
+            <table id="equipmentTable" class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Usage Hours</th>
+                  <th>Next Maintenance</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+          <tbody></tbody>
+        </table>
+        </div>
+      </div>
+
+        <div style="margin-top: 2rem;">
+          <h3>Materials Inventory</h3>
+          <div class="table-container">
+            <table id="materialsTable" class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>Stock Level</th>
+                  <th>Unit</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+            </div>
+            </div>
+            </div>
+
+    <!-- Tab Content: Reports -->
+    <div id="reports-tab" class="tab-content">
+      <div class="tab-content-header">
+        <h2>Reports & Analytics</h2>
+        <p>Generate reports and view business analytics</p>
+  </div>
+      <div class="tab-content-body">
+        <div class="form-grid">
+          <div class="form-section">
+            <h3>Financial Reports</h3>
+            <button class="btn-primary" style="margin-bottom: 1rem; display: block;">Monthly Revenue Report</button>
+            <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Outstanding Invoices</button>
+            <button class="btn-secondary" style="margin-bottom: 1rem; display: block;">Profit & Loss Statement</button>
+    </div>
+
+          <div class="form-section">
+            <h3>Sustainability Reports</h3>
+            <button class="btn-primary" onclick="generateSustainabilityReportAdmin()" style="margin-bottom: 1rem; display: block;">Environmental Impact Report</button>
+            <div id="sustainabilityReportView" style="margin-top: 1rem; display: none;">
+              <pre id="sustainabilityReportContent" style="background: #f8fafc; padding: 1rem; border-radius: 8px; font-size: 0.875rem;"></pre>
+        </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+          <h3>Sustainability Log</h3>
+          <div class="table-container">
+            <table id="sustainabilityLogTable" class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+                  <th>Type</th>
+                  <th>Details</th>
+                  <th>Job/Customer</th>
+            </tr>
+          </thead>
+              <tbody></tbody>
+        </table>
+      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div id="adminChatModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px;">
+      <span class="close-btn" onclick="closeAdminChatModal()">&times;</span>
+      <h3 id="adminChatModalTitle">Service Request Chat</h3>
+      <div id="adminChatMessagesContainer" class="chat-messages-container">
+        <!-- Messages will be loaded here -->
+      </div>
+      <div class="chat-input-area">
+        <textarea id="adminChatMessageInput" placeholder="Type your message to the customer..." rows="3"></textarea>
+        <button id="sendAdminChatMessageBtn" class="btn-modern" onclick="sendAdminChatMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="genericAdminModal" class="modal" style="display: none;">
+    <div class="modal-content" id="genericAdminModalContent" style="max-width: 600px;">
+      <span class="close-btn" onclick="closeGenericAdminModal()">&times;</span>
+      <h3 id="genericAdminModalTitle">Modal Title</h3>
+      <div id="genericAdminModalBody" class="card-content">
+        <!-- Content will be injected here by JavaScript -->
+      </div>
+      <div id="genericAdminModalFooter" style="margin-top: 15px;">
+        <button class="btn-modern btn-grey" onclick="closeGenericAdminModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
+
+    // Wait for Firebase initialization
+    window.addEventListener('firebaseInitialized', () => {
+      // Hide loading indicator
+      document.getElementById('loadingIndicator').style.display = 'none';
+      // Show main content
+      document.getElementById('mainContent').style.display = 'block';
+      
+      // Initialize QuoteCalculator
+      const quoteCalculator = new QuoteCalculator();
+
+      // Quick Quote Form Handler
+      document.getElementById('quickQuoteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const serviceType = document.getElementById('quickServiceType').value;
+        const propertySize = parseInt(document.getElementById('quickPropertySize').value);
+        
+        const quote = quoteCalculator.calculateQuote(serviceType, propertySize);
+        document.getElementById('quickQuoteAmount').textContent = '$' + quote.total;
+        document.getElementById('quickQuoteResult').style.display = 'block';
+      });
+
+      // Full Quote Calculator Form Handler
+      document.getElementById('quoteCalculatorForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const serviceType = document.getElementById('serviceType').value;
+        const propertySize = parseInt(document.getElementById('propertySize').value);
+        const complexity = parseFloat(document.getElementById('complexityFactor').value);
+        
+        const quote = quoteCalculator.calculateQuote(serviceType, propertySize, {
+          complexity: complexity
+        });
+        
+        // Display detailed breakdown
+        const breakdown = document.getElementById('quoteBreakdown');
+        breakdown.innerHTML = `
+          <div class="quote-result">
+            <h4>Quote Breakdown</h4>
+            <table>
+              <tr><td>Base Amount:</td><td>$${quote.baseAmount}</td></tr>
+              <tr><td>Complexity Factor:</td><td>${quote.complexityFactor}x</td></tr>
+              <tr><td>Seasonal Adjustment:</td><td>${quote.seasonalAdjustment.toFixed(1)}%</td></tr>
+              ${quote.urgentSurcharge ? `<tr><td>Urgency Surcharge:</td><td>${quote.urgentSurcharge}%</td></tr>` : ''}
+              ${quote.travelFee ? `<tr><td>Travel Fee:</td><td>$${quote.travelFee}</td></tr>` : ''}
+              ${quote.equipmentFee ? `<tr><td>Equipment Fee:</td><td>$${quote.equipmentFee}</td></tr>` : ''}
+              ${quote.permitFee ? `<tr><td>Permit Fee:</td><td>$${quote.permitFee}</td></tr>` : ''}
+              <tr><td><strong>Total:</strong></td><td><strong>$${quote.total}</strong></td></tr>
+            </table>
+          </div>
+        `;
+      });
+    });
+
+    // Error handling for script loading
+    window.addEventListener('error', function(e) {
+      if (e.filename && e.filename.includes('firebase')) {
+        document.getElementById('initError').style.display = 'block';
+        document.getElementById('loadingIndicator').style.display = 'none';
+      }
+    }, true);
+
+    // Logout function
+    function logout() {
+      if (window.HollidayApp?.auth) {
+        window.HollidayApp.auth.signOut().then(() => {
+          window.location.href = 'login.html';
+        }).catch((error) => {
+          console.error('Logout error:', error);
+          // Force redirect even if logout fails
+          window.location.href = 'login.html';
+        });
+      } else {
+        // Fallback if Firebase auth is not available
+        window.location.href = 'login.html';
+      }
+    }
+  </script>
+</body>
+</html>

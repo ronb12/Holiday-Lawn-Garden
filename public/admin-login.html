@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Holliday's Lawn & Garden</title>
+    <meta name="description" content="Secure admin access for Holliday's Lawn & Garden management system.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    ">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+            </a>
+            <nav>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="services.html">Services</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="pay-your-bill.html">Pay Your Bill</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="login.html">Login</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Admin Access</h1>
+            <p>Secure management system login</p>
+        </div>
+    </section>
+
+    <section class="auth-section">
+        <div class="container">
+            <div class="card">
+                <div class="admin-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Administrator Access</span>
+                </div>
+                <form id="adminLoginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="email">Admin Email</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" required>
+                            <button type="button" class="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember" id="remember">
+                            Remember me
+                        </label>
+                    </div>
+                    <button type="submit" class="cta-button">Login to Admin Panel</button>
+                </form>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <div class="social-auth">
+                    <button class="social-button google">
+                        <i class="fab fa-google"></i>
+                        Continue with Google
+                    </button>
+                </div>
+
+                <div class="auth-links">
+                    <a href="forgot-password.html" class="link">Forgot Password?</a>
+                    <a href="index.html" class="link">Return to Homepage</a>
+                </div>
+            </div>
+
+            <div class="security-notice">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Security Notice</h3>
+                <p>This is a restricted area. Unauthorized access attempts will be logged and reported.</p>
+                <ul>
+                    <li><i class="fas fa-check"></i> All connections are encrypted</li>
+                    <li><i class="fas fa-check"></i> Activity is monitored</li>
+                    <li><i class="fas fa-check"></i> IP addresses are logged</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p><strong>Owner:</strong> Karl Holliday</p>
+                <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+                <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+            </div>
+            <div class="hours">
+                <h4>Hours</h4>
+                <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+                <p>Sat: 8:00 AM - 3:00 PM</p>
+                <p>Sun: Closed</p>
+            </div>
+            <div class="social-links">
+                <h4>Follow Us</h4>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="floating-buttons">
+        <a href="tel:+15047171887" class="floating-button">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="mailto:7holliday@gmail.com" class="floating-button">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Password visibility toggle
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
+        // Form submission
+        document.getElementById('adminLoginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Add your admin login logic here
+            alert('Admin login will be implemented with Firebase.');
+        });
+
+        // Google sign-in
+        document.querySelector('.social-button.google').addEventListener('click', function() {
+            // Add Google sign-in logic here
+            alert('Google sign-in will be implemented with Firebase.');
+        });
+
+        // Remember me functionality
+        document.getElementById('remember').addEventListener('change', function() {
+            if (this.checked) {
+                // Add remember me logic here
+                console.log('Remember me enabled');
+            }
+        });
+    </script>
+</body>
+</html>

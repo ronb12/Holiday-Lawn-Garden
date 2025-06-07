@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Your Bill - Holliday's Lawn & Garden</title>
+    <meta name="description" content="Pay your lawn care and landscaping service bill securely online. Multiple payment options available.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    ">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+            </a>
+            <nav>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="services.html">Services</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="pay-your-bill.html" class="active">Pay Your Bill</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="login.html">Login</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Pay Your Bill</h1>
+            <p>Quick and secure online payment</p>
+        </div>
+    </section>
+
+    <section class="payment-section">
+        <div class="container">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>Payment Information</h2>
+                    <form id="paymentForm" class="payment-form">
+                        <div class="form-group">
+                            <label for="accountNumber">Account Number</label>
+                            <input type="text" id="accountNumber" name="accountNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <div class="amount-input">
+                                <span class="currency">$</span>
+                                <input type="number" id="amount" name="amount" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardName">Name on Card</label>
+                            <input type="text" id="cardName" name="cardName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cardNumber">Card Number</label>
+                            <input type="text" id="cardNumber" name="cardNumber" pattern="[0-9]{16}" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="expiryDate">Expiry Date</label>
+                                <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv">CVV</label>
+                                <input type="text" id="cvv" name="cvv" pattern="[0-9]{3,4}" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="cta-button">Pay Now</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Payment Options</h2>
+                    <div class="payment-options">
+                        <div class="option">
+                            <i class="fas fa-credit-card"></i>
+                            <h3>Credit/Debit Card</h3>
+                            <p>Visa, Mastercard, American Express</p>
+                        </div>
+                        <div class="option">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h3>Mobile Payment</h3>
+                            <p>Apple Pay, Google Pay</p>
+                        </div>
+                        <div class="option">
+                            <i class="fas fa-university"></i>
+                            <h3>Bank Transfer</h3>
+                            <p>ACH, Wire Transfer</p>
+                        </div>
+                    </div>
+                    <div class="payment-info">
+                        <h3>Payment Information</h3>
+                        <p><i class="fas fa-lock"></i> Secure Payment Processing</p>
+                        <p><i class="fas fa-shield-alt"></i> SSL Encrypted</p>
+                        <p><i class="fas fa-clock"></i> Instant Confirmation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p><strong>Owner:</strong> Karl Holliday</p>
+                <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+                <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+            </div>
+            <div class="hours">
+                <h4>Hours</h4>
+                <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+                <p>Sat: 8:00 AM - 3:00 PM</p>
+                <p>Sun: Closed</p>
+            </div>
+            <div class="social-links">
+                <h4>Follow Us</h4>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="floating-buttons">
+        <a href="tel:+15047171887" class="floating-button">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="mailto:7holliday@gmail.com" class="floating-button">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Form submission
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your payment processing logic here
+            alert('Payment processing will be implemented with a secure payment gateway.');
+        });
+
+        // Format card number input
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.slice(0, 16);
+            e.target.value = value;
+        });
+
+        // Format expiry date input
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.slice(0, 2) + '/' + value.slice(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // Format CVV input
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.slice(0, 4);
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

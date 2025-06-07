@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header>
+  <img src="Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" style="max-height: 80px; margin-top: 10px;">
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+    <a href="gallery.html">Gallery</a>
+  </nav>
+</header>
+
+<main>
+  <div class="success-container fade-in">
+    <h1>✅ Payment Successful!</h1>
+    <p>Thank you for your payment.<br> We have updated your invoice and your service is scheduled as promised!</p>
+    <a href="dashboard.html" class="btn">Return to Dashboard</a>
+  </div>
+</main>
+
+<footer>
+  &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+</footer>
+
+<script>
+  const db = firebase.firestore();
+
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const invoiceNumber = urlParams.get('invoice');
+
+      if (invoiceNumber) {
+        db.collection("invoices")
+          .where("invoiceNumber", "==", invoiceNumber)
+          .where("customerEmail", "==", user.email)
+          .limit(1)
+          .get()
+          .then(snapshot => {
+            if (!snapshot.empty) {
+              const docRef = snapshot.docs[0].ref;
+              docRef.update({
+                paid: true
+              }).then(() => {
+                console.log("✅ Invoice marked as Paid!");
+                sendPaymentConfirmation(user.email, invoiceNumber);
+              }).catch(error => {
+                console.error("❌ Error updating invoice:", error);
+              });
+            }
+          })
+          .catch(error => {
+            console.error("❌ Error fetching invoice:", error);
+          });
+      }
+    }
+  });
+
+  function sendPaymentConfirmation(email, invoiceNumber) {
+    fetch('https://your-server.com/send-confirmation-email', {  // <--- You'll update this URL
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: email,
+        subject: "Payment Confirmation - Holliday's Lawn & Garden",
+        message: `Thank you for your payment for Invoice #${invoiceNumber}. Your service is confirmed!`
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log("✅ Payment confirmation email sent!", data);
+    })
+    .catch(error => {
+      console.error("❌ Error sending confirmation email:", error);
+    });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(section => {
+    observer.observe(section);
+  });
+</script>
+
+</body>
+</html>

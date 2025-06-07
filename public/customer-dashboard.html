@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body class="customer-page-active">
+
+<div class="header-bar">
+  <h1>Welcome to Your Dashboard</h1>
+  <div style="display: flex; gap: 1em; align-items: center;">
+    <div class="profile-toggle" onclick="toggleProfileModal()">👤</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- Modal Overlay -->
+<div id="modalOverlay" onclick="toggleProfileModal(); togglePaypalModal(true); toggleChatModal(true)"></div>
+
+<!-- Profile Modal -->
+<div id="profileModal">
+  <div class="profile-info" id="profileDisplay">
+    <label>Name:</label><div id="displayName">-</div>
+    <label>Email:</label><div id="displayEmail">-</div>
+    <label>Phone:</label><div id="displayPhone">-</div>
+    <label>Address:</label>
+    <div id="displayStreet">-</div>
+    <div><span id="displayCity">-</span>, <span id="displayState">-</span> <span id="displayZip">-</span></div>
+  </div>
+  <hr>
+  <form id="editProfileForm">
+    <input type="text" id="editName" placeholder="Full Name" required>
+    <input type="text" id="editEmail" placeholder="Email" required>
+    <input type="text" id="editPhone" placeholder="Phone Number">
+    <input type="text" id="editStreet" placeholder="Street Address">
+    <input type="text" id="editCity" placeholder="City">
+    <input type="text" id="editState" placeholder="State">
+    <input type="text" id="editZip" placeholder="ZIP Code">
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
+
+<!-- PayPal Modal -->
+<div id="paypalModal">
+  <h3>Invoice Payment</h3>
+  <div id="paypalButtonContainer" style="margin: 1em 0;"></div>
+  <button onclick="togglePaypalModal()">Close</button>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal">
+  <h3>Service Request Chat</h3>
+  <div id="chatMessages"></div>
+  <input type="text" id="chatInput" placeholder="Type your message..." />
+  <button onclick="sendChatMessage()">Send</button>
+  <button onclick="toggleChatModal()">Close</button>
+</div>
+<h2>New Service Request</h2>
+<form id="requestForm">
+  <input type="text" id="fullName" placeholder="Your Name" required>
+  <input type="email" id="email" placeholder="Your Email" required>
+  <select id="serviceType" required>
+    <option value="">-- Select a Service --</option>
+    <option value="🌿 Mowing & Trimming">🌿 Mowing & Trimming</option>
+    <option value="🌸 Landscape Design">🌸 Landscape Design</option>
+    <option value="🍂 Leaf Removal">🍂 Leaf Removal</option>
+    <option value="🌾 Fertilization & Seeding">🌾 Fertilization & Seeding</option>
+    <option value="🧹 Seasonal Cleanup">🧹 Seasonal Cleanup</option>
+    <option value="🚜 Mulching & Edging">🚜 Mulching & Edging</option>
+    <option value="🏡 Commercial Lawn Care">🏡 Commercial Lawn Care</option>
+    <option value="💦 Pressure Washing">💦 Pressure Washing</option>
+    <option value="🛠️ Custom Job">🛠️ Custom Job</option>
+  </select>
+  <textarea id="message" rows="4" placeholder="Describe your request..." required></textarea>
+  <button type="submit">Send Request</button>
+</form>
+
+<h2>Your Service Requests</h2>
+<select id="requestSelector" onchange="onRequestSelect(this.value)">
+  <option value="">-- Select a Service Request to Chat --</option>
+</select>
+
+<h2>Your Quotes</h2>
+<button onclick="exportQuotesPDF()">📄 Download Quotes PDF</button>
+<table id="quotesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
+
+<h2>Your Invoices</h2>
+<button onclick="exportInvoicesPDF()">📄 Download Invoices PDF</button>
+<table id="invoicesTable">
+  <thead><tr><th>Service</th><th>Amount</th><th>Status</th><th>Pay</th></tr></thead>
+  <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+</table>
+
+<div class="dashboard-grid">
+  <div class="stat-card" id="activeServicesCard">
+    <h3>Active Services</h3>
+    <p id="activeServicesCount">Loading...</p>
+  </div>
+  <div class="stat-card" id="upcomingAppointmentsCard">
+    <h3>Upcoming Appointments</h3>
+    <p id="upcomingAppointmentsCount">Loading...</p>
+  </div>
+  <div class="stat-card" id="unreadMessagesCard">
+    <h3>Unread Messages</h3>
+    <p id="unreadMessagesCount">0</p>
+  </div>
+  <div class="stat-card" id="loyaltyPointsCard">
+    <h3>Loyalty Status</h3>
+    <p>Points: <span id="customerLoyaltyPoints">Loading...</span></p>
+    <p>Tier: <span id="customerLoyaltyTier">Loading...</span></p>
+  </div>
+</div>
+
+<!-- My Quotes & Proposals Section -->
+<section class="modern-form" id="myQuotesSection">
+  <h2>My Quotes & Proposals</h2>
+  <div id="myQuotesTableContainer">
+    <table id="myQuotesTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Bid/Proposal #</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="myQuotesBody">
+        <tr><td colspan="5">Loading your quotes and proposals...</td></tr>
+        <!-- Quotes will be populated here -->
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Service History -->
+<section class="modern-form" id="serviceHistorySection">
+  <h2>Your Service History</h2>
+  <div class="service-history">
+    
+    <div id="serviceHistoryContent">
+      <p>Loading service history...</p>
+    </div>
+  </div>
+</section>
+
+<footer style="margin-top:2em;">&copy; 2025 Holliday's Lawn & Garden. All rights reserved.</footer>
+</body>
+</html>

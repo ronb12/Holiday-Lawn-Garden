@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+
+<header><h1>Welcome to Your Dashboard</h1></header>
+
+<div class="container">
+  <h2 id="greeting">Hello, Customer!</h2>
+  <p>Thank you for choosing Holiday Lawn & Garden. Your service requests are shown below.</p>
+
+  <h3>Your Service Requests</h3>
+  <table id="requestsTable">
+    <thead>
+      <tr><th>Service</th><th>Preferred Date</th><th>Notes</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+  </table>
+
+  <h3>Submit New Request</h3>
+  <form onsubmit="submitRequest(event)">
+    <label>Service Type:</label>
+    <select id="serviceType">
+      <option value="">Select...</option>
+      <option value="Lawn Mowing">Lawn Mowing</option>
+      <option value="Hedge Trimming">Hedge Trimming</option>
+      <option value="Leaf Cleanup">Leaf Cleanup</option>
+    </select><br><br>
+    <label>Preferred Date:</label>
+    <input type="date" id="preferredDate" required><br><br>
+    <label>Notes:</label>
+    <textarea id="requestNotes" placeholder="Any special instructions..."></textarea><br>
+    <button type="submit">Send Request</button>
+  </form>
+
+  <br>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<footer>&copy; 2025 Holiday Lawn & Garden</footer>
+
+<script>
+const db = firebase.firestore();
+let currentUser;
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('greeting').innerText = `Hello, ${user.email}!`;
+    loadRequests();
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+function loadRequests() {
+  const tbody = document.querySelector("#requestsTable tbody");
+  tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+  db.collection("service_requests")
+    .where("customerEmail", "==", currentUser.email)
+    .orderBy("submittedAt", "desc")
+    .get()
+    .then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = "<tr><td colspan='5'>No requests found.</td></tr>";
+        return;
+      }
+      snapshot.forEach(doc => {
+        const r = doc.data();
+        tbody.innerHTML += `
+          <tr>
+            <td>${r.serviceType}</td>
+            <td>${r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : "N/A"}</td>
+            <td>${r.notes || "-"}</td>
+            <td class="status-${(r.status || "pending").toLowerCase()}">${r.status || "Pending"}</td>
+            <td><button onclick="deleteRequest('${doc.id}')">Delete</button></td>
+          </tr>
+        `;
+      });
+    })
+    .catch(err => {
+      console.error("Error loading requests:", err);
+      tbody.innerHTML = "<tr><td colspan='5'>Failed to load requests.</td></tr>";
+    });
+}
+
+function submitRequest(e) {
+  e.preventDefault();
+  const type = document.getElementById("serviceType").value;
+  const date = document.getElementById("preferredDate").value;
+  const notes = document.getElementById("requestNotes").value;
+
+  if (!type || !date) return alert("Please select a service type and preferred date.");
+
+  db.collection("service_requests").add({
+    fullName: currentUser.displayName || "Customer",
+    customerEmail: currentUser.email, // <-- MATCH INDEX
+    serviceType: type,
+    preferredDate: date,
+    notes: notes,
+    status: "Pending",
+    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("✅ Request submitted");
+    document.querySelector("form").reset();
+    loadRequests();
+  });
+}
+
+function deleteRequest(id) {
+  if (confirm("Delete this request?")) {
+    db.collection("service_requests").doc(id).delete().then(loadRequests);
+  }
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => window.location.href = "login.html");
+}
+</script>
+
+</body>
+</html>
