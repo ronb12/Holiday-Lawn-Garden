@@ -22,18 +22,8 @@ jobs:
       - name: Install Dependencies
         run: npm install -g firebase-tools
         
-      - name: Deploy to Staging
-        if: github.event_name == 'pull_request'
+      - name: Deploy to Firebase
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          firebase use staging
-          firebase deploy --only hosting --token "$FIREBASE_TOKEN"
-          
-      - name: Deploy to Production
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: |
-          firebase use production
           firebase deploy --only hosting --token "$FIREBASE_TOKEN" 
