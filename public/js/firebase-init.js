@@ -70,9 +70,52 @@ async function initializeFirebase() {
 // Export to window
 window.initializeFirebase = initializeFirebase;
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  initializeFirebase().catch(error => {
+// Wait for Firebase to be ready
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // Initialize services
+    const { auth, db, storage, analytics } = await initializeFirebaseDB();
+    
+    // Store Firebase services globally
+    window.HollidayApp = { auth, db, storage, analytics };
+    
+    // Handle auth state changes
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log('User is signed in:', user.email);
+        document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'block');
+        document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'none');
+        
+        // Check for admin access
+        const adminLink = document.getElementById('adminLink');
+        if (adminLink) {
+          const allowedAdmins = ["ronellbradley@bradleyvs.com"];
+          if (allowedAdmins.includes(user.email)) {
+            adminLink.style.display = 'block';
+          }
+        }
+      } else {
+        console.log('User is signed out');
+        document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'block');
+        
+        // Hide admin link
+        const adminLink = document.getElementById('adminLink');
+        if (adminLink) {
+          adminLink.style.display = 'none';
+        }
+      }
+    });
+  } catch (error) {
     console.error('Failed to initialize Firebase:', error);
-  });
-}); 
+    showError('Failed to initialize the application. Please refresh the page.');
+  }
+});
+
+// Error handling
+function showError(message) {
+  const errorBanner = document.createElement('div');
+  errorBanner.className = 'error-banner';
+  errorBanner.textContent = message;
+  document.body.appendChild(errorBanner);
+} 

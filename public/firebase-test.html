@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="/manifest.json">
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+
+<!-- Firebase Configuration -->
+<script src="/firebase-config.js" defer></script>
+<script src="/firebase-init.js" defer></script>
+
+<!-- Service Worker Registration -->
+<script defer>
+document.addEventListener('DOMContentLoaded', () => {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker registered:', registration);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+});
+</script> 
+</head>
+<body>
+    <h1>Firebase Test Page</h1>
+    <div id="status"></div>
+    
+    <h2>Test Actions</h2>
+    <button onclick="testFirestore()">Test Firestore</button>
+    <button onclick="testAuth()">Test Auth</button>
+    <button onclick="testStorage()">Test Storage</button>
+    <button onclick="testAnalytics()">Test Analytics</button>
+    <button onclick="testPerformance()">Test Performance</button>
+    <button onclick="testAppCheck()">Test App Check</button>
+    
+    <h2>Test Results</h2>
+    <pre id="results"></pre>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-init.js"></script>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        let testResults = [];
+
+        function showStatus(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            statusDiv.appendChild(div);
+        }
+
+        function logResult(test, result, error = null) {
+            const timestamp = new Date().toISOString();
+            testResults.push({ timestamp, test, result, error });
+            resultsDiv.textContent = testResults.map(r => 
+                `[${r.timestamp}] ${r.test}: ${r.result}${r.error ? '\nError: ' + r.error : ''}`
+            ).join('\n\n');
+        }
+
+        async function testFirestore() {
+            try {
+                const db = window.HollidayApp.db;
+                const testDoc = await db.collection('test').doc('test').get();
+                logResult('Firestore', 'Success - Connected and queried');
+                showStatus('✅ Firestore test completed');
+            } catch (error) {
+                logResult('Firestore', 'Failed', error.message);
+                showStatus('❌ Firestore test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testAuth() {
+            try {
+                const auth = window.HollidayApp.auth;
+                const currentUser = auth.currentUser;
+                logResult('Auth', `Success - ${currentUser ? 'User logged in' : 'No user logged in'}`);
+                showStatus('✅ Auth test completed');
+            } catch (error) {
+                logResult('Auth', 'Failed', error.message);
+                showStatus('❌ Auth test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testStorage() {
+            try {
+                const storage = window.HollidayApp.storage;
+                const testRef = storage.ref('test/test.txt');
+                logResult('Storage', 'Success - Storage initialized');
+                showStatus('✅ Storage test completed');
+            } catch (error) {
+                logResult('Storage', 'Failed', error.message);
+                showStatus('❌ Storage test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testAnalytics() {
+            try {
+                const analytics = window.HollidayApp.analytics;
+                analytics.logEvent('test_event');
+                logResult('Analytics', 'Success - Event logged');
+                showStatus('✅ Analytics test completed');
+            } catch (error) {
+                logResult('Analytics', 'Failed', error.message);
+                showStatus('❌ Analytics test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testPerformance() {
+            try {
+                const perf = window.HollidayApp.perf;
+                const trace = perf.trace('test_trace');
+                trace.start();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                trace.stop();
+                logResult('Performance', 'Success - Trace completed');
+                showStatus('✅ Performance test completed');
+            } catch (error) {
+                logResult('Performance', 'Failed', error.message);
+                showStatus('❌ Performance test failed: ' + error.message, 'error');
+            }
+        }
+
+        async function testAppCheck() {
+            try {
+                const appCheck = firebase.appCheck();
+                logResult('App Check', 'Success - App Check initialized');
+                showStatus('✅ App Check test completed');
+            } catch (error) {
+                logResult('App Check', 'Failed', error.message);
+                showStatus('❌ App Check test failed: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize Firebase and run initial tests
+        window.firebaseReadyPromise.then(() => {
+            showStatus('✅ Firebase initialized successfully');
+        }).catch(error => {
+            showStatus('❌ Firebase initialization failed: ' + error.message, 'error');
+        });
+    </script>
+</body>
+</html> 

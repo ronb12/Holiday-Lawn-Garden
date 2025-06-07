@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4CAF50">
+  <title>Services - Holliday's Lawn & Garden</title>
+  <meta name="description" content="Professional lawn care and landscaping services in your area. We offer mowing, landscaping, and garden maintenance services.">
+
+  <!-- ✅ Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    img-src 'self' data: https:;
+    font-src 'self' https://cdnjs.cloudflare.com;
+    connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+  ">
+
+  <!-- ✅ Favicon and Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+  <!-- ✅ Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics-compat.js"></script>
+
+  <!-- ✅ Firebase Configuration -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-init.js"></script>
+
+  <!-- ✅ Main JS and Styles -->
+  <script src="js/main.js" defer></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/services.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <!-- Service Worker Registration -->
+  <script defer>
+  document.addEventListener('DOMContentLoaded', () => {
+      if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('service-worker.js')
+              .then(registration => {
+                  console.log('Service Worker registered:', registration);
+              })
+              .catch(error => {
+                  console.error('Service Worker registration failed:', error);
+              });
+      }
+  });
+  </script> 
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <a href="index.html">
+        <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      </a>
+      <nav>
+        <div class="hamburger">
+          <i class="fas fa-bars"></i>
+        </div>
+        <div class="nav-links">
+          <a href="index.html">Home</a>
+          <a href="services.html" class="active">Services</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="pay-your-bill.html">Pay Your Bill</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="login.html">Login</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <section class="services-hero">
+    <div class="container">
+      <h1>Our Professional Services</h1>
+      <p>Comprehensive lawn care and landscaping solutions for your property</p>
+    </div>
+  </section>
+
+  <section class="service-categories">
+    <div class="container">
+      <h2>Lawn Care Services</h2>
+      <div class="category-grid">
+        <div class="service-category">
+          <div class="category-icon">🌿</div>
+          <h3 class="category-title">Mowing & Trimming</h3>
+          <p class="category-description">Regular lawn maintenance to keep your yard neat and healthy</p>
+          <ul class="service-features">
+            <li>Weekly/Bi-weekly service</li>
+            <li>Professional edging</li>
+            <li>Cleanup included</li>
+          </ul>
+        </div>
+        
+        <div class="service-category">
+          <div class="category-icon">🌾</div>
+          <h3 class="category-title">Fertilization & Seeding</h3>
+          <p class="category-description">Boost lawn growth with nutrient-rich treatments and overseeding</p>
+          <ul class="service-features">
+            <li>Seasonal applications</li>
+            <li>Customized treatments</li>
+            <li>Soil analysis</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Landscaping Services</h2>
+      <div class="category-grid">
+        <div class="service-category">
+          <div class="category-icon">🌸</div>
+          <h3 class="category-title">Landscape Design</h3>
+          <p class="category-description">Customized garden and yard designs to enhance your outdoor space</p>
+          <ul class="service-features">
+            <li>Initial consultation</li>
+            <li>Custom designs</li>
+            <li>Plant selection</li>
+          </ul>
+        </div>
+        
+        <div class="service-category">
+          <div class="category-icon">🚜</div>
+          <h3 class="category-title">Mulching & Edging</h3>
+          <p class="category-description">Professional mulch installation and clean edging for a crisp look</p>
+          <ul class="service-features">
+            <li>Mulch installation</li>
+            <li>Clean edging</li>
+            <li>Border maintenance</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Specialty Services</h2>
+      <div class="category-grid">
+        <div class="service-category">
+          <div class="category-icon">💦</div>
+          <h3 class="category-title">Pressure Washing</h3>
+          <p class="category-description">Professional cleaning of driveways, patios, sidewalks, fences, and exterior surfaces</p>
+          <ul class="service-features">
+            <li>Driveways and sidewalks</li>
+            <li>Decks and patios</li>
+            <li>House exteriors</li>
+          </ul>
+        </div>
+        
+        <div class="service-category">
+          <div class="category-icon">🏡</div>
+          <h3 class="category-title">Commercial Lawn Care</h3>
+          <p class="category-description">Reliable service packages for commercial properties and HOAs</p>
+          <ul class="service-features">
+            <li>Regular maintenance</li>
+            <li>Seasonal cleanup</li>
+            <li>Custom schedules</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>Seasonal Services</h2>
+      <div class="category-grid">
+        <div class="service-category">
+          <div class="category-icon">🍂</div>
+          <h3 class="category-title">Leaf Removal</h3>
+          <p class="category-description">Fast, affordable cleanup during fall and seasonal changes</p>
+          <ul class="service-features">
+            <li>Regular pickup</li>
+            <li>Thorough cleanup</li>
+            <li>Proper disposal</li>
+          </ul>
+        </div>
+        
+        <div class="service-category">
+          <div class="category-icon">🧹</div>
+          <h3 class="category-title">Seasonal Cleanup</h3>
+          <p class="category-description">Full yard cleanup services for spring and fall transitions</p>
+          <ul class="service-features">
+            <li>Spring cleanup</li>
+            <li>Fall preparation</li>
+            <li>Complete yard maintenance</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-content">
+        <h2 class="cta-title">Ready to Transform Your Property?</h2>
+        <p class="cta-description">Contact us today for a free consultation and estimate</p>
+        <a href="contact.html" class="cta-button">Get Your Free Estimate</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-content">
+      <div class="contact-info">
+        <h4>Contact Us</h4>
+        <p><i class="fas fa-user"></i> <strong>Owner:</strong> Karl Holliday</p>
+        <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+        <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+      </div>
+      <div class="hours">
+        <h4>Hours</h4>
+        <p><i class="far fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</p>
+        <p><i class="far fa-clock"></i> Sat: 8:00 AM - 3:00 PM</p>
+        <p><i class="far fa-clock"></i> Sun: Closed</p>
+      </div>
+      <div class="social-links">
+        <h4>Follow Us</h4>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <div class="floating-buttons">
+    <a href="tel:+15047171887" class="floating-button">
+      <i class="fas fa-phone"></i>
+    </a>
+    <a href="mailto:7holliday@gmail.com" class="floating-button">
+      <i class="fas fa-envelope"></i>
+    </a>
+  </div>
+
+  <script>
+    // Mobile menu toggle
+    document.querySelector('.hamburger').addEventListener('click', function() {
+      document.querySelector('.nav-links').classList.toggle('active');
+    });
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.error('ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
+

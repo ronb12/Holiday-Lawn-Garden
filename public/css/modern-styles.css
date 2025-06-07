@@ -1,0 +1,328 @@
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  background-color: var(--background-light);
+}
+
+/* Header Styles */
+header {
+  background-color: var(--background-light);
+  box-shadow: var(--shadow-sm);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  height: 60px;
+  width: auto;
+}
+
+/* Navigation */
+.nav-links {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.nav-links a {
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.nav-links a:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+  background-color: var(--primary-light);
+  color: var(--background-light);
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/Holliday-Lawn-Garden/assets/hero-garden-landscaping.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 60vh;
+  text-align: center;
+  color: white;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-content {
+  max-width: 800px;
+  padding: var(--spacing-xl);
+}
+
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  margin-bottom: var(--spacing-md);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.cta-button {
+  display: inline-block;
+  padding: var(--spacing-md) var(--spacing-xl);
+  background-color: var(--primary-color);
+  color: var(--background-light);
+  text-decoration: none;
+  border-radius: var(--border-radius-md);
+  transition: var(--transition-fast);
+  margin-top: var(--spacing-lg);
+  border: 2px solid transparent;
+}
+
+.cta-button:hover,
+.cta-button:focus {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  outline: none;
+  border-color: var(--background-light);
+}
+
+/* Services Section */
+.services-section {
+  padding: var(--spacing-xl) 0;
+  background-color: var(--background-dark);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.service-card {
+  background: var(--background-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  transition: var(--transition-normal);
+  border: 1px solid transparent;
+}
+
+.service-card:hover,
+.service-card:focus-within {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-light);
+}
+
+.service-icon {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Testimonials */
+.testimonials {
+  padding: var(--spacing-xl) 0;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.testimonial {
+  background: var(--background-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--primary-light);
+}
+
+.rating {
+  color: var(--accent-color);
+  margin: var(--spacing-sm) 0;
+}
+
+/* Footer */
+footer {
+  background-color: var(--secondary-dark);
+  color: var(--background-light);
+  padding: var(--spacing-xl) 0;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--spacing-xl);
+  padding: 0 var(--spacing-md);
+}
+
+.social-links a {
+  color: var(--background-light);
+  font-size: 1.5rem;
+  margin-right: var(--spacing-md);
+  transition: var(--transition-fast);
+  padding: var(--spacing-sm);
+}
+
+.social-links a:hover,
+.social-links a:focus {
+  color: var(--accent-color);
+  outline: none;
+}
+
+.copyright {
+  text-align: center;
+  padding-top: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Floating Buttons */
+.floating-buttons {
+  position: fixed;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  z-index: 900;
+}
+
+.floating-button {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--primary-color);
+  color: var(--background-light);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-fast);
+  border: 2px solid transparent;
+}
+
+.floating-button:hover,
+.floating-button:focus {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  outline: none;
+  border-color: var(--background-light);
+}
+
+/* Update Banner */
+.update-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  color: var(--background-light);
+  text-align: center;
+  padding: var(--spacing-md);
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Mobile Menu */
+.hamburger {
+  display: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition-fast);
+}
+
+.hamburger:hover,
+.hamburger:focus {
+  background-color: var(--primary-light);
+  color: var(--background-light);
+  outline: none;
+}
+
+@media (max-width: 768px) {
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: var(--background-light);
+    flex-direction: column;
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-md);
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .hero {
+    min-height: 50vh;
+  }
+
+  .floating-buttons {
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+  }
+
+  .service-card,
+  .testimonial {
+    margin: 0 var(--spacing-sm);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .floating-buttons,
+  .update-banner,
+  .hamburger {
+    display: none;
+  }
+
+  header {
+    position: static;
+  }
+
+  .hero {
+    margin-top: 0;
+  }
+} 

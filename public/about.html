@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Holliday's Lawn & Garden</title>
+    <meta name="description" content="Learn about Holliday's Lawn & Garden, your trusted partner for professional lawn care and landscaping services.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    ">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+            </a>
+            <nav>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="services.html">Services</a>
+                    <a href="about.html" class="active">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="pay-your-bill.html">Pay Your Bill</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="login.html">Login</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>About Holliday's Lawn & Garden</h1>
+            <p>Your Trusted Partner in Lawn Care & Landscaping</p>
+        </div>
+    </section>
+
+    <section class="about-section">
+        <div class="container">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>Our Story</h2>
+                    <p>Founded with a passion for creating beautiful outdoor spaces, Holliday's Lawn & Garden has been serving our community with excellence since 2010. We believe that a well-maintained lawn and garden not only enhances your property's value but also creates a welcoming environment for your family and friends.</p>
+                </div>
+                <div class="card">
+                    <h2>Our Mission</h2>
+                    <p>We are committed to providing professional, reliable, and affordable lawn care and landscaping services. Our goal is to exceed your expectations with every project, big or small, and to build lasting relationships with our clients through exceptional service and quality work.</p>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <h2 class="text-center mb-4">Why Choose Us?</h2>
+                <div class="grid grid-3">
+                    <div class="text-center">
+                        <div class="service-icon">⭐</div>
+                        <h3>Experience</h3>
+                        <p>Over a decade of professional lawn care and landscaping expertise</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="service-icon">🔧</div>
+                        <h3>Quality Service</h3>
+                        <p>State-of-the-art equipment and proven techniques</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="service-icon">🤝</div>
+                        <h3>Customer Focus</h3>
+                        <p>Personalized attention and satisfaction guaranteed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Ready to Transform Your Property?</h2>
+                <p class="cta-description">Contact us today for a free consultation and estimate</p>
+                <a href="contact.html" class="cta-button">Get Your Free Estimate</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p><strong>Owner:</strong> Karl Holliday</p>
+                <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+                <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+            </div>
+            <div class="hours">
+                <h4>Hours</h4>
+                <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+                <p>Sat: 8:00 AM - 3:00 PM</p>
+                <p>Sun: Closed</p>
+            </div>
+            <div class="social-links">
+                <h4>Follow Us</h4>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="floating-buttons">
+        <a href="tel:+15047171887" class="floating-button">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="mailto:7holliday@gmail.com" class="floating-button">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

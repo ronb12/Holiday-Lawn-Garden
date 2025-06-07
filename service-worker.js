@@ -20,20 +20,14 @@ const STATIC_ASSETS = [
   `${BASE_PATH}/modern-styles.css`,
   `${BASE_PATH}/variables.css`,
   `${BASE_PATH}/manifest.json`,
-  `${BASE_PATH}/assets/hollidays-logo.png`,
+  `${BASE_PATH}/assets/images/Hollidays_Lawn_Garden_Logo.png`,
   `${BASE_PATH}/assets/hero-garden-landscaping.jpg`,
   `${BASE_PATH}/js/firebase-config.js`,
   `${BASE_PATH}/js/firebase-init.js`
 ];
 
 // Firebase SDKs to cache
-const FIREBASE_SDKS = [
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js',
-  'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js'
-];
+const FIREBASE_SDKS = ["https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js","https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js","https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js","https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js","https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics-compat.js"];
 
 // Install event - cache assets
 self.addEventListener('install', event => {
@@ -48,12 +42,17 @@ self.addEventListener('install', event => {
           })
         );
 
-        // Cache Firebase SDKs
+        // Cache Firebase SDKs with network-first strategy
         const sdkPromises = FIREBASE_SDKS.map(url =>
-          cache.add(url).catch(error => {
-            console.warn(`Failed to cache ${url}:`, error);
-            return Promise.resolve(); // Continue even if one SDK fails
-          })
+          fetch(url)
+            .then(response => {
+              if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+              return cache.put(url, response);
+            })
+            .catch(error => {
+              console.warn(`Failed to cache ${url}:`, error);
+              return Promise.resolve(); // Continue even if one SDK fails
+            })
         );
 
         return Promise.all([...staticPromises, ...sdkPromises]);

@@ -1,78 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Common head elements -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#4CAF50">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="/manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4CAF50">
+  <title>Holliday's Lawn & Garden – Services</title>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.js" defer></script>
+  <!-- ✅ Correct Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://www.gstatic.com https://www.googleapis.com https://*.firebaseio.com;
+    connect-src 'self' https://*.firebaseio.com https://www.googleapis.com https://www.gstatic.com;
+    img-src 'self' data: https://holiday-lawn-and-garden.web.app;
+    style-src 'self' 'unsafe-inline';
+    font-src 'self' https://fonts.gstatic.com;
+  ">
 
-<!-- Firebase Configuration -->
-<script src="/firebase-config.js" defer></script>
-<script src="/firebase-init.js" defer></script>
+  <!-- ✅ Link to Manifest and Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 
-<!-- Service Worker Registration -->
-<script defer>
-document.addEventListener('DOMContentLoaded', () => {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then(registration => {
-                console.log('Service Worker registered:', registration);
-            })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
+  <!-- ✅ Firebase Config and Init Scripts -->
+  <script src="js/firebase-config.js" type="application/javascript" defer></script>
+  <script src="js/firebase-init.js" type="application/javascript" defer></script>
+
+  <!-- ✅ Your Main JS and CSS -->
+  <script src="js/main.js" defer></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+  <style>
+    .services-hero {
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('assets/images/lawn-service.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      text-align: center;
+      padding: 100px 20px;
     }
-});
-</script> 
+    
+    .service-category {
+      margin: 60px 0;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    }
+    
+    .service-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .service-header i {
+      font-size: 2.5em;
+      color: #4CAF50;
+    }
+    
+    .service-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+    }
+    
+    .service-item {
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+    
+    .service-item:hover {
+      transform: translateY(-5px);
+    }
+    
+    .service-item h3 {
+      color: #2E7D32;
+      margin-bottom: 15px;
+    }
+    
+    .service-item ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .service-item ul li {
+      margin: 10px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .service-item ul li:before {
+      content: "✓";
+      color: #4CAF50;
+      position: absolute;
+      left: 0;
+    }
+    
+    .service-cta {
+      background: #4CAF50;
+      color: white;
+      text-align: center;
+      padding: 60px 20px;
+      margin-top: 40px;
+    }
+    
+    .service-cta .cta-button {
+      background: white;
+      color: #4CAF50;
+      padding: 15px 30px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 20px;
+      transition: transform 0.3s ease;
+    }
+    
+    .service-cta .cta-button:hover {
+      transform: scale(1.05);
+    }
+    
+    @media (max-width: 768px) {
+      .service-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-check-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-performance-compat.js" defer></script>
+
+  <!-- Service Worker Registration -->
+  <script defer>
+  document.addEventListener('DOMContentLoaded', () => {
+      if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('service-worker.js')
+              .then(registration => {
+                  console.log('Service Worker registered:', registration);
+              })
+              .catch(error => {
+                  console.error('Service Worker registration failed:', error);
+              });
+      }
+  });
+  </script> 
 </head>
 <body>
-
   <header>
-    <h1>Holliday's Lawn & Garden</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="services.html">Services</a>
-      <a href="about.html">About</a>
-      <a href="contact.html">Contact</a>
-    </nav>
+    <div class="header-content">
+      <img src="assets/images/Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      <div class="hamburger" onclick="toggleMenu()">☰</div>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a>
+        <a href="services.html" class="active">Services</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="pay-your-bill.html">Pay Your Bill</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="login.html">Login</a>
+        <a href="admin-login.html" id="adminLink" style="display:none;">Admin</a>
+      </nav>
+    </div>
   </header>
 
-  <main>
-    <h2>Our Services</h2>
-    <p>We offer a full range of lawn care and landscaping services to keep your property looking its best year-round.</p>
+  <section class="services-hero">
+    <div class="container">
+      <h1>Our Professional Services</h1>
+      <p>Comprehensive lawn care and landscaping solutions for your property</p>
+    </div>
+  </section>
 
-    <section style="margin-top: 2em;">
-      <ul style="list-style-type: none; padding: 0;">
-       <li>🌿 <strong>Mowing & Trimming</strong> — Regular lawn maintenance to keep your yard neat and healthy.</li>
-<li>🌸 <strong>Landscape Design</strong> — Customized garden and yard designs to enhance your outdoor space.</li>
-<li>🍂 <strong>Leaf Removal</strong> — Fast, affordable cleanup during fall and seasonal changes.</li>
-<li>🌾 <strong>Fertilization & Seeding</strong> — Boost lawn growth with nutrient-rich treatments and overseeding.</li>
-<li>🧹 <strong>Seasonal Cleanup</strong> — Full yard cleanup services for spring and fall transitions.</li>
-<li>🚜 <strong>Mulching & Edging</strong> — Professional mulch installation and clean edging for a crisp look.</li>
-<li>🏡 <strong>Commercial Lawn Care</strong> — Reliable service packages for commercial properties and HOAs.</li>
-<li>💦 <strong>Pressure Washing</strong> — Professional cleaning of driveways, patios, sidewalks, fences, and exterior surfaces (excluding roofs).</li>
-      </ul>
-    </section>
+  <div id="services-list" class="detailed-services">
+    <div class="container">
+      <div class="service-category">
+        <div class="service-header">
+          <i class="fas fa-cut"></i>
+          <h2>Lawn Care Services</h2>
+        </div>
+        <div class="service-grid">
+          <div class="service-item">
+            <h3>🌿 Mowing & Trimming</h3>
+            <p>Regular lawn maintenance to keep your yard neat and healthy</p>
+            <ul>
+              <li>Weekly/Bi-weekly service</li>
+              <li>Professional edging</li>
+              <li>Cleanup included</li>
+            </ul>
+          </div>
+          <div class="service-item">
+            <h3>🌾 Fertilization & Seeding</h3>
+            <p>Boost lawn growth with nutrient-rich treatments and overseeding</p>
+            <ul>
+              <li>Seasonal applications</li>
+              <li>Customized treatments</li>
+              <li>Soil analysis</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-    <p style="margin-top: 2em;">Looking for a service not listed? Contact us — we're happy to create a custom plan that fits your needs!</p>
-  </main>
+      <div class="service-category">
+        <div class="service-header">
+          <i class="fas fa-leaf"></i>
+          <h2>Landscaping Services</h2>
+        </div>
+        <div class="service-grid">
+          <div class="service-item">
+            <h3>🌸 Landscape Design</h3>
+            <p>Customized garden and yard designs to enhance your outdoor space</p>
+            <ul>
+              <li>Initial consultation</li>
+              <li>Custom designs</li>
+              <li>Plant selection</li>
+            </ul>
+          </div>
+          <div class="service-item">
+            <h3>🚜 Mulching & Edging</h3>
+            <p>Professional mulch installation and clean edging for a crisp look</p>
+            <ul>
+              <li>Mulch installation</li>
+              <li>Clean edging</li>
+              <li>Border maintenance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-category">
+        <div class="service-header">
+          <i class="fas fa-spray-can"></i>
+          <h2>Specialty Services</h2>
+        </div>
+        <div class="service-grid">
+          <div class="service-item">
+            <h3>💦 Pressure Washing</h3>
+            <p>Professional cleaning of driveways, patios, sidewalks, fences, and exterior surfaces</p>
+            <ul>
+              <li>Driveways and sidewalks</li>
+              <li>Decks and patios</li>
+              <li>House exteriors</li>
+            </ul>
+          </div>
+          <div class="service-item">
+            <h3>🏡 Commercial Lawn Care</h3>
+            <p>Reliable service packages for commercial properties and HOAs</p>
+            <ul>
+              <li>Regular maintenance</li>
+              <li>Seasonal cleanup</li>
+              <li>Custom schedules</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="service-category">
+        <div class="service-header">
+          <i class="fas fa-calendar-alt"></i>
+          <h2>Seasonal Services</h2>
+        </div>
+        <div class="service-grid">
+          <div class="service-item">
+            <h3>🍂 Leaf Removal</h3>
+            <p>Fast, affordable cleanup during fall and seasonal changes</p>
+            <ul>
+              <li>Regular pickup</li>
+              <li>Thorough cleanup</li>
+              <li>Proper disposal</li>
+            </ul>
+          </div>
+          <div class="service-item">
+            <h3>🧹 Seasonal Cleanup</h3>
+            <p>Full yard cleanup services for spring and fall transitions</p>
+            <ul>
+              <li>Spring cleanup</li>
+              <li>Fall preparation</li>
+              <li>Complete yard maintenance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="service-cta">
+    <div class="container">
+      <h2>Ready to Transform Your Property?</h2>
+      <p>Contact us today for a free consultation and estimate</p>
+      <a href="contact.html" class="cta-button">Get Your Free Estimate</a>
+    </div>
+  </section>
 
   <footer>
-    &copy; 2025 Holliday's Lawn & Garden. All rights reserved.
+    <div class="footer-content">
+      <div class="contact-info">
+        <h4>Contact Us</h4>
+        <p><i class="fas fa-user"></i> <strong>Owner:</strong> Karl Holliday</p>
+        <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+        <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+      </div>
+      <div class="hours">
+        <h4>Hours</h4>
+        <p><i class="far fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</p>
+        <p><i class="far fa-clock"></i> Sat: 8:00 AM - 3:00 PM</p>
+        <p><i class="far fa-clock"></i> Sun: Closed</p>
+      </div>
+      <div class="social-links">
+        <h4>Follow Us</h4>
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+    </div>
   </footer>
 
+  <div class="floating-buttons">
+    <a href="#contact" class="floating-button contact-button">📞 Contact Us</a>
+  </div>
+
+  <script>
+    // Mobile menu toggle
+    document.querySelector('.hamburger').addEventListener('click', function() {
+      document.querySelector('.nav-links').classList.toggle('active');
+    });
+
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(err => {
+            console.error('ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
 

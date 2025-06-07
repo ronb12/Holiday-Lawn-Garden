@@ -8,22 +8,24 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   
   <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudflare.com;
+    default-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com https://*.firebasestorage.app;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://*.firebasestorage.app https://cdnjs.cloudflare.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudflare.com https://cdnjs.cloudflare.com;
     style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudflare.com;
-    font-src 'self' https://fonts.gstatic.com https://*.cloudflare.com;
-    img-src 'self' data: https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com;
-    connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com https://www.google-analytics.com;
+    font-src 'self' https://fonts.gstatic.com https://*.cloudflare.com https://cdnjs.cloudflare.com;
+    img-src 'self' data: https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebasestorage.app;
+    connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.cloudflare.com https://www.google-analytics.com https://*.firebasestorage.app wss://*.firebaseio.com https://cdnjs.cloudflare.com;
     frame-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com;
   ">
   <title>Holliday's Lawn & Garden</title>
 
   <!-- Favicons -->
-  <link rel="icon" href="favicon.ico">
+  <link rel="icon" href="icons/favicon.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="variables.css">
-  <link rel="stylesheet" href="modern-styles.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
   <!-- Firebase SDKs -->
@@ -157,17 +159,23 @@
 <body>
   <header>
     <div class="header-content">
-      <img src="assets/images/Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
-      <div class="hamburger" onclick="toggleMenu()">☰</div>
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html" class="active">Home</a>
-        <a href="services.html">Services</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <a href="pay-your-bill.html">Pay Your Bill</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="login.html">Login</a>
-        <a href="admin-login.html" id="adminLink" style="display:none;">Admin</a>
+      <a href="index.html">
+        <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      </a>
+      <nav>
+        <div class="hamburger">
+          <i class="fas fa-bars"></i>
+        </div>
+        <div class="nav-links">
+          <a href="index.html" class="active">Home</a>
+          <a href="services.html">Services</a>
+          <a href="about.html">About</a>
+          <a href="contact.html">Contact</a>
+          <a href="pay-your-bill.html">Pay Your Bill</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="login.html">Login</a>
+          <a href="admin-login.html" id="adminLink" style="display:none;">Admin</a>
+        </div>
       </nav>
     </div>
   </header>
@@ -176,31 +184,31 @@
     <div class="hero-content">
       <h1>Welcome to Holliday's Lawn & Garden</h1>
       <p>Professional Lawn Care & Landscaping Services</p>
-      <a href="#contact" class="cta-button">Get a Free Estimate</a>
+      <a href="contact.html" class="cta-button">Get a Free Estimate</a>
     </div>
   </section>
 
   <section class="services-section">
     <div class="container">
-      <h2>Our Services</h2>
-      <div class="services-grid">
-        <div class="service-card">
-          <i class="service-icon">🌿</i>
+      <h2 class="text-center mb-4">Our Services</h2>
+      <div class="grid grid-4">
+        <div class="card">
+          <div class="service-icon">🌿</div>
           <h3>Mowing & Trimming</h3>
           <p>Professional lawn maintenance to keep your yard looking pristine.</p>
         </div>
-        <div class="service-card">
-          <i class="service-icon">🏡</i>
+        <div class="card">
+          <div class="service-icon">🏡</div>
           <h3>Landscape Design</h3>
           <p>Custom landscape designs to transform your outdoor space.</p>
         </div>
-        <div class="service-card">
-          <i class="service-icon">🧹</i>
+        <div class="card">
+          <div class="service-icon">🧹</div>
           <h3>Pressure Washing</h3>
           <p>Restore the beauty of your outdoor surfaces.</p>
         </div>
-        <div class="service-card">
-          <i class="service-icon">🏢</i>
+        <div class="card">
+          <div class="service-icon">🏢</div>
           <h3>Commercial Lawn Care</h3>
           <p>Comprehensive maintenance for business properties.</p>
         </div>
@@ -210,14 +218,14 @@
 
   <section class="testimonials">
     <div class="container">
-      <h2>What Our Customers Say</h2>
-      <div class="testimonials-grid">
-        <div class="testimonial">
+      <h2 class="text-center mb-4">What Our Customers Say</h2>
+      <div class="grid grid-2">
+        <div class="card">
           <p>"Holliday's Lawn & Garden transformed my backyard! Highly professional and affordable service."</p>
           <div class="rating">⭐⭐⭐⭐⭐</div>
           <cite>- Sarah Johnson</cite>
         </div>
-        <div class="testimonial">
+        <div class="card">
           <p>"Reliable, friendly, and the best landscaping crew I've ever hired!"</p>
           <div class="rating">⭐⭐⭐⭐⭐</div>
           <cite>- Michael Thompson</cite>
@@ -230,15 +238,15 @@
     <div class="footer-content">
       <div class="contact-info">
         <h4>Contact Us</h4>
-        <p><i class="fas fa-user"></i> <strong>Owner:</strong> Karl Holliday</p>
+        <p><strong>Owner:</strong> Karl Holliday</p>
         <p><i class="fas fa-phone"></i> (504) 717-1887</p>
         <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
       </div>
       <div class="hours">
         <h4>Hours</h4>
-        <p><i class="far fa-clock"></i> Mon-Fri: 8:00 AM - 5:00 PM</p>
-        <p><i class="far fa-clock"></i> Sat: 8:00 AM - 3:00 PM</p>
-        <p><i class="far fa-clock"></i> Sun: Closed</p>
+        <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+        <p>Sat: 8:00 AM - 3:00 PM</p>
+        <p>Sun: Closed</p>
       </div>
       <div class="social-links">
         <h4>Follow Us</h4>
@@ -253,7 +261,12 @@
   </footer>
 
   <div class="floating-buttons">
-    <a href="#contact" class="floating-button contact-button">📞 Contact Us</a>
+    <a href="tel:+15047171887" class="floating-button">
+      <i class="fas fa-phone"></i>
+    </a>
+    <a href="mailto:7holliday@gmail.com" class="floating-button">
+      <i class="fas fa-envelope"></i>
+    </a>
   </div>
 
   <div id="updateBanner" class="update-banner" style="display:none;">

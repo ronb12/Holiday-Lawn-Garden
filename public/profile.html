@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Holliday's Lawn & Garden</title>
+    <meta name="description" content="Manage your account settings and view your service history with Holliday's Lawn & Garden.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    ">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+            </a>
+            <nav>
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="services.html">Services</a>
+                    <a href="about.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="pay-your-bill.html">Pay Your Bill</a>
+                    <a href="gallery.html">Gallery</a>
+                    <a href="profile.html" class="active">Profile</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>My Profile</h1>
+            <p>Manage your account and view your service history</p>
+        </div>
+    </section>
+
+    <section class="profile-section">
+        <div class="container">
+            <div class="grid grid-2">
+                <div class="card">
+                    <h2>Account Information</h2>
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="address">Service Address</label>
+                            <textarea id="address" name="address" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="cta-button">Update Profile</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Service History</h2>
+                    <div class="service-history">
+                        <div class="history-item">
+                            <div class="history-header">
+                                <h3>Lawn Maintenance</h3>
+                                <span class="date">March 15, 2024</span>
+                            </div>
+                            <p>Regular lawn mowing and edging service</p>
+                            <span class="status completed">Completed</span>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-header">
+                                <h3>Landscape Design</h3>
+                                <span class="date">February 28, 2024</span>
+                            </div>
+                            <p>Backyard renovation and new plant installation</p>
+                            <span class="status completed">Completed</span>
+                        </div>
+                        <div class="history-item">
+                            <div class="history-header">
+                                <h3>Pressure Washing</h3>
+                                <span class="date">February 10, 2024</span>
+                            </div>
+                            <p>Driveway and patio cleaning</p>
+                            <span class="status completed">Completed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Upcoming Services</h2>
+                <div class="upcoming-services">
+                    <div class="service-item">
+                        <div class="service-info">
+                            <h3>Lawn Maintenance</h3>
+                            <p>Regular lawn mowing and edging service</p>
+                            <span class="date">Scheduled for: April 1, 2024</span>
+                        </div>
+                        <div class="service-actions">
+                            <button class="secondary-button">Reschedule</button>
+                            <button class="danger-button">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="contact-info">
+                <h4>Contact Us</h4>
+                <p><strong>Owner:</strong> Karl Holliday</p>
+                <p><i class="fas fa-phone"></i> (504) 717-1887</p>
+                <p><i class="fas fa-envelope"></i> 7holliday@gmail.com</p>
+            </div>
+            <div class="hours">
+                <h4>Hours</h4>
+                <p>Mon-Fri: 8:00 AM - 5:00 PM</p>
+                <p>Sat: 8:00 AM - 3:00 PM</p>
+                <p>Sun: Closed</p>
+            </div>
+            <div class="social-links">
+                <h4>Follow Us</h4>
+                <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 Holliday's Lawn & Garden. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="floating-buttons">
+        <a href="tel:+15047171887" class="floating-button">
+            <i class="fas fa-phone"></i>
+        </a>
+        <a href="mailto:7holliday@gmail.com" class="floating-button">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        // Profile form submission
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your profile update logic here
+            alert('Profile update functionality will be implemented with Firebase.');
+        });
+
+        // Service cancellation
+        document.querySelectorAll('.danger-button').forEach(button => {
+            button.addEventListener('click', function() {
+                if (confirm('Are you sure you want to cancel this service?')) {
+                    // Add your cancellation logic here
+                    alert('Service cancellation will be implemented with Firebase.');
+                }
+            });
+        });
+
+        // Service rescheduling
+        document.querySelectorAll('.secondary-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Add your rescheduling logic here
+                alert('Service rescheduling will be implemented with Firebase.');
+            });
+        });
+    </script>
+</body>
+</html> 
