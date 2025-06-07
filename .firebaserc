@@ -1,0 +1,16 @@
+{
+  "projects": {},
+  "targets": {
+    "holiday-lawn-and-garden": {
+      "hosting": {
+        "production": [
+          "holiday-lawn-and-garden"
+        ],
+        "staging": [
+          "holiday-lawn-and-garden-staging"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
