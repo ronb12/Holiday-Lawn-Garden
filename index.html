@@ -137,11 +137,16 @@
       document.body.appendChild(errorBanner);
     }
   </script>
+  <base href="/Holliday-Lawn-Garden/">
+  <link rel="stylesheet" href="modern-styles.css">
+  <link rel="stylesheet" href="variables.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
 </head>
 <body>
   <header>
     <div class="header-content">
-      <img src="assets/hollidays-logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
+      <img src="assets/images/Hollidays_Lawn_Garden_Logo.png" alt="Holliday's Lawn & Garden Logo" class="logo">
       <div class="hamburger" onclick="toggleMenu()">☰</div>
       <nav class="nav-links" id="navLinks">
         <a href="index.html" class="active">Home</a>
@@ -241,14 +246,4 @@
   </div>
 
   <div id="updateBanner" class="update-banner" style="display:none;">
-    🔄 New update available – Tap to refresh
-  </div>
-
-  <script>
-    // Mobile menu toggle
-    document.querySelector('.hamburger').addEventListener('click', function() {
-      document.querySelector('.nav-links').classList.toggle('active');
-    });
-  </script>
-</body>
-</html>
+    🔄 New update

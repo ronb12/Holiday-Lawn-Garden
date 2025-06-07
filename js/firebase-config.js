@@ -1,18 +1,37 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-  measurementId: process.env.FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
+  authDomain: "holiday-lawn-and-garden.firebaseapp.com",
+  projectId: "holiday-lawn-and-garden",
+  storageBucket: "holiday-lawn-and-garden.firebasestorage.app",
+  messagingSenderId: "135322230444",
+  appId: "1:135322230444:web:1a487b25a48aae07368909",
+  measurementId: "G-KD6TBWR4ZT"
 };
 
-// Initialize Firebase
+// Initialize Firebase with security settings
 try {
-  firebase.initializeApp(firebaseConfig);
-  console.log('Firebase initialized successfully');
+  const app = firebase.initializeApp(firebaseConfig);
+  
+  // Configure Firestore with security settings
+  const db = firebase.firestore();
+  db.settings({
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+    merge: true,
+    ignoreUndefinedProperties: true
+  });
+
+  // Configure Auth with security settings
+  const auth = firebase.auth();
+  auth.useDeviceLanguage();
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+  // Configure Storage with security settings
+  const storage = firebase.storage();
+  storage.setMaxUploadRetryTime(10000); // 10 seconds
+  storage.setMaxOperationRetryTime(10000);
+
+  console.log('Firebase initialized successfully with security settings');
 } catch (error) {
   console.error('Error initializing Firebase:', error);
   // Create error banner

@@ -3,22 +3,22 @@
   "short_name": "Holliday's",
   "lang": "en",
   "dir": "ltr",
-  "start_url": "/Holliday-Lawn-Garden/",
+  "start_url": "/Holliday-Lawn-Garden/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "orientation": "portrait-primary",
   "scope": "/",
-  "description": "Professional Lawn Care & Landscaping Services",
+  "description": "Professional lawn care and landscaping services",
   "icons": [
     {
-      "src": "/Holliday-Lawn-Garden/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/Holliday-Lawn-Garden/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

@@ -2,73 +2,74 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    // Rate limiting function
+    function isNotRateLimited() {
+      return request.time > resource.data.lastAccess + duration.seconds(1);
+    }
+
+    // Authentication check
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
+    // Admin check
     function isAdmin() {
       return isAuthenticated() && 
-        request.auth.token.email in ['ronellbradley@bradleyvs.com'];
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
-    
-    function isOwner(userId) {
+
+    // User profile check
+    function isUserProfile(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
+    // Service request validation
     function isValidServiceRequest() {
-      return request.resource.data.keys().hasAll(['customerId', 'serviceType', 'status', 'createdAt']) &&
-        request.resource.data.customerId is string &&
-        request.resource.data.serviceType is string &&
-        request.resource.data.status in ['pending', 'approved', 'completed', 'cancelled'] &&
-        request.resource.data.createdAt is timestamp;
+      let request = request.resource.data;
+      return request.size() <= 20 && // Limit fields
+             request.serviceType is string &&
+             request.serviceType.size() <= 50 &&
+             request.description is string &&
+             request.description.size() <= 500 &&
+             request.status in ['pending', 'approved', 'rejected', 'completed'];
     }
-    
-    function isValidQuote() {
-      return request.resource.data.keys().hasAll(['serviceRequestId', 'amount', 'status', 'createdAt']) &&
-        request.resource.data.serviceRequestId is string &&
-        request.resource.data.amount is number &&
-        request.resource.data.status in ['pending', 'accepted', 'rejected'] &&
-        request.resource.data.createdAt is timestamp;
-    }
-    
-    function isValidInvoice() {
-      return request.resource.data.keys().hasAll(['quoteId', 'amount', 'status', 'dueDate', 'createdAt']) &&
-        request.resource.data.quoteId is string &&
-        request.resource.data.amount is number &&
-        request.resource.data.status in ['pending', 'paid', 'overdue'] &&
-        request.resource.data.dueDate is timestamp &&
-        request.resource.data.createdAt is timestamp;
+
+    // Admin profiles
+    match /admins/{adminId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     // User profiles
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.auth.uid == userId;
-      allow update: if isOwner(userId) || isAdmin();
+      allow update: if isUserProfile(userId);
       allow delete: if isAdmin();
     }
 
     // Service requests
     match /serviceRequests/{requestId} {
-      allow read: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
-      );
-      allow create: if isAuthenticated() && isValidServiceRequest();
-      allow update: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
-      );
+      allow read: if isAuthenticated() && 
+        (isUserProfile(resource.data.userId) || isAdmin());
+      allow create: if isAuthenticated() && 
+        isValidServiceRequest() && 
+        isNotRateLimited() &&
+        request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        (isUserProfile(resource.data.userId) || isAdmin()) &&
+        isValidServiceRequest();
       allow delete: if isAdmin();
     }
 
     // Quotes
     match /quotes/{quoteId} {
       allow read: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
+        isUserProfile(resource.data.customerId) || isAdmin()
       );
       allow create: if isAdmin() && isValidQuote();
       allow update: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
+        isUserProfile(resource.data.customerId) || isAdmin()
       );
       allow delete: if isAdmin();
     }
@@ -76,11 +77,11 @@ service cloud.firestore {
     // Invoices
     match /invoices/{invoiceId} {
       allow read: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
+        isUserProfile(resource.data.customerId) || isAdmin()
       );
       allow create: if isAdmin() && isValidInvoice();
       allow update: if isAuthenticated() && (
-        isOwner(resource.data.customerId) || isAdmin()
+        isUserProfile(resource.data.customerId) || isAdmin()
       );
       allow delete: if isAdmin();
     }
@@ -88,8 +89,8 @@ service cloud.firestore {
     // Chat messages
     match /chats/{chatId} {
       allow read: if isAuthenticated() && (
-        isOwner(resource.data.senderId) || 
-        isOwner(resource.data.receiverId) || 
+        isUserProfile(resource.data.senderId) || 
+        isUserProfile(resource.data.receiverId) || 
         isAdmin()
       );
       allow create: if isAuthenticated() && 
@@ -102,6 +103,11 @@ service cloud.firestore {
     match /settings/{settingId} {
       allow read: if isAuthenticated();
       allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 } 
