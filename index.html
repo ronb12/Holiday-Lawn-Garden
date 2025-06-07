@@ -246,4 +246,14 @@
   </div>
 
   <div id="updateBanner" class="update-banner" style="display:none;">
-    🔄 New update
+    🔄 New update available – Tap to refresh
+  </div>
+
+  <script>
+    // Mobile menu toggle
+    document.querySelector('.hamburger').addEventListener('click', function() {
+      document.querySelector('.nav-links').classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
