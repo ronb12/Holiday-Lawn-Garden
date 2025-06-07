@@ -1,4 +1,4 @@
-const CACHE_NAME = 'holliday-lawn-garden-v1';
+const CACHE_NAME = 'holiday-lawn-garden-v1';
 const STATIC_CACHE = 'static-v1';
 const DYNAMIC_CACHE = 'dynamic-v1';
 const API_CACHE = 'api-v1';
@@ -6,24 +6,24 @@ const API_CACHE = 'api-v1';
 // Base path for GitHub Pages
 const BASE_PATH = '/Holliday-Lawn-Garden';
 
-// Assets to cache immediately
+// Assets to cache
 const STATIC_ASSETS = [
-  `${BASE_PATH}/`,
   `${BASE_PATH}/index.html`,
   `${BASE_PATH}/about.html`,
-  `${BASE_PATH}/services.html`,
   `${BASE_PATH}/contact.html`,
+  `${BASE_PATH}/services.html`,
+  `${BASE_PATH}/gallery.html`,
+  `${BASE_PATH}/pay-your-bill.html`,
+  `${BASE_PATH}/login.html`,
+  `${BASE_PATH}/admin-login.html`,
+  `${BASE_PATH}/admin.html`,
   `${BASE_PATH}/modern-styles.css`,
   `${BASE_PATH}/variables.css`,
-  `${BASE_PATH}/js/main.js`,
-  `${BASE_PATH}/js/firebase-config.js`,
-  `${BASE_PATH}/js/firebase-init.js`,
-  `${BASE_PATH}/js/auth.js`,
-  `${BASE_PATH}/js/dashboard.js`,
+  `${BASE_PATH}/manifest.json`,
   `${BASE_PATH}/assets/hollidays-logo.png`,
   `${BASE_PATH}/assets/hero-garden-landscaping.jpg`,
-  `${BASE_PATH}/icons/icon-192.png`,
-  `${BASE_PATH}/icons/icon-512.png`
+  `${BASE_PATH}/js/firebase-config.js`,
+  `${BASE_PATH}/js/firebase-init.js`
 ];
 
 // Firebase SDKs to cache
@@ -35,13 +35,32 @@ const FIREBASE_SDKS = [
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js'
 ];
 
-// Install event - cache static assets
+// Install event - cache assets
 self.addEventListener('install', event => {
   event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then(cache => cache.addAll(STATIC_ASSETS)),
-      caches.open(DYNAMIC_CACHE).then(cache => cache.addAll(FIREBASE_SDKS))
-    ])
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        // Cache static assets
+        const staticPromises = STATIC_ASSETS.map(url => 
+          cache.add(url).catch(error => {
+            console.warn(`Failed to cache ${url}:`, error);
+            return Promise.resolve(); // Continue even if one asset fails
+          })
+        );
+
+        // Cache Firebase SDKs
+        const sdkPromises = FIREBASE_SDKS.map(url =>
+          cache.add(url).catch(error => {
+            console.warn(`Failed to cache ${url}:`, error);
+            return Promise.resolve(); // Continue even if one SDK fails
+          })
+        );
+
+        return Promise.all([...staticPromises, ...sdkPromises]);
+      })
+      .catch(error => {
+        console.error('Cache installation failed:', error);
+      })
   );
 });
 
@@ -51,9 +70,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== STATIC_CACHE && 
-              cacheName !== DYNAMIC_CACHE && 
-              cacheName !== API_CACHE) {
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
@@ -69,25 +86,76 @@ self.addEventListener('sync', event => {
   }
 });
 
-// Fetch event - handle different types of requests
+// Fetch event - serve from cache, fall back to network
 self.addEventListener('fetch', event => {
-  const request = event.request;
-  const url = new URL(request.url);
-
-  // Handle API requests
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(request));
+  // Handle Firebase SDK requests with network-first strategy
+  if (FIREBASE_SDKS.some(sdk => event.request.url.includes(sdk))) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Cache the response
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then(cache => {
+              cache.put(event.request, responseToCache);
+            })
+            .catch(error => {
+              console.warn('Failed to cache Firebase SDK:', error);
+            });
+          return response;
+        })
+        .catch(() => {
+          // Fall back to cache if network fails
+          return caches.match(event.request);
+        })
+    );
     return;
   }
 
-  // Handle static assets
-  if (STATIC_ASSETS.includes(url.pathname) || FIREBASE_SDKS.includes(url.href)) {
-    event.respondWith(handleStaticRequest(request));
-    return;
-  }
+  // Default cache-first strategy for other requests
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Return cached response if found
+        if (response) {
+          return response;
+        }
 
-  // Handle other requests with network-first strategy
-  event.respondWith(handleOtherRequest(request));
+        // Clone the request
+        const fetchRequest = event.request.clone();
+
+        // Make network request
+        return fetch(fetchRequest)
+          .then(response => {
+            // Check if valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            // Cache the response
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              })
+              .catch(error => {
+                console.warn('Failed to cache response:', error);
+              });
+
+            return response;
+          })
+          .catch(error => {
+            console.error('Fetch failed:', error);
+            // Return offline page for navigation requests
+            if (event.request.mode === 'navigate') {
+              return caches.match(`${BASE_PATH}/offline.html`);
+            }
+            throw error;
+          });
+      })
+  );
 });
 
 // Handle API requests with network-first strategy
@@ -95,31 +163,6 @@ async function handleApiRequest(request) {
   try {
     const networkResponse = await fetch(request);
     const cache = await caches.open(API_CACHE);
-    cache.put(request, networkResponse.clone());
-    return networkResponse;
-  } catch (error) {
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    throw error;
-  }
-}
-
-// Handle static requests with cache-first strategy
-async function handleStaticRequest(request) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  return fetch(request);
-}
-
-// Handle other requests with network-first strategy
-async function handleOtherRequest(request) {
-  try {
-    const networkResponse = await fetch(request);
-    const cache = await caches.open(DYNAMIC_CACHE);
     cache.put(request, networkResponse.clone());
     return networkResponse;
   } catch (error) {

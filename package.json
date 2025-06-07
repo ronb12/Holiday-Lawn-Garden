@@ -11,7 +11,8 @@
     "format": "prettier --write 'src/**/*.{js,css,html}'",
     "deploy": "firebase deploy",
     "predeploy": "npm run build",
-    "deploy:gh-pages": "gh-pages -d dist"
+    "deploy:gh-pages": "gh-pages -d dist",
+    "deploy:all": "npm run build && npm run deploy && npm run deploy:gh-pages"
   },
   "dependencies": {
     "firebase": "^10.8.0"

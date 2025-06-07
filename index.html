@@ -16,15 +16,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
   <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js" defer></script>
 
   <!-- Firebase Configuration -->
-  <script src="js/firebase-config.js"></script>
-  <script src="js/firebase-init.js"></script>
+  <script src="js/firebase-config.js" defer></script>
+  <script src="js/firebase-init.js" defer></script>
 
   <!-- Service Worker & Install Prompt -->
   <script>
@@ -106,24 +106,20 @@
       deferredPrompt = e;
       if (installBtn) {
         installBtn.style.display = 'block';
+        installBtn.addEventListener('click', async () => {
+          if (!deferredPrompt) return;
+          installBtn.style.display = 'none';
+          try {
+            await deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User ${outcome === 'accepted' ? '✅ Installed' : '❌ Dismissed'} the app`);
+          } catch (error) {
+            console.error('Install prompt error:', error);
+          }
+          deferredPrompt = null;
+        });
       }
     });
-
-    // Handle install button click
-    if (installBtn) {
-      installBtn.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        installBtn.style.display = 'none';
-        try {
-          await deferredPrompt.prompt();
-          const { outcome } = await deferredPrompt.userChoice;
-          console.log(`User ${outcome === 'accepted' ? '✅ Installed' : '❌ Dismissed'} the app`);
-        } catch (error) {
-          console.error('Install prompt error:', error);
-        }
-        deferredPrompt = null;
-      });
-    }
 
     // Handle service worker updates
     let refreshing = false;
