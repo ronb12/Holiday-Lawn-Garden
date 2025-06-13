@@ -5,6 +5,9 @@
   --text-color: #333;
   --background-color: #f7f7f7;
   --white: #ffffff;
+  --light-bg: #f0f0f0;
+  --primary-color-dark: #45a049;
+  --text-color-light: #666;
 }
 
 /* Global Styles */
@@ -347,4 +350,131 @@ nav {
 /* Remove testimonials styles */
 .testimonials {
   display: none;
+}
+
+/* Services Preview Section */
+.services-preview {
+  padding: 5rem 0;
+  background-color: var(--light-bg);
+}
+
+.services-preview h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--text-color);
+  font-size: 2.5rem;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.service-card {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+}
+
+.service-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.service-card h3 {
+  padding: 1.5rem 1.5rem 0.5rem;
+  color: var(--text-color);
+  font-size: 1.5rem;
+}
+
+.service-card p {
+  padding: 0 1.5rem 1.5rem;
+  color: var(--text-color-light);
+}
+
+.service-card .btn {
+  display: inline-block;
+  margin: 0 1.5rem 1.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary-color);
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background 0.3s ease;
+}
+
+.service-card .btn:hover {
+  background: var(--primary-color-dark);
+}
+
+/* Why Choose Us Section */
+.why-choose-us {
+  padding: 5rem 0;
+  background: white;
+}
+
+.why-choose-us h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--text-color);
+  font-size: 2.5rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.feature {
+  text-align: center;
+  padding: 2rem;
+}
+
+.feature i {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.feature h3 {
+  color: var(--text-color);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.feature p {
+  color: var(--text-color-light);
+}
+
+@media (max-width: 768px) {
+  .services-preview,
+  .why-choose-us {
+    padding: 3rem 0;
+  }
+
+  .services-preview h2,
+  .why-choose-us h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .services-grid,
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
 } 
