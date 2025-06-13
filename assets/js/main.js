@@ -458,49 +458,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Show update notification
-function showUpdateNotification() {
-  const notification = document.createElement('div');
-  notification.className = 'update-notification';
-  notification.innerHTML = `
-    <p>A new version is available!</p>
-    <button onclick="window.location.reload()">Update Now</button>
-  `;
-  document.body.appendChild(notification);
-  
-  // Add styles for the notification
-  const style = document.createElement('style');
-  style.textContent = `
-    .update-notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #4CAF50;
-      color: white;
-      padding: 1rem;
-      border-radius: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .update-notification button {
-      background: white;
-      color: #4CAF50;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 3px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-    .update-notification button:hover {
-      background: #f0f0f0;
-    }
-  `;
-  document.head.appendChild(style);
-}
-
 // Service Worker Registration
 export async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
