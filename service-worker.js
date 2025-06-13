@@ -15,10 +15,10 @@ const ASSETS_TO_CACHE = [
   '/assets/images/pressure-washing.jpg',
   '/assets/images/commercial.jpg',
   '/assets/images/education-hero.jpg',
-  '/assets/images/seasonal-care.jpg',
-  '/assets/images/mowing.jpg',
-  '/assets/images/watering.jpg',
-  '/assets/images/pest-control.jpg'
+  '/assets/images/education/seasonal-care.jpg',
+  '/assets/images/education/mowing.jpg',
+  '/assets/images/education/watering.jpg',
+  '/assets/images/education/pest-control.jpg'
 ];
 
 // Install event - cache assets
