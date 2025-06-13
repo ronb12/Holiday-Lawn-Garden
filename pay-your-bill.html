@@ -65,6 +65,10 @@
     .paypal-button {
       margin-top: 2rem;
       text-align: center;
+      min-height: 150px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 </head>
@@ -177,15 +181,14 @@
   </footer>
 
   <script src="https://www.paypal.com/sdk/js?client-id=AQB3DVXjwa77G18F7IhFuxqbw9VRRbBAjciU7U0jfpcT2m1VJjbBYBHZ81UuIxoNkqts0Q8nMmlr5tC4&currency=USD"></script>
-  <script type="module">
-    import { initializeUI } from '/assets/js/main.js';
+  <script>
     window.addEventListener('load', () => {
-      initializeUI();
       document.getElementById('current-year').textContent = new Date().getFullYear();
 
       // Initialize PayPal button
       paypal.Buttons({
         style: {
+          layout: 'vertical',
           color: 'gold',
           shape: 'rect',
           label: 'pay'
