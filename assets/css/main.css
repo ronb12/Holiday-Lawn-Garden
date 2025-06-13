@@ -644,6 +644,25 @@ nav {
   margin-top: auto;
   width: 100%;
   max-width: 200px;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border: 2px solid var(--primary-color);
+}
+
+.service-card .btn:hover {
+  background-color: var(--primary-color-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.service-card .btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .service-emoji {
