@@ -61,14 +61,20 @@ nav {
   justify-content: flex-end;
 }
 
+.nav-links li {
+  display: inline-block;
+}
+
 .nav-links a {
-  color: #333;
+  color: var(--text-color);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
   white-space: nowrap;
   font-size: 0.95rem;
   position: relative;
+  display: inline-block;
+  padding: 0.5rem 0;
 }
 
 .nav-links a::after {
@@ -76,7 +82,7 @@ nav {
   position: absolute;
   width: 0;
   height: 2px;
-  bottom: -4px;
+  bottom: 0;
   left: 0;
   background-color: var(--primary-color);
   transition: width 0.3s ease;
@@ -152,12 +158,18 @@ nav {
     align-items: flex-start;
   }
 
+  .nav-links li {
+    width: 100%;
+  }
+
   .nav-links a {
     font-size: 1.1rem;
+    width: 100%;
+    display: block;
   }
 
   .nav-links a::after {
-    bottom: -2px;
+    bottom: 0;
   }
 
   .hamburger.active span:nth-child(1) {
