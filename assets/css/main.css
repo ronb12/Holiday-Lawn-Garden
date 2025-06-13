@@ -584,14 +584,16 @@ nav {
 
 .service-card {
   background: white;
-  border-radius: 10px;
-  overflow: hidden;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .service-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.15);
 }
 
 .service-card img {
@@ -624,6 +626,17 @@ nav {
 
 .service-card .btn:hover {
   background: var(--primary-color-dark);
+}
+
+.service-emoji {
+  font-size: 4rem;
+  text-align: center;
+  margin: 1rem 0;
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover .service-emoji {
+  transform: scale(1.1);
 }
 
 /* Why Choose Us Section */
