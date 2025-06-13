@@ -424,13 +424,12 @@ nav {
 .hero {
   position: relative;
   width: 100%;
-  height: 60vh;
-  min-height: 400px;
-  max-height: 600px;
+  height: 80vh;
+  min-height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #222;
+  background: var(--primary-color);
   overflow: hidden;
   margin-top: 80px;
 }
@@ -442,9 +441,8 @@ nav {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 1;
-  filter: brightness(0.6);
-  transition: transform 0.3s ease;
+  opacity: 0.4;
+  mix-blend-mode: multiply;
 }
 
 .hero-overlay {
@@ -453,85 +451,89 @@ nav {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
-  z-index: 2;
+  background: linear-gradient(
+    45deg,
+    rgba(76, 175, 80, 0.9),
+    rgba(76, 175, 80, 0.7)
+  );
+  z-index: 1;
 }
 
 .hero-content {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   text-align: center;
-  color: #fff;
+  color: white;
   padding: 2rem;
   max-width: 800px;
-  margin: 0 auto;
 }
 
 .hero-content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .hero-content p {
-  font-size: 1.2rem;
-  font-weight: 400;
-  margin-bottom: 1.5rem;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .cta-buttons {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-top: 1rem;
 }
 
 .cta-button {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: 600;
   text-decoration: none;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
 }
 
 .cta-button.primary {
-  background: var(--primary-color);
+  background: white;
+  color: var(--primary-color);
+  border: 2px solid white;
+}
+
+.cta-button.primary:hover {
+  background: transparent;
   color: white;
 }
 
 .cta-button.secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+.cta-button.secondary:hover {
   background: white;
   color: var(--primary-color);
 }
 
 @media (max-width: 768px) {
   .hero {
-    height: 50vh;
-    min-height: 350px;
+    height: 60vh;
+    min-height: 400px;
   }
 
   .hero-content h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .hero-content p {
-    font-size: 1rem;
+    font-size: 1.2rem;
   }
 
   .cta-buttons {
     flex-direction: column;
-    gap: 0.5rem;
   }
 
   .cta-button {
