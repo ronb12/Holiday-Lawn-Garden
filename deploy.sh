@@ -30,9 +30,22 @@ if ! git rev-parse --is-inside-work-tree &> /dev/null; then
 fi
 
 # Check for uncommitted changes
-if ! git diff-index --quiet HEAD --; then
-    echo -e "${YELLOW}You have uncommitted changes. Please commit or stash them first.${NC}"
+if [[ -n $(git status -s) ]]; then
+    echo -e "${RED}You have uncommitted changes:${NC}"
+    git status -s
+    echo -e "${YELLOW}Please commit or stash your changes before deploying.${NC}"
     exit 1
+fi
+
+# Check if we're on the main branch
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$current_branch" != "main" ]]; then
+    echo -e "${YELLOW}You are not on the main branch (currently on $current_branch).${NC}"
+    read -p "Do you want to continue anyway? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
 fi
 
 # Deploy to GitHub
