@@ -14,41 +14,42 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
 
 // Service Worker Registration
-async function registerServiceWorker() {
+export async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      // Check if service worker is already registered
-      const existingRegistration = await navigator.serviceWorker.getRegistration();
-      if (existingRegistration && existingRegistration.active) {
-        console.log('Service Worker already registered:', existingRegistration);
-        return existingRegistration;
-      }
+      // Clear all existing caches first
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(cacheName => caches.delete(cacheName))
+      );
+      console.log('Cleared old caches');
+
+      // Unregister any existing service workers
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        registrations.map(registration => registration.unregister())
+      );
+      console.log('Unregistered old service workers');
 
       // Register new service worker
-      const registration = await navigator.serviceWorker.register('/service-worker.js', {
-        scope: '/'
-      });
-      
-      console.log('Service Worker registered:', registration);
+      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      console.log('Service Worker registered with scope:', registration.scope);
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        console.log('Service Worker update found!');
-
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateNotification();
+            console.log('New service worker installed');
           }
         });
       });
 
-      // Handle successful activation
+      // Handle activation
       registration.addEventListener('activate', event => {
         console.log('Service Worker activated');
       });
 
-      return registration;
     } catch (error) {
       console.error('Service Worker registration failed:', error);
     }
