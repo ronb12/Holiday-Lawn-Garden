@@ -131,7 +131,7 @@
     </div>
   </footer>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('payment-form');
@@ -143,10 +143,65 @@
       if (typeof paypal !== 'undefined') {
         paypal.Buttons({
           style: {
+            layout: 'vertical',
             color: 'gold',
             shape: 'rect',
             label: 'pay'
           },
+          fundingSource: paypal.FUNDING.PAYPAL,
+          createOrder: function(data, actions) {
+            // Validate form
+            let isValid = true;
+            if (!accountInput.value.trim()) {
+              accountError.textContent = 'Please enter your account number';
+              accountError.style.display = 'block';
+              isValid = false;
+            } else {
+              accountError.style.display = 'none';
+            }
+            
+            if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
+              amountError.textContent = 'Please enter a valid amount';
+              amountError.style.display = 'block';
+              isValid = false;
+            } else {
+              amountError.style.display = 'none';
+            }
+
+            if (!isValid) {
+              return Promise.reject(new Error('Please fill in all required fields'));
+            }
+
+            return actions.order.create({
+              purchase_units: [{
+                amount: {
+                  value: amountInput.value
+                },
+                description: `Payment for account ${accountInput.value}`
+              }]
+            });
+          },
+          onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+              alert('Payment completed successfully! Thank you for your payment.');
+              form.reset();
+            });
+          },
+          onError: function(err) {
+            console.error('PayPal Error:', err);
+            alert('There was an error processing your payment. Please try again.');
+          }
+        }).render('#paypal-button-container');
+
+        // Add credit/debit card button
+        paypal.Buttons({
+          style: {
+            layout: 'vertical',
+            color: 'black',
+            shape: 'rect',
+            label: 'pay'
+          },
+          fundingSource: paypal.FUNDING.CARD,
           createOrder: function(data, actions) {
             // Validate form
             let isValid = true;
