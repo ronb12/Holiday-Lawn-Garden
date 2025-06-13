@@ -1,0 +1,29 @@
+.payment-section{padding:var(--spacing-2xl) var(--spacing-md);background-color:var(--background-light)}
+.payment-card{background:var(--background-white);border-radius:var(--border-radius-lg);padding:var(--spacing-xl);box-shadow:var(--shadow-lg);max-width:800px;margin:0 auto;border:1px solid var(--primary-light)}
+.payment-card h2{color:var(--primary-dark);margin-bottom:var(--spacing-lg);font-size:var(--font-size-2xl)}
+.payment-description{color:var(--text-secondary);margin-bottom:var(--spacing-xl);line-height:1.6}
+.payment-form{margin-bottom:var(--spacing-xl)}
+.amount-input{margin-bottom:var(--spacing-lg)}
+.amount-input label{display:block;color:var(--text-primary);margin-bottom:var(--spacing-sm);font-weight:500}
+.amount-wrapper{position:relative;display:flex;align-items:center}
+.currency-symbol{position:absolute;left:var(--spacing-md);color:var(--text-secondary);font-weight:500}
+.amount-wrapper input{width:100%;padding:var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2);border:2px solid var(--primary-light);border-radius:var(--border-radius-md);font-size:var(--font-size-lg);transition:border-color var(--transition-normal)}
+.amount-wrapper input:focus{outline:0;border-color:var(--primary-color);box-shadow:0 0 0 3px rgba(46,125,50,.1)}
+.paypal-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--spacing-sm);background-color:var(--primary-color);color:var(--text-on-primary);padding:var(--spacing-md) var(--spacing-xl);border:none;border-radius:var(--border-radius-md);font-size:var(--font-size-base);font-weight:600;cursor:pointer;transition:background-color var(--transition-normal);width:100%}
+.paypal-button:hover{background-color:var(--primary-dark)}
+.paypal-button i{font-size:var(--font-size-lg)}
+.payment-info{margin-top:var(--spacing-xl);padding-top:var(--spacing-lg);border-top:1px solid var(--primary-light)}
+.credit-card-info,.help-text{display:flex;align-items:flex-start;gap:var(--spacing-md);margin-bottom:var(--spacing-md);color:var(--text-secondary)}
+.credit-card-info i,.help-text i{color:var(--primary-color);font-size:var(--font-size-lg);margin-top:2px}
+.card-highlight{color:var(--primary-color);font-weight:500}
+.help-text a{color:var(--primary-color);text-decoration:none;font-weight:500;transition:color var(--transition-normal)}
+.help-text a:hover{color:var(--primary-dark);text-decoration:underline}
+@media (max-width:768px){
+.payment-card{padding:var(--spacing-lg)}
+.payment-card h2{font-size:var(--font-size-xl)}
+.amount-wrapper input{font-size:var(--font-size-base)}
+}
+.payment-section{background:var(--color-primary-light);color:var(--color-text);border-radius:var(--border-radius);padding:2rem}
+.payment-form input,.payment-form select{border:1px solid var(--color-primary);border-radius:var(--border-radius)}
+.payment-btn,.payment-form button{background:var(--color-primary);color:var(--color-text-light);border:none;border-radius:var(--border-radius);padding:.75rem 2rem;font-weight:600;transition:background .2s}
+.payment-btn:hover,.payment-form button:hover{background:var(--color-primary-dark)}

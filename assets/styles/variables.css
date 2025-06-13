@@ -1,0 +1,237 @@
+:root {
+  /* Brand Colors */
+  --color-primary: #2E7D32;
+  --color-primary-light: #4CAF50;
+  --color-primary-dark: #1B5E20;
+  --color-accent: #81C784;
+  --color-accent-light: #A5D6A7;
+  --color-accent-dark: #66BB6A;
+
+  /* Background Colors */
+  --color-background: #F1F8E9;
+  --color-surface: #FFFFFF;
+  --color-surface-light: #F8F9FA;
+  --color-surface-dark: #E8F5E9;
+  --color-background-alt: #F5FFF7;
+
+  /* Text Colors */
+  --color-text: #1B1B1B;
+  --color-text-light: #FFFFFF;
+  --color-text-muted: #666666;
+  --color-text-secondary: #495057;
+
+  /* Status Colors */
+  --color-success: #388E3C;
+  --color-success-light: #4CAF50;
+  --color-success-dark: #2E7D32;
+  --color-error: #D32F2F;
+  --color-error-light: #EF5350;
+  --color-error-dark: #C62828;
+  --color-warning: #FBC02D;
+  --color-warning-light: #FFD54F;
+  --color-warning-dark: #F9A825;
+  --color-info: #1976D2;
+  --color-info-light: #2196F3;
+  --color-info-dark: #1565C0;
+
+  /* UI Colors */
+  --color-border: #E0E0E0;
+  --color-border-light: #EEEEEE;
+  --color-border-dark: #BDBDBD;
+  --color-shadow: rgba(46, 125, 50, 0.1);
+  --color-shadow-light: rgba(46, 125, 50, 0.05);
+  --color-shadow-dark: rgba(46, 125, 50, 0.2);
+
+  /* Interactive Colors */
+  --color-link: var(--color-primary);
+  --color-link-hover: var(--color-primary-dark);
+  --color-link-active: var(--color-primary-light);
+  --color-focus: var(--color-primary-light);
+  --color-focus-ring: rgba(76, 175, 80, 0.4);
+
+  /* Legacy Color Mappings (for backward compatibility) */
+  --primary-color: var(--color-primary);
+  --secondary-color: var(--color-primary-light);
+  --accent-color: var(--color-accent);
+  --background-color: var(--color-background);
+  --text-color: var(--color-text);
+  --text-color-light: var(--color-text-light);
+  --primary-green: var(--color-primary);
+  --light-green: var(--color-primary-light);
+  --lighter-green: var(--color-accent);
+  --dark-green: var(--color-primary-dark);
+  --accent-green: var(--color-accent);
+  --background-light: var(--color-background);
+  --text-dark: var(--color-text);
+  --text-light: var(--color-text-light);
+
+  /* Typography */
+  --font-family: 'Inter', Arial, sans-serif;
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
+  --font-size-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
+  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 2rem);
+  --font-size-3xl: clamp(2rem, 1.8rem + 1.25vw, 3rem);
+  --font-size-4xl: clamp(2.5rem, 2.3rem + 1.5vw, 4rem);
+  --font-size-5xl: clamp(3rem, 2.8rem + 1.75vw, 5rem);
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  /* Line Heights */
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  /* Letter Spacing */
+  --letter-spacing-tighter: -0.05em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+
+  /* Spacing */
+  --spacing-0: 0;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-4xl: 6rem;
+  --spacing-5xl: 8rem;
+  --spacing-xxl: 3rem;
+
+  /* Border Radius */
+  --border-radius-none: 0;
+  --border-radius-sm: 4px;
+  --border-radius: 0.5rem;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 1.5rem;
+  --border-radius-2xl: 2rem;
+  --border-radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* Transitions */
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  --transition-slower: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-index-0: 0;
+  --z-index-10: 10;
+  --z-index-20: 20;
+  --z-index-30: 30;
+  --z-index-40: 40;
+  --z-index-50: 50;
+  --z-index-auto: auto;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+
+  /* Container */
+  --container-max-width: 1200px;
+  --container-padding: var(--spacing-md);
+  --container-margin: 0 auto;
+
+  /* Grid */
+  --grid-gap: var(--spacing-lg);
+  --grid-columns: 12;
+  --grid-row-gap: var(--spacing-md);
+  --grid-col-gap: var(--spacing-lg);
+
+  /* Breakpoints */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* Aspect Ratios */
+  --aspect-ratio-auto: auto;
+  --aspect-ratio-square: 1 / 1;
+  --aspect-ratio-video: 16 / 9;
+  --aspect-ratio-portrait: 3 / 4;
+  --aspect-ratio-landscape: 4 / 3;
+
+  /* Opacity */
+  --opacity-0: 0;
+  --opacity-25: 0.25;
+  --opacity-50: 0.5;
+  --opacity-75: 0.75;
+  --opacity-100: 1;
+
+  /* Blur */
+  --blur-none: 0;
+  --blur-sm: 4px;
+  --blur: 8px;
+  --blur-md: 12px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+  --blur-3xl: 64px;
+}
+
+/* Color Usage Guidelines */
+/*
+  Brand Colors:
+  - Primary: Main brand color, use for primary actions and key elements
+  - Primary Light: Hover states, secondary actions
+  - Primary Dark: Active states, emphasis
+  - Accent: Supporting elements, highlights
+
+  Background Colors:
+  - Background: Main page background
+  - Surface: Card backgrounds, elevated elements
+  - Surface Light: Subtle backgrounds
+  - Surface Dark: Contrasting backgrounds
+
+  Text Colors:
+  - Text: Primary content
+  - Text Light: Text on dark backgrounds
+  - Text Muted: Secondary content
+  - Text Secondary: Supporting text
+
+  Status Colors:
+  - Success: Positive actions, confirmations
+  - Error: Errors, destructive actions
+  - Warning: Warnings, cautions
+  - Info: Information, notifications
+
+  UI Colors:
+  - Border: Dividers, borders
+  - Shadow: Elevation, depth
+  - Focus: Focus states, accessibility
+
+  Interactive Colors:
+  - Link: Hyperlinks
+  - Focus: Focus states
+  - Focus Ring: Focus indicators
+*/

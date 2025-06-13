@@ -1,0 +1,1248 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Holliday Lawn & Garden</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional landscaping and garden services in your area.">
+    <meta name="keywords" content="lawn care, garden services, landscaping, admin">
+    <meta name="author" content="Holliday Lawn & Garden">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Holliday Lawn & Garden - Admin">
+    <meta property="og:description" content="Professional lawn care and garden services by Holliday Lawn & Garden.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hollidaylawngarden.com/admin">
+    <meta property="og:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Holliday Lawn & Garden - Admin">
+    <meta name="twitter:description" content="Professional lawn care and garden services by Holliday Lawn & Garden.">
+    <meta name="twitter:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <link rel="canonical" href="https://hollidaylawngarden.com/admin">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <!-- Common head elements -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#4CAF50" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="assets/js/manifest.json" />
+
+    <!-- Firebase SDK -->
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.min.js"
+      defer
+     type="module">
+    import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
+    import {  } from '/assets/js/modules/config.js';
+    import {  } from '/assets/js/modules/config.min.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.min.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, for, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.min.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.min.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.min.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.min.js';
+    import { app, auth, db, storage, analytics } from '/assets/js/modules/firebase.js';
+    import { app, auth, db, analytics, googleProvider } from '/assets/js/modules/firebase_init.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.min.js';
+    import { HeadingEnhancer } from '/assets/js/modules/heading_enhancer.js';
+    import { ImageLoader } from '/assets/js/modules/image_loader.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.min.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.min.js';
+    import {  } from '/assets/js/modules/login.js';
+    import {  } from '/assets/js/modules/login.min.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.min.js';
+    import { MetaEnhancer } from '/assets/js/modules/meta_enhancer.js';
+    import { Minifier } from '/assets/js/modules/minifier.js';
+    import { Minifier } from '/assets/js/modules/minifier.min.js';
+    import {  } from '/assets/js/modules/mobile_menu.js';
+    import {  } from '/assets/js/modules/mobile_menu.min.js';
+    import { ${this.getExports(content) } from '/assets/js/modules/modularizer.js';
+    import { ResourceOptimizer } from '/assets/js/modules/resource_optimizer.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.min.js';
+    import { runTests } from '/assets/js/modules/tests.js';
+    import { runTests } from '/assets/js/modules/tests.min.js';
+    import { ModuleUpdater } from '/assets/js/modules/update_modules.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.min.js';
+    import { UXEnhancer, class
+        if } from '/assets/js/modules/ux_enhancer.js';</script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.min.js"
+      defer
+     type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.min.js"
+      defer
+     type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.min.js"
+      defer
+     type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.min.js"
+      defer
+     type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.min.js"
+      defer
+     type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.min.js"
+      defer
+     type="module"></script>
+
+    <!-- Firebase Configuration -->
+    <script src="/firebase-config.min.js" defer type="module"></script>
+    <script src="/firebase-init.min.js" defer type="module"></script>
+
+    <!-- Service Worker Registration -->
+    <script defer type="module">
+      document.addEventListener("DOMContentLoaded", () => {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker
+            .register("/assets/js/service-worker.js")
+            .then((registration) => {
+              console.log("Service Worker registered:", registration);
+            })
+            .catch((error) => {
+              console.error("Service Worker registration failed:", error);
+            });
+        }
+      });
+    </script>
+  
+        <script type="application/ld+json">
+          {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Admin Dashboard - Holliday Lawn & Garden",
+  "description": "Access the Holliday Lawn & Garden admin dashboard. Manage customers and services.",
+  "url": "https://hollidaylawngarden.com/admin",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Holliday Lawn & Garden",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://hollidaylawngarden.com/assets/images/hollidays-logo.png"
+    }
+  }
+}
+        </script>
+      
+</head>
+  <body>
+    <div id="loading-overlay" class="loading-overlay" style="display: none">
+      <div class="spinner"></div>
+      <p id="loading-message">Loading...</p>
+    </div>
+    <div id="notification-container" class="notification-container">
+      <div id="notification" class="notification" style="display: none;">
+        <span class="notification-message"></span>
+        <button class="notification-close button-with-loading button-with-loading" aria-label="Button">&times;</button>
+      </div>
+    </div>
+    <div id="loading-spinner" class="loading-spinner" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+    <header class="main-header">
+      <a href="index.html" class="logo link-with-loading link-with-loading" aria-label="Link">
+        
+          <picture>
+            <source srcset="assets/images/hollidays-logo.webp" type="image/webp">
+            <img src="assets/images/hollidays-logo.webp" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+          </picture>
+      </a>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li><a href="index.html" aria-label="Link" class="link-with-loading link-with-loading">Home</a></li>
+          <li><a href="about.html" aria-label="Link" class="link-with-loading link-with-loading">About</a></li>
+          <li><a href="services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a></li>
+          <li><a href="contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a></li>
+          <li><a href="pay-your-bill.html" aria-label="Link" class="link-with-loading link-with-loading">Pay Your Bill</a></li>
+          <li><a href="education.html" aria-label="Link" class="link-with-loading link-with-loading">Education</a></li>
+          <li class="auth-not-required"><a href="login.html" aria-label="Link" class="link-with-loading link-with-loading">Login</a></li>
+          <li class="auth-required" style="display: none;"><a href="customer-dashboard.html" aria-label="Link" class="link-with-loading link-with-loading">Dashboard</a></li>
+          <li id="adminLink" style="display: none;"><a href="admin-login.html" aria-label="Link" class="link-with-loading link-with-loading">Admin</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger button-with-loading button-with-loading" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+    <main>
+    <div id="error-container"></div>
+    <div
+      id="firebaseError"
+      class="admin-alert admin-alert-error"
+      style="display: none"
+    ></div>
+    <div id="loadingIndicator" class="loading-indicator" style="display: none">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="admin-container">
+      <header class="admin-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p class="subtitle">Manage your lawn care business</p>
+        </div>
+        <div class="admin-header-actions">
+          <div class="user-info">
+            <div class="user-name" id="userName"></div>
+            <div class="user-role">Administrator</div>
+          </div>
+          <button
+            class="btn-logout button-with-loading button-with-loading"
+            onclick="window.HollidayApp.auth.signOut()"
+           aria-label="Button">
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <div class="tab-nav">
+          <button class="tab-item active button-with-loading button-with-loading" onclick="showTab('overview')" aria-label="Button">
+            <span class="tab-icon">📊</span>
+            <span>Overview</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('requests')" aria-label="Button">
+            <span class="tab-icon">📝</span>
+            <span>Requests</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('quotes')" aria-label="Button">
+            <span class="tab-icon">💬</span>
+            <span>Quotes</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('invoices')" aria-label="Button">
+            <span class="tab-icon">💰</span>
+            <span>Invoices</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('customers')" aria-label="Button">
+            <span class="tab-icon">👥</span>
+            <span>Customers</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('equipment')" aria-label="Button">
+            <span class="tab-icon">🚜</span>
+            <span>Equipment</span>
+          </button>
+          <button class="tab-item button-with-loading button-with-loading" onclick="showTab('reports')" aria-label="Button">
+            <span class="tab-icon">📈</span>
+            <span>Reports</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab Content: Overview -->
+      <div id="overview-tab" class="tab-content active">
+        <div class="tab-content-header">
+          <h2>Dashboard Overview</h2>
+          <p>Key metrics and quick access to important functions</p>
+        </div>
+        <div class="tab-content-body">
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card requests">
+              <div class="stat-header">
+                <div class="stat-icon requests">📝</div>
+              </div>
+              <div class="stat-value" id="statRequestsValue">-</div>
+              <div class="stat-label">Service Requests</div>
+              <div class="stat-change positive" id="statRequestsChange">
+                +0 this week
+              </div>
+            </div>
+
+            <div class="stat-card quotes">
+              <div class="stat-header">
+                <div class="stat-icon quotes">💬</div>
+              </div>
+              <div class="stat-value" id="statQuotesValue">-</div>
+              <div class="stat-label">Active Quotes</div>
+              <div class="stat-change positive" id="statQuotesChange">
+                +0 pending
+              </div>
+            </div>
+
+            <div class="stat-card invoices">
+              <div class="stat-header">
+                <div class="stat-icon invoices">💰</div>
+              </div>
+              <div class="stat-value" id="statInvoicesValue">-</div>
+              <div class="stat-label">Outstanding Invoices</div>
+              <div class="stat-change negative" id="statInvoicesChange">
+                $0 overdue
+              </div>
+            </div>
+
+            <div class="stat-card revenue">
+              <div class="stat-header">
+                <div class="stat-icon revenue">📈</div>
+              </div>
+              <div class="stat-value" id="statRevenueValue">$0</div>
+              <div class="stat-label">Monthly Revenue</div>
+              <div class="stat-change positive" id="statRevenueChange">
+                +0% vs last month
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="form-grid">
+            <div class="form-section">
+              <h3>Quick Quote Calculator</h3>
+              <form id="quickQuoteForm" class="form-modern form-with-loading form-with-loading form-with-loading" aria-label="quickQuoteForm form">
+                <div class="form-group">
+                  <label for="quickServiceType">Service Type</label>
+                  <select id="quickServiceType" class="form-control" required>
+                    <option value="">-- Select Service --</option>
+                    <option value="Mowing & Trimming">
+                      🌿 Mowing & Trimming
+                    </option>
+                    <option value="Landscape Design">
+                      🌸 Landscape Design
+                    </option>
+                    <option value="Leaf Removal">🍂 Leaf Removal</option>
+                    <option value="Fertilization & Seeding">
+                      🌾 Fertilization & Seeding
+                    </option>
+                    <option value="Seasonal Cleanup">
+                      🧹 Seasonal Cleanup
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="quickPropertySize">Property Size (sq ft)</label>
+                  <input
+                    type="number"
+                    id="quickPropertySize"
+                    class="form-control"
+                    required
+                    min="100"
+                    step="100"
+                  / aria-label="quickPropertySize number">
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                  Calculate Quote
+                </button>
+              </form>
+              <div
+                id="quickQuoteResult"
+                style="
+                  margin-top: 1rem;
+                  padding: 1rem;
+                  background: #f0f9ff;
+                  border-radius: 8px;
+                  display: none;
+                "
+              >
+                <strong
+                  >Estimated Quote:
+                  <span id="quickQuoteAmount">$0</span></strong
+                >
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3>Recent Activity</h3>
+              <div id="recentActivityList">
+                <div
+                  style="
+                    color: #64748b;
+                    padding: 1rem;
+                    background: #f8fafc;
+                    border-radius: 8px;
+                    border-left: 4px solid #64748b;
+                  "
+                >
+                  <strong>Recent Activity:</strong> Loading...
+                  <div
+                    style="margin-top: 0.5rem; font-size: 0.875rem"
+                    id="activityContent"
+                  >
+                    Checking for recent business activity...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Service Requests -->
+      <div id="requests-tab" class="tab-content">
+        <div class="tab-content-header">
+          <h2>Service Requests</h2>
+          <p>Manage incoming service requests from customers</p>
+        </div>
+        <div class="tab-content-body">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="serviceRequestSearch"
+              class="search-input"
+              placeholder="Search by customer, email, or service..."
+              onkeyup="filterServiceRequestsTable()"
+            / aria-label="serviceRequestSearch text">
+          </div>
+          <div class="table-container">
+            <table id="incomingRequestsTable" class="table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Customer</th>
+                  <th>Email</th>
+                  <th>Service Type</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="incomingRequestsTableBody">
+                <!-- Rows will be populated by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Quotes & Bids -->
+      <div id="quotes-tab" class="tab-content">
+        <div class="tab-content-header">
+          <h2>Quotes & Bids Management</h2>
+          <p>Create and manage quotes and proposals for customers</p>
+        </div>
+        <div class="tab-content-body">
+          <div class="form-grid">
+            <div class="form-section">
+              <h3>Generate New Quote</h3>
+              <form id="generateBidForm" aria-label="generateBidForm form" class="form-with-loading form-with-loading form-with-loading">
+                <div class="form-group">
+                  <label for="bidCustomerId">Customer</label>
+                  <select
+                    id="bidCustomerId"
+                    class="form-control"
+                    required
+                  ></select>
+                </div>
+                <div class="form-group">
+                  <label for="bidPropertyAddress">Property Address</label>
+                  <input
+                    type="text"
+                    id="bidPropertyAddress"
+                    class="form-control"
+                    required
+                  / aria-label="bidPropertyAddress text">
+                </div>
+                <div class="form-group">
+                  <label for="bidPropertySize">Property Size (sq ft)</label>
+                  <input
+                    type="number"
+                    id="bidPropertySize"
+                    class="form-control"
+                    required
+                    min="100"
+                  / aria-label="bidPropertySize number">
+                </div>
+                <div class="form-group">
+                  <label>Services (select multiple)</label>
+                  <div id="bidServicesCheckboxes" class="checkbox-group">
+                    <!-- Checkboxes will be populated here -->
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="quoteAmount">Quote Amount ($)</label>
+                  <input
+                    type="number"
+                    id="quoteAmount"
+                    class="form-control"
+                    required
+                    min="0"
+                    step="0.01"
+                  / aria-label="quoteAmount number">
+                  <small
+                    id="minQuoteWarning"
+                    style="color: #dc2626; display: none"
+                  ></small>
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                  Generate Quote
+                </button>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <h3>Quote Calculator</h3>
+              <form id="quoteCalculatorForm" aria-label="quoteCalculatorForm form" class="form-with-loading form-with-loading form-with-loading">
+                <div class="form-group">
+                  <label for="serviceType">Service Type</label>
+                  <select id="serviceType" class="form-control" required>
+                    <option value="">-- Select Service --</option>
+                    <option value="Mowing & Trimming">
+                      🌿 Mowing & Trimming
+                    </option>
+                    <option value="Landscape Design">
+                      🌸 Landscape Design
+                    </option>
+                    <option value="Leaf Removal">🍂 Leaf Removal</option>
+                    <option value="Fertilization & Seeding">
+                      🌾 Fertilization & Seeding
+                    </option>
+                    <option value="Seasonal Cleanup">
+                      🧹 Seasonal Cleanup
+                    </option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="propertySize">Property Size (sq ft)</label>
+                  <input
+                    type="number"
+                    id="propertySize"
+                    class="form-control"
+                    required
+                    min="100"
+                    step="100"
+                  / aria-label="propertySize number">
+                </div>
+                <div class="form-group">
+                  <label for="complexityFactor"
+                    >Property Complexity (1-3)</label
+                  >
+                  <input
+                    type="number"
+                    id="complexityFactor"
+                    class="form-control"
+                    min="1"
+                    max="3"
+                    step="0.1"
+                    value="1"
+                  / aria-label="complexityFactor number">
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                  Calculate Quote
+                </button>
+              </form>
+              <div id="quoteBreakdown"></div>
+            </div>
+          </div>
+
+          <div class="table-container" style="margin-top: 2rem">
+            <table id="bidsTable" class="table">
+              <thead>
+                <tr>
+                  <th>Quote #</th>
+                  <th>Customer</th>
+                  <th>Total Amount</th>
+                  <th>Status</th>
+                  <th>Date Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Quotes will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Invoices -->
+      <div id="invoices-tab" class="tab-content">
+        <div class="tab-content-header">
+          <h2>Invoice Management</h2>
+          <p>Create, track, and manage customer invoices</p>
+        </div>
+        <div class="tab-content-body">
+          <div class="form-grid">
+            <div class="form-section">
+              <h3>Create New Invoice</h3>
+              <form id="createInvoiceForm" aria-label="createInvoiceForm form" class="form-with-loading form-with-loading form-with-loading">
+                <div class="form-group">
+                  <label for="invoiceCustomer">Customer</label>
+                  <select
+                    id="invoiceCustomer"
+                    class="form-control"
+                    required
+                  ></select>
+                </div>
+                <div class="form-group">
+                  <label for="invoiceAmount">Amount ($)</label>
+                  <input
+                    type="number"
+                    id="invoiceAmount"
+                    class="form-control"
+                    required
+                    min="0"
+                    step="0.01"
+                  / aria-label="invoiceAmount number">
+                </div>
+                <div class="form-group">
+                  <label for="invoiceDueDate">Due Date</label>
+                  <input
+                    type="date"
+                    id="invoiceDueDate"
+                    class="form-control"
+                    required
+                  / aria-label="invoiceDueDate date">
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                  Create Invoice
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="search-bar" style="margin-top: 2rem">
+            <input
+              type="text"
+              id="invoiceSearch"
+              class="search-input"
+              placeholder="Search by customer, email, or invoice #..."
+              onkeyup="filterInvoicesTable()"
+            / aria-label="invoiceSearch text">
+          </div>
+
+          <div class="table-container">
+            <table id="adminInvoicesTable" class="table">
+              <thead>
+                <tr>
+                  <th>Invoice #</th>
+                  <th>Customer</th>
+                  <th>Email</th>
+                  <th>Amount</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminInvoicesTableBody">
+                <!-- Invoice rows will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Customers -->
+      <div id="customers-tab" class="tab-content">
+        <div class="section-header">
+          <h2>Customer Management</h2>
+          <button
+            onclick="document.getElementById('addCustomerModal').style.display='block'"
+            class="btn btn-primary button-with-loading button-with-loading"
+           aria-label="Button">
+            Add New Customer
+          </button>
+        </div>
+
+        <div class="customers-list">
+          <!-- Customer list will be populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Add Customer Modal -->
+      <div id="addCustomerModal" class="modal">
+        <div class="modal-content">
+          <span
+            class="close"
+            onclick="document.getElementById('addCustomerModal').style.display='none'"
+            >&times;</span
+          >
+          <h2>Add New Customer</h2>
+          <form id="addCustomerForm" onsubmit="addCustomer(event)" aria-label="addCustomerForm form" class="form-with-loading form-with-loading form-with-loading">
+            <div class="form-group">
+              <label for="customerEmail">Email*</label>
+              <input type="email" id="customerEmail" required / aria-label="customerEmail email">
+            </div>
+            <div class="form-group">
+              <label for="customerName">Full Name*</label>
+              <input type="text" id="customerName" required / aria-label="customerName text">
+            </div>
+            <div class="form-group">
+              <label for="customerPhone">Phone*</label>
+              <input type="tel" id="customerPhone" required / aria-label="customerPhone tel">
+            </div>
+
+            <h3>Address</h3>
+            <div class="form-group">
+              <label for="customerStreet">Street</label>
+              <input type="text" id="customerStreet" / aria-label="customerStreet text">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerCity">City</label>
+                <input type="text" id="customerCity" / aria-label="customerCity text">
+              </div>
+              <div class="form-group">
+                <label for="customerState">State</label>
+                <input type="text" id="customerState" / aria-label="customerState text">
+              </div>
+              <div class="form-group">
+                <label for="customerZip">ZIP</label>
+                <input type="text" id="customerZip" / aria-label="customerZip text">
+              </div>
+            </div>
+
+            <h3>Property Details</h3>
+            <div class="form-group">
+              <label for="propertySizeSqFt">Property Size (sq ft)</label>
+              <input type="number" id="propertySizeSqFt" / aria-label="propertySizeSqFt number">
+            </div>
+            <div class="form-group">
+              <label for="propertyType">Property Type</label>
+              <select id="propertyType">
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="hasPool" / aria-label="hasPool checkbox">
+                Has Pool
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="hasSprinklers" / aria-label="hasSprinklers checkbox">
+                Has Sprinklers
+              </label>
+            </div>
+
+            <h3>Preferences</h3>
+            <div class="form-group">
+              <label for="communicationMethod">Preferred Communication</label>
+              <select id="communicationMethod">
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="serviceFrequency">Service Frequency</label>
+              <select id="serviceFrequency">
+                <option value="weekly">Weekly</option>
+                <option value="bi-weekly">Bi-Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                Add Customer
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary button-with-loading button-with-loading"
+                onclick="document.getElementById('addCustomerModal').style.display='none'"
+               aria-label="Button">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Edit Customer Modal -->
+      <div id="editCustomerModal" class="modal">
+        <div class="modal-content">
+          <span
+            class="close"
+            onclick="document.getElementById('editCustomerModal').style.display='none'"
+            >&times;</span
+          >
+          <h2>Edit Customer</h2>
+          <form id="editCustomerForm" onsubmit="editCustomer(event)" aria-label="editCustomerForm form" class="form-with-loading form-with-loading form-with-loading">
+            <input type="hidden" id="editCustomerId" / aria-label="editCustomerId hidden">
+            <div class="form-group">
+              <label for="editCustomerEmail">Email*</label>
+              <input type="email" id="editCustomerEmail" required / aria-label="editCustomerEmail email">
+            </div>
+            <div class="form-group">
+              <label for="editCustomerName">Full Name*</label>
+              <input type="text" id="editCustomerName" required / aria-label="editCustomerName text">
+            </div>
+            <div class="form-group">
+              <label for="editCustomerPhone">Phone*</label>
+              <input type="tel" id="editCustomerPhone" required / aria-label="editCustomerPhone tel">
+            </div>
+
+            <h3>Address</h3>
+            <div class="form-group">
+              <label for="editCustomerStreet">Street</label>
+              <input type="text" id="editCustomerStreet" / aria-label="editCustomerStreet text">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editCustomerCity">City</label>
+                <input type="text" id="editCustomerCity" / aria-label="editCustomerCity text">
+              </div>
+              <div class="form-group">
+                <label for="editCustomerState">State</label>
+                <input type="text" id="editCustomerState" / aria-label="editCustomerState text">
+              </div>
+              <div class="form-group">
+                <label for="editCustomerZip">ZIP</label>
+                <input type="text" id="editCustomerZip" / aria-label="editCustomerZip text">
+              </div>
+            </div>
+
+            <h3>Property Details</h3>
+            <div class="form-group">
+              <label for="editPropertySizeSqFt">Property Size (sq ft)</label>
+              <input type="number" id="editPropertySizeSqFt" / aria-label="editPropertySizeSqFt number">
+            </div>
+            <div class="form-group">
+              <label for="editPropertyType">Property Type</label>
+              <select id="editPropertyType">
+                <option value="residential">Residential</option>
+                <option value="commercial">Commercial</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="editHasPool" / aria-label="editHasPool checkbox">
+                Has Pool
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="editHasSprinklers" / aria-label="editHasSprinklers checkbox">
+                Has Sprinklers
+              </label>
+            </div>
+
+            <h3>Preferences</h3>
+            <div class="form-group">
+              <label for="editCommunicationMethod"
+                >Preferred Communication</label
+              >
+              <select id="editCommunicationMethod">
+                <option value="email">Email</option>
+                <option value="phone">Phone</option>
+                <option value="text">Text</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editServiceFrequency">Service Frequency</label>
+              <select id="editServiceFrequency">
+                <option value="weekly">Weekly</option>
+                <option value="bi-weekly">Bi-Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
+                Save Changes
+              </button>
+              <button
+                type="button"
+                class="btn btn-secondary button-with-loading button-with-loading"
+                onclick="document.getElementById('editCustomerModal').style.display='none'"
+               aria-label="Button">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab Content: Equipment -->
+      <div id="equipment-tab" class="tab-content">
+        <div class="tab-content-header">
+          <h2>Equipment & Inventory Management</h2>
+          <p>Track equipment, materials, and maintenance schedules</p>
+        </div>
+        <div class="tab-content-body">
+          <div class="form-grid">
+            <div class="form-section">
+              <h3>Add New Equipment</h3>
+              <form id="addEquipmentForm" aria-label="addEquipmentForm form" class="form-with-loading form-with-loading form-with-loading">
+                <div class="form-group">
+                  <label for="equipmentName">Equipment Name</label>
+                  <input
+                    type="text"
+                    id="equipmentName"
+                    class="form-control"
+                    required
+                  / aria-label="equipmentName text">
+                </div>
+                <div class="form-group">
+                  <label for="equipmentType">Equipment Type</label>
+                  <input
+                    type="text"
+                    id="equipmentType"
+                    class="form-control"
+                    required
+                  / aria-label="equipmentType text">
+                </div>
+                <div class="form-group">
+                  <label for="equipmentPurchaseDate">Purchase Date</label>
+                  <input
+                    type="date"
+                    id="equipmentPurchaseDate"
+                    class="form-control"
+                    required
+                  / aria-label="equipmentPurchaseDate date">
+                </div>
+                <div class="form-group">
+                  <label for="equipmentCost">Cost ($)</label>
+                  <input
+                    type="number"
+                    id="equipmentCost"
+                    class="form-control"
+                    min="0"
+                    step="0.01"
+                    required
+                  / aria-label="equipmentCost number">
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Add Equipment</button>
+              </form>
+            </div>
+
+            <div class="form-section">
+              <h3>Add Material/Chemical</h3>
+              <form id="addMaterialForm" aria-label="addMaterialForm form" class="form-with-loading form-with-loading form-with-loading">
+                <div class="form-group">
+                  <label for="materialName">Material Name</label>
+                  <input
+                    type="text"
+                    id="materialName"
+                    class="form-control"
+                    required
+                  / aria-label="materialName text">
+                </div>
+                <div class="form-group">
+                  <label for="materialType">Type</label>
+                  <input
+                    type="text"
+                    id="materialType"
+                    class="form-control"
+                    required
+                  / aria-label="materialType text">
+                </div>
+                <div class="form-group">
+                  <label for="materialStockLevel">Stock Level</label>
+                  <input
+                    type="number"
+                    id="materialStockLevel"
+                    class="form-control"
+                    min="0"
+                    step="0.01"
+                    required
+                  / aria-label="materialStockLevel number">
+                </div>
+                <div class="form-group">
+                  <label for="materialUnit">Unit</label>
+                  <input
+                    type="text"
+                    id="materialUnit"
+                    class="form-control"
+                    required
+                  / aria-label="materialUnit text">
+                </div>
+                <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Add Material</button>
+              </form>
+            </div>
+          </div>
+
+          <div style="margin-top: 2rem">
+            <h3>Equipment Inventory</h3>
+            <div class="table-container">
+              <table id="equipmentTable" class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Usage Hours</th>
+                    <th>Next Maintenance</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div style="margin-top: 2rem">
+            <h3>Materials Inventory</h3>
+            <div class="table-container">
+              <table id="materialsTable" class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Stock Level</th>
+                    <th>Unit</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Content: Reports -->
+      <div id="reports-tab" class="tab-content">
+        <div class="tab-content-header">
+          <h2>Reports & Analytics</h2>
+          <p>Generate reports and view business analytics</p>
+        </div>
+        <div class="tab-content-body">
+          <div class="form-grid">
+            <div class="form-section">
+              <h3>Financial Reports</h3>
+              <button
+                class="btn-primary button-with-loading button-with-loading"
+                style="margin-bottom: 1rem; display: block"
+               aria-label="Button">
+                Monthly Revenue Report
+              </button>
+              <button
+                class="btn-secondary button-with-loading button-with-loading"
+                style="margin-bottom: 1rem; display: block"
+               aria-label="Button">
+                Outstanding Invoices
+              </button>
+              <button
+                class="btn-secondary button-with-loading button-with-loading"
+                style="margin-bottom: 1rem; display: block"
+               aria-label="Button">
+                Profit & Loss Statement
+              </button>
+            </div>
+
+            <div class="form-section">
+              <h3>Sustainability Reports</h3>
+              <button
+                class="btn-primary button-with-loading button-with-loading"
+                onclick="generateSustainabilityReportAdmin()"
+                style="margin-bottom: 1rem; display: block"
+               aria-label="Button">
+                Environmental Impact Report
+              </button>
+              <div
+                id="sustainabilityReportView"
+                style="margin-top: 1rem; display: none"
+              >
+                <pre
+                  id="sustainabilityReportContent"
+                  style="
+                    background: #f8fafc;
+                    padding: 1rem;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                  "
+                ></pre>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 2rem">
+            <h3>Sustainability Log</h3>
+            <div class="table-container">
+              <table id="sustainabilityLogTable" class="table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Job/Customer</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="adminChatModal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 500px">
+        <span class="close-btn" onclick="closeAdminChatModal()">&times;</span>
+        <h3 id="adminChatModalTitle">Service Request Chat</h3>
+        <div id="adminChatMessagesContainer" class="chat-messages-container">
+          <!-- Messages will be loaded here -->
+        </div>
+        <div class="chat-input-area">
+          <textarea
+            id="adminChatMessageInput"
+            placeholder="Type your message to the customer..."
+            rows="3"
+           aria-label="Type your message to the customer..."></textarea>
+          <button
+            id="sendAdminChatMessageBtn"
+            class="btn-modern button-with-loading button-with-loading"
+            onclick="sendAdminChatMessage()"
+           aria-label="Button">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="genericAdminModal" class="modal" style="display: none">
+      <div
+        class="modal-content"
+        id="genericAdminModalContent"
+        style="max-width: 600px"
+      >
+        <span class="close-btn" onclick="closeGenericAdminModal()"
+          >&times;</span
+        >
+        <h3 id="genericAdminModalTitle">Modal Title</h3>
+        <div id="genericAdminModalBody" class="card-content">
+          <!-- Content will be injected here by JavaScript -->
+        </div>
+        <div id="genericAdminModalFooter" style="margin-top: 15px">
+          <button
+            class="btn-modern btn-grey button-with-loading button-with-loading"
+            onclick="closeGenericAdminModal()"
+           aria-label="Button">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script defer type="module">
+      // Show loading indicator
+      document.getElementById("loadingIndicator").style.display = "block";
+
+      // Wait for Firebase initialization
+      window.addEventListener("firebaseInitialized", () => {
+        // Hide loading indicator
+        document.getElementById("loadingIndicator").style.display = "none";
+        // Show main content
+        document.getElementById("mainContent").style.display = "block";
+
+        // Initialize QuoteCalculator
+        const quoteCalculator = new QuoteCalculator();
+
+        // Quick Quote Form Handler
+        document
+          .getElementById("quickQuoteForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const serviceType =
+              document.getElementById("quickServiceType").value;
+            const propertySize = parseInt(
+              document.getElementById("quickPropertySize").value,
+            );
+
+            const quote = quoteCalculator.calculateQuote(
+              serviceType,
+              propertySize,
+            );
+            document.getElementById("quickQuoteAmount").textContent =
+              "$" + quote.total;
+            document.getElementById("quickQuoteResult").style.display = "block";
+          });
+
+        // Full Quote Calculator Form Handler
+        document
+          .getElementById("quoteCalculatorForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const serviceType = document.getElementById("serviceType").value;
+            const propertySize = parseInt(
+              document.getElementById("propertySize").value,
+            );
+            const complexity = parseFloat(
+              document.getElementById("complexityFactor").value,
+            );
+
+            const quote = quoteCalculator.calculateQuote(
+              serviceType,
+              propertySize,
+              {
+                complexity: complexity,
+              },
+            );
+
+            // Display detailed breakdown
+            const breakdown = document.getElementById("quoteBreakdown");
+            breakdown.innerHTML = `
+          <div class="quote-result">
+            <h4>Quote Breakdown</h4>
+            <table>
+              <tr><td>Base Amount:</td><td>$${quote.baseAmount}</td></tr>
+              <tr><td>Complexity Factor:</td><td>${quote.complexityFactor}x</td></tr>
+              <tr><td>Seasonal Adjustment:</td><td>${quote.seasonalAdjustment.toFixed(1)}%</td></tr>
+              ${quote.urgentSurcharge ? `<tr><td>Urgency Surcharge:</td><td>${quote.urgentSurcharge}%</td></tr>` : ""}
+              ${quote.travelFee ? `<tr><td>Travel Fee:</td><td>$${quote.travelFee}</td></tr>` : ""}
+              ${quote.equipmentFee ? `<tr><td>Equipment Fee:</td><td>$${quote.equipmentFee}</td></tr>` : ""}
+              ${quote.permitFee ? `<tr><td>Permit Fee:</td><td>$${quote.permitFee}</td></tr>` : ""}
+              <tr><td><strong>Total:</strong></td><td><strong>$${quote.total}</strong></td></tr>
+            </table>
+          </div>
+        `;
+          });
+      });
+
+      // Error handling for script loading
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.filename && e.filename.includes("firebase")) {
+            document.getElementById("initError").style.display = "block";
+            document.getElementById("loadingIndicator").style.display = "none";
+          }
+        },
+        true,
+      );
+
+      // Logout function
+      function logout() {
+        if (window.HollidayApp?.auth) {
+          window.HollidayApp.auth
+            .signOut()
+            .then(() => {
+              window.location.href = "login.html";
+            })
+            .catch((error) => {
+              console.error("Logout error:", error);
+              // Force redirect even if logout fails
+              window.location.href = "login.html";
+            });
+        } else {
+          // Fallback if Firebase auth is not available
+          window.location.href = "login.html";
+        }
+      }
+    </script>
+  </body>
+</html>

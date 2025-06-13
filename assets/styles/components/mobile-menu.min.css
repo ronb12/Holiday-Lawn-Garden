@@ -1,0 +1,24 @@
+.hamburger{display:none;cursor:pointer;padding:var(--spacing-sm);z-index:var(--z-index-modal);position:relative;background:0 0;border:none;-webkit-tap-highlight-color:transparent}
+.hamburger-icon{display:block;position:relative;width:24px;height:2px;background:var(--primary-color);transition:all var(--transition-fast)}
+.hamburger-icon::after,.hamburger-icon::before{content:'';position:absolute;width:24px;height:2px;background:var(--primary-color);transition:all var(--transition-fast)}
+.hamburger-icon::before{top:-8px}
+.hamburger-icon::after{bottom:-8px}
+.hamburger.active .hamburger-icon{background:0 0}
+.hamburger.active .hamburger-icon::before{transform:rotate(45deg);top:0}
+.hamburger.active .hamburger-icon::after{transform:rotate(-45deg);bottom:0}
+@media (max-width:768px){
+.hamburger{display:block}
+.nav-links{position:fixed;top:0;left:0;width:100%;height:100vh;background:rgba(255,255,255,.98);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:var(--spacing-xl);z-index:var(--z-index-modal);visibility:hidden;opacity:0;transform:translateY(-100%);transition:all var(--transition-slow);pointer-events:none;padding:var(--spacing-xl)}
+.nav-links.active{visibility:visible;opacity:1;transform:translateY(0);pointer-events:auto}
+.nav-links a{font-size:var(--font-size-xl);padding:var(--spacing-md) var(--spacing-xl);width:100%;text-align:center;position:relative;color:var(--text-primary);font-weight:600}
+.nav-links a::after{content:'';position:absolute;bottom:0;left:50%;width:0;height:3px;background:var(--primary-color);transition:all var(--transition-slow);transform:translateX(-50%)}
+.nav-links a.active::after,.nav-links a:hover::after{width:60%}
+.nav-links a:hover{color:var(--primary-color);transform:translateY(-2px)}
+body.menu-open{overflow:hidden;position:fixed;width:100%;height:100%}
+}
+.nav-links{user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
+html{-webkit-overflow-scrolling:touch}
+.mobile-menu{background:var(--color-primary);color:var(--color-text-light);border-top:3px solid var(--color-primary-dark)}
+.mobile-menu-close{background:var(--color-primary-light);color:var(--color-primary-dark)}
+.mobile-menu a{color:var(--color-text-light)}
+.mobile-menu a.active,.mobile-menu a:hover{background:var(--color-primary-dark);color:var(--color-accent)}

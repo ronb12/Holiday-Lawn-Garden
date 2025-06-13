@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional landscaping and garden services in your area.">
+    <meta name="keywords" content="lawn care, garden services, landscaping, profile">
+    <meta name="author" content="Holliday Lawn & Garden">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="My Profile - Holliday Lawn & Garden">
+    <meta property="og:description" content="Update your personal information and service preferences.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hollidaylawngarden.com/profile">
+    <meta property="og:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="My Profile - Holliday Lawn & Garden">
+    <meta name="twitter:description" content="Update your personal information and service preferences.">
+    <meta name="twitter:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <link rel="canonical" href="https://hollidaylawngarden.com/profile">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Holliday Lawn & Garden</title>
+    <meta
+      name="description"
+      content="Manage your account settings and view your service history with Holliday's Lawn & Garden."
+    />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/favicon.png" />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/variables.min.css" />
+    <link rel="stylesheet" href="css/main.css?v=1.0.1" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="assets/js/manifest.json" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#4CAF50" />
+
+    <!-- Content Security Policy -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+        img-src 'self' data: https:;
+        font-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
+    "
+    />
+  
+        <script type="application/ld+json">
+          {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "My Profile - Holliday Lawn & Garden Customer Portal",
+  "description": "Manage your Holliday Lawn & Garden customer profile and preferences.",
+  "url": "https://hollidaylawngarden.com/profile",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Holliday Lawn & Garden",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://hollidaylawngarden.com/assets/images/hollidays-logo.png"
+    }
+  }
+}
+        </script>
+      
+</head>
+  <body>
+    <div id="loading-overlay" class="loading-overlay" style="display: none">
+      <div class="spinner"></div>
+      <p id="loading-message">Loading...</p>
+    </div>
+    <div id="notification-container" class="notification-container">
+      <div id="notification" class="notification" style="display: none;">
+        <span class="notification-message"></span>
+        <button class="notification-close button-with-loading button-with-loading" aria-label="Button">&times;</button>
+      </div>
+    </div>
+    <div id="loading-spinner" class="loading-spinner" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+    <header class="main-header">
+      <a href="index.html" class="logo link-with-loading link-with-loading" aria-label="Link">
+        
+          <picture>
+            <source srcset="assets/images/hollidays-logo.webp" type="image/webp">
+            <img src="assets/images/hollidays-logo.webp" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+          </picture>
+      </a>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li><a href="index.html" aria-label="Link" class="link-with-loading link-with-loading">Home</a></li>
+          <li><a href="about.html" aria-label="Link" class="link-with-loading link-with-loading">About</a></li>
+          <li><a href="services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a></li>
+          <li><a href="contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a></li>
+          <li><a href="pay-your-bill.html" aria-label="Link" class="link-with-loading link-with-loading">Pay Your Bill</a></li>
+          <li><a href="education.html" aria-label="Link" class="link-with-loading link-with-loading">Education</a></li>
+          <li class="auth-not-required"><a href="login.html" aria-label="Link" class="link-with-loading link-with-loading">Login</a></li>
+          <li class="auth-required" style="display: none;"><a href="customer-dashboard.html" aria-label="Link" class="link-with-loading link-with-loading">Dashboard</a></li>
+          <li id="adminLink" style="display: none;"><a href="admin-login.html" aria-label="Link" class="link-with-loading link-with-loading">Admin</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger button-with-loading button-with-loading" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+    <main>
+    <section class="hero">
+    <h2>Professional Lawn Care Services</h2>
+      <div class="hero-content">
+        <h2>My Profile</h2>
+        <p>Manage your account and view your service history</p>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <div class="container">
+        <div class="grid grid-2">
+          <div class="card">
+            <h2>Account Information</h2>
+            <form id="profileForm" class="profile-form form-with-loading form-with-loading form-with-loading" aria-label="profileForm form">
+              <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required / aria-label="name text">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required / aria-label="email email">
+              </div>
+              <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required / aria-label="phone tel">
+              </div>
+              <div class="form-group">
+                <label for="address">Service Address</label>
+                <textarea
+                  id="address"
+                  name="address"
+                  rows="3"
+                  required
+                 aria-label="Text area"></textarea>
+              </div>
+              <button type="submit" class="cta-button button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Update Profile</button>
+            </form>
+          </div>
+          <div class="card">
+            <h2>Service History</h2>
+            <div class="service-history">
+              <div class="history-item">
+                <div class="history-header">
+                  <h3>Lawn Maintenance</h3>
+                  <span class="date">March 15, 2024</span>
+                </div>
+                <p>Regular lawn mowing and edging service</p>
+                <span class="status completed">Completed</span>
+              </div>
+              <div class="history-item">
+                <div class="history-header">
+                  <h3>Landscape Design</h3>
+                  <span class="date">February 28, 2024</span>
+                </div>
+                <p>Backyard renovation and new plant installation</p>
+                <span class="status completed">Completed</span>
+              </div>
+              <div class="history-item">
+                <div class="history-header">
+                  <h3>Pressure Washing</h3>
+                  <span class="date">February 10, 2024</span>
+                </div>
+                <p>Driveway and patio cleaning</p>
+                <span class="status completed">Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Upcoming Services</h2>
+          <div class="upcoming-services">
+            <div class="service-item">
+              <div class="service-info">
+                <h3>Lawn Maintenance</h3>
+                <p>Regular lawn mowing and edging service</p>
+                <span class="date">Scheduled for: April 1, 2024</span>
+              </div>
+              <div class="service-actions">
+                <button class="secondary-button button-with-loading button-with-loading" aria-label="Button">Reschedule</button>
+                <button class="danger-button button-with-loading button-with-loading" aria-label="Button">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer" role="contentinfo" aria-label="Site footer">
+      <div class="footer-content">
+        <div class="footer-main">
+          <div class="footer-section">
+            <h3>Contact Us</h3>
+            <div class="footer-contact">
+              <span class="footer-owner">Karl Holliday</span>
+              <a href="tel:+15047171887" aria-label="Link" class="link-with-loading link-with-loading">
+        <i class="fas fa-phone" aria-hidden="true"></i>
+        <span>(504) 717-1887</span>
+      </a>
+              <a href="mailto:7holliday@gmail.com" aria-label="Link" class="link-with-loading link-with-loading">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <span>7holliday@gmail.com</span>
+      </a>
+      </a>
+      </a>
+      </a>
+              </a>
+              
+              </a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Quick Links</h3>
+            <div class="footer-links">
+              <a href="/about.html" aria-label="Link" class="link-with-loading link-with-loading">About Us</a>
+              <a href="/services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a>
+              <a href="/gallery.html" aria-label="Link" class="link-with-loading link-with-loading">Gallery</a>
+              <a href="/contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a>
+              <a href="/faq.html" aria-label="Link" class="link-with-loading link-with-loading">FAQ</a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Legal</h3>
+            <div class="footer-links">
+              <a href="/privacy.html" aria-label="Link" class="link-with-loading link-with-loading">Privacy Policy</a>
+              <a href="/terms.html" aria-label="Link" class="link-with-loading link-with-loading">Terms of Service</a>
+              <a href="/accessibility.html" aria-label="Link" class="link-with-loading link-with-loading">Accessibility</a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Connect With Us</h3>
+            <div class="footer-social">
+              <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook" class="link-with-loading link-with-loading">
+                <i class="fab fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter" class="link-with-loading link-with-loading">
+                <i class="fab fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram" class="link-with-loading link-with-loading">
+                <i class="fab fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn" class="link-with-loading link-with-loading">
+                <i class="fab fa-linkedin" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-copyright">
+          <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script defer type="module">
+    import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
+    import {  } from '/assets/js/modules/config.js';
+    import {  } from '/assets/js/modules/config.min.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.min.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, for, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.min.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.min.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.min.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.min.js';
+    import { app, auth, db, storage, analytics } from '/assets/js/modules/firebase.js';
+    import { app, auth, db, analytics, googleProvider } from '/assets/js/modules/firebase_init.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.min.js';
+    import { HeadingEnhancer } from '/assets/js/modules/heading_enhancer.js';
+    import { ImageLoader } from '/assets/js/modules/image_loader.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.min.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.min.js';
+    import {  } from '/assets/js/modules/login.js';
+    import {  } from '/assets/js/modules/login.min.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.min.js';
+    import { MetaEnhancer } from '/assets/js/modules/meta_enhancer.js';
+    import { Minifier } from '/assets/js/modules/minifier.js';
+    import { Minifier } from '/assets/js/modules/minifier.min.js';
+    import {  } from '/assets/js/modules/mobile_menu.js';
+    import {  } from '/assets/js/modules/mobile_menu.min.js';
+    import { ${this.getExports(content) } from '/assets/js/modules/modularizer.js';
+    import { ResourceOptimizer } from '/assets/js/modules/resource_optimizer.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.min.js';
+    import { runTests } from '/assets/js/modules/tests.js';
+    import { runTests } from '/assets/js/modules/tests.min.js';
+    import { ModuleUpdater } from '/assets/js/modules/update_modules.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.min.js';
+    import { UXEnhancer, class
+        if } from '/assets/js/modules/ux_enhancer.js';
+      // Mobile menu toggle
+      document
+        .querySelector(".hamburger")
+        .addEventListener("click", function () {
+          document.querySelector(".nav-links").classList.toggle("active");
+        });
+
+      // Profile form submission
+      document
+        .getElementById("profileForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          // Add your profile update logic here
+          alert(
+            "Profile update functionality will be implemented with Firebase.",
+          );
+        });
+
+      // Service cancellation
+      document.querySelectorAll(".danger-button").forEach((button) => {
+        button.addEventListener("click", function () {
+          if (confirm("Are you sure you want to cancel this service?")) {
+            // Add your cancellation logic here
+            alert("Service cancellation will be implemented with Firebase.");
+          }
+        });
+      });
+
+      // Service rescheduling
+      document.querySelectorAll(".secondary-button").forEach((button) => {
+        button.addEventListener("click", function () {
+          // Add your rescheduling logic here
+          alert("Service rescheduling will be implemented with Firebase.");
+        });
+      });
+    </script>
+    </main>
+  </body>
+</html>

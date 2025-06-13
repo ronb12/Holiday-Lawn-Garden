@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us - Holliday's Lawn & Garden</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles/hero.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #4CAF50;
+      --dark-green: #388E3C;
+      --light-green: #81C784;
+      --accent-green: #2E7D32;
+    }
+
+    .content-section {
+      padding: 4rem 2rem;
+      background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+    }
+
+    .content-text {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 3rem;
+    }
+
+    .content-text h1 {
+      color: var(--primary-green);
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .content-text p {
+      color: #666;
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .card h2 {
+      color: var(--primary-green);
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--light-green);
+      padding-bottom: 0.5rem;
+    }
+
+    .card h3 {
+      color: var(--dark-green);
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .card ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .card ul li {
+      margin-bottom: 0.8rem;
+      padding-left: 1.5rem;
+      position: relative;
+      color: #555;
+    }
+
+    .card ul li:before {
+      content: "✓";
+      color: var(--primary-green);
+      position: absolute;
+      left: 0;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--primary-green);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .cta-button:hover {
+      background: var(--dark-green);
+    }
+
+    .footer {
+      background: var(--dark-green);
+      color: white;
+      padding: 3rem 0 1rem;
+    }
+
+    .footer h3 {
+      color: white;
+      margin-bottom: 1.5rem;
+    }
+
+    .footer a {
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer a:hover {
+      color: white;
+    }
+
+    .footer-social a {
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .content-section {
+        padding: 2rem 1rem;
+      }
+
+      .content-text h1 {
+        font-size: 2rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading" style="display: none;">
+    <div class="spinner"></div>
+  </div>
+  <div id="error" class="error-message"></div>
+
+  <nav class="nav">
+    <div class="nav-container">
+      <a href="index.html" class="nav-logo">Holliday's Lawn & Garden</a>
+      <div class="nav-links">
+        <a href="about.html">About</a>
+        <a href="services.html">Services</a>
+        <a href="education.html">Education</a>
+        <a href="testimonials.html">Testimonials</a>
+        <a href="faq.html">FAQ</a>
+        <a href="contact.html">Contact</a>
+        <a href="login.html" class="btn btn-secondary">Login</a>
+      </div>
+      <button class="menu-toggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <main id="main-content" role="main">
+    <section class="content-section">
+      <div class="content-text">
+        <h1>About Holliday's Lawn & Garden</h1>
+        <p>Your trusted partner for professional lawn care and landscaping services in New Orleans and surrounding areas.</p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h2>Our Mission</h2>
+          <ul>
+            <li>Provide exceptional lawn care and landscaping services</li>
+            <li>Create beautiful, sustainable outdoor spaces</li>
+            <li>Deliver reliable and professional service</li>
+            <li>Build long-term relationships with our clients</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>Why Choose Us</h2>
+          <ul>
+            <li>Experienced and professional team</li>
+            <li>Quality equipment and materials</li>
+            <li>Customized service plans</li>
+            <li>Competitive pricing</li>
+            <li>Satisfaction guaranteed</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Our Services</h3>
+          <ul>
+            <li>Lawn maintenance and care</li>
+            <li>Landscape design and installation</li>
+            <li>Pressure washing</li>
+            <li>Commercial property maintenance</li>
+            <li>Seasonal services</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>Our Commitment</h3>
+          <ul>
+            <li>Timely and reliable service</li>
+            <li>Attention to detail</li>
+            <li>Environmentally conscious practices</li>
+            <li>Clear communication</li>
+            <li>Customer satisfaction focus</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="content-text">
+        <h2>Get Started Today</h2>
+        <p>Experience the difference of professional lawn care and landscaping services. Contact us for a free consultation and quote.</p>
+        <a href="contact.html" class="cta-button primary">Contact Us</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <div class="footer-contact">
+          <span class="footer-owner">Karl Holliday</span>
+          <a href="tel:+15047171887">
+            <i class="fas fa-phone"></i>
+            <span>(504) 717-1887</span>
+          </a>
+          <a href="mailto:7holliday@gmail.com">
+            <i class="fas fa-envelope"></i>
+            <span>7holliday@gmail.com</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <div class="footer-links">
+          <a href="about.html">About Us</a>
+          <a href="services.html">Services</a>
+          <a href="education.html">Education</a>
+          <a href="contact.html">Contact</a>
+          <a href="faq.html">FAQ</a>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h3>Legal</h3>
+        <div class="footer-links">
+          <a href="privacy.html">Privacy Policy</a>
+          <a href="terms.html">Terms of Service</a>
+          <a href="sitemap.html">Sitemap</a>
+        </div>
+      </div>
+
+      <div class="footer-section">
+        <h3>Connect With Us</h3>
+        <div class="footer-social">
+          <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
+            <i class="fab fa-facebook"></i>
+          </a>
+          <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">
+            <i class="fab fa-twitter"></i>
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <i class="fab fa-linkedin"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="current-year"></span> Holliday's Lawn & Garden. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/hero.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

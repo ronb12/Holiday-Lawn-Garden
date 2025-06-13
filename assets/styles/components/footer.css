@@ -1,0 +1,149 @@
+.footer {
+  background-color: var(--color-primary-dark);
+  color: #000000;
+  padding: 2rem 0;
+  margin-top: 3rem;
+  border-top: 1px solid var(--color-border-dark);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-content {
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding-bottom: 1.5rem;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-section h3 {
+  color: #000000;
+  font-size: 1.1rem;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: 0.5rem;
+}
+
+.footer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-contact a,
+.footer-contact span {
+  color: #000000;
+  opacity: 0.9;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.95rem;
+  transition: opacity 0.3s ease;
+}
+
+.footer-contact a:hover {
+  opacity: 1;
+}
+
+.footer-contact i {
+  color: var(--color-primary-light);
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-links a {
+  color: #000000;
+  opacity: 0.9;
+  text-decoration: none;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.footer-social a {
+  color: #000000;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.footer-social a:hover {
+  opacity: 1;
+}
+
+.footer-social i {
+  font-size: 1.25rem;
+}
+
+.footer-copyright {
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border-dark);
+  color: #000000;
+  opacity: 0.9;
+  font-size: 0.875rem;
+}
+
+/* Remove any floating buttons that might appear under the footer */
+.floating-buttons {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 1.5rem 0;
+  }
+
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .footer-contact,
+  .footer-links {
+    align-items: center;
+  }
+
+  .footer-social {
+    justify-content: center;
+  }
+}
+
+/* Print styles */
+@media print {
+  .footer {
+    display: none;
+  }
+} 

@@ -1,0 +1,142 @@
+const CACHE_NAME = 'holliday-lawn-garden-v1';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/assets/styles/main.css',
+  '/assets/styles/mobile-menu.css',
+  '/assets/styles/components/header.css',
+  '/assets/styles/components/footer.css',
+  '/assets/js/main.js',
+  '/assets/js/firebase-config.js',
+  '/assets/images/hollidays-logo.png',
+  '/assets/images/hero-garden-landscaping.jpg',
+  '/manifest.json',
+  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
+];
+
+// Install event - cache assets
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(ASSETS_TO_CACHE);
+      })
+  );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Fetch event - serve from cache, fall back to network
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+
+        // Clone the request
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(
+          (response) => {
+            // Check if valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
+  );
+});
+
+// Push notification event
+self.addEventListener('push', event => {
+  const options = {
+    body: event.data.text(),
+    icon: '/assets/icons/icon-192.png',
+    badge: '/assets/icons/badge-72.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: 1
+    },
+    actions: [
+      {
+        action: 'explore',
+        title: 'View Details',
+        icon: '/assets/icons/checkmark.png'
+      },
+      {
+        action: 'close',
+        title: 'Close',
+        icon: '/assets/icons/xmark.png'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification('Holliday Lawn & Garden', options)
+  );
+});
+
+// Notification click event
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  if (event.action === 'explore') {
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  }
+});
+
+// Error handling
+self.addEventListener('error', (event) => {
+  console.error('Service Worker error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+});
+
+// Clear all caches
+self.addEventListener('message', (event) => {
+  if (event.data === 'CLEAR_CACHE') {
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deleting cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    });
+  }
+});

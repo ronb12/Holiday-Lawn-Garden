@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Common head elements -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4CAF50">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<!-- Favicons -->
+<link rel="icon" href="favicon.ico">
+<link rel="manifest" href="manifest.json">
+<style>
+/* Main Styles */
+:root {
+  --primary-green: #2E7D32;
+  --light-green: #4CAF50;
+  --lighter-green: #81C784;
+  --dark-green: #1B5E20;
+  --accent-green: #66BB6A;
+  --background-light: #F1F8E9;
+  --text-dark: #333333;
+  --text-light: #FFFFFF;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  line-height: 1.6;
+  color: var(--text-dark);
+  background-color: var(--background-light);
+  margin: 0;
+  padding: 0;
+}
+
+/* Header Styles */
+header {
+  background-color: var(--primary-green);
+  color: var(--text-light);
+  padding: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+  color: var(--lighter-green);
+}
+
+/* Hero Section */
+.hero {
+  background-color: var(--light-green);
+  color: var(--text-light);
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 0.8rem 1.5rem;
+  background-color: var(--primary-green);
+  color: var(--text-light);
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: var(--dark-green);
+}
+
+/* Cards */
+.card {
+  background-color: var(--text-light);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--lighter-green);
+}
+
+/* Footer */
+footer {
+  background-color: var(--primary-green);
+  color: var(--text-light);
+  padding: 2rem 0;
+  margin-top: 3rem;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  padding: 0 2rem;
+}
+
+.footer-section h3 {
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+
+.footer-section a {
+  color: var(--lighter-green);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: var(--text-light);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  nav {
+    padding: 0 1rem;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero {
+    padding: 3rem 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .footer-content {
+/* Main Content */
+main {
+  padding: 2em;
+  text-align: center;
+}
+section {
+  margin-bottom: 2em;
+}
+
+/* Footer */
+footer {
+  background: #eee;
+  text-align: center;
+  padding: 1em 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+/* Form Styles */
+form input,
+form textarea {
+  width: 80%;
+  padding: 0.5em;
+  margin-bottom: 1em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+form button {
+  background-color: #228B22;
+  color: white;
+  padding: 0.7em 2em;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+}
+form button:hover {
+  background-color: #006400;
+}
+
+/* Fade-In Animation */
+.fade-in {
+  opacity: 0;
+  -webkit-transform: translateY(20px);
+  transform: translateY(20px);
+  -webkit-transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+.fade-in.visible {
+  opacity: 1;
+  -webkit-transform: none;
+  transform: none;
+}
+</style>
+<title>Holliday's Lawn & Garden</title>
+<!-- Scripts remain unchanged -->
+</head>
+<body>
+<!-- Existing body content remains unchanged -->
+</body>
+</html>

@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional landscaping and garden services in your area.">
+    <meta name="keywords" content="lawn care, garden services, landscaping, customer-dashboard">
+    <meta name="author" content="Holliday Lawn & Garden">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Holliday Lawn & Garden - Customer-dashboard">
+    <meta property="og:description" content="Professional lawn care and garden services by Holliday Lawn & Garden.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hollidaylawngarden.com/customer-dashboard">
+    <meta property="og:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Holliday Lawn & Garden - Customer-dashboard">
+    <meta name="twitter:description" content="Professional lawn care and garden services by Holliday Lawn & Garden.">
+    <meta name="twitter:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
+    <link rel="canonical" href="https://hollidaylawngarden.com/customer-dashboard">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#4CAF50" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Holliday Lawn & Garden" />
+    <meta
+      name="description"
+      content="Holliday Lawn & Garden - Professional Lawn Care Services"
+    />
+    <meta
+      name="keywords"
+      content="lawn care, garden services, customer dashboard, service management"
+    />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://js.stripe.com https://www.googletagmanager.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
+        font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com https://use.fontawesome.com data:;
+        img-src 'self' data: https:;
+        connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebase.googleapis.com https://*.stripe.com https://www.google-analytics.com;
+        frame-src 'self' https://js.stripe.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    "
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/apple-touch-icon.png"
+    />
+    <link rel="manifest" href="assets/js/manifest.json" />
+
+    <!-- Resource hints -->
+    <link rel="preconnect" href="https://www.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch" href="https://www.gstatic.com" />
+
+    <!-- Preload Critical Resources -->
+    <link rel="preload" href="assets/styles/variables.min.css" as="style" />
+    <link rel="preload" href="assets/styles/main.min.css" as="style" />
+    <link rel="preload" href="assets/styles/dashboard.min.css" as="style" />
+    <link rel="preload" href="assets/js/dashboard.js" as="script" />
+    <link rel="preload" href="firebase-config.js" as="script" />
+    <link rel="preload" href="firebase-init.js" as="script" />
+    <link rel="preload" href="assets/images/hollidays-logo.png" as="image" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/variables.min.css" />
+    <link rel="stylesheet" href="css/main.min.css" />
+    <link rel="stylesheet" href="css/document-upload.min.css" />
+    <link rel="stylesheet" href="css/dashboard.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Holliday Lawn & Garden</title>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.min.js" defer type="module">
+    import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
+    import {  } from '/assets/js/modules/config.js';
+    import {  } from '/assets/js/modules/config.min.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.js';
+    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.min.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, for, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.js';
+    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.min.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.js';
+    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.min.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.js';
+    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.min.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.js';
+    import { ErrorHandler } from '/assets/js/modules/error_handling.min.js';
+    import { app, auth, db, storage, analytics } from '/assets/js/modules/firebase.js';
+    import { app, auth, db, analytics, googleProvider } from '/assets/js/modules/firebase_init.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.js';
+    import { FormValidator } from '/assets/js/modules/form_validation.min.js';
+    import { HeadingEnhancer } from '/assets/js/modules/heading_enhancer.js';
+    import { ImageLoader } from '/assets/js/modules/image_loader.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimization.min.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.js';
+    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.min.js';
+    import {  } from '/assets/js/modules/login.js';
+    import {  } from '/assets/js/modules/login.min.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.js';
+    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.min.js';
+    import { MetaEnhancer } from '/assets/js/modules/meta_enhancer.js';
+    import { Minifier } from '/assets/js/modules/minifier.js';
+    import { Minifier } from '/assets/js/modules/minifier.min.js';
+    import {  } from '/assets/js/modules/mobile_menu.js';
+    import {  } from '/assets/js/modules/mobile_menu.min.js';
+    import { ${this.getExports(content) } from '/assets/js/modules/modularizer.js';
+    import { ResourceOptimizer } from '/assets/js/modules/resource_optimizer.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.js';
+    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.min.js';
+    import { runTests } from '/assets/js/modules/tests.js';
+    import { runTests } from '/assets/js/modules/tests.min.js';
+    import { ModuleUpdater } from '/assets/js/modules/update_modules.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.js';
+    import { ResourceUpdater } from '/assets/js/modules/update_resources.min.js';
+    import { UXEnhancer, class
+        if } from '/assets/js/modules/ux_enhancer.js';</script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.min.js" defer type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.min.js" defer type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.min.js" defer type="module"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics-compat.min.js" defer type="module"></script>
+
+    <!-- Application Scripts -->
+    <script src="js/firebase-config.min.js" defer type="module"></script>
+    <script src="js/firebase-init.min.js" defer type="module"></script>
+    <script src="js/dashboard.min.js" defer type="module"></script>
+  
+        <script type="application/ld+json">
+          {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Holliday Lawn & Garden",
+  "description": "Professional lawn care and landscaping services in your area.",
+  "url": "https://hollidaylawngarden.com/customer-dashboard",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Holliday Lawn & Garden",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://hollidaylawngarden.com/assets/images/hollidays-logo.png"
+    }
+  }
+}
+        </script>
+      
+</head>
+  <body>
+    <div id="notification-container" class="notification-container">
+      <div id="notification" class="notification" style="display: none;">
+        <span class="notification-message"></span>
+        <button class="notification-close button-with-loading button-with-loading" aria-label="Button">&times;</button>
+      </div>
+    </div>
+    <div id="loading-spinner" class="loading-spinner" style="display: none;">
+      <div class="spinner"></div>
+    </div>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="spinner"></div>
+      <p id="loading-text">Loading...</p>
+    </div>
+
+    <!-- Error Messages -->
+    <div id="error-container" class="error-container"></div>
+
+    <header class="main-header">
+      <a href="index.html" class="logo link-with-loading link-with-loading" aria-label="Link">
+        
+          <picture>
+            <source srcset="assets/images/hollidays-logo.webp" type="image/webp">
+            <img src="assets/images/hollidays-logo.webp" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+          </picture>
+      </a>
+      <nav aria-label="Main navigation">
+        <ul class="nav-links">
+          <li><a href="index.html" aria-label="Link" class="link-with-loading link-with-loading">Home</a></li>
+          <li><a href="about.html" aria-label="Link" class="link-with-loading link-with-loading">About</a></li>
+          <li><a href="services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a></li>
+          <li><a href="contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a></li>
+          <li><a href="pay-your-bill.html" aria-label="Link" class="link-with-loading link-with-loading">Pay Your Bill</a></li>
+          <li><a href="education.html" aria-label="Link" class="link-with-loading link-with-loading">Education</a></li>
+          <li class="auth-not-required"><a href="login.html" aria-label="Link" class="link-with-loading link-with-loading">Login</a></li>
+          <li class="auth-required" style="display: none;"><a href="customer-dashboard.html" aria-label="Link" class="link-with-loading link-with-loading">Dashboard</a></li>
+          <li id="adminLink" style="display: none;"><a href="admin-login.html" aria-label="Link" class="link-with-loading link-with-loading">Admin</a></li>
+        </ul>
+      </nav>
+      <button class="hamburger button-with-loading button-with-loading" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <main class="dashboard-container">
+      <div class="dashboard-header">
+        <h1><i class="fas fa-tachometer-alt"></i> Customer Dashboard</h1>
+        <div class="user-welcome">
+          <h2>
+            <i class="fas fa-user-circle"></i> Welcome back,
+            <span id="userName">Loading...</span>
+          </h2>
+          <p>Manage your service requests and account information here.</p>
+        </div>
+      </div>
+
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <div class="stat-info">
+            <h2>Upcoming Services</h3>
+            <p id="upcomingServicesCount">Loading...</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-dollar-sign"></i>
+          </div>
+          <div class="stat-info">
+            <h2>Total Spent</h2>
+            <p id="totalSpent">Loading...</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Service Rating</h3>
+            <p id="serviceRating">Loading...</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Next Service</h3>
+            <p id="nextServiceDate">Loading...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-actions">
+        <button class="action-button button-with-loading button-with-loading" onclick="showNewRequestForm()" aria-label="Button">
+          <i class="fas fa-plus-circle"></i>
+          New Service Request
+        </button>
+        <button class="action-button button-with-loading button-with-loading" onclick="showPaymentForm()" aria-label="Button">
+          <i class="fas fa-credit-card"></i>
+          Make a Payment
+        </button>
+        <button class="action-button button-with-loading button-with-loading" onclick="showContactForm()" aria-label="Button">
+          <i class="fas fa-envelope"></i>
+          Contact Support
+        </button>
+        <button class="action-button button-with-loading button-with-loading" onclick="downloadInvoices()" aria-label="Button">
+          <i class="fas fa-download"></i>
+          Download Invoices
+        </button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="service-requests">
+          <h3><i class="fas fa-clipboard-list"></i> Your Service Requests</h3>
+          <div id="serviceRequests" class="requests-container">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading your service requests...</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quotes-invoices">
+          <h3><i class="fas fa-file-invoice"></i> Quotes & Invoices</h3>
+          <div class="tabs">
+            <button class="tab-button active button-with-loading button-with-loading" onclick="showTab('quotes')" aria-label="Button">
+              Quotes
+            </button>
+            <button class="tab-button button-with-loading button-with-loading" onclick="showTab('invoices')" aria-label="Button">
+              Invoices
+            </button>
+          </div>
+          <div id="quotesTab" class="tab-content active">
+            <div id="quotesList" class="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading quotes...</p>
+            </div>
+          </div>
+          <div id="invoicesTab" class="tab-content">
+            <div id="invoicesList" class="loading">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading invoices...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-container">
+        <h3><i class="fas fa-comments"></i> Chat with Admin</h3>
+        <div id="chatMessages" class="chat-messages"></div>
+        <div
+          id="typingIndicator"
+          class="typing-indicator"
+          style="display: none"
+        >
+          <i class="fas fa-circle"></i>
+          <i class="fas fa-circle"></i>
+          <i class="fas fa-circle"></i>
+        </div>
+        <div class="chat-input">
+          <input
+            type="text"
+            id="messageInput"
+            placeholder="Type your message..."
+            autocomplete="off"
+          / aria-label="messageInput text">
+          <button onclick="sendMessage()" aria-label="Button" class="button-with-loading button-with-loading">
+            <i class="fas fa-paper-plane"></i> Send
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer" role="contentinfo" aria-label="Site footer">
+      <div class="footer-content">
+        <div class="footer-main">
+          <div class="footer-section">
+            <h3>Contact Us</h3>
+            <div class="footer-contact">
+              <span class="footer-owner">Karl Holliday</span>
+              <a href="tel:+15047171887" aria-label="Link" class="link-with-loading link-with-loading">
+        <i class="fas fa-phone" aria-hidden="true"></i>
+        <span>(504) 717-1887</span>
+      </a>
+              <a href="mailto:7holliday@gmail.com" aria-label="Link" class="link-with-loading link-with-loading">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <span>7holliday@gmail.com</span>
+      </a>
+      </a>
+      </a>
+      </a>
+              </a>
+              
+              </a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Quick Links</h3>
+            <div class="footer-links">
+              <a href="/about.html" aria-label="Link" class="link-with-loading link-with-loading">About Us</a>
+              <a href="/services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a>
+              <a href="/gallery.html" aria-label="Link" class="link-with-loading link-with-loading">Gallery</a>
+              <a href="/contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a>
+              <a href="/faq.html" aria-label="Link" class="link-with-loading link-with-loading">FAQ</a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Legal</h3>
+            <div class="footer-links">
+              <a href="/privacy.html" aria-label="Link" class="link-with-loading link-with-loading">Privacy Policy</a>
+              <a href="/terms.html" aria-label="Link" class="link-with-loading link-with-loading">Terms of Service</a>
+              <a href="/accessibility.html" aria-label="Link" class="link-with-loading link-with-loading">Accessibility</a>
+            </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Connect With Us</h3>
+            <div class="footer-social">
+              <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook" class="link-with-loading link-with-loading">
+                <i class="fab fa-facebook" aria-hidden="true"></i>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter" class="link-with-loading link-with-loading">
+                <i class="fab fa-twitter" aria-hidden="true"></i>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram" class="link-with-loading link-with-loading">
+                <i class="fab fa-instagram" aria-hidden="true"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn" class="link-with-loading link-with-loading">
+                <i class="fab fa-linkedin" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-copyright">
+          <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- New Request Modal -->
+    <div id="new-request-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>New Service Request</h2>
+          <button onclick="closeModal('new-request-modal')" class="btn-close button-with-loading button-with-loading" aria-label="Button">
+            &times;
+          </button>
+        </div>
+        <form id="service-request-form" onsubmit="submitServiceRequest(event)" aria-label="service-request-form form" class="form-with-loading form-with-loading form-with-loading">
+          <div class="form-group">
+            <label for="service-type">Service Type</label>
+            <select id="service-type" required>
+              <option value="">Select a service</option>
+              <option value="lawn-mowing">Lawn Mowing</option>
+              <option value="landscaping">Landscaping</option>
+              <option value="irrigation">Irrigation</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="service-date">Preferred Date</label>
+            <input type="date" id="service-date" required / aria-label="service-date date">
+          </div>
+          <div class="form-group">
+            <label for="service-description">Description</label>
+            <textarea id="service-description" rows="4" required aria-label="Text area"></textarea>
+          </div>
+          <div class="form-actions">
+            <button
+              type="button"
+              onclick="closeModal('new-request-modal')"
+              class="btn-secondary button-with-loading button-with-loading"
+             aria-label="Button">
+              Cancel
+            </button>
+            <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Submit Request</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
