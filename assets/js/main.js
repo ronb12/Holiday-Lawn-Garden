@@ -154,81 +154,91 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize UI components
 function initializeUI() {
-  // Set active navigation link
-  const currentPath = window.location.pathname;
-  const navLinks = document.querySelectorAll('.nav-links a');
-  navLinks.forEach(link => {
-    if (link.getAttribute('href') === currentPath.split('/').pop()) {
-      link.classList.add('active');
-    }
-  });
-
-  // Mobile menu
-  const hamburger = document.querySelector('.hamburger');
-  const nav = document.querySelector('nav');
-  
-  if (hamburger && nav) {
-    hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('active');
-      nav.classList.toggle('active');
-    });
-
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!hamburger.contains(e.target) && !nav.contains(e.target)) {
-        hamburger.classList.remove('active');
-        nav.classList.remove('active');
+  try {
+    // Set active navigation link
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+      if (link.getAttribute('href') === currentPath.split('/').pop()) {
+        link.classList.add('active');
       }
     });
 
-    // Close mobile menu when clicking a link
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        hamburger.classList.remove('active');
-        nav.classList.remove('active');
+    // Mobile menu
+    const hamburger = document.querySelector('.hamburger');
+    const nav = document.querySelector('nav');
+    
+    if (hamburger && nav) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        nav.classList.toggle('active');
+      });
+
+      // Close mobile menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!hamburger.contains(e.target) && !nav.contains(e.target)) {
+          hamburger.classList.remove('active');
+          nav.classList.remove('active');
+        }
+      });
+
+      // Close mobile menu when clicking a link
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          hamburger.classList.remove('active');
+          nav.classList.remove('active');
+        });
+      });
+    }
+
+    // Header scroll effect
+    const header = document.querySelector('.main-header');
+    let lastScroll = 0;
+
+    if (header) {
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.pageYOffset;
+        
+        if (currentScroll <= 0) {
+          header.classList.remove('scroll-up');
+          return;
+        }
+        
+        if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
+          // Scrolling down
+          header.classList.remove('scroll-up');
+          header.classList.add('scroll-down');
+        } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
+          // Scrolling up
+          header.classList.remove('scroll-down');
+          header.classList.add('scroll-up');
+        }
+        lastScroll = currentScroll;
+      });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
       });
     });
+
+    // Hide loading spinner
+    const loading = document.getElementById('loading');
+    if (loading) {
+      loading.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error initializing UI:', error);
   }
-
-  // Header scroll effect
-  const header = document.querySelector('.main-header');
-  let lastScroll = 0;
-
-  if (header) {
-    window.addEventListener('scroll', () => {
-      const currentScroll = window.pageYOffset;
-      
-      if (currentScroll <= 0) {
-        header.classList.remove('scroll-up');
-        return;
-      }
-      
-      if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
-        // Scrolling down
-        header.classList.remove('scroll-up');
-        header.classList.add('scroll-down');
-      } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
-        // Scrolling up
-        header.classList.remove('scroll-down');
-        header.classList.add('scroll-up');
-      }
-      lastScroll = currentScroll;
-    });
-  }
-
-  // Smooth scroll for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  });
 }
 
 // Set up event listeners
@@ -387,25 +397,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // Service Worker Registration
 export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful');
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdateNotification();
-              }
-            });
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registration successful');
+        
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateNotification();
+            }
           });
-        })
-        .catch(error => {
-          console.error('ServiceWorker registration failed:', error);
         });
-    });
+      })
+      .catch(error => {
+        console.error('ServiceWorker registration failed:', error);
+      });
   }
 }
 
@@ -420,8 +428,8 @@ function showUpdateNotification() {
   document.body.appendChild(notification);
 }
 
-// Initialize when the page loads
-window.addEventListener('load', () => {
+// Initialize everything when the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   initializeUI();
 });
