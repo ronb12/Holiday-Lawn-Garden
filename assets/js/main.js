@@ -154,151 +154,69 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize UI components
 function initializeUI() {
-  // Mobile menu functionality
+  // Mobile menu
   const hamburger = document.querySelector('.hamburger');
-  const mobileMenu = document.querySelector('.mobile-menu');
-  const closeButton = document.querySelector('.mobile-menu-close');
-
-  if (hamburger) {
+  const nav = document.querySelector('nav');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  
+  if (hamburger && nav) {
     hamburger.addEventListener('click', () => {
-      mobileMenu?.classList.add('active');
-    });
-  }
-
-  if (closeButton) {
-    closeButton.addEventListener('click', () => {
-      mobileMenu?.classList.remove('active');
-    });
-  }
-
-  // Mobile menu tabs
-  const navLinks = document.querySelector('.nav-links');
-  const tabHeaders = document.querySelectorAll('.nav-tab-header');
-
-  if (navLinks && tabHeaders.length > 0) {
-    // Initialize tabs
-    tabHeaders.forEach(header => {
-      const tab = header.parentElement;
-      const content = tab.querySelector('.nav-tab-content');
-      const icon = header.querySelector('.fa-chevron-down');
-
-      // Set initial ARIA attributes
-      header.setAttribute('role', 'tab');
-      header.setAttribute('aria-selected', 'false');
-      header.setAttribute('aria-expanded', 'false');
-      content.setAttribute('role', 'tabpanel');
-      content.setAttribute('aria-hidden', 'true');
-
-      header.addEventListener('click', () => {
-        const isActive = header.classList.contains('active');
-
-        // Close all tabs
-        tabHeaders.forEach(h => {
-          const tabContent = h.parentElement.querySelector('.nav-tab-content');
-          const tabIcon = h.querySelector('.fa-chevron-down');
-          
-          h.classList.remove('active');
-          h.setAttribute('aria-selected', 'false');
-          h.setAttribute('aria-expanded', 'false');
-          tabContent.classList.remove('active');
-          tabContent.setAttribute('aria-hidden', 'true');
-          if (tabIcon) {
-            tabIcon.style.transform = 'rotate(0deg)';
-          }
-        });
-
-        // Open clicked tab if it wasn't active
-        if (!isActive) {
-          header.classList.add('active');
-          header.setAttribute('aria-selected', 'true');
-          header.setAttribute('aria-expanded', 'true');
-          content.classList.add('active');
-          content.setAttribute('aria-hidden', 'false');
-          if (icon) {
-            icon.style.transform = 'rotate(180deg)';
-          }
-        }
-      });
-
-      // Add keyboard support
-      header.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          header.click();
-        }
-      });
+      hamburger.classList.toggle('active');
+      nav.classList.toggle('active');
     });
 
-    // Handle window resize
-    window.addEventListener('resize', () => {
-      if (window.innerWidth > 768) {
-        // Close all tabs on desktop
-        tabHeaders.forEach(header => {
-          const content = header.parentElement.querySelector('.nav-tab-content');
-          const icon = header.querySelector('.fa-chevron-down');
-          
-          header.classList.remove('active');
-          header.setAttribute('aria-selected', 'false');
-          header.setAttribute('aria-expanded', 'false');
-          content.classList.remove('active');
-          content.setAttribute('aria-hidden', 'true');
-          if (icon) {
-            icon.style.transform = 'rotate(0deg)';
-          }
-        });
-      }
-    });
-
-    // Handle escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        // Close all tabs
-        tabHeaders.forEach(header => {
-          const content = header.parentElement.querySelector('.nav-tab-content');
-          const icon = header.querySelector('.fa-chevron-down');
-          
-          header.classList.remove('active');
-          header.setAttribute('aria-selected', 'false');
-          header.setAttribute('aria-expanded', 'false');
-          content.classList.remove('active');
-          content.setAttribute('aria-hidden', 'true');
-          if (icon) {
-            icon.style.transform = 'rotate(0deg)';
-          }
-        });
-      }
-    });
-
-    // Handle outside clicks
+    // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
-      if (!navLinks.contains(e.target)) {
-        // Close all tabs
-        tabHeaders.forEach(header => {
-          const content = header.parentElement.querySelector('.nav-tab-content');
-          const icon = header.querySelector('.fa-chevron-down');
-          
-          header.classList.remove('active');
-          header.setAttribute('aria-selected', 'false');
-          header.setAttribute('aria-expanded', 'false');
-          content.classList.remove('active');
-          content.setAttribute('aria-hidden', 'true');
-          if (icon) {
-            icon.style.transform = 'rotate(0deg)';
-          }
-        });
+      if (!hamburger.contains(e.target) && !nav.contains(e.target)) {
+        hamburger.classList.remove('active');
+        nav.classList.remove('active');
       }
+    });
+
+    // Close mobile menu when clicking a link
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        nav.classList.remove('active');
+      });
+    });
+  }
+
+  // Header scroll effect
+  const header = document.querySelector('.main-header');
+  let lastScroll = 0;
+
+  if (header) {
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      
+      if (currentScroll <= 0) {
+        header.classList.remove('scroll-up');
+        return;
+      }
+      
+      if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
+        // Scrolling down
+        header.classList.remove('scroll-up');
+        header.classList.add('scroll-down');
+      } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
+        // Scrolling up
+        header.classList.remove('scroll-down');
+        header.classList.add('scroll-up');
+      }
+      lastScroll = currentScroll;
     });
   }
 
   // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function(e) {
+    anchor.addEventListener('click', function (e) {
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
+      const target = document.querySelector(this.getAttribute('href'));
       if (target) {
         target.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
+          behavior: 'smooth',
+          block: 'start'
         });
       }
     });
@@ -510,59 +428,6 @@ function showUpdateNotification() {
     <button onclick="window.location.reload()">Update Now</button>
   `;
   document.body.appendChild(notification);
-}
-
-// Initialize UI components
-export function initializeUI() {
-  // Mobile menu functionality
-  const hamburger = document.querySelector('.hamburger');
-  const navLinks = document.querySelector('.nav-links');
-
-  if (hamburger && navLinks) {
-    hamburger.addEventListener('click', () => {
-      hamburger.classList.toggle('active');
-      navLinks.classList.toggle('active');
-    });
-  }
-
-  // Header scroll effect
-  let lastScroll = 0;
-  const header = document.querySelector('.main-header');
-
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.pageYOffset;
-    
-    if (currentScroll <= 0) {
-      header.classList.remove('scroll-up');
-      return;
-    }
-    
-    if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
-      // Scrolling down
-      header.classList.remove('scroll-up');
-      header.classList.add('scroll-down');
-    } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
-      // Scrolling up
-      header.classList.remove('scroll-down');
-      header.classList.add('scroll-up');
-    }
-    
-    lastScroll = currentScroll;
-  });
-
-  // Smooth scrolling for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  });
 }
 
 // Initialize when the page loads
