@@ -237,6 +237,12 @@
     </div>
   </footer>
 
-  <script src="assets/js/main.js" type="module"></script>
+  <script type="module">
+    import { registerServiceWorker, initializeUI } from '/assets/js/main.js';
+    window.addEventListener('load', () => {
+      registerServiceWorker();
+      initializeUI();
+    });
+  </script>
 </body>
 </html>

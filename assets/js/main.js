@@ -500,3 +500,116 @@ function showUpdateNotification() {
   `;
   document.head.appendChild(style);
 }
+
+// Service Worker Registration
+export async function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      // Check if service worker is already registered
+      const existingRegistration = await navigator.serviceWorker.getRegistration();
+      if (existingRegistration) {
+        console.log('Service Worker already registered:', existingRegistration);
+        return existingRegistration;
+      }
+
+      // Register new service worker
+      const registration = await navigator.serviceWorker.register('/service-worker.js', {
+        scope: '/'
+      });
+      
+      console.log('Service Worker registered:', registration);
+
+      // Handle updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        console.log('Service Worker update found!');
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New content is available, show update notification
+            showUpdateNotification();
+          }
+        });
+      });
+
+      // Handle successful activation
+      registration.addEventListener('activate', event => {
+        console.log('Service Worker activated');
+      });
+
+      return registration;
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  }
+}
+
+// Update notification
+function showUpdateNotification() {
+  const notification = document.createElement('div');
+  notification.className = 'update-notification';
+  notification.innerHTML = `
+    <p>A new version is available!</p>
+    <button onclick="window.location.reload()">Update Now</button>
+  `;
+  document.body.appendChild(notification);
+}
+
+// Initialize UI components
+export function initializeUI() {
+  // Mobile menu functionality
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+  }
+
+  // Header scroll effect
+  let lastScroll = 0;
+  const header = document.querySelector('.main-header');
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    
+    if (currentScroll <= 0) {
+      header.classList.remove('scroll-up');
+      return;
+    }
+    
+    if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
+      // Scrolling down
+      header.classList.remove('scroll-up');
+      header.classList.add('scroll-down');
+    } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
+      // Scrolling up
+      header.classList.remove('scroll-down');
+      header.classList.add('scroll-up');
+    }
+    
+    lastScroll = currentScroll;
+  });
+
+  // Smooth scrolling for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+}
+
+// Initialize when the page loads
+window.addEventListener('load', () => {
+  registerServiceWorker();
+  initializeUI();
+});
