@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Pay your lawn care and landscaping services bill securely online with PayPal or credit card.">
   <title>Pay Your Bill - Holliday's Lawn & Garden</title>
+  <link rel="icon" type="image/webp" href="assets/images/hollidays-logo.optimized-1280.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
@@ -36,13 +38,21 @@
       border-radius: 5px;
       font-size: 1rem;
     }
-    .paypal-button {
+    .payment-options {
       margin: 2rem 0;
       text-align: center;
-      min-height: 150px;
+    }
+    .payment-options h2 {
+      margin-bottom: 1rem;
+      color: #333;
+      font-size: 1.5rem;
+    }
+    .paypal-container {
       display: flex;
+      flex-direction: column;
+      gap: 1rem;
       align-items: center;
-      justify-content: center;
+      margin-top: 1rem;
     }
     .error-message {
       color: #dc3545;
@@ -99,7 +109,13 @@
         </div>
       </form>
 
-      <div class="paypal-button" id="paypal-button-container"></div>
+      <div class="payment-options">
+        <h2>Choose Payment Method</h2>
+        <div class="paypal-container">
+          <div id="paypal-button-container"></div>
+          <div id="card-button-container"></div>
+        </div>
+      </div>
     </section>
   </main>
 
@@ -140,7 +156,56 @@
       const accountError = document.getElementById('account-error');
       const amountError = document.getElementById('amount-error');
 
+      function validateForm() {
+        let isValid = true;
+        if (!accountInput.value.trim()) {
+          accountError.textContent = 'Please enter your account number';
+          accountError.style.display = 'block';
+          isValid = false;
+        } else {
+          accountError.style.display = 'none';
+        }
+        
+        if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
+          amountError.textContent = 'Please enter a valid amount';
+          amountError.style.display = 'block';
+          isValid = false;
+        } else {
+          amountError.style.display = 'none';
+        }
+
+        return isValid;
+      }
+
+      function createOrder(data, actions) {
+        if (!validateForm()) {
+          return Promise.reject(new Error('Please fill in all required fields'));
+        }
+
+        return actions.order.create({
+          purchase_units: [{
+            amount: {
+              value: amountInput.value
+            },
+            description: `Payment for account ${accountInput.value}`
+          }]
+        });
+      }
+
+      function onApprove(data, actions) {
+        return actions.order.capture().then(function(details) {
+          alert('Payment completed successfully! Thank you for your payment.');
+          form.reset();
+        });
+      }
+
+      function onError(err) {
+        console.error('PayPal Error:', err);
+        alert('There was an error processing your payment. Please try again.');
+      }
+
       if (typeof paypal !== 'undefined') {
+        // PayPal button
         paypal.Buttons({
           style: {
             layout: 'vertical',
@@ -149,51 +214,12 @@
             label: 'pay'
           },
           fundingSource: paypal.FUNDING.PAYPAL,
-          createOrder: function(data, actions) {
-            // Validate form
-            let isValid = true;
-            if (!accountInput.value.trim()) {
-              accountError.textContent = 'Please enter your account number';
-              accountError.style.display = 'block';
-              isValid = false;
-            } else {
-              accountError.style.display = 'none';
-            }
-            
-            if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
-              amountError.textContent = 'Please enter a valid amount';
-              amountError.style.display = 'block';
-              isValid = false;
-            } else {
-              amountError.style.display = 'none';
-            }
-
-            if (!isValid) {
-              return Promise.reject(new Error('Please fill in all required fields'));
-            }
-
-            return actions.order.create({
-              purchase_units: [{
-                amount: {
-                  value: amountInput.value
-                },
-                description: `Payment for account ${accountInput.value}`
-              }]
-            });
-          },
-          onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-              alert('Payment completed successfully! Thank you for your payment.');
-              form.reset();
-            });
-          },
-          onError: function(err) {
-            console.error('PayPal Error:', err);
-            alert('There was an error processing your payment. Please try again.');
-          }
+          createOrder: createOrder,
+          onApprove: onApprove,
+          onError: onError
         }).render('#paypal-button-container');
 
-        // Add credit/debit card button
+        // Credit/Debit card button
         paypal.Buttons({
           style: {
             layout: 'vertical',
@@ -202,52 +228,13 @@
             label: 'pay'
           },
           fundingSource: paypal.FUNDING.CARD,
-          createOrder: function(data, actions) {
-            // Validate form
-            let isValid = true;
-            if (!accountInput.value.trim()) {
-              accountError.textContent = 'Please enter your account number';
-              accountError.style.display = 'block';
-              isValid = false;
-            } else {
-              accountError.style.display = 'none';
-            }
-            
-            if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
-              amountError.textContent = 'Please enter a valid amount';
-              amountError.style.display = 'block';
-              isValid = false;
-            } else {
-              amountError.style.display = 'none';
-            }
-
-            if (!isValid) {
-              return Promise.reject(new Error('Please fill in all required fields'));
-            }
-
-            return actions.order.create({
-              purchase_units: [{
-                amount: {
-                  value: amountInput.value
-                },
-                description: `Payment for account ${accountInput.value}`
-              }]
-            });
-          },
-          onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-              alert('Payment completed successfully! Thank you for your payment.');
-              form.reset();
-            });
-          },
-          onError: function(err) {
-            console.error('PayPal Error:', err);
-            alert('There was an error processing your payment. Please try again.');
-          }
-        }).render('#paypal-button-container');
+          createOrder: createOrder,
+          onApprove: onApprove,
+          onError: onError
+        }).render('#card-button-container');
       } else {
-        document.getElementById('paypal-button-container').innerHTML = 
-          '<p style="color: #dc3545;">Unable to load PayPal. Please try again later.</p>';
+        document.querySelector('.paypal-container').innerHTML = 
+          '<p style="color: #dc3545;">Unable to load payment options. Please try again later.</p>';
       }
     });
   </script>
