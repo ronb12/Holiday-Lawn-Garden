@@ -39,7 +39,7 @@ for i in {1..2}; do
 done
 
 # Create a proper placeholder image
-convert -size 800x600 xc:#f0f0f0 -gravity center -pointsize 40 -annotate 0 "Image Coming Soon" "assets/images/placeholder.jpg"
+convert -size 800x600 xc:#f0f0f0 -gravity center -pointsize 40 -annotate 0 "Holliday's Lawn & Garden" "assets/images/placeholder.jpg"
 convert "assets/images/placeholder.jpg" "assets/images/placeholder.webp"
 
 echo "Image optimization complete!" 
