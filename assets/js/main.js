@@ -154,10 +154,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize UI components
 function initializeUI() {
+  // Set active navigation link
+  const currentPath = window.location.pathname;
+  const navLinks = document.querySelectorAll('.nav-links a');
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPath.split('/').pop()) {
+      link.classList.add('active');
+    }
+  });
+
   // Mobile menu
   const hamburger = document.querySelector('.hamburger');
   const nav = document.querySelector('nav');
-  const navLinks = document.querySelectorAll('.nav-links a');
   
   if (hamburger && nav) {
     hamburger.addEventListener('click', () => {

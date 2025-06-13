@@ -65,10 +65,34 @@ nav {
   transition: color 0.3s ease;
   white-space: nowrap;
   font-size: 0.95rem;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: var(--primary-color);
+  transition: width 0.3s ease;
 }
 
 .nav-links a:hover {
-  color: #4CAF50;
+  color: var(--primary-color);
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+.nav-links a.active {
+  color: var(--primary-color);
+}
+
+.nav-links a.active::after {
+  width: 100%;
 }
 
 /* Hamburger Menu Styles */
@@ -129,6 +153,10 @@ nav {
     font-size: 1.1rem;
   }
 
+  .nav-links a::after {
+    bottom: -2px;
+  }
+
   .hamburger.active span:nth-child(1) {
     transform: rotate(45deg) translate(5px, 5px);
   }
@@ -167,14 +195,14 @@ nav {
 }
 
 .btn-primary {
-  background: #4CAF50;
+  background: var(--primary-color);
   color: white;
 }
 
 .btn-secondary {
   background: white;
-  color: #4CAF50;
-  border: 2px solid #4CAF50;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
 }
 
 .btn:hover {
