@@ -34,6 +34,7 @@ body {
   align-items: center;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: 80px;
 }
 
 .logo img {
@@ -300,4 +301,17 @@ nav {
 
 .update-notification button:hover {
   background: #f0f0f0;
+}
+
+/* Hero Section Styles */
+.hero {
+  position: relative;
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  overflow: hidden;
+  padding-top: 80px;
 } 
