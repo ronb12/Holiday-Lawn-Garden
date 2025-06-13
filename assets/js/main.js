@@ -385,49 +385,31 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Service Worker Registration
-export async function registerServiceWorker() {
+export function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    try {
-      // Check if service worker is already registered
-      const existingRegistration = await navigator.serviceWorker.getRegistration();
-      if (existingRegistration) {
-        console.log('Service Worker already registered:', existingRegistration);
-        return existingRegistration;
-      }
-
-      // Register new service worker
-      const registration = await navigator.serviceWorker.register('/service-worker.js', {
-        scope: '/'
-      });
-      
-      console.log('Service Worker registered:', registration);
-
-      // Handle updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        console.log('Service Worker update found!');
-
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New content is available, show update notification
-            showUpdateNotification();
-          }
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful');
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateNotification();
+              }
+            });
+          });
+        })
+        .catch(error => {
+          console.error('ServiceWorker registration failed:', error);
         });
-      });
-
-      // Handle successful activation
-      registration.addEventListener('activate', event => {
-        console.log('Service Worker activated');
-      });
-
-      return registration;
-    } catch (error) {
-      console.error('Service Worker registration failed:', error);
-    }
+    });
   }
 }
 
-// Update notification
+// Update Notification
 function showUpdateNotification() {
   const notification = document.createElement('div');
   notification.className = 'update-notification';

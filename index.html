@@ -276,11 +276,15 @@
   </footer>
 
   <script src="assets/js/hero.js"></script>
-  <script type="module">
-    import { registerServiceWorker, initializeUI } from '/assets/js/main.js';
+  <script type="module" src="assets/js/main.js"></script>
+  <script>
     window.addEventListener('load', () => {
-      registerServiceWorker();
-      initializeUI();
+      if (typeof registerServiceWorker === 'function') {
+        registerServiceWorker();
+      }
+      if (typeof initializeUI === 'function') {
+        initializeUI();
+      }
     });
   </script>
 </body>
