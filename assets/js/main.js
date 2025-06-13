@@ -14,7 +14,7 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
 
 // Service Worker Registration
-export async function registerServiceWorker() {
+async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
       // Check if service worker is already registered
@@ -351,14 +351,16 @@ function initializeCustomComponents() {
   // Add any custom component initialization here
 }
 
-// Export functions for use in other files
+// Export functions
 export {
   initializeUI,
   setupEventListeners,
-  registerServiceWorker,
   initializeFirebase,
   handleFormSubmit,
-  handleNavigation
+  handleNavigation,
+  initTabs,
+  initializeComponents,
+  initializeCustomComponents
 };
 
 // Mobile menu functionality
