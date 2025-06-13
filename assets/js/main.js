@@ -14,13 +14,16 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
 
 // Service Worker Registration
+let isServiceWorkerRegistered = false;
+
 async function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && !isServiceWorkerRegistered) {
     try {
       // Check if service worker is already registered
       const existingRegistration = await navigator.serviceWorker.getRegistration();
       if (existingRegistration) {
         console.log('Service Worker already registered:', existingRegistration);
+        isServiceWorkerRegistered = true;
         return existingRegistration;
       }
 
@@ -30,6 +33,7 @@ async function registerServiceWorker() {
       });
       
       console.log('Service Worker registered:', registration);
+      isServiceWorkerRegistered = true;
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
