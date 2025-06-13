@@ -22,6 +22,32 @@ document.addEventListener('DOMContentLoaded', function() {
     registerServiceWorker();
     initializeFirebase();
 
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('Service Worker registered:', registration);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('Service Worker update found!');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content is available, show update notification
+                  showUpdateNotification();
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    }
+
     // Mobile menu functionality
     const hamburger = document.querySelector('.hamburger');
     const nav = document.querySelector('nav');
@@ -416,146 +442,45 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Check for updates
-async function checkForUpdates() {
-  try {
-    const response = await fetch('version.json');
-    if (!response.ok) throw new Error('Failed to fetch version');
-    const data = await response.json();
-    const currentVersion = '1.0.4'; // Update this when you make changes
-    
-    if (data.version !== currentVersion) {
-      showUpdateBanner();
+// Show update notification
+function showUpdateNotification() {
+  const notification = document.createElement('div');
+  notification.className = 'update-notification';
+  notification.innerHTML = `
+    <p>A new version is available!</p>
+    <button onclick="window.location.reload()">Update Now</button>
+  `;
+  document.body.appendChild(notification);
+  
+  // Add styles for the notification
+  const style = document.createElement('style');
+  style.textContent = `
+    .update-notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #4CAF50;
+      color: white;
+      padding: 1rem;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-  } catch (error) {
-    console.error('Error checking for updates:', error);
-  }
-}
-
-// Show update banner
-function showUpdateBanner() {
-  const updateBanner = document.getElementById('updateBanner');
-  if (updateBanner) {
-    updateBanner.style.display = 'block';
-    updateBanner.addEventListener('click', clearCacheAndReload);
-  }
-}
-
-// Clear cache and reload
-async function clearCacheAndReload() {
-  if ('caches' in window) {
-    try {
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
-    } catch (error) {
-      console.error('Error clearing cache:', error);
+    .update-notification button {
+      background: white;
+      color: #4CAF50;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 600;
     }
-  }
-  window.location.reload(true);
+    .update-notification button:hover {
+      background: #f0f0f0;
+    }
+  `;
+  document.head.appendChild(style);
 }
-
-// Check for updates every 5 minutes
-setInterval(checkForUpdates, 300000);
-
-// Main JavaScript functionality
-document.addEventListener('DOMContentLoaded', () => {
-  // Navigation scroll effect
-  const nav = document.querySelector('.nav');
-  if (nav) {
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 100) {
-        nav.classList.add('nav-scrolled');
-      } else {
-        nav.classList.remove('nav-scrolled');
-      }
-    });
-  }
-
-  // Mobile menu toggle
-  const menuToggle = document.querySelector('.menu-toggle');
-  const navLinks = document.querySelector('.nav-links');
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
-      menuToggle.classList.toggle('active');
-    });
-  }
-
-  // Smooth scroll for all internal links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute('href'));
-      if (target) {
-        target.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }
-    });
-  });
-
-  // Form validation
-  const forms = document.querySelectorAll('form');
-  forms.forEach(form => {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData);
-      
-      // Basic validation
-      let isValid = true;
-      for (const [key, value] of Object.entries(data)) {
-        if (!value.trim()) {
-          isValid = false;
-          const input = form.querySelector(`[name="${key}"]`);
-          if (input) {
-            input.classList.add('error');
-          }
-        }
-      }
-
-      if (isValid) {
-        // Here you would typically send the form data to your server
-        console.log('Form data:', data);
-        form.reset();
-        showMessage('Thank you for your message! We will get back to you soon.', 'success');
-      } else {
-        showMessage('Please fill in all required fields.', 'error');
-      }
-    });
-  });
-
-  // Message display function
-  function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}`;
-    messageDiv.textContent = message;
-    document.body.appendChild(messageDiv);
-
-    setTimeout(() => {
-      messageDiv.remove();
-    }, 5000);
-  }
-
-  // Image lazy loading
-  const images = document.querySelectorAll('img[loading="lazy"]');
-  if ('loading' in HTMLImageElement.prototype) {
-    images.forEach(img => {
-      img.src = img.dataset.src;
-    });
-  } else {
-    // Fallback for browsers that don't support lazy loading
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const img = entry.target;
-          img.src = img.dataset.src;
-          observer.unobserve(img);
-        }
-      });
-    });
-
-    images.forEach(img => imageObserver.observe(img));
-  }
-});

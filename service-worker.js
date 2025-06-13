@@ -1,18 +1,13 @@
-const CACHE_NAME = 'holliday-lawn-garden-v1';
+const CACHE_NAME = 'holiday-lawn-garden-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/assets/styles/main.css',
-  '/assets/styles/mobile-menu.css',
-  '/assets/styles/components/header.css',
-  '/assets/styles/components/footer.css',
+  '/assets/css/main.css',
+  '/assets/styles/hero.css',
   '/assets/js/main.js',
-  '/assets/js/firebase-config.js',
+  '/assets/js/hero.js',
   '/assets/images/hollidays-logo.png',
-  '/assets/images/hero-garden-landscaping.jpg',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css'
+  '/assets/images/hero-garden-landscaping.optimized-1280.jpg'
 ];
 
 // Install event - cache assets
@@ -57,7 +52,7 @@ self.addEventListener('fetch', (event) => {
 
         return fetch(fetchRequest).then(
           (response) => {
-            // Check if valid response
+            // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
