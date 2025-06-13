@@ -238,10 +238,14 @@
   </footer>
 
   <script type="module">
-    import { registerServiceWorker, initializeUI } from '/assets/js/main.js';
-    window.addEventListener('load', () => {
-      registerServiceWorker();
+    import { initializeUI } from '/assets/js/main.js';
+    
+    // Initialize UI components
+    document.addEventListener('DOMContentLoaded', () => {
       initializeUI();
+      if (typeof registerServiceWorker === 'function') {
+        registerServiceWorker();
+      }
     });
   </script>
 </body>
