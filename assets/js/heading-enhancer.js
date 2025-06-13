@@ -223,7 +223,14 @@ class HeadingEnhancer {
       'sitemap': 'Sitemap - Holliday Lawn & Garden',
       'offline': 'Offline - Holliday Lawn & Garden',
       'error': 'Error - Holliday Lawn & Garden',
-      '404': 'Page Not Found - Holliday Lawn & Garden'
+      '404': 'Page Not Found - Holliday Lawn & Garden',
+      'home': 'Welcome to Holliday Lawn & Garden',
+      'services': 'Our Services',
+      'about': 'About Us',
+      'contact': 'Get in Touch',
+      'gallery': 'Our Work',
+      'cta': 'Ready to Get Started?',
+      'footer': 'Contact Information'
     };
     
     return titles[fileName] || 'Holliday Lawn & Garden';
@@ -251,7 +258,14 @@ class HeadingEnhancer {
       'sitemap': 'Navigate the Holliday Lawn & Garden website with our comprehensive sitemap.',
       'offline': 'You are currently offline. Please check your internet connection.',
       'error': 'An error has occurred. Please try again later.',
-      '404': 'The page you are looking for could not be found.'
+      '404': 'The page you are looking for could not be found.',
+      'home': 'Welcome to Holliday Lawn & Garden',
+      'services': 'Our Services',
+      'about': 'About Us',
+      'contact': 'Get in Touch',
+      'gallery': 'Our Work',
+      'cta': 'Ready to Get Started?',
+      'footer': 'Contact Information'
     };
     
     return descriptions[fileName] || 'Professional lawn care and landscaping services in your area.';

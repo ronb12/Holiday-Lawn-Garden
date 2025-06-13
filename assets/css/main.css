@@ -342,4 +342,9 @@ nav {
   background: #222;
   overflow: hidden;
   padding-top: 80px;
+}
+
+/* Remove testimonials styles */
+.testimonials {
+  display: none;
 } 
