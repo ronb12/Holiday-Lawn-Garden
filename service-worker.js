@@ -2,12 +2,17 @@ const CACHE_NAME = 'holiday-lawn-garden-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/services.html',
   '/assets/css/main.css',
   '/assets/styles/hero.css',
   '/assets/js/main.js',
   '/assets/js/hero.js',
   '/assets/images/hollidays-logo.png',
-  '/assets/images/hero-garden-landscaping.optimized-1280.jpg'
+  '/assets/images/services-hero.jpg',
+  '/assets/images/lawn-care.jpg',
+  '/assets/images/landscaping.jpg',
+  '/assets/images/pressure-washing.jpg',
+  '/assets/images/commercial.jpg'
 ];
 
 // Install event - cache assets
