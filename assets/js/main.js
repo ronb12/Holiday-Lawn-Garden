@@ -22,15 +22,59 @@ document.addEventListener('DOMContentLoaded', function() {
     registerServiceWorker();
     initializeFirebase();
 
-    // Mobile menu close button functionality
-    const closeBtn = document.querySelector('.mobile-menu-close');
+    // Mobile menu functionality
+    const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
-    if (closeBtn && navLinks) {
-      closeBtn.addEventListener('click', function() {
-        navLinks.classList.remove('active');
-        document.body.classList.remove('menu-open');
+    
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', function() {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(event) {
+        const isClickInside = hamburger.contains(event.target) || navLinks.contains(event.target);
+        
+        if (!isClickInside && navLinks.classList.contains('active')) {
+          hamburger.classList.remove('active');
+          navLinks.classList.remove('active');
+        }
+      });
+
+      // Close menu when clicking a link
+      const navItems = navLinks.querySelectorAll('a');
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          hamburger.classList.remove('active');
+          navLinks.classList.remove('active');
+        });
       });
     }
+
+    // Header scroll effect
+    const header = document.querySelector('.main-header');
+    let lastScroll = 0;
+
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      
+      if (currentScroll <= 0) {
+        header.classList.remove('scroll-up');
+        return;
+      }
+      
+      if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
+        // Scroll Down
+        header.classList.remove('scroll-up');
+        header.classList.add('scroll-down');
+      } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
+        // Scroll Up
+        header.classList.remove('scroll-down');
+        header.classList.add('scroll-up');
+      }
+      lastScroll = currentScroll;
+    });
   } catch (error) {
     console.error('Initialization error:', error);
   }
