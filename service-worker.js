@@ -3,6 +3,7 @@ const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
   '/services.html',
+  '/education.html',
   '/assets/css/main.css',
   '/assets/styles/hero.css',
   '/assets/js/main.js',
@@ -12,7 +13,12 @@ const ASSETS_TO_CACHE = [
   '/assets/images/lawn-care.jpg',
   '/assets/images/landscaping.jpg',
   '/assets/images/pressure-washing.jpg',
-  '/assets/images/commercial.jpg'
+  '/assets/images/commercial.jpg',
+  '/assets/images/education-hero.jpg',
+  '/assets/images/seasonal-care.jpg',
+  '/assets/images/mowing.jpg',
+  '/assets/images/watering.jpg',
+  '/assets/images/pest-control.jpg'
 ];
 
 // Install event - cache assets
