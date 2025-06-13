@@ -24,27 +24,58 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Register service worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(registration => {
-            console.log('Service Worker registered:', registration);
-            
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              console.log('Service Worker update found!');
-              
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New content is available, show update notification
-                  showUpdateNotification();
-                }
-              });
-            });
-          })
-          .catch(error => {
-            console.error('Service Worker registration failed:', error);
+      let registration = null;
+      
+      async function registerServiceWorker() {
+        try {
+          // Check if service worker is already registered
+          const existingRegistration = await navigator.serviceWorker.getRegistration();
+          if (existingRegistration) {
+            console.log('Service Worker already registered:', existingRegistration);
+            return existingRegistration;
+          }
+
+          // Register new service worker
+          registration = await navigator.serviceWorker.register('/service-worker.js', {
+            scope: '/'
           });
+          
+          console.log('Service Worker registered:', registration);
+
+          // Handle updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            console.log('Service Worker update found!');
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New content is available, show update notification
+                showUpdateNotification();
+              }
+            });
+          });
+
+          // Handle successful activation
+          registration.addEventListener('activate', event => {
+            console.log('Service Worker activated');
+          });
+
+          return registration;
+        } catch (error) {
+          console.error('Service Worker registration failed:', error);
+        }
+      }
+
+      // Register service worker when the page loads
+      window.addEventListener('load', registerServiceWorker);
+
+      // Handle service worker updates
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
 
@@ -289,21 +320,6 @@ function setupEventListeners() {
   });
 }
 
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    // Use relative path for GitHub Pages
-    const swPath = './service-worker.js';
-    navigator.serviceWorker
-      .register(swPath)
-      .then(registration => {
-        console.log('Service Worker registered:', registration);
-      })
-      .catch(error => {
-        console.error('Service Worker Registration error:', error);
-      });
-  }
-}
-
 function initializeFirebase() {
   try {
     // Use global firebase object
@@ -422,8 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (hamburger && navLinks) {
     hamburger.addEventListener('click', () => {
-      navLinks.classList.toggle('active');
       hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
     });
   }
 
