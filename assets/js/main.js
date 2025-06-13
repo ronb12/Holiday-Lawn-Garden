@@ -14,16 +14,13 @@ import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
 
 // Service Worker Registration
-let isServiceWorkerRegistered = false;
-
 async function registerServiceWorker() {
-  if ('serviceWorker' in navigator && !isServiceWorkerRegistered) {
+  if ('serviceWorker' in navigator) {
     try {
       // Check if service worker is already registered
       const existingRegistration = await navigator.serviceWorker.getRegistration();
-      if (existingRegistration) {
+      if (existingRegistration && existingRegistration.active) {
         console.log('Service Worker already registered:', existingRegistration);
-        isServiceWorkerRegistered = true;
         return existingRegistration;
       }
 
@@ -33,7 +30,6 @@ async function registerServiceWorker() {
       });
       
       console.log('Service Worker registered:', registration);
-      isServiceWorkerRegistered = true;
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
@@ -65,7 +61,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize UI components
     initializeUI();
     setupEventListeners();
-    registerServiceWorker();
+    
+    // Register service worker only once
+    if (!window.serviceWorkerRegistered) {
+      registerServiceWorker().then(() => {
+        window.serviceWorkerRegistered = true;
+      });
+    }
+    
     initializeFirebase();
 
     // Handle service worker updates
@@ -407,6 +410,5 @@ function showUpdateNotification() {
 
 // Initialize everything when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  registerServiceWorker();
   initializeUI();
 });
