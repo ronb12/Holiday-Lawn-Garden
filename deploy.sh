@@ -6,7 +6,7 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${YELLOW}Starting deployment process...${NC}"
+echo -e "${YELLOW}Starting parallel deployment process...${NC}"
 
 # Function to handle errors
 handle_error() {
@@ -48,20 +48,52 @@ if [[ "$current_branch" != "main" ]]; then
     fi
 fi
 
-# Deploy to GitHub
-echo -e "${YELLOW}Deploying to GitHub...${NC}"
-if ! git push origin main; then
-    handle_error "Failed to push to GitHub"
-fi
-echo -e "${GREEN}Successfully deployed to GitHub!${NC}"
+# Function to deploy to GitHub
+deploy_github() {
+    echo -e "${YELLOW}Deploying to GitHub...${NC}"
+    if ! git push origin main; then
+        echo -e "${RED}Failed to push to GitHub${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}Successfully deployed to GitHub!${NC}"
+    return 0
+}
 
-# Deploy to Firebase
-echo -e "${YELLOW}Deploying to Firebase...${NC}"
-if ! firebase deploy --only hosting; then
-    handle_error "Failed to deploy to Firebase"
-fi
-echo -e "${GREEN}Successfully deployed to Firebase!${NC}"
+# Function to deploy to Firebase
+deploy_firebase() {
+    echo -e "${YELLOW}Deploying to Firebase...${NC}"
+    if ! firebase deploy --only hosting; then
+        echo -e "${RED}Failed to deploy to Firebase${NC}"
+        return 1
+    fi
+    echo -e "${GREEN}Successfully deployed to Firebase!${NC}"
+    return 0
+}
 
-echo -e "${GREEN}Deployment completed successfully!${NC}"
+# Run both deployments in parallel
+deploy_github &
+github_pid=$!
+deploy_firebase &
+firebase_pid=$!
+
+# Wait for both processes to complete
+wait $github_pid
+github_status=$?
+wait $firebase_pid
+firebase_status=$?
+
+# Check if either deployment failed
+if [ $github_status -ne 0 ] || [ $firebase_status -ne 0 ]; then
+    echo -e "${RED}Deployment failed!${NC}"
+    if [ $github_status -ne 0 ]; then
+        echo -e "${RED}GitHub deployment failed${NC}"
+    fi
+    if [ $firebase_status -ne 0 ]; then
+        echo -e "${RED}Firebase deployment failed${NC}"
+    fi
+    exit 1
+fi
+
+echo -e "${GREEN}Parallel deployment completed successfully!${NC}"
 echo -e "${GREEN}GitHub: https://github.com/ronb12/Holliday-Lawn-Garden${NC}"
 echo -e "${GREEN}Firebase: https://holiday-lawn-and-garden.web.app${NC}" 
