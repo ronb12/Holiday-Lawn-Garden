@@ -24,30 +24,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Mobile menu functionality
     const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
+    const nav = document.querySelector('nav');
     
-    if (hamburger && navLinks) {
+    if (hamburger && nav) {
       hamburger.addEventListener('click', function() {
         hamburger.classList.toggle('active');
-        navLinks.classList.toggle('active');
+        nav.classList.toggle('active');
       });
 
       // Close menu when clicking outside
       document.addEventListener('click', function(event) {
-        const isClickInside = hamburger.contains(event.target) || navLinks.contains(event.target);
+        const isClickInside = hamburger.contains(event.target) || nav.contains(event.target);
         
-        if (!isClickInside && navLinks.classList.contains('active')) {
+        if (!isClickInside && nav.classList.contains('active')) {
           hamburger.classList.remove('active');
-          navLinks.classList.remove('active');
+          nav.classList.remove('active');
         }
       });
 
       // Close menu when clicking a link
-      const navItems = navLinks.querySelectorAll('a');
+      const navItems = nav.querySelectorAll('a');
       navItems.forEach(item => {
         item.addEventListener('click', () => {
           hamburger.classList.remove('active');
-          navLinks.classList.remove('active');
+          nav.classList.remove('active');
         });
       });
     }
@@ -75,6 +75,21 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       lastScroll = currentScroll;
     });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener("click", function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute("href"));
+        if (target) {
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+      });
+    });
+
   } catch (error) {
     console.error('Initialization error:', error);
   }
