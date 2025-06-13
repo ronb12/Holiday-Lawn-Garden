@@ -13,6 +13,48 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
 import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
 
+// Service Worker Registration
+export async function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      // Check if service worker is already registered
+      const existingRegistration = await navigator.serviceWorker.getRegistration();
+      if (existingRegistration) {
+        console.log('Service Worker already registered:', existingRegistration);
+        return existingRegistration;
+      }
+
+      // Register new service worker
+      const registration = await navigator.serviceWorker.register('/service-worker.js', {
+        scope: '/'
+      });
+      
+      console.log('Service Worker registered:', registration);
+
+      // Handle updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        console.log('Service Worker update found!');
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateNotification();
+          }
+        });
+      });
+
+      // Handle successful activation
+      registration.addEventListener('activate', event => {
+        console.log('Service Worker activated');
+      });
+
+      return registration;
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
+  }
+}
+
 // Main JavaScript for Holliday Lawn & Garden website
 document.addEventListener('DOMContentLoaded', function() {
   try {
@@ -22,62 +64,14 @@ document.addEventListener('DOMContentLoaded', function() {
     registerServiceWorker();
     initializeFirebase();
 
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      let registration = null;
-      
-      async function registerServiceWorker() {
-        try {
-          // Check if service worker is already registered
-          const existingRegistration = await navigator.serviceWorker.getRegistration();
-          if (existingRegistration) {
-            console.log('Service Worker already registered:', existingRegistration);
-            return existingRegistration;
-          }
-
-          // Register new service worker
-          registration = await navigator.serviceWorker.register('/service-worker.js', {
-            scope: '/'
-          });
-          
-          console.log('Service Worker registered:', registration);
-
-          // Handle updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            console.log('Service Worker update found!');
-
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New content is available, show update notification
-                showUpdateNotification();
-              }
-            });
-          });
-
-          // Handle successful activation
-          registration.addEventListener('activate', event => {
-            console.log('Service Worker activated');
-          });
-
-          return registration;
-        } catch (error) {
-          console.error('Service Worker registration failed:', error);
-        }
+    // Handle service worker updates
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
       }
-
-      // Register service worker when the page loads
-      window.addEventListener('load', registerServiceWorker);
-
-      // Handle service worker updates
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
-    }
+    });
 
     // Mobile menu functionality
     const hamburger = document.querySelector('.hamburger');
@@ -393,31 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
     yearElement.textContent = new Date().getFullYear();
   }
 });
-
-// Service Worker Registration
-export function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-          console.log('ServiceWorker registration successful');
-          
-          // Check for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                showUpdateNotification();
-              }
-            });
-          });
-        })
-        .catch(error => {
-          console.error('ServiceWorker registration failed:', error);
-        });
-    });
-  }
-}
 
 // Update Notification
 function showUpdateNotification() {
