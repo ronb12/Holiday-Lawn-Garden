@@ -319,43 +319,22 @@
     });
 
     // Handle Google Sign-in
-    document.getElementById('googleSignIn')?.addEventListener('click', async () => {
-      const googleBtn = document.getElementById('googleSignIn');
-      if (!googleBtn) return;
-
-      const provider = new window.firebase.auth.GoogleAuthProvider();
-      
-      try {
-        googleBtn.disabled = true;
-        googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
-        
-        const result = await window.auth.signInWithPopup(provider);
-        const user = result.user;
-        
-        // Check if user exists in Firestore
-        const userDoc = await window.db.collection('users').doc(user.uid).get();
-        
-        if (!userDoc.exists) {
-          // Create user document if it doesn't exist
-          await window.db.collection('users').doc(user.uid).set({
-            email: user.email,
-            displayName: user.displayName || '',
-            photoURL: user.photoURL || '',
-            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-            isAdmin: false
-          });
+    document.getElementById('googleSignIn').addEventListener('click', function() {
+      if (window.firebase && firebase.auth && typeof firebase.auth.GoogleAuthProvider === 'function') {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        if (typeof firebase.auth().signInWithPopup === 'function') {
+          firebase.auth().signInWithPopup(provider)
+            .then(result => {
+              // Handle result
+            })
+            .catch(error => {
+              console.error('Google sign-in error:', error);
+            });
+        } else {
+          console.error('signInWithPopup is not a function on firebase.auth()');
         }
-
-        showSuccess();
-        setTimeout(() => {
-          window.location.href = 'customer-dashboard.html';
-        }, 1500);
-      } catch (error) {
-        console.error('Google sign-in error:', error);
-        showError('Failed to sign in with Google. Please try again.');
-      } finally {
-        googleBtn.disabled = false;
-        googleBtn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Sign in with Google" class="google-logo" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;"> Sign in with Google';
+      } else {
+        console.error('Firebase Auth or GoogleAuthProvider is not initialized.');
       }
     });
 
