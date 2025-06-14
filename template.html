@@ -46,13 +46,11 @@
         import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
         import { getAnalytics, isSupported } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js';
         import { firebaseConfig } from './assets/js/firebase.js';
-
         try {
             const app = initializeApp(firebaseConfig);
             const auth = getAuth(app);
             const db = getFirestore(app);
             const googleProvider = new GoogleAuthProvider();
-
             let analytics = null;
             try {
                 if (await isSupported()) {
@@ -62,15 +60,12 @@
             } catch (error) {
                 console.warn('Analytics initialization failed:', error);
             }
-
             window.HollidayApp = { app, auth, db, analytics, googleProvider };
-
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     console.log('User is signed in:', user.email);
                     document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'block');
                     document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'none');
-
                     const adminLink = document.getElementById('adminLink');
                     if (adminLink) {
                         const allowedAdmins = ['ronellbradley@bradleyvs.com'];
@@ -82,7 +77,6 @@
                     console.log('User is signed out');
                     document.querySelectorAll('.auth-required').forEach(el => el.style.display = 'none');
                     document.querySelectorAll('.auth-not-required').forEach(el => el.style.display = 'block');
-
                     const adminLink = document.getElementById('adminLink');
                     if (adminLink) {
                         adminLink.style.display = 'none';
@@ -97,14 +91,12 @@
       installBtn.textContent = "📱 Install App";
       installBtn.className = "floating-button install-button";
       installBtn.style.display = "none";
-
       document.addEventListener("DOMContentLoaded", () => {
         const floatingButtons = document.querySelector(".floating-buttons");
         if (floatingButtons) {
           floatingButtons.appendChild(installBtn);
         }
       });
-
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
@@ -117,7 +109,6 @@
             });
         });
       }
-
       let deferredPrompt;
       window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
@@ -138,20 +129,17 @@
           });
         }
       });
-
       let refreshing = false;
       navigator.serviceWorker.addEventListener("controllerchange", () => {
         if (refreshing) return;
         window.location.reload();
         refreshing = true;
       });
-
       function showError(message, isFatal) {
         const errorBanner = document.createElement("div");
         errorBanner.className = "error-banner";
         errorBanner.textContent = message;
         document.body.appendChild(errorBanner);
-
         if (isFatal) {
           console.error("Fatal error occurred. Please refresh the page.");
           setTimeout(() => {
@@ -220,4 +208,6 @@
         </div>
       </div>
     </footer><script defer="defer" type="module">// Update copyright year
+<script type="module" src="assets/js/firebase-config.js"></script>
+<script type="module" src="assets/js/main.min.js" defer></script>
       document.getElementById('current-year').textContent = new Date().getFullYear();</script></body></html>

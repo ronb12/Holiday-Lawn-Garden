@@ -41,13 +41,10 @@
       name="description"
       content="Secure admin access for Holliday's Lawn & Garden management system."
     />
-
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/icons/favicon.png" />
-
     <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/styles/variables.css?v=1.0.3" />
-    
     <link rel="stylesheet" href="assets/styles/components/mobile-menu.css?v=1.0.3" />
     <link rel="stylesheet" href="assets/styles/components/main.css?v=1.0.3" />
     <link
@@ -58,13 +55,10 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
     />
-
     <!-- Web App Manifest -->
     <link rel="manifest" href="manifest.json" />
-
     <!-- Theme Color -->
     <meta name="theme-color" content="#4CAF50" />
-
     <!-- Content Security Policy -->
     <meta
       http-equiv="Content-Security-Policy"
@@ -79,7 +73,6 @@
       frame-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com;
     "
     />
-
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.min.js" defer type="module">
     import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
@@ -129,12 +122,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.min.js" defer type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-storage-compat.min.js" defer type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-analytics-compat.min.js" defer type="module"></script>
-
     <!-- Firebase Configuration -->
-    <script type="module" src="assets/js/firebase-config.min.js" defer></script>
     <script type="module" src="assets/js/firebase-init.min.js" defer></script>
+<script type="module" src="assets/js/firebase-config.js"></script>
     <script type="module" src="assets/js/main.min.js" defer></script>
-  
         <script type="application/ld+json">
           {
   "@context": "https://schema.org",
@@ -152,7 +143,6 @@
   }
 }
         </script>
-      
 </head>
   <body>
     <div id="loading-overlay" class="loading-overlay" style="display: none">
@@ -169,33 +159,32 @@
       <div class="spinner"></div>
     </div>
     <header class="main-header">
-      <a href="index.html" class="logo link-with-loading link-with-loading" aria-label="Link">
-        
+      <div class="logo">
+        <a href="index.html">
           <picture>
-            <source srcset="assets/images/hollidays-logo.webp" type="image/webp">
-            <img src="assets/images/hollidays-logo.webp" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+            <source srcset="assets/images/hollidays-logo.optimized-1280.webp" type="image/webp">
+            <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
           </picture>
-      </a>
-      <nav aria-label="Main navigation">
-        <ul class="nav-links">
-          <li><a href="index.html" aria-label="Link" class="link-with-loading link-with-loading">Home</a></li>
-          <li><a href="about.html" aria-label="Link" class="link-with-loading link-with-loading">About</a></li>
-          <li><a href="services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a></li>
-          <li><a href="contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a></li>
-          <li><a href="pay-your-bill.html" aria-label="Link" class="link-with-loading link-with-loading">Pay Your Bill</a></li>
-          <li><a href="education.html" aria-label="Link" class="link-with-loading link-with-loading">Education</a></li>
-          <li class="auth-not-required"><a href="login.html" aria-label="Link" class="link-with-loading link-with-loading">Login</a></li>
-          <li class="auth-required" style="display: none;"><a href="customer-dashboard.html" aria-label="Link" class="link-with-loading link-with-loading">Dashboard</a></li>
-          <li id="adminLink" style="display: none;"><a href="admin-login.html" aria-label="Link" class="link-with-loading link-with-loading">Admin</a></li>
-        </ul>
-      </nav>
-      <button class="hamburger button-with-loading button-with-loading" aria-label="Toggle Menu">
+        </a>
+      </div>
+      <button class="hamburger" aria-label="Toggle menu">
         <span></span>
         <span></span>
         <span></span>
       </button>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="education.html">Education</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+          <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+        </ul>
+      </nav>
     </header>
-
     <section class="hero">
     <h2>Professional Lawn Care Services</h2>
       <div class="hero-content">
@@ -203,7 +192,6 @@
         <p>Secure management system login</p>
       </div>
     </section>
-
     <section class="auth-section">
       <div class="container">
         <div class="card">
@@ -239,24 +227,20 @@
               Login to Admin Panel
             </button>
           </form>
-
           <div class="auth-divider">
             <span>or</span>
           </div>
-
           <div class="social-auth">
             <button class="social-button google button-with-loading button-with-loading" aria-label="Button">
               <i class="fab fa-google"></i>
               Continue with Google
             </button>
           </div>
-
           <div class="auth-links">
             <a href="forgot-password.html" class="link link-with-loading link-with-loading" aria-label="Link">Forgot Password?</a>
             <a href="index.html" class="link link-with-loading link-with-loading" aria-label="Link">Return to Homepage</a>
           </div>
         </div>
-
         <div class="security-notice">
           <i class="fas fa-shield-alt"></i>
           <h2>Security Notice</h3>
@@ -272,7 +256,6 @@
         </div>
       </div>
     </section>
-
     <footer class="footer" role="contentinfo" aria-label="Site footer">
       <div class="footer-content">
         <div class="footer-main">
@@ -291,11 +274,9 @@
       </a>
       </a>
       </a>
-              
               </a>
             </div>
           </div>
-
           <div class="footer-section">
             <h3>Quick Links</h3>
             <div class="footer-links">
@@ -306,7 +287,6 @@
               <a href="/faq.html" aria-label="Link" class="link-with-loading link-with-loading">FAQ</a>
             </div>
           </div>
-
           <div class="footer-section">
             <h3>Legal</h3>
             <div class="footer-links">
@@ -315,7 +295,6 @@
               <a href="/accessibility.html" aria-label="Link" class="link-with-loading link-with-loading">Accessibility</a>
             </div>
           </div>
-
           <div class="footer-section">
             <h3>Connect With Us</h3>
             <div class="footer-social">
@@ -334,13 +313,11 @@
             </div>
           </div>
         </div>
-
         <div class="footer-copyright">
           <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
         </div>
       </div>
     </footer>
-
     <script defer type="module">
       // Mobile menu toggle
       document
@@ -348,7 +325,6 @@
         .addEventListener("click", function () {
           document.querySelector(".nav-links").classList.toggle("active");
         });
-
       // Password visibility toggle
       document
         .querySelector(".toggle-password")
@@ -360,21 +336,17 @@
           this.querySelector("i").classList.toggle("fa-eye");
           this.querySelector("i").classList.toggle("fa-eye-slash");
         });
-
       // Form submission
       document
         .getElementById("adminLoginForm")
         .addEventListener("submit", function (e) {
           e.preventDefault();
-
           const email = document.getElementById("email").value;
           const password = document.getElementById("password").value;
           const remember = document.getElementById("remember").checked;
-
           // Add your admin login logic here
           alert("Admin login will be implemented with Firebase.");
         });
-
       // Google sign-in
       document
         .querySelector(".social-button.google")
@@ -382,7 +354,6 @@
           // Add Google sign-in logic here
           alert("Google sign-in will be implemented with Firebase.");
         });
-
       // Remember me functionality
       document
         .getElementById("remember")
@@ -392,7 +363,6 @@
             console.log("Remember me enabled");
           }
         });
-
       // Service Worker Registration
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {

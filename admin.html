@@ -42,7 +42,6 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="assets/js/manifest.json" />
-
     <!-- Firebase SDK -->
     <script
       src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.min.js"
@@ -115,11 +114,8 @@
       src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.min.js"
       defer
      type="module"></script>
-
     <!-- Firebase Configuration -->
-    <script src="/firebase-config.min.js" defer type="module"></script>
     <script src="/firebase-init.min.js" defer type="module"></script>
-
     <!-- Service Worker Registration -->
     <script defer type="module">
       document.addEventListener("DOMContentLoaded", () => {
@@ -135,7 +131,6 @@
         }
       });
     </script>
-  
         <script type="application/ld+json">
           {
   "@context": "https://schema.org",
@@ -153,7 +148,6 @@
   }
 }
         </script>
-      
 </head>
   <body>
     <div id="loading-overlay" class="loading-overlay" style="display: none">
@@ -207,7 +201,6 @@
     <div id="loadingIndicator" class="loading-indicator" style="display: none">
       <div class="spinner"></div>
     </div>
-
     <div class="admin-container">
       <header class="admin-header">
         <div>
@@ -227,7 +220,6 @@
           </button>
         </div>
       </header>
-
       <!-- Tab Navigation -->
       <div class="tab-navigation">
         <div class="tab-nav">
@@ -261,7 +253,6 @@
           </button>
         </div>
       </div>
-
       <!-- Tab Content: Overview -->
       <div id="overview-tab" class="tab-content active">
         <div class="tab-content-header">
@@ -281,7 +272,6 @@
                 +0 this week
               </div>
             </div>
-
             <div class="stat-card quotes">
               <div class="stat-header">
                 <div class="stat-icon quotes">💬</div>
@@ -292,7 +282,6 @@
                 +0 pending
               </div>
             </div>
-
             <div class="stat-card invoices">
               <div class="stat-header">
                 <div class="stat-icon invoices">💰</div>
@@ -303,7 +292,6 @@
                 $0 overdue
               </div>
             </div>
-
             <div class="stat-card revenue">
               <div class="stat-header">
                 <div class="stat-icon revenue">📈</div>
@@ -315,7 +303,6 @@
               </div>
             </div>
           </div>
-
           <!-- Quick Actions -->
           <div class="form-grid">
             <div class="form-section">
@@ -371,7 +358,6 @@
                 >
               </div>
             </div>
-
             <div class="form-section">
               <h3>Recent Activity</h3>
               <div id="recentActivityList">
@@ -397,7 +383,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Content: Service Requests -->
       <div id="requests-tab" class="tab-content">
         <div class="tab-content-header">
@@ -433,7 +418,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Content: Quotes & Bids -->
       <div id="quotes-tab" class="tab-content">
         <div class="tab-content-header">
@@ -498,7 +482,6 @@
                 </button>
               </form>
             </div>
-
             <div class="form-section">
               <h3>Quote Calculator</h3>
               <form id="quoteCalculatorForm" aria-label="quoteCalculatorForm form" class="form-with-loading form-with-loading form-with-loading">
@@ -553,7 +536,6 @@
               <div id="quoteBreakdown"></div>
             </div>
           </div>
-
           <div class="table-container" style="margin-top: 2rem">
             <table id="bidsTable" class="table">
               <thead>
@@ -573,7 +555,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Content: Invoices -->
       <div id="invoices-tab" class="tab-content">
         <div class="tab-content-header">
@@ -619,7 +600,6 @@
               </form>
             </div>
           </div>
-
           <div class="search-bar" style="margin-top: 2rem">
             <input
               type="text"
@@ -629,7 +609,6 @@
               onkeyup="filterInvoicesTable()"
             / aria-label="invoiceSearch text">
           </div>
-
           <div class="table-container">
             <table id="adminInvoicesTable" class="table">
               <thead>
@@ -650,7 +629,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Content: Customers -->
       <div id="customers-tab" class="tab-content">
         <div class="section-header">
@@ -662,12 +640,10 @@
             Add New Customer
           </button>
         </div>
-
         <div class="customers-list">
           <!-- Customer list will be populated dynamically -->
         </div>
       </div>
-
       <!-- Add Customer Modal -->
       <div id="addCustomerModal" class="modal">
         <div class="modal-content">
@@ -690,7 +666,6 @@
               <label for="customerPhone">Phone*</label>
               <input type="tel" id="customerPhone" required / aria-label="customerPhone tel">
             </div>
-
             <h3>Address</h3>
             <div class="form-group">
               <label for="customerStreet">Street</label>
@@ -710,7 +685,6 @@
                 <input type="text" id="customerZip" / aria-label="customerZip text">
               </div>
             </div>
-
             <h3>Property Details</h3>
             <div class="form-group">
               <label for="propertySizeSqFt">Property Size (sq ft)</label>
@@ -735,7 +709,6 @@
                 Has Sprinklers
               </label>
             </div>
-
             <h3>Preferences</h3>
             <div class="form-group">
               <label for="communicationMethod">Preferred Communication</label>
@@ -753,7 +726,6 @@
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-
             <div class="form-actions">
               <button type="submit" class="btn btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
                 Add Customer
@@ -769,7 +741,6 @@
           </form>
         </div>
       </div>
-
       <!-- Edit Customer Modal -->
       <div id="editCustomerModal" class="modal">
         <div class="modal-content">
@@ -793,7 +764,6 @@
               <label for="editCustomerPhone">Phone*</label>
               <input type="tel" id="editCustomerPhone" required / aria-label="editCustomerPhone tel">
             </div>
-
             <h3>Address</h3>
             <div class="form-group">
               <label for="editCustomerStreet">Street</label>
@@ -813,7 +783,6 @@
                 <input type="text" id="editCustomerZip" / aria-label="editCustomerZip text">
               </div>
             </div>
-
             <h3>Property Details</h3>
             <div class="form-group">
               <label for="editPropertySizeSqFt">Property Size (sq ft)</label>
@@ -838,7 +807,6 @@
                 Has Sprinklers
               </label>
             </div>
-
             <h3>Preferences</h3>
             <div class="form-group">
               <label for="editCommunicationMethod"
@@ -858,7 +826,6 @@
                 <option value="monthly">Monthly</option>
               </select>
             </div>
-
             <div class="form-actions">
               <button type="submit" class="btn btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">
                 Save Changes
@@ -874,7 +841,6 @@
           </form>
         </div>
       </div>
-
       <!-- Tab Content: Equipment -->
       <div id="equipment-tab" class="tab-content">
         <div class="tab-content-header">
@@ -927,7 +893,6 @@
                 <button type="submit" class="btn-primary button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Add Equipment</button>
               </form>
             </div>
-
             <div class="form-section">
               <h3>Add Material/Chemical</h3>
               <form id="addMaterialForm" aria-label="addMaterialForm form" class="form-with-loading form-with-loading form-with-loading">
@@ -973,7 +938,6 @@
               </form>
             </div>
           </div>
-
           <div style="margin-top: 2rem">
             <h3>Equipment Inventory</h3>
             <div class="table-container">
@@ -992,7 +956,6 @@
               </table>
             </div>
           </div>
-
           <div style="margin-top: 2rem">
             <h3>Materials Inventory</h3>
             <div class="table-container">
@@ -1013,7 +976,6 @@
           </div>
         </div>
       </div>
-
       <!-- Tab Content: Reports -->
       <div id="reports-tab" class="tab-content">
         <div class="tab-content-header">
@@ -1043,7 +1005,6 @@
                 Profit & Loss Statement
               </button>
             </div>
-
             <div class="form-section">
               <h3>Sustainability Reports</h3>
               <button
@@ -1069,7 +1030,6 @@
               </div>
             </div>
           </div>
-
           <div style="margin-top: 2rem">
             <h3>Sustainability Log</h3>
             <div class="table-container">
@@ -1089,7 +1049,6 @@
         </div>
       </div>
     </div>
-
     <!-- Modals -->
     <div id="adminChatModal" class="modal" style="display: none">
       <div class="modal-content" style="max-width: 500px">
@@ -1114,7 +1073,6 @@
         </div>
       </div>
     </div>
-
     <div id="genericAdminModal" class="modal" style="display: none">
       <div
         class="modal-content"
@@ -1138,7 +1096,6 @@
         </div>
       </div>
     </div>
-
     <div class="footer-section">
       <h3>Legal</h3>
       <div class="footer-links">
@@ -1146,21 +1103,17 @@
         <a href="terms.html">Terms of Service</a>
       </div>
     </div>
-
     <script defer type="module">
       // Show loading indicator
       document.getElementById("loadingIndicator").style.display = "block";
-
       // Wait for Firebase initialization
       window.addEventListener("firebaseInitialized", () => {
         // Hide loading indicator
         document.getElementById("loadingIndicator").style.display = "none";
         // Show main content
         document.getElementById("mainContent").style.display = "block";
-
         // Initialize QuoteCalculator
         const quoteCalculator = new QuoteCalculator();
-
         // Quick Quote Form Handler
         document
           .getElementById("quickQuoteForm")
@@ -1171,7 +1124,6 @@
             const propertySize = parseInt(
               document.getElementById("quickPropertySize").value,
             );
-
             const quote = quoteCalculator.calculateQuote(
               serviceType,
               propertySize,
@@ -1180,7 +1132,6 @@
               "$" + quote.total;
             document.getElementById("quickQuoteResult").style.display = "block";
           });
-
         // Full Quote Calculator Form Handler
         document
           .getElementById("quoteCalculatorForm")
@@ -1193,7 +1144,6 @@
             const complexity = parseFloat(
               document.getElementById("complexityFactor").value,
             );
-
             const quote = quoteCalculator.calculateQuote(
               serviceType,
               propertySize,
@@ -1201,7 +1151,6 @@
                 complexity: complexity,
               },
             );
-
             // Display detailed breakdown
             const breakdown = document.getElementById("quoteBreakdown");
             breakdown.innerHTML = `
@@ -1221,7 +1170,6 @@
         `;
           });
       });
-
       // Error handling for script loading
       window.addEventListener(
         "error",
@@ -1233,7 +1181,6 @@
         },
         true,
       );
-
       // Logout function
       function logout() {
         if (window.HollidayApp?.auth) {
@@ -1253,5 +1200,7 @@
         }
       }
     </script>
+<script type="module" src="assets/js/firebase-config.js"></script>
+<script type="module" src="assets/js/main.min.js" defer></script>
   </body>
 </html>

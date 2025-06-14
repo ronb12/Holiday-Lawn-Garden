@@ -38,7 +38,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Holliday Lawn & Garden</title>
-
     <!-- Meta Tags -->
     <meta
       name="description"
@@ -54,7 +53,6 @@
     />
     <meta name="format-detection" content="telephone=no" />
     <meta name="robots" content="index, follow" />
-
     <!-- Open Graph Tags -->
     <meta
       property="og:title"
@@ -73,7 +71,6 @@
       property="og:image"
       content="/assets/icons/icon-512.png"
     />
-
     <!-- Twitter Tags -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta
@@ -88,12 +85,10 @@
       name="twitter:image"
       content="/assets/icons/icon-512.png"
     />
-
     <!-- Favicon -->
     <link rel="icon" href="assets/icons/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.json" />
-
     <!-- Stylesheets -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -102,14 +97,12 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/styles/variables.css?v=1.0.4" />
-    
     <link rel="stylesheet" href="assets/styles/components/mobile-menu.css?v=1.0.3" />
     <link rel="stylesheet" href="assets/styles/components/main.css?v=1.0.4" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-
     <!-- Content Security Policy -->
     <meta
       http-equiv="Content-Security-Policy"
@@ -127,7 +120,6 @@
         upgrade-insecure-requests;
     "
     />
-
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.min.js" defer type="module">
     import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
@@ -179,12 +171,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.min.js" defer type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-check-compat.min.js" defer type="module"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-performance-compat.min.js" defer type="module"></script>
-
     <!-- Firebase Configuration -->
-    <script type="module" src="assets/js/firebase-config.min.js" defer></script>
     <script type="module" src="assets/js/firebase-init.min.js" defer></script>
+<script type="module" src="assets/js/firebase-config.js"></script>
     <script type="module" src="assets/js/main.min.js" defer></script>
-  
         <script type="application/ld+json">
           {
   "@context": "https://schema.org",
@@ -202,12 +192,10 @@
   }
 }
         </script>
-      
 </head>
   <body style="background: var(--color-primary-light); color: var(--color-text);">
     <!-- Skip to Main Content -->
     <a href="#main-content" class="skip-to-main" aria-label="Link">Skip to main content</a>
-
     <!-- Header -->
     <header class="main-header">
       <div class="logo">
@@ -237,16 +225,13 @@
         </ul>
       </nav>
     </header>
-
     <!-- Main Content -->
     <main id="main-content" class="register-section" style="background: var(--color-primary-light); padding: 2rem; border-radius: var(--border-radius); max-width: 500px; margin: 3rem auto;">
       <h1 style="color: var(--color-primary-dark);">Register</h1>
       <p class="description">
         Join Holliday's Lawn & Garden to manage your services and payments.
       </p>
-
       <div id="error-container" class="error-container"></div>
-
       <!-- Registration Form -->
       <form id="register-form" class="register-form form-with-loading form-with-loading form-with-loading" novalidate aria-label="register-form form">
         <div class="form-group">
@@ -261,7 +246,6 @@
             style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
           / aria-label="firstName text">
         </div>
-
         <div class="form-group">
           <label for="lastName">Last Name</label>
           <input
@@ -274,7 +258,6 @@
             style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
           / aria-label="lastName text">
         </div>
-
         <div class="form-group">
           <label for="email">Email Address</label>
           <input
@@ -287,7 +270,6 @@
             style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
           / aria-label="email email">
         </div>
-
         <div class="form-group">
           <label for="phone">Phone Number</label>
           <input
@@ -300,7 +282,6 @@
             style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
           / aria-label="phone tel">
         </div>
-
         <div class="form-group">
           <label for="password">Password</label>
           <div class="password-input">
@@ -323,7 +304,6 @@
           </div>
           <div class="password-strength" id="password-strength"></div>
         </div>
-
         <div class="form-group">
           <label for="confirmPassword">Confirm Password</label>
           <div class="password-input">
@@ -345,7 +325,6 @@
             </button>
           </div>
         </div>
-
         <div class="form-group">
           <label class="checkbox-container">
             <input type="checkbox" id="terms" name="terms" required / aria-label="terms checkbox">
@@ -355,12 +334,10 @@
             <a href="privacy.html" target="_blank" aria-label="Link" class="link-with-loading link-with-loading">Privacy Policy</a>
           </label>
         </div>
-
         <button type="submit" class="cta-button button-with-loading button-with-loading button-with-loading button-with-loading" id="registerButton" style="background: var(--color-primary); color: var(--color-text-light); border: none; border-radius: var(--border-radius); padding: 0.75rem 2rem; font-weight: 600; margin-top: 1rem;" aria-label="Button">
           <i class="fas fa-user-plus"></i> Create Account
         </button>
       </form>
-
       <!-- Back to Login -->
       <div class="back-to-login">
         <p>
@@ -371,13 +348,11 @@
         </p>
       </div>
     </main>
-
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display: none">
       <div class="spinner"></div>
       <p id="loading-message">Creating your account...</p>
     </div>
-
     <!-- Footer -->
     <footer class="footer" role="contentinfo" aria-label="Site footer">
       <div class="footer-content">
@@ -396,7 +371,6 @@
               </a>
             </div>
           </div>
-
           <div class="footer-section">
             <h3>Quick Links</h3>
             <ul>
@@ -406,7 +380,6 @@
               <li><a href="contact.html">Contact</a></li>
             </ul>
           </div>
-
           <div class="footer-section">
             <h3>Customer Portal</h3>
             <ul>
@@ -416,7 +389,6 @@
               <li><a href="customer-dashboard.html">Dashboard</a></li>
             </ul>
           </div>
-
           <div class="footer-section">
             <h3>Legal</h3>
             <ul>
@@ -425,13 +397,11 @@
             </ul>
           </div>
         </div>
-
         <div class="footer-copyright">
           <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
         </div>
       </div>
     </footer>
-
     <!-- Service Worker Registration -->
     <script defer type="module">
       if ("serviceWorker" in navigator) {
@@ -447,7 +417,6 @@
         });
       }
     </script>
-
     <!-- Registration Handler -->
     <script defer type="module">
       // Handle Back to Login
@@ -455,12 +424,10 @@
         event.preventDefault();
         window.location.href = "/login.html";
       }
-
       // Toggle Password Visibility
       function togglePassword(inputId) {
         const input = document.getElementById(inputId);
         const icon = input.nextElementSibling.querySelector("i");
-
         if (input.type === "password") {
           input.type = "text";
           icon.classList.remove("fa-eye");
@@ -471,48 +438,41 @@
           icon.classList.add("fa-eye");
         }
       }
-
       // Check Password Strength
       function checkPasswordStrength(password) {
         const strengthDiv = document.getElementById("password-strength");
         let strength = 0;
         let feedback = [];
-
         // Length check
         if (password.length >= 8) {
           strength += 1;
         } else {
           feedback.push("At least 8 characters");
         }
-
         // Uppercase check
         if (/[A-Z]/.test(password)) {
           strength += 1;
         } else {
           feedback.push("One uppercase letter");
         }
-
         // Lowercase check
         if (/[a-z]/.test(password)) {
           strength += 1;
         } else {
           feedback.push("One lowercase letter");
         }
-
         // Number check
         if (/[0-9]/.test(password)) {
           strength += 1;
         } else {
           feedback.push("One number");
         }
-
         // Special character check
         if (/[^A-Za-z0-9]/.test(password)) {
           strength += 1;
         } else {
           feedback.push("One special character");
         }
-
         // Update strength indicator
         const strengthClasses = [
           "very-weak",
@@ -528,7 +488,6 @@
           "Strong",
           "Very Strong",
         ];
-
         strengthDiv.className =
           "password-strength " + strengthClasses[strength - 1];
         strengthDiv.innerHTML = `
@@ -538,16 +497,13 @@
                 <span class="strength-text">${strengthTexts[strength - 1]}</span>
                 ${feedback.length > 0 ? `<p class="strength-feedback">Password should contain: ${feedback.join(", ")}</p>` : ""}
             `;
-
         return strength;
       }
-
       // Initialize Firebase and Auth
       document.addEventListener("DOMContentLoaded", async () => {
         try {
           await window.initializeFirebase();
           console.log("Firebase initialized successfully");
-
           // Password strength checker
           const passwordInput = document.getElementById("password");
           if (passwordInput) {
@@ -555,13 +511,11 @@
               checkPasswordStrength(e.target.value);
             });
           }
-
           // Add form submit handler
           const registerForm = document.getElementById("register-form");
           if (registerForm) {
             registerForm.addEventListener("submit", async (event) => {
               event.preventDefault();
-
               // Get form values
               const firstName = document
                 .getElementById("firstName")
@@ -573,7 +527,6 @@
               const confirmPassword =
                 document.getElementById("confirmPassword").value;
               const terms = document.getElementById("terms").checked;
-
               // Validate form
               if (
                 !firstName ||
@@ -586,39 +539,32 @@
                 showError("Please fill in all required fields");
                 return;
               }
-
               if (!terms) {
                 showError(
                   "Please agree to the Terms of Service and Privacy Policy",
                 );
                 return;
               }
-
               if (password !== confirmPassword) {
                 showError("Passwords do not match");
                 return;
               }
-
               const strength = checkPasswordStrength(password);
               if (strength < 3) {
                 showError("Please choose a stronger password");
                 return;
               }
-
               showLoading("Creating your account...");
-
               try {
                 // Create user account
                 const userCredential = await firebase
                   .auth()
                   .createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
-
                 // Update user profile
                 await user.updateProfile({
                   displayName: `${firstName} ${lastName}`,
                 });
-
                 // Store additional user data in Firestore
                 await firebase
                   .firestore()
@@ -632,11 +578,9 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     lastLogin: firebase.firestore.FieldValue.serverTimestamp(),
                   });
-
                 showSuccess(
                   "Account created successfully! Redirecting to dashboard...",
                 );
-
                 // Store user data in localStorage
                 localStorage.setItem(
                   "user",
@@ -646,7 +590,6 @@
                     displayName: user.displayName,
                   }),
                 );
-
                 // Redirect to dashboard after a short delay
                 setTimeout(() => {
                   window.location.href = "/dashboard.html";
@@ -654,7 +597,6 @@
               } catch (error) {
                 console.error("Registration error:", error);
                 let errorMessage = "Failed to create account. ";
-
                 switch (error.code) {
                   case "auth/email-already-in-use":
                     errorMessage += "This email is already registered.";
@@ -671,7 +613,6 @@
                   default:
                     errorMessage += error.message;
                 }
-
                 showError(errorMessage);
               } finally {
                 hideLoading();
@@ -687,7 +628,6 @@
           }
         }
       });
-
       // Loading state functions
       function showLoading(message = "Loading...") {
         const loadingOverlay = document.getElementById("loading-overlay");
@@ -697,14 +637,12 @@
           loadingOverlay.style.display = "flex";
         }
       }
-
       function hideLoading() {
         const loadingOverlay = document.getElementById("loading-overlay");
         if (loadingOverlay) {
           loadingOverlay.style.display = "none";
         }
       }
-
       // Message display functions
       function showError(message) {
         const errorContainer = document.getElementById("error-container");
@@ -714,14 +652,12 @@
           errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
           errorContainer.innerHTML = "";
           errorContainer.appendChild(errorDiv);
-
           // Auto-hide after 5 seconds
           setTimeout(() => {
             errorDiv.remove();
           }, 5000);
         }
       }
-
       function showSuccess(message) {
         const errorContainer = document.getElementById("error-container");
         if (errorContainer) {

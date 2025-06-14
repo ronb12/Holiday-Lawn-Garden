@@ -17,13 +17,11 @@
       text-align: center;
       margin: 1.5rem 0;
     }
-
     .social-login p {
       margin: 1rem 0;
       color: var(--text-secondary);
       position: relative;
     }
-
     .social-login p::before,
     .social-login p::after {
       content: "";
@@ -33,15 +31,12 @@
       height: 1px;
       background: var(--border-color);
     }
-
     .social-login p::before {
       left: 0;
     }
-
     .social-login p::after {
       right: 0;
     }
-
     .google-sign-in {
       display: flex;
       align-items: center;
@@ -58,12 +53,10 @@
       cursor: pointer;
       transition: all 0.3s ease;
     }
-
     .google-sign-in:hover {
       background: #f8f8f8;
       border-color: #ddd;
     }
-
     .google-sign-in img {
       width: 18px;
       height: 18px;
@@ -98,26 +91,22 @@
       </ul>
     </nav>
   </header>
-
   <main>
     <section class="login-section">
       <div class="login-grid">
         <div class="login-form-container">
           <h2>Welcome Back</h2>
           <p>Sign in to access your account</p>
-          
           <div class="error-container" id="error-container">
             <div class="error-message">
               <i class="fas fa-exclamation-circle"></i>
               <span id="errorMessage"></span>
             </div>
           </div>
-
           <div class="success-message" id="successMessage" style="display: none;">
             <i class="fas fa-check-circle"></i>
             <span>Login successful! Redirecting...</span>
           </div>
-
           <form id="login-form" class="login-form">
         <div class="form-group">
               <label for="email">Email</label>
@@ -131,7 +120,6 @@
               Sign In
             </button>
           </form>
-
           <div class="social-login">
             <p>or</p>
             <button id="googleSignIn" class="google-sign-in">
@@ -139,14 +127,12 @@
               Sign in with Google
             </button>
           </div>
-
           <div class="login-links">
             <a href="forgot-password.html">Forgot Password?</a>
             <span class="separator">|</span>
             <a href="register.html">Create Account</a>
           </div>
         </div>
-
         <div class="login-info">
           <div class="info-card">
             <h3>Why Create an Account?</h3>
@@ -169,7 +155,6 @@
               </p>
             </div>
       </div>
-
           <div class="info-card">
             <h3>Need Help?</h3>
             <div class="contact-info">
@@ -195,7 +180,6 @@
       </div>
     </section>
     </main>
-
     <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay">
     <div class="loading-content">
@@ -203,7 +187,6 @@
       <p id="loading-message">Loading...</p>
     </div>
     </div>
-
     <footer class="footer" role="contentinfo" aria-label="Site footer">
       <div class="footer-content">
         <div class="footer-main">
@@ -252,12 +235,10 @@
         </div>
       </div>
     </footer>
-
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
   <!-- Firebase Config -->
   <script>
     // Example Firebase config (replace with your actual config if needed)
@@ -271,7 +252,6 @@
     };
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
     // Set current year in footer
     document.addEventListener('DOMContentLoaded', () => {
       const yearElement = document.getElementById('currentYear');
@@ -279,7 +259,6 @@
         yearElement.textContent = new Date().getFullYear();
       }
     });
-
     // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -292,7 +271,6 @@
           });
       });
     }
-
     // Show error message
     function showError(message) {
       const errorContainer = document.getElementById('error-container');
@@ -305,7 +283,6 @@
         }, 5000);
       }
     }
-
     // Show success message
     function showSuccess() {
       const successMessage = document.getElementById('successMessage');
@@ -313,26 +290,20 @@
         successMessage.style.display = 'flex';
       }
     }
-
         // Handle form submission
     document.getElementById('login-form')?.addEventListener('submit', async (e) => {
           e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
       const email = document.getElementById('email')?.value;
       const password = document.getElementById('password')?.value;
-
       if (!email || !password || !submitBtn) return;
-
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Signing in...';
-        
         const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
         const user = userCredential.user;
-        
         // Check if user exists in Firestore
         const userDoc = await window.db.collection('users').doc(user.uid).get();
-        
         if (!userDoc.exists) {
           // Create user document if it doesn't exist
           await window.db.collection('users').doc(user.uid).set({
@@ -343,7 +314,6 @@
             isAdmin: false
           });
         }
-
         showSuccess();
             setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
@@ -351,7 +321,6 @@
           } catch (error) {
         console.error('Login error:', error);
         let errorMessage = 'An error occurred during login. Please try again.';
-
             switch (error.code) {
           case 'auth/user-not-found':
             errorMessage = 'No account found with this email.';
@@ -366,7 +335,6 @@
             errorMessage = 'This account has been disabled. Please contact support.';
                 break;
             }
-
             showError(errorMessage);
           } finally {
         if (submitBtn) {
@@ -375,7 +343,6 @@
         }
       }
     });
-
     // Handle Google Sign-in
     document.getElementById('googleSignIn').addEventListener('click', function() {
       if (window.firebase && firebase.auth && typeof firebase.auth.GoogleAuthProvider === 'function') {
@@ -395,7 +362,6 @@
         console.error('Firebase Auth or GoogleAuthProvider is not initialized.');
       }
     });
-
     // Wait for DOM and Firebase to be ready
     document.addEventListener('DOMContentLoaded', function() {
       if (window.firebase && firebase.auth) {
@@ -411,5 +377,7 @@
       }
     });
     </script>
+<script type="module" src="assets/js/firebase-config.js"></script>
+<script type="module" src="assets/js/main.min.js" defer></script>
   </body>
 </html>

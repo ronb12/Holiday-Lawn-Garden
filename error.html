@@ -59,7 +59,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       const errorCode = urlParams.get('code') || '404';
       const errorMessage = urlParams.get('message') || 'Page not found';
-      
       // Update error display
       document.getElementById('errorCode').textContent = errorCode;
+<script type="module" src="assets/js/firebase-config.js"></script>
+<script type="module" src="assets/js/main.min.js" defer></script>
       document.getElementById('errorMessage').textContent = errorMessage;</script></body></html>
