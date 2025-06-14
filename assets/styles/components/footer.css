@@ -72,8 +72,8 @@
 }
 
 .footer-links a {
-  color: #000000;
-  opacity: 0.9;
+  color: #fff;
+  opacity: 0.95;
   text-decoration: underline;
   font-size: 0.95rem;
   display: inline-flex;
@@ -84,6 +84,11 @@
 
 .footer-links a:hover {
   opacity: 1;
+  color: #fff;
+}
+
+.footer-links a:visited {
+  color: #fff;
 }
 
 .footer-social {

@@ -760,8 +760,8 @@ footer::before {
 }
 
 .footer-section ul li a {
-  color: #b3b3b3;
-  text-decoration: none;
+  color: #fff;
+  text-decoration: underline;
   transition: all 0.3s ease;
   display: inline-block;
   position: relative;
@@ -769,8 +769,12 @@ footer::before {
 }
 
 .footer-section ul li a:hover {
-  color: #ffffff;
+  color: #fff;
   padding-left: 5px;
+}
+
+.footer-section ul li a:visited {
+  color: #fff;
 }
 
 .contact-info li,
