@@ -74,7 +74,7 @@
 .footer-links a {
   color: #000000;
   opacity: 0.9;
-  text-decoration: none;
+  text-decoration: underline;
   font-size: 0.95rem;
   display: inline-flex;
   align-items: center;

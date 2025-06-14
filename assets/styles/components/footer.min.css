@@ -8,7 +8,7 @@
 .footer-contact a:hover{opacity:1}
 .footer-contact i{color:var(--color-primary-light);width:18px;height:18px;display:flex;align-items:center;justify-content:center}
 .footer-links{display:flex;flex-direction:column;gap:.75rem}
-.footer-links a{color:var(--color-text-light);opacity:.8;text-decoration:none;font-size:.95rem;display:inline-flex;align-items:center;gap:.5rem;transition:opacity .3s}
+.footer-links a{color:var(--color-text-light);opacity:.8;text-decoration:underline;font-size:.95rem;display:inline-flex;align-items:center;gap:.5rem;transition:opacity .3s}
 .footer-links a:hover{opacity:1}
 .footer-social{display:flex;gap:1rem;margin-top:.5rem}
 .footer-social a{color:var(--color-text-light);opacity:.8;transition:opacity .3s}

@@ -71,8 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    // Mobile menu functionality
-    const hamburger = document.querySelector('.hamburger');
+  // Mobile menu functionality
+  const hamburger = document.querySelector('.hamburger');
     const nav = document.querySelector('nav');
     
     if (hamburger && nav) {
@@ -125,19 +125,19 @@ document.addEventListener('DOMContentLoaded', function() {
       lastScroll = currentScroll;
     });
 
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener("click", function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute("href"));
-        if (target) {
-          target.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-          });
-        }
-      });
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener("click", function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute("href"));
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
     });
+  });
 
     // Update copyright year
     const yearSpan = document.getElementById('current-year');
