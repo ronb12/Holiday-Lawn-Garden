@@ -165,31 +165,46 @@
     </div>
   </section>
 
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <a href="about.html">About Us</a>
-        <a href="services.html">Services</a>
-        <a href="education.html">Education</a>
-        <a href="contact.html">Contact</a>
+  <footer class="footer" role="contentinfo" aria-label="Site footer">
+    <div class="footer-content">
+      <div class="footer-main">
+        <div class="footer-section footer-contact">
+          <h3>Contact Us</h3>
+          <p><strong>Karl Holliday</strong></p>
+          <p><a href="tel:5047171887" aria-label="Call Karl Holliday">(504) 717-1887</a></p>
+          <p><a href="mailto:7holliday@gmail.com" aria-label="Email Karl Holliday">7holliday@gmail.com</a></p>
+        </div>
+        <div class="footer-section footer-links">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="education.html">Education</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section footer-portal">
+          <h3>Customer Portal</h3>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+            <li><a href="customer-dashboard.html">Dashboard</a></li>
+          </ul>
+        </div>
+        <div class="footer-section footer-social">
+          <h3>Connect With Us</h3>
+          <ul>
+            <li><a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><i class="fab fa-facebook-f"></i> Facebook</a></li>
+            <li><a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i> Instagram</a></li>
+            <li><a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i> LinkedIn</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="footer-section">
-        <h3>Customer Portal</h3>
-        <a href="login.html">Login</a>
-        <a href="register.html">Register</a>
-        <a href="pay-your-bill.html">Pay Your Bill</a>
-        <a href="customer-dashboard.html">Dashboard</a>
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year"></span> Holliday's Lawn &amp; Garden. All rights reserved.</p>
       </div>
-      <div class="footer-section">
-        <h3>Legal</h3>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="terms.html">Terms of Service</a>
-        <a href="sitemap.html">Sitemap</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2024 Holliday's Lawn & Garden. All rights reserved.</p>
     </div>
   </footer>
 
@@ -269,6 +284,7 @@
       }).render('#paypal-button-container');
     });
   </script>
+  <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
   <script src="assets/js/main.js"></script>
 </body>
 </html>
