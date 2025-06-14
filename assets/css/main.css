@@ -1200,86 +1200,65 @@ nav {
 
 /* FAQ Section */
 .faq-section {
-  padding: 5rem 0;
-  background-color: var(--light-bg);
+  padding: 4rem 0;
+  margin-bottom: 2rem;
 }
 
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
-  margin-bottom: 4rem;
+  margin-bottom: 3rem;
 }
 
-.faq-card {
-  background: white;
-  border-radius: 8px;
+.faq-item {
+  background: #ffffff;
   padding: 2rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.faq-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
-
-.faq-card h3 {
+.faq-item h3 {
   color: var(--primary-color);
   margin-bottom: 1rem;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.2rem;
 }
 
-.faq-card p {
+.faq-item p {
   color: var(--text-color);
   line-height: 1.6;
 }
 
-.faq-cta {
+.cta-section {
   text-align: center;
-  padding: 3rem;
-  background: white;
+  padding: 3rem 0;
+  background: var(--light-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 2rem;
 }
 
-.faq-cta h2 {
-  color: var(--text-color);
+.cta-section h2 {
+  color: var(--primary-color);
   margin-bottom: 1rem;
-  font-size: 2rem;
 }
 
-.faq-cta p {
-  color: var(--text-color-light);
+.cta-section p {
   margin-bottom: 2rem;
-  font-size: 1.2rem;
-}
-
-.faq-cta .btn {
-  font-size: 1.1rem;
-  padding: 1rem 2rem;
+  color: var(--text-color);
 }
 
 @media (max-width: 768px) {
   .faq-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
-  .faq-card {
+  .faq-item {
     padding: 1.5rem;
   }
   
-  .faq-cta {
-    padding: 2rem;
-  }
-  
-  .faq-cta h2 {
-    font-size: 1.75rem;
-  }
-  
-  .faq-cta p {
-    font-size: 1.1rem;
+  .cta-section {
+    padding: 2rem 1rem;
   }
 }
 
