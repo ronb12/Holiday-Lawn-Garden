@@ -1,6 +1,6 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
   projectId: "holiday-lawn-and-garden",
   storageBucket: "holiday-lawn-and-garden.appspot.com",
@@ -12,20 +12,19 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = firebase.initializeApp(firebaseConfig);
 
-// Initialize Firestore with settings
-firebase.firestore().settings({
-  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
-  merge: true
+// Initialize services
+const auth = firebase.auth(app);
+const db = firebase.firestore(app);
+
+// Configure Firestore
+db.settings({
+  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
 });
 
-// Initialize Analytics
-const analytics = firebase.analytics(app);
-
-// Export Firebase services to window object
-window.auth = firebase.auth(app);
-window.db = firebase.firestore(app);
-window.storage = firebase.storage(app);
-window.analytics = analytics;
+// Export services to window object
+window.auth = auth;
+window.db = db;
+window.firebase = firebase;
 
 // Auth state observer with error handling
 window.auth.onAuthStateChanged((user) => {

@@ -156,14 +156,18 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js"></script>
 
   <!-- Firebase Config -->
   <script src="assets/js/firebase-config.js"></script>
 
   <script>
     // Set current year in footer
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
+    document.addEventListener('DOMContentLoaded', () => {
+      const yearElement = document.getElementById('currentYear');
+      if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+      }
+    });
 
     // Register service worker
     if ('serviceWorker' in navigator) {
@@ -182,25 +186,31 @@
     function showError(message) {
       const errorContainer = document.getElementById('errorContainer');
       const errorMessage = document.getElementById('errorMessage');
-      errorMessage.textContent = message;
-      errorContainer.style.display = 'block';
-      setTimeout(() => {
-        errorContainer.style.display = 'none';
-      }, 5000);
+      if (errorContainer && errorMessage) {
+        errorMessage.textContent = message;
+        errorContainer.style.display = 'block';
+        setTimeout(() => {
+          errorContainer.style.display = 'none';
+        }, 5000);
+      }
     }
 
     // Show success message
     function showSuccess() {
       const successMessage = document.getElementById('successMessage');
-      successMessage.style.display = 'flex';
+      if (successMessage) {
+        successMessage.style.display = 'flex';
+      }
     }
 
     // Handle form submission
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const email = document.getElementById('email')?.value;
+      const password = document.getElementById('password')?.value;
+
+      if (!email || !password || !submitBtn) return;
 
       try {
         submitBtn.disabled = true;
@@ -248,14 +258,18 @@
         
         showError(errorMessage);
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign In';
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        }
       }
     });
 
     // Handle Google Sign-in
-    document.getElementById('googleSignIn').addEventListener('click', async () => {
+    document.getElementById('googleSignIn')?.addEventListener('click', async () => {
       const googleBtn = document.getElementById('googleSignIn');
+      if (!googleBtn) return;
+
       const provider = new window.firebase.auth.GoogleAuthProvider();
       
       try {
