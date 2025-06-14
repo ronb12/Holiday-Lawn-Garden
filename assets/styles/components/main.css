@@ -181,3 +181,23 @@ nav {
   color: var(--primary-color);
   font-weight: 600;
 }
+
+@media (max-width: 900px) {
+  .main-header nav.active,
+  .main-header .nav-links.active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 2000 !important;
+    color: #222 !important;
+  }
+  .main-header .nav-links.active li,
+  .main-header .nav-links.active a {
+    display: block !important;
+    color: #222 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 2001 !important;
+    background: none !important;
+  }
+}
