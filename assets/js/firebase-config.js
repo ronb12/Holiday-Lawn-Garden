@@ -1,6 +1,6 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+  apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
   projectId: "holiday-lawn-and-garden",
   storageBucket: "holiday-lawn-and-garden.appspot.com",
