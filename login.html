@@ -324,8 +324,8 @@
               // Create user document if it doesn't exist
               await window.db.collection('users').doc(user.uid).set({
                 email: user.email,
-                displayName: user.displayName || ',
-                photoURL: user.photoURL || ',
+                displayName: user.displayName || ''',
+                photoURL: user.photoURL || ''',
                 createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
                 isAdmin: false
               });
