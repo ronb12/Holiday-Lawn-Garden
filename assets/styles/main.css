@@ -774,7 +774,7 @@ footer::before {
 }
 
 .footer-section ul li a:visited {
-  color: #fff;
+  color: #fff !important;
 }
 
 .contact-info li,
@@ -841,6 +841,14 @@ footer::before {
 
 .footer-links a:hover::after {
   width: 100%;
+}
+
+.footer a:visited,
+.footer-section a:visited,
+.footer-section ul li a:visited,
+.footer-links a:visited,
+.footer-bottom a:visited {
+  color: #fff !important;
 }
 
 @media (max-width: 1024px) {
