@@ -7,64 +7,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/main.css">
-  <style>
-    .contact-section {
-      padding: 4rem 0;
-      background: #f7f7f7;
-    }
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 0 1rem;
-    }
-    .contact-form {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-    }
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-family: inherit;
-    }
-    .contact-info {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .info-item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .info-item i {
-      margin-right: 1rem;
-      color: #4CAF50;
-    }
-    @media (max-width: 768px) {
-      .contact-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
 </head>
 <body>
   <header class="main-header">
@@ -95,100 +39,119 @@
     </nav>
   </header>
 
-  <main>
-    <section class="page-header">
-      <div class="container">
-        <h1>Contact Us</h1>
-        <p>We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.</p>
-      </div>
-    </section>
+  <section class="hero">
+    <img src="assets/images/hero-garden-landscaping.jpg" alt="Beautiful garden landscaping" loading="eager">
+    <div class="hero-content">
+      <h1>Contact Us</h1>
+      <p>We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.</p>
+    </div>
+  </section>
 
-    <section class="contact-section">
-      <div class="container">
-        <div class="contact-grid">
-          <div class="contact-form">
-            <form id="contactForm" action="/submit-contact" method="POST">
-              <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" required>
+  <section class="contact-section">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-form-container">
+          <form class="contact-form" id="contactForm">
+            <div class="form-group">
+              <label for="name">Name</label>
+              <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" name="phone" required>
+            </div>
+            <div class="form-group">
+              <label for="service">Service Interested In</label>
+              <select id="service" name="service" required>
+                <option value="">Select a service</option>
+                <option value="lawn-care">Lawn Care</option>
+                <option value="landscaping">Landscaping</option>
+                <option value="pressure-washing">Pressure Washing</option>
+                <option value="commercial">Commercial Services</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+          </form>
+        </div>
+
+        <div class="contact-info">
+          <div class="contact-card">
+            <h3>Contact Information</h3>
+            <div class="contact-details">
+              <div class="contact-item">
+                <i class="fas fa-user"></i>
+                <span>Karl Holliday</span>
               </div>
-              <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
+              <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <a href="tel:+15047171887">(504) 717-1887</a>
               </div>
-              <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="tel" id="phone" name="phone" required>
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a>
               </div>
-              <div class="form-group">
-                <label for="service">Service Interested In</label>
-                <select id="service" name="service" required>
-                  <option value="">Select a service</option>
-                  <option value="lawn-care">Lawn Care</option>
-                  <option value="landscaping">Landscaping</option>
-                  <option value="pressure-washing">Pressure Washing</option>
-                  <option value="commercial">Commercial Services</option>
-                  <option value="other">Other</option>
-                </select>
+            </div>
+          </div>
+
+          <div class="contact-card">
+            <h3>Service Hours</h3>
+            <div class="service-hours">
+              <div class="hours-item">
+                <span>Monday - Friday</span>
+                <span>7:00 AM - 6:00 PM</span>
               </div>
-              <div class="form-group">
-                <label for="message">Message</label>
-                <textarea id="message" name="message" rows="5" required></textarea>
+              <div class="hours-item">
+                <span>Saturday</span>
+                <span>8:00 AM - 4:00 PM</span>
               </div>
-              <button type="submit" class="btn btn-primary">Send Message</button>
-            </form>
+              <div class="hours-item">
+                <span>Sunday</span>
+                <span>Closed</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
 
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-section">
-        <h3>Contact Us</h3>
-        <div class="footer-contact">
-          <span class="footer-owner">Karl Holliday</span>
-          <a href="tel:+15047171887">
-            <i class="fas fa-phone" aria-hidden="true"></i>
-            <span>(504) 717-1887</span>
-          </a>
-          <a href="mailto:7holliday@gmail.com">
-            <i class="fas fa-envelope" aria-hidden="true"></i>
-            <span>7holliday@gmail.com</span>
-          </a>
-        </div>
+        <h3>Quick Links</h3>
+        <a href="about.html">About Us</a>
+        <a href="services.html">Services</a>
+        <a href="education.html">Education</a>
+        <a href="contact.html">Contact</a>
       </div>
       <div class="footer-section">
-        <h3>Quick Links</h3>
-        <div class="footer-links">
-          <a href="about.html">About Us</a>
-          <a href="services.html">Services</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="contact.html">Contact</a>
-          <a href="faq.html">FAQ</a>
-        </div>
+        <h3>Customer Portal</h3>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="pay-your-bill.html">Pay Your Bill</a>
+        <a href="customer-dashboard.html">Dashboard</a>
       </div>
       <div class="footer-section">
         <h3>Legal</h3>
-        <div class="footer-links">
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="terms.html">Terms of Service</a>
-          <a href="accessibility.html">Accessibility</a>
-        </div>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="sitemap.html">Sitemap</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; <span id="current-year"></span> Holliday's Lawn & Garden. All rights reserved.</p>
+      <p>&copy; 2024 Holliday's Lawn & Garden. All rights reserved.</p>
     </div>
   </footer>
 
-  <script type="module">
-    import { initializeUI } from '/assets/js/main.js';
-    window.addEventListener('load', () => {
-      initializeUI();
-      document.getElementById('current-year').textContent = new Date().getFullYear();
-    });
-  </script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>
