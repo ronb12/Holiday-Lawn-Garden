@@ -441,22 +441,8 @@ nav {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.8;
+  opacity: 1;
   mix-blend-mode: normal;
-}
-
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    45deg,
-    rgba(76, 175, 80, 0.4),
-    rgba(76, 175, 80, 0.2)
-  );
-  z-index: 1;
 }
 
 .hero-content {
@@ -466,6 +452,9 @@ nav {
   color: white;
   padding: 2rem;
   max-width: 800px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
 }
 
 .hero-content h1 {
