@@ -151,4 +151,19 @@
   .footer {
     display: none;
   }
+}
+
+/* Footer link color override - must be last */
+.footer a,
+.footer a:visited,
+.footer-section a,
+.footer-section a:visited,
+.footer-section ul li a,
+.footer-section ul li a:visited,
+.footer-links a,
+.footer-links a:visited,
+.footer-bottom a,
+.footer-bottom a:visited {
+  color: #fff !important;
+  text-decoration: underline !important;
 } 

@@ -843,12 +843,18 @@ footer::before {
   width: 100%;
 }
 
+.footer a,
 .footer a:visited,
+.footer-section a,
 .footer-section a:visited,
+.footer-section ul li a,
 .footer-section ul li a:visited,
+.footer-links a,
 .footer-links a:visited,
+.footer-bottom a,
 .footer-bottom a:visited {
   color: #fff !important;
+  text-decoration: underline !important;
 }
 
 @media (max-width: 1024px) {
