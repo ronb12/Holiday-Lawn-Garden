@@ -210,15 +210,8 @@
       function renderPayPalButtons() {
         if (window.paypal && window.paypal.Buttons) {
           window.paypal.Buttons({
-            style: {
-              layout: 'vertical',
-              color: 'gold',
-              shape: 'rect',
-              label: 'paypal'
-            },
-            fundingSource: undefined, // Show all available funding sources
+            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
             createOrder: function(data, actions) {
-              // Example: Replace with your order creation logic
               return actions.order.create({
                 purchase_units: [{
                   amount: {
@@ -230,7 +223,6 @@
             onApprove: function(data, actions) {
               return actions.order.capture().then(function(details) {
                 alert('Payment completed by ' + details.payer.name.given_name + '!');
-                // Optionally redirect or show a success message
               });
             },
             onError: function(err) {
