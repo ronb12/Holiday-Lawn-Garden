@@ -1512,4 +1512,36 @@ nav {
   .info-card {
     padding: 1.5rem;
   }
+}
+
+/* Error Container Styles */
+.error-container {
+  display: none;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: var(--border-radius);
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: '!';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #c62828;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: bold;
 } 
