@@ -10,21 +10,25 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+const app = firebase.initializeApp(firebaseConfig);
 
 // Initialize Firestore with settings
 firebase.firestore().settings({
-  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+  merge: true
 });
 
+// Initialize Analytics
+const analytics = firebase.analytics(app);
+
 // Export Firebase services to window object
-window.auth = firebase.auth();
-window.db = firebase.firestore();
-window.storage = firebase.storage();
-window.analytics = firebase.analytics();
+window.auth = firebase.auth(app);
+window.db = firebase.firestore(app);
+window.storage = firebase.storage(app);
+window.analytics = analytics;
 
 // Auth state observer with error handling
-firebase.auth().onAuthStateChanged((user) => {
+firebase.auth(app).onAuthStateChanged((user) => {
   try {
     const authRequiredElements = document.querySelectorAll('.auth-required');
     const authNotRequiredElements = document.querySelectorAll('.auth-not-required');
@@ -36,7 +40,7 @@ firebase.auth().onAuthStateChanged((user) => {
       authNotRequiredElements.forEach(el => el.style.display = 'none');
 
       // Check if user is admin
-      firebase.firestore().collection('users').doc(user.uid).get()
+      firebase.firestore(app).collection('users').doc(user.uid).get()
         .then((doc) => {
           if (doc.exists && doc.data().isAdmin) {
             if (adminLink) adminLink.style.display = 'block';
