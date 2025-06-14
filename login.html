@@ -68,7 +68,7 @@
           </div>
 
           <button id="googleSignIn" class="google-signin-btn">
-            <img src="assets/images/google-logo.png" alt="Sign in with Google" class="google-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Sign in with Google" class="google-logo" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;">
             Sign in with Google
           </button>
 
@@ -355,14 +355,22 @@
         showError('Failed to sign in with Google. Please try again.');
       } finally {
         googleBtn.disabled = false;
-        googleBtn.innerHTML = '<img src="assets/images/google-logo.png" alt="Sign in with Google" class="google-logo"> Sign in with Google';
+        googleBtn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Sign in with Google" class="google-logo" style="width:20px;height:20px;vertical-align:middle;margin-right:8px;"> Sign in with Google';
       }
     });
 
-    // Check if user is already logged in
-    window.auth.onAuthStateChanged((user) => {
-      if (user) {
-        window.location.href = 'customer-dashboard.html';
+    // Wait for DOM and Firebase to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.firebase && firebase.auth) {
+        try {
+          firebase.auth().onAuthStateChanged(function(user) {
+            // Your auth state logic here
+          });
+        } catch (err) {
+          console.error('Error with onAuthStateChanged:', err);
+        }
+      } else {
+        console.error('Firebase Auth is not initialized.');
       }
     });
     </script>
