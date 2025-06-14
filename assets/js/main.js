@@ -32,15 +32,22 @@ export async function registerServiceWorker() {
       console.log('Unregistered old service workers');
 
       // Register new service worker
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('Service Worker registered with scope:', registration.scope);
+      const registration = await navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js');
+      console.log('✅ Service Worker registered:', registration.scope);
 
       // Handle updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('New service worker installed');
+            // New content is available, show update banner
+            const updateBanner = document.getElementById('updateBanner');
+            if (updateBanner) {
+              updateBanner.style.display = 'block';
+              updateBanner.addEventListener('click', () => {
+                clearCacheAndReload();
+              });
+            }
           }
         });
       });
@@ -51,7 +58,7 @@ export async function registerServiceWorker() {
       });
 
     } catch (error) {
-      console.error('Service Worker registration failed:', error);
+      console.error('❌ Service Worker registration failed:', error);
     }
   }
 }

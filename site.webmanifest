@@ -2,18 +2,18 @@
   "name": "Holliday's Lawn & Garden",
   "short_name": "Holliday's",
   "description": "Professional lawn care and landscaping services",
-  "start_url": "/",
+  "start_url": "/Holliday-Lawn-Garden/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
   "icons": [
     {
-      "src": "assets/images/favicon/android-chrome-192x192.png",
+      "src": "/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "assets/images/favicon/android-chrome-512x512.png",
+      "src": "/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
