@@ -1,0 +1,103 @@
+{
+  "timestamp": "2025-06-13T12:55:01.473Z",
+  "overallScore": 82,
+  "grades": {
+    "performance": {
+      "score": 78,
+      "details": [
+        "Image optimization: 28/30",
+        "Code minification: 13/30",
+        "Resource loading: 38/40"
+      ]
+    },
+    "accessibility": {
+      "score": 77,
+      "details": [
+        "ARIA attributes: 39/40",
+        "Image alt text: 18/30",
+        "Semantic HTML: 20/30"
+      ]
+    },
+    "bestPractices": {
+      "score": 68,
+      "details": [
+        "Meta tags: 29/30",
+        "Favicon: 20/20",
+        "Responsive design: 19/50"
+      ]
+    },
+    "seo": {
+      "score": 80,
+      "details": [
+        "Title tags: 39/40",
+        "Heading structure: 21/40",
+        "Sitemap: 20/20"
+      ]
+    },
+    "security": {
+      "score": 100,
+      "details": [
+        "HTTPS: 40/40",
+        "Security headers: 30/30",
+        "Form validation: 30/30"
+      ]
+    },
+    "features": {
+      "score": 83,
+      "details": [
+        "Customer features: 100/100",
+        "Admin features: 66.66/100"
+      ]
+    },
+    "codeQuality": {
+      "score": 100,
+      "details": [
+        "File structure: 40/40",
+        "CSS organization: 30/30",
+        "JavaScript organization: 30/30"
+      ]
+    },
+    "userExperience": {
+      "score": 70,
+      "details": [
+        "Navigation: 40/40",
+        "User feedback: 0/30",
+        "Responsive design: 30/30"
+      ]
+    }
+  },
+  "recommendations": [
+    {
+      "category": "performance",
+      "currentScore": 78,
+      "suggestions": [
+        "Optimize images using WebP format",
+        "Implement lazy loading for images"
+      ]
+    },
+    {
+      "category": "accessibility",
+      "currentScore": 77,
+      "suggestions": [
+        "Add ARIA labels to interactive elements",
+        "Ensure proper heading hierarchy"
+      ]
+    },
+    {
+      "category": "bestPractices",
+      "currentScore": 68,
+      "suggestions": [
+        "Add meta description tags",
+        "Implement favicon"
+      ]
+    },
+    {
+      "category": "userExperience",
+      "currentScore": 70,
+      "suggestions": [
+        "Improve navigation",
+        "Add loading states"
+      ]
+    }
+  ]
+}

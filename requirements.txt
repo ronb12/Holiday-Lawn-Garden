@@ -1,0 +1,5 @@
+watchdog==3.0.0
+selenium==4.18.1
+webdriver-manager==4.0.1
+pytest==8.0.2
+pytest-html==4.1.1 

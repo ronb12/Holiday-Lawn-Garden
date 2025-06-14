@@ -1,0 +1,99 @@
+/* Error Boundary Styles - Green Theme */
+.error-boundary {
+  background: var(--color-primary-light);
+  color: var(--color-text-light);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: 0 2px 8px var(--color-primary-dark);
+}
+
+.error-boundary h1, .error-boundary h2 {
+  color: var(--color-primary-dark);
+}
+
+.error-boundary a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.error-content {
+  max-width: 600px;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.error-content h2 {
+  color: var(--error-color, #dc3545);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.error-content p {
+  color: var(--text-primary);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.error-details {
+  margin: 1rem 0;
+  text-align: left;
+  background-color: var(--background-light);
+  border-radius: 4px;
+  padding: 1rem;
+}
+
+.error-details summary {
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.error-details pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin: 0.5rem 0;
+}
+
+.refresh-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.refresh-button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.refresh-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+}
+
+@media (max-width: 768px) {
+  .error-content {
+    padding: 1.5rem;
+  }
+
+  .error-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .error-details pre {
+    font-size: 0.75rem;
+  }
+} 
