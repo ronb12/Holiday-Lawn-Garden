@@ -267,38 +267,102 @@ nav {
 }
 
 .form-group label {
-  font-weight: 600;
-  color: var(--text-color);
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
   display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  background-color: white;
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"] {
   width: 100%;
-  color: var(--text-color);
+  min-height: 44px;
+  padding: 12px 15px;
+  border: 2.5px solid #388e3c;
+  border-radius: 8px;
+  font-size: 17px;
+  background: #fff;
+  color: #222;
+  box-shadow: 0 2px 8px rgba(56, 142, 60, 0.04);
+  margin-bottom: 18px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="tel"]:focus {
+  border-color: #43a047;
+  box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.18);
+  outline: none;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
   outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
 }
 
 .form-group input:hover,
 .form-group select:hover,
 .form-group textarea:hover {
-  border-color: var(--primary-color-light);
+  border-color: #4CAF50;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #adb5bd;
+}
+
+.form-group select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.form-group select:hover {
+  background-color: #f8f9fa;
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.btn-block {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-block:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-block i {
+  font-size: 18px;
 }
 
 /* Card Styles */
