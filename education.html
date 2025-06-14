@@ -43,28 +43,37 @@
     .education-card {
       background: white;
       border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      transition: transform 0.3s ease;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-align: center;
     }
 
     .education-card:hover {
       transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
-    .education-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
+    .education-emoji {
+      font-size: 4rem;
+      text-align: center;
+      margin: 2rem 0;
+      transition: transform 0.3s ease;
+    }
+
+    .education-card:hover .education-emoji {
+      transform: scale(1.1);
     }
 
     .education-content {
-      padding: 1.5rem;
+      text-align: left;
     }
 
     .education-content h3 {
-      color: #4CAF50;
+      color: var(--primary-color);
+      font-size: 1.5rem;
       margin-bottom: 1rem;
+      text-align: center;
     }
 
     .education-content ul {
@@ -81,14 +90,14 @@
 
     .education-content li:before {
       content: "✓";
-      color: #4CAF50;
+      color: var(--primary-color);
       position: absolute;
       left: 0;
     }
 
     .education-cta {
       display: inline-block;
-      background: #4CAF50;
+      background: var(--primary-color);
       color: white;
       padding: 0.8rem 1.5rem;
       border-radius: 5px;
@@ -96,10 +105,12 @@
       font-weight: 600;
       margin-top: 1rem;
       transition: background 0.3s ease;
+      width: 100%;
+      text-align: center;
     }
 
     .education-cta:hover {
-      background: #3d8b40;
+      background: var(--primary-color-dark);
     }
 
     @media (max-width: 768px) {
@@ -153,7 +164,7 @@
 
   <div class="education-grid">
     <div class="education-card">
-      <img src="assets/images/placeholder.jpg" alt="Seasonal Lawn Care" class="education-image">
+      <div class="education-emoji">🌱</div>
       <div class="education-content">
         <h3>Seasonal Lawn Care</h3>
         <p>Understanding the different needs of your lawn throughout the year is crucial for maintaining its health and appearance.</p>
@@ -168,7 +179,7 @@
     </div>
 
     <div class="education-card">
-      <img src="assets/images/placeholder.jpg" alt="Proper Mowing Techniques" class="education-image">
+      <div class="education-emoji">✂️</div>
       <div class="education-content">
         <h3>Proper Mowing Techniques</h3>
         <p>Learn the correct way to mow your lawn for optimal health and appearance.</p>
@@ -183,7 +194,7 @@
     </div>
 
     <div class="education-card">
-      <img src="assets/images/placeholder.jpg" alt="Watering Best Practices" class="education-image">
+      <div class="education-emoji">💧</div>
       <div class="education-content">
         <h3>Watering Best Practices</h3>
         <p>Proper watering is essential for a healthy lawn. Learn when and how to water effectively.</p>
@@ -198,7 +209,7 @@
     </div>
 
     <div class="education-card">
-      <img src="assets/images/placeholder.jpg" alt="Pest and Weed Control" class="education-image">
+      <div class="education-emoji">🌿</div>
       <div class="education-content">
         <h3>Pest and Weed Control</h3>
         <p>Keep your lawn free from pests and weeds with proper identification and control methods.</p>
