@@ -1,43 +1,69 @@
-const CACHE_NAME = 'holiday-lawn-garden-v1';
-const urlsToCache = [
+const CACHE_NAME = 'holliday-lawn-garden-v1';
+const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/login.html',
   '/assets/css/main.css',
-  '/assets/images/hollidays-logo.optimized-1280.png',
-  '/assets/images/hero-garden-landscaping.jpg',
-  '/assets/images/google-icon.png'
+  '/assets/js/main.js',
+  '/assets/images/favicon/favicon.ico',
+  '/assets/images/favicon/favicon-16x16.png',
+  '/assets/images/favicon/favicon-32x32.png',
+  '/assets/images/favicon/apple-touch-icon.png',
+  '/assets/images/favicon/safari-pinned-tab.svg',
+  '/site.webmanifest'
 ];
 
-self.addEventListener('install', event => {
+// Install event - cache assets
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
-});
-
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(ASSETS_TO_CACHE);
       })
   );
 });
 
-self.addEventListener('activate', event => {
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
+        cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-}); 
+});
+
+// Fetch event - serve from cache, fall back to network
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        if (response) {
+          return response;
+        }
+        return fetch(event.request)
+          .then((response) => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          });
+      })
+  );
+});
