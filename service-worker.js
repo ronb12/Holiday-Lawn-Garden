@@ -4,14 +4,11 @@ const ASSETS_TO_CACHE = [
   '/Holliday-Lawn-Garden/index.html',
   '/Holliday-Lawn-Garden/assets/css/main.css',
   '/Holliday-Lawn-Garden/assets/js/main.js',
-  '/Holliday-Lawn-Garden/assets/images/favicon/favicon.ico',
   '/Holliday-Lawn-Garden/assets/images/favicon/favicon-16x16.png',
   '/Holliday-Lawn-Garden/assets/images/favicon/favicon-32x32.png',
   '/Holliday-Lawn-Garden/assets/images/favicon/apple-touch-icon.png',
   '/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-192x192.png',
-  '/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-512x512.png',
-  '/Holliday-Lawn-Garden/assets/images/favicon/safari-pinned-tab.svg',
-  '/Holliday-Lawn-Garden/site.webmanifest'
+  '/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-512x512.png'
 ];
 
 // Install event - cache assets
@@ -21,6 +18,9 @@ self.addEventListener('install', (event) => {
       .then((cache) => {
         console.log('Opened cache');
         return cache.addAll(ASSETS_TO_CACHE);
+      })
+      .catch(error => {
+        console.error('Cache initialization failed:', error);
       })
   );
 });
