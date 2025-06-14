@@ -54,13 +54,17 @@ body {
 }
 
 .logo {
+  max-width: 200px;
+  height: auto;
   display: flex;
   align-items: center;
 }
 
 .logo img {
-  height: 50px;
-  width: auto;
+  width: 100%;
+  height: auto;
+  max-height: 60px;
+  object-fit: contain;
 }
 
 /* Navigation Styles */
@@ -200,6 +204,14 @@ nav {
 
   .hamburger.active span:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  .logo {
+    max-width: 150px;
+  }
+  
+  .logo img {
+    max-height: 50px;
   }
 }
 
