@@ -67,8 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.serviceWorkerRegistered = true;
       });
     }
-    
-    initializeFirebase();
 
     // Handle service worker updates
     let refreshing = false;
@@ -205,11 +203,11 @@ function initializeUI() {
         }
         
         if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
-          // Scrolling down
+          // Scroll Down
           header.classList.remove('scroll-up');
           header.classList.add('scroll-down');
         } else if (currentScroll < lastScroll && header.classList.contains('scroll-down')) {
-          // Scrolling up
+          // Scroll Up
           header.classList.remove('scroll-down');
           header.classList.add('scroll-up');
         }
@@ -231,17 +229,18 @@ function initializeUI() {
       });
     });
 
-    // Hide loading spinner
-    const loading = document.getElementById('loading');
-    if (loading) {
-      loading.style.display = 'none';
+    // Update copyright year
+    const yearSpan = document.getElementById('current-year');
+    if (yearSpan) {
+      yearSpan.textContent = new Date().getFullYear();
     }
+
   } catch (error) {
-    console.error('Error initializing UI:', error);
+    console.error('UI initialization error:', error);
   }
 }
 
-// Set up event listeners
+// Setup event listeners
 function setupEventListeners() {
   // Form submissions
   const forms = document.querySelectorAll('form');
@@ -254,27 +253,6 @@ function setupEventListeners() {
   navLinks.forEach(link => {
     link.addEventListener('click', handleNavigation);
   });
-}
-
-function initializeFirebase() {
-  try {
-    // Use global firebase object
-    if (typeof firebase !== 'undefined') {
-      const auth = firebase.auth();
-      const db = firebase.firestore();
-      
-      // Log page view if analytics is available
-      if (firebase.analytics) {
-        firebase.analytics().logEvent('page_view', {
-          page_title: document.title,
-          page_location: window.location.href,
-          page_path: window.location.pathname
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Firebase Initialization error:', error);
-  }
 }
 
 function handleFormSubmit(event) {
@@ -342,7 +320,7 @@ if (document.querySelector('.tabs')) {
   initTabs();
 }
 
-// Initialize any UI components
+// Initialize components
 function initializeComponents() {
   // Initialize any third-party components
   if (typeof AOS !== 'undefined') {
@@ -361,7 +339,6 @@ function initializeCustomComponents() {
 export {
   initializeUI,
   setupEventListeners,
-  initializeFirebase,
   handleFormSubmit,
   handleNavigation,
   initTabs,
