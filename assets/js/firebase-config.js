@@ -1,4 +1,4 @@
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
@@ -10,22 +10,18 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
-const analytics = firebase.analytics();
+firebase.initializeApp(firebaseConfig);
 
-// Export Firebase services
-window.auth = auth;
-window.db = db;
-window.storage = storage;
-window.analytics = analytics;
-
-// Configure Firestore settings
-db.settings({
+// Initialize Firestore with settings
+firebase.firestore().settings({
   cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
 });
+
+// Export Firebase services to window object
+window.auth = firebase.auth();
+window.db = firebase.firestore();
+window.storage = firebase.storage();
+window.analytics = firebase.analytics();
 
 // Auth state observer with error handling
 firebase.auth().onAuthStateChanged((user) => {

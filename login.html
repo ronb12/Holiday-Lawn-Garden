@@ -103,32 +103,45 @@
       const password = document.getElementById('password').value;
 
       try {
+        if (!window.auth) {
+          throw new Error('Authentication service not initialized');
+        }
         const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
         // Redirect to dashboard on successful login
         window.location.href = 'customer-dashboard.html';
       } catch (error) {
-        showError(error.message);
+        console.error('Login error:', error);
+        showError(error.message || 'Failed to sign in. Please try again.');
       }
     });
 
     // Handle Google Sign In
     googleSignInBtn.addEventListener('click', async () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
       try {
+        if (!window.auth) {
+          throw new Error('Authentication service not initialized');
+        }
+        const provider = new firebase.auth.GoogleAuthProvider();
         const result = await window.auth.signInWithPopup(provider);
         // Redirect to dashboard on successful login
         window.location.href = 'customer-dashboard.html';
       } catch (error) {
-        showError(error.message);
+        console.error('Google sign-in error:', error);
+        showError(error.message || 'Failed to sign in with Google. Please try again.');
       }
     });
 
     // Check if user is already logged in
-    window.auth.onAuthStateChanged((user) => {
-      if (user) {
-        window.location.href = 'customer-dashboard.html';
-      }
-    });
+    if (window.auth) {
+      window.auth.onAuthStateChanged((user) => {
+        if (user) {
+          window.location.href = 'customer-dashboard.html';
+        }
+      });
+    } else {
+      console.error('Authentication service not initialized');
+      showError('Authentication service not available. Please refresh the page.');
+    }
   </script>
 </body>
 </html> 

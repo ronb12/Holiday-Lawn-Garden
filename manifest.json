@@ -6,10 +6,10 @@
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "theme_color": "#2e7d32",
   "orientation": "portrait",
   "scope": "/",
-  "description": "Professional lawn care and landscaping services",
+  "description": "Professional landscaping and garden services",
   "icons": [
     {
       "src": "/assets/images/favicon/android-chrome-192x192.png",
