@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Holliday Lawn & Garden</title>
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -20,15 +20,15 @@
           <img src="assets/images/logo.png" alt="Holliday Lawn & Garden Logo">
         </a>
       </div>
-      <ul class="nav-links">
+        <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
         <li><a href="pay-your-bill.html" class="btn">Pay Your Bill</a></li>
-      </ul>
-    </nav>
-  </header>
+        </ul>
+      </nav>
+    </header>
 
   <main>
     <section class="login-section">
@@ -50,12 +50,12 @@
           </div>
 
           <form id="login-form" class="login-form">
-            <div class="form-group">
+        <div class="form-group">
               <label for="email">Email</label>
               <input type="email" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-              <label for="password">Password</label>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
               <input type="password" id="password" name="password" required>
             </div>
             <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -68,7 +68,7 @@
           </div>
 
           <button id="googleSignIn" class="google-signin-btn">
-            <img src="assets/images/google-logo.png" alt="Google Logo">
+            <img src="assets/images/google-logo.png" alt="Sign in with Google" class="google-logo">
             Sign in with Google
           </button>
 
@@ -100,7 +100,7 @@
                 Receive service updates and notifications
               </p>
             </div>
-          </div>
+      </div>
 
           <div class="info-card">
             <h3>Need Help?</h3>
@@ -122,43 +122,78 @@
         </div>
       </div>
     </section>
-  </main>
+    </main>
 
-  <!-- Loading Overlay -->
+    <!-- Loading Overlay -->
   <div id="loading-overlay" class="loading-overlay">
     <div class="loading-content">
       <div class="spinner"></div>
       <p id="loading-message">Loading...</p>
     </div>
-  </div>
+    </div>
 
-  <footer class="footer">
-    <div class="footer-container">
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <a href="about.html">About Us</a>
-        <a href="services.html">Services</a>
-        <a href="education.html">Education</a>
-        <a href="contact.html">Contact</a>
+    <footer class="footer" role="contentinfo" aria-label="Site footer">
+      <div class="footer-content">
+        <div class="footer-main">
+          <div class="footer-section">
+          <h3>Contact Us</h3>
+            <div class="footer-contact">
+              <span class="footer-owner">Karl Holliday</span>
+            <a href="tel:+15047171887" aria-label="Call us">
+        <i class="fas fa-phone" aria-hidden="true"></i>
+        <span>(504) 717-1887</span>
+      </a>
+            <a href="mailto:7holliday@gmail.com" aria-label="Email us">
+        <i class="fas fa-envelope" aria-hidden="true"></i>
+        <span>7holliday@gmail.com</span>
+      </a>
+          </div>
+          </div>
+
+          <div class="footer-section">
+          <h3>Quick Links</h3>
+            <div class="footer-links">
+            <a href="about.html">About Us</a>
+            <a href="services.html">Services</a>
+            <a href="education.html">Education</a>
+            <a href="contact.html">Contact</a>
+          </div>
+          </div>
+
+          <div class="footer-section">
+          <h3>Customer Portal</h3>
+            <div class="footer-links">
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+            <a href="pay.html">Pay Your Bill</a>
+            <a href="customer-dashboard.html">Dashboard</a>
+          </div>
+          </div>
+
+          <div class="footer-section">
+            <h3>Connect With Us</h3>
+            <div class="footer-social">
+            <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
+                <i class="fab fa-facebook" aria-hidden="true"></i>
+              </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">
+                <i class="fab fa-twitter" aria-hidden="true"></i>
+              </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
+                <i class="fab fa-instagram" aria-hidden="true"></i>
+              </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
+                <i class="fab fa-linkedin" aria-hidden="true"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-copyright">
+        <p>&copy; <span id="current-year"></span> Holliday's Lawn & Garden. All rights reserved.</p>
       </div>
-      <div class="footer-section">
-        <h3>Customer Portal</h3>
-        <a href="login.html">Login</a>
-        <a href="register.html">Register</a>
-        <a href="pay-your-bill.html">Pay Your Bill</a>
-        <a href="customer-dashboard.html">Dashboard</a>
       </div>
-      <div class="footer-section">
-        <h3>Legal</h3>
-        <a href="privacy.html">Privacy Policy</a>
-        <a href="terms.html">Terms of Service</a>
-        <a href="sitemap.html">Sitemap</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2024 Holliday's Lawn & Garden. All rights reserved.</p>
-    </div>
-  </footer>
+    </footer>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -166,9 +201,19 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <!-- Firebase Config -->
-  <script src="assets/js/firebase-config.js"></script>
-
   <script>
+    // Example Firebase config (replace with your actual config if needed)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx", // Your valid API key
+      authDomain: "your-project-id.firebaseapp.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project-id.appspot.com",
+      messagingSenderId: "your-messaging-sender-id",
+      appId: "your-app-id"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+
     // Set current year in footer
     document.addEventListener('DOMContentLoaded', () => {
       const yearElement = document.getElementById('currentYear');
@@ -180,12 +225,12 @@
     // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
+        navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js')
           .then(registration => {
-            console.log('ServiceWorker registration successful');
+            console.log('✅ Service Worker registered:', registration.scope);
           })
-          .catch(err => {
-            console.log('ServiceWorker registration failed: ', err);
+          .catch(error => {
+            console.error('❌ Service Worker registration failed:', error);
           });
       });
     }
@@ -211,9 +256,9 @@
       }
     }
 
-    // Handle form submission
+        // Handle form submission
     document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
+          e.preventDefault();
       const submitBtn = document.getElementById('submitBtn');
       const email = document.getElementById('email')?.value;
       const password = document.getElementById('password')?.value;
@@ -242,30 +287,30 @@
         }
 
         showSuccess();
-        setTimeout(() => {
+            setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
         }, 1500);
-      } catch (error) {
+          } catch (error) {
         console.error('Login error:', error);
         let errorMessage = 'An error occurred during login. Please try again.';
-        
-        switch (error.code) {
+
+            switch (error.code) {
           case 'auth/user-not-found':
             errorMessage = 'No account found with this email.';
-            break;
+                break;
           case 'auth/wrong-password':
             errorMessage = 'Incorrect password. Please try again.';
-            break;
+                break;
           case 'auth/invalid-email':
             errorMessage = 'Please enter a valid email address.';
-            break;
+                break;
           case 'auth/user-disabled':
             errorMessage = 'This account has been disabled. Please contact support.';
-            break;
-        }
-        
-        showError(errorMessage);
-      } finally {
+                break;
+            }
+
+            showError(errorMessage);
+          } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
           submitBtn.textContent = 'Sign In';
@@ -310,7 +355,7 @@
         showError('Failed to sign in with Google. Please try again.');
       } finally {
         googleBtn.disabled = false;
-        googleBtn.innerHTML = '<img src="assets/images/google-logo.png" alt="Google Logo"> Sign in with Google';
+        googleBtn.innerHTML = '<img src="assets/images/google-logo.png" alt="Sign in with Google" class="google-logo"> Sign in with Google';
       }
     });
 
@@ -320,6 +365,6 @@
         window.location.href = 'customer-dashboard.html';
       }
     });
-  </script>
-</body>
-</html> 
+    </script>
+  </body>
+</html>
