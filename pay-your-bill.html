@@ -208,7 +208,9 @@
     </div>
   </footer>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
+  <!-- PayPal SDK: Use a real sandbox client ID for full testing -->
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR-SANDBOX-CLIENT-ID&currency=USD&components=buttons,funding-eligibility"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const form = document.getElementById('paymentForm');
@@ -284,7 +286,25 @@
       }).render('#paypal-button-container');
     });
   </script>
+
+  <!-- Ensure PayPal code only runs after SDK is loaded -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      function renderPayPalButtons() {
+        if (window.paypal && window.paypal.Buttons) {
+          window.paypal.Buttons({
+            // ... your PayPal button config ...
+          }).render('#paypal-button-container');
+        } else {
+          // Retry after a short delay if PayPal is not ready
+          setTimeout(renderPayPalButtons, 100);
+        }
+      }
+      renderPayPalButtons();
+    });
+  </script>
+
   <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
-  <script src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
