@@ -199,103 +199,50 @@
     </div>
   </footer>
 
-  <!-- PayPal SDK: Use a real sandbox client ID for full testing -->
-  <script src="https://www.paypal.com/sdk/js?client-id=YOUR-SANDBOX-CLIENT-ID&currency=USD&components=buttons,funding-eligibility"></script>
+  <!-- PayPal SDK with test client ID -->
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('paymentForm');
-      const accountInput = document.getElementById('accountNumber');
-      const amountInput = document.getElementById('paymentAmount');
-      const paypalButtonContainer = document.getElementById('paypal-button-container');
+  <!-- PayPal Button Container -->
+  <div id="paypal-button-container" style="margin: 2rem 0;"></div>
 
-      function validateForm() {
-        if (!accountInput.value.trim()) {
-          alert('Please enter your account number');
-          return false;
-        }
-        if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
-          alert('Please enter a valid amount');
-          return false;
-        }
-        return true;
-      }
-
-      function createOrder(data, actions) {
-        if (!validateForm()) {
-          return Promise.reject(new Error('Please fill in all required fields'));
-        }
-
-        return actions.order.create({
-          purchase_units: [{
-            amount: {
-              value: amountInput.value
-            },
-            description: `Payment for account ${accountInput.value}`
-          }]
-        });
-      }
-
-      function onApprove(data, actions) {
-        return actions.order.capture().then(function(details) {
-          alert('Payment completed successfully! Thank you for your payment.');
-          form.reset();
-        });
-      }
-
-      function onError(err) {
-        console.error('PayPal Error:', err);
-        alert('There was an error processing your payment. Please try again.');
-      }
-
-      // Initialize PayPal buttons
-      paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'blue',
-          shape: 'rect',
-          label: 'pay'
-        },
-        fundingSource: paypal.FUNDING.PAYPAL,
-        createOrder: createOrder,
-        onApprove: onApprove,
-        onError: onError
-      }).render('#paypal-button-container');
-
-      // Add credit/debit card button
-      paypal.Buttons({
-        style: {
-          layout: 'vertical',
-          color: 'black',
-          shape: 'rect',
-          label: 'pay'
-        },
-        fundingSource: paypal.FUNDING.CARD,
-        createOrder: createOrder,
-        onApprove: onApprove,
-        onError: onError
-      }).render('#paypal-button-container');
-    });
-  </script>
-
-  <!-- Ensure PayPal code only runs after SDK is loaded -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       function renderPayPalButtons() {
         if (window.paypal && window.paypal.Buttons) {
           window.paypal.Buttons({
-            // ... your PayPal button config ...
+            style: {
+              layout: 'vertical',
+              color: 'gold',
+              shape: 'rect',
+              label: 'paypal'
+            },
+            fundingSource: undefined, // Show all available funding sources
+            createOrder: function(data, actions) {
+              // Example: Replace with your order creation logic
+              return actions.order.create({
+                purchase_units: [{
+                  amount: {
+                    value: document.getElementById('paymentAmount') ? document.getElementById('paymentAmount').value : '10.00'
+                  }
+                }]
+              });
+            },
+            onApprove: function(data, actions) {
+              return actions.order.capture().then(function(details) {
+                alert('Payment completed by ' + details.payer.name.given_name + '!');
+                // Optionally redirect or show a success message
+              });
+            },
+            onError: function(err) {
+              alert('An error occurred during payment. Please try again.');
+            }
           }).render('#paypal-button-container');
         } else {
-          // Retry after a short delay if PayPal is not ready
           setTimeout(renderPayPalButtons, 100);
         }
       }
       renderPayPalButtons();
     });
   </script>
-
-  <script>document.getElementById('current-year').textContent = new Date().getFullYear();</script>
-  <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>
