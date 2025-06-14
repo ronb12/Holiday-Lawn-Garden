@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="assets/css/main.css">
   <style>
     .payment-section {
@@ -79,6 +80,7 @@
     </button>
     <nav>
       <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="education.html">Education</a></li>
@@ -90,56 +92,125 @@
     </nav>
   </header>
 
-  <main>
-    <section class="payment-section">
+  <section class="hero">
+    <img src="assets/images/hero-garden-landscaping.jpg" alt="Beautiful garden landscaping" loading="eager">
+    <div class="hero-content">
       <h1>Pay Your Bill</h1>
       <p>Quick and secure online payment options for your lawn care and landscaping services.</p>
-      
-      <form id="payment-form" class="payment-form">
-        <div class="form-group">
-          <label for="account-number">Account Number</label>
-          <input type="text" id="account-number" name="account-number" required>
-          <div class="error-message" id="account-error"></div>
-        </div>
-        
-        <div class="form-group">
-          <label for="amount">Payment Amount ($)</label>
-          <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
-          <div class="error-message" id="amount-error"></div>
-        </div>
-      </form>
+    </div>
+  </section>
 
-      <div class="payment-options">
-        <h2>Choose Payment Method</h2>
-        <div class="paypal-container">
-          <div id="paypal-button-container"></div>
-          <div id="card-button-container"></div>
+  <section class="payment-section">
+    <div class="container">
+      <div class="payment-grid">
+        <div class="payment-form-container">
+          <form class="payment-form" id="paymentForm">
+            <div class="form-group">
+              <label for="accountNumber">Account Number</label>
+              <input type="text" id="accountNumber" name="accountNumber" required>
+            </div>
+            <div class="form-group">
+              <label for="paymentAmount">Payment Amount ($)</label>
+              <input type="number" id="paymentAmount" name="paymentAmount" min="0" step="0.01" required>
+            </div>
+
+            <div class="payment-methods">
+              <h3>Choose Payment Method</h3>
+              <div class="payment-options">
+                <div class="payment-option">
+                  <input type="radio" id="creditCard" name="paymentMethod" value="creditCard" required>
+                  <label for="creditCard">
+                    <i class="fas fa-credit-card"></i>
+                    Credit Card
+                  </label>
+                </div>
+                <div class="payment-option">
+                  <input type="radio" id="debitCard" name="paymentMethod" value="debitCard">
+                  <label for="debitCard">
+                    <i class="fas fa-credit-card"></i>
+                    Debit Card
+                  </label>
+                </div>
+                <div class="payment-option">
+                  <input type="radio" id="bankTransfer" name="paymentMethod" value="bankTransfer">
+                  <label for="bankTransfer">
+                    <i class="fas fa-university"></i>
+                    Bank Transfer
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-details" id="cardDetails">
+              <div class="form-group">
+                <label for="cardNumber">Card Number</label>
+                <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="expiryDate">Expiry Date</label>
+                  <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                  <label for="cvv">CVV</label>
+                  <input type="text" id="cvv" name="cvv" placeholder="123">
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Process Payment</button>
+          </form>
+        </div>
+
+        <div class="payment-info">
+          <div class="info-card">
+            <h3>Payment Information</h3>
+            <div class="info-content">
+              <p><i class="fas fa-shield-alt"></i> Secure Payment Processing</p>
+              <p><i class="fas fa-lock"></i> Encrypted Data Transmission</p>
+              <p><i class="fas fa-clock"></i> Instant Payment Confirmation</p>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <h3>Need Help?</h3>
+            <div class="contact-info">
+              <div class="contact-item">
+                <i class="fas fa-phone"></i>
+                <a href="tel:+15047171887">(504) 717-1887</a>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-envelope"></i>
+                <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </section>
 
   <footer class="footer">
     <div class="footer-container">
       <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p>Karl Holliday</p>
-        <p>(504) 717-1887</p>
-        <p>7holliday@gmail.com</p>
-      </div>
-      <div class="footer-section">
         <h3>Quick Links</h3>
         <a href="about.html">About Us</a>
         <a href="services.html">Services</a>
-        <a href="gallery.html">Gallery</a>
+        <a href="education.html">Education</a>
         <a href="contact.html">Contact</a>
-        <a href="faq.html">FAQ</a>
+      </div>
+      <div class="footer-section">
+        <h3>Customer Portal</h3>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="pay-your-bill.html">Pay Your Bill</a>
+        <a href="customer-dashboard.html">Dashboard</a>
       </div>
       <div class="footer-section">
         <h3>Legal</h3>
         <a href="privacy.html">Privacy Policy</a>
         <a href="terms.html">Terms of Service</a>
-        <a href="accessibility.html">Accessibility</a>
+        <a href="sitemap.html">Sitemap</a>
       </div>
     </div>
     <div class="footer-bottom">
@@ -147,96 +218,6 @@
     </div>
   </footer>
 
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('payment-form');
-      const accountInput = document.getElementById('account-number');
-      const amountInput = document.getElementById('amount');
-      const accountError = document.getElementById('account-error');
-      const amountError = document.getElementById('amount-error');
-
-      function validateForm() {
-        let isValid = true;
-        if (!accountInput.value.trim()) {
-          accountError.textContent = 'Please enter your account number';
-          accountError.style.display = 'block';
-          isValid = false;
-        } else {
-          accountError.style.display = 'none';
-        }
-        
-        if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
-          amountError.textContent = 'Please enter a valid amount';
-          amountError.style.display = 'block';
-          isValid = false;
-        } else {
-          amountError.style.display = 'none';
-        }
-
-        return isValid;
-      }
-
-      function createOrder(data, actions) {
-        if (!validateForm()) {
-          return Promise.reject(new Error('Please fill in all required fields'));
-        }
-
-        return actions.order.create({
-          purchase_units: [{
-            amount: {
-              value: amountInput.value
-            },
-            description: `Payment for account ${accountInput.value}`
-          }]
-        });
-      }
-
-      function onApprove(data, actions) {
-        return actions.order.capture().then(function(details) {
-          alert('Payment completed successfully! Thank you for your payment.');
-          form.reset();
-        });
-      }
-
-      function onError(err) {
-        console.error('PayPal Error:', err);
-        alert('There was an error processing your payment. Please try again.');
-      }
-
-      if (typeof paypal !== 'undefined') {
-        // PayPal button
-        paypal.Buttons({
-          style: {
-            layout: 'vertical',
-            color: 'gold',
-            shape: 'rect',
-            label: 'pay'
-          },
-          fundingSource: paypal.FUNDING.PAYPAL,
-          createOrder: createOrder,
-          onApprove: onApprove,
-          onError: onError
-        }).render('#paypal-button-container');
-
-        // Credit/Debit card button
-        paypal.Buttons({
-          style: {
-            layout: 'vertical',
-            color: 'black',
-            shape: 'rect',
-            label: 'pay'
-          },
-          fundingSource: paypal.FUNDING.CARD,
-          createOrder: createOrder,
-          onApprove: onApprove,
-          onError: onError
-        }).render('#card-button-container');
-      } else {
-        document.querySelector('.paypal-container').innerHTML = 
-          '<p style="color: #dc3545;">Unable to load payment options. Please try again later.</p>';
-      }
-    });
-  </script>
+  <script src="assets/js/main.js"></script>
 </body>
 </html>
