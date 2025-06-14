@@ -1309,7 +1309,7 @@ nav {
 
 .login-form-container {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);
 }
@@ -1329,19 +1329,33 @@ nav {
 .form-group label {
   font-weight: 600;
   color: var(--color-text);
+  font-size: 0.95rem;
 }
 
 .form-group input {
-  padding: 0.75rem;
+  padding: 0.875rem;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: var(--color-background);
 }
 
 .form-group input:focus {
   border-color: var(--color-primary);
   outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.form-group input::placeholder {
+  color: var(--color-text-light);
+}
+
+.btn-block {
+  width: 100%;
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .login-divider {
@@ -1370,17 +1384,19 @@ nav {
   justify-content: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.875rem;
   background: white;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  color: var(--color-text);
 }
 
 .google-signin-btn:hover {
   background-color: var(--color-background);
+  border-color: var(--color-primary);
 }
 
 .google-signin-btn img {
@@ -1404,6 +1420,7 @@ nav {
 
 .login-links a:hover {
   color: var(--color-primary-dark);
+  text-decoration: underline;
 }
 
 .login-links .separator {
@@ -1418,7 +1435,7 @@ nav {
 
 .info-card {
   background: white;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);
 }
@@ -1427,12 +1444,13 @@ nav {
   color: var(--color-primary);
   margin-bottom: 1.5rem;
   font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .info-content {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .info-content p {
@@ -1440,6 +1458,7 @@ nav {
   align-items: center;
   gap: 0.75rem;
   color: var(--color-text);
+  font-size: 0.95rem;
 }
 
 .info-content i {
@@ -1450,7 +1469,7 @@ nav {
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .contact-item {
@@ -1468,10 +1487,12 @@ nav {
   color: var(--color-text);
   text-decoration: none;
   transition: color 0.3s ease;
+  font-size: 0.95rem;
 }
 
 .contact-item a:hover {
   color: var(--color-primary);
+  text-decoration: underline;
 }
 
 @media (max-width: 768px) {
@@ -1485,5 +1506,10 @@ nav {
 
   .info-card {
     margin-bottom: 1rem;
+  }
+
+  .login-form-container,
+  .info-card {
+    padding: 1.5rem;
   }
 } 

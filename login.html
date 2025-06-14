@@ -281,70 +281,71 @@
       <div class="hero-overlay"></div>
       <img src="assets/images/hero-garden-landscaping.jpg" alt="Beautiful garden landscaping" loading="eager">
       <div class="hero-content">
-        <h1>Login</h1>
-        <p>Access your account to manage your lawn care services.</p>
+        <h1>Welcome Back</h1>
+        <p>Sign in to manage your lawn care services</p>
       </div>
     </section>
 
-    <main id="main-content" class="login-section" style="background: var(--color-primary-light); padding: 2rem; border-radius: var(--border-radius); max-width: 500px; margin: 3rem auto;">
-      <h1 style="color: var(--color-primary-dark);">Login</h1>
-      <div id="error-container" class="error-container"></div>
-      <form id="login-form" class="login-form form-with-loading form-with-loading form-with-loading" novalidate aria-label="login-form form">
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            placeholder="Enter your email"
-            autocomplete="email"
-            style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
-          / aria-label="email email">
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <div class="password-input">
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              placeholder="Enter your password"
-              autocomplete="current-password"
-              style="border: 1px solid var(--color-primary); border-radius: var(--border-radius); padding: 0.5rem;"
-            / aria-label="password password">
-            <button
-              type="button"
-              class="toggle-password button-with-loading button-with-loading"
-              aria-label="Toggle password visibility"
-              aria-pressed="false"
-            >
-              <i class="fas fa-eye"></i>
+    <section class="login-section">
+      <div class="container">
+        <div class="login-grid">
+          <div class="login-form-container">
+            <form class="login-form" id="loginForm">
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            </form>
+
+            <div class="login-divider">
+              <span>or</span>
+            </div>
+
+            <button class="google-signin-btn">
+              <img src="assets/images/google-icon.png" alt="Google Icon">
+              Sign in with Google
             </button>
+
+            <div class="login-links">
+              <a href="forgot-password.html">Forgot Password?</a>
+              <span class="separator">|</span>
+              <a href="register.html">Create Account</a>
+            </div>
+          </div>
+
+          <div class="login-info">
+            <div class="info-card">
+              <h3>Customer Benefits</h3>
+              <div class="info-content">
+                <p><i class="fas fa-calendar-check"></i> Schedule Services</p>
+                <p><i class="fas fa-file-invoice"></i> View Billing History</p>
+                <p><i class="fas fa-credit-card"></i> Manage Payments</p>
+                <p><i class="fas fa-comments"></i> Message Support</p>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <h3>Need Help?</h3>
+              <div class="contact-info">
+                <div class="contact-item">
+                  <i class="fas fa-phone"></i>
+                  <a href="tel:+15047171887">(504) 717-1887</a>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-envelope"></i>
+                  <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <button type="submit" class="cta-button button-with-loading button-with-loading button-with-loading button-with-loading" id="signInButton" style="background: var(--color-primary); color: var(--color-text-light); border: none; border-radius: var(--border-radius); padding: 0.75rem 2rem; font-weight: 600; margin-top: 1rem;" aria-label="Button">
-          <i class="fas fa-sign-in-alt"></i> Sign In
-        </button>
-      </form>
-      <div class="divider">
-        <span>or</span>
       </div>
-      <button id="googleSignIn" class="btn-google button-with-loading button-with-loading" aria-label="Button">
-        
-          <picture>
-            <source srcset="assets/images/google-icon.webp" type="image/webp">
-            <img src="assets/images/google-icon.webp" alt="Google Icon" / loading="lazy">
-          </picture>
-        Sign in with Google
-      </button>
-      <div class="login-links">
-        <a href="forgot-password.html" aria-label="Link" class="link-with-loading link-with-loading">Forgot Password?</a>
-        <span class="separator">|</span>
-        <a href="register.html" aria-label="Link" class="link-with-loading link-with-loading">Create Account</a>
-      </div>
-    </main>
+    </section>
 
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay" style="display: none">
@@ -437,9 +438,8 @@
 
       function setupAuth() {
         const auth = firebase.auth();
-        const loginForm = document.getElementById("login-form");
-        const googleSignInBtn = document.getElementById("googleSignIn");
-        const togglePasswordBtn = document.querySelector(".toggle-password");
+        const loginForm = document.getElementById("loginForm");
+        const googleSignInBtn = document.querySelector(".google-signin-btn");
 
         // Check if user is already logged in
         auth.onAuthStateChanged((user) => {
@@ -541,22 +541,6 @@
             showError("Failed to sign in with Google. Please try again.");
           } finally {
             hideLoading();
-          }
-        });
-
-        // Handle password visibility toggle
-        togglePasswordBtn.addEventListener("click", () => {
-          const passwordInput = document.getElementById("password");
-          const icon = togglePasswordBtn.querySelector("i");
-
-          if (passwordInput.type === "password") {
-            passwordInput.type = "text";
-            icon.classList.remove("fa-eye");
-            icon.classList.add("fa-eye-slash");
-          } else {
-            passwordInput.type = "password";
-            icon.classList.remove("fa-eye-slash");
-            icon.classList.add("fa-eye");
           }
         });
       }
