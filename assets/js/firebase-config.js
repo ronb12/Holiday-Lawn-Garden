@@ -5,7 +5,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth
 import { getFirestore, collection, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Your web app's Firebase configuration
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
   projectId: "holiday-lawn-and-garden",
@@ -26,6 +26,11 @@ const db = getFirestore(app);
 // Export services to window object
 window.auth = auth;
 window.db = db;
+
+// Initialize Firebase in compat mode
+if (window.firebase) {
+  window.firebase.initializeApp(firebaseConfig);
+}
 
 // Auth state observer with error handling
 auth.onAuthStateChanged((user) => {
