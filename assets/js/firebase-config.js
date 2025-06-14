@@ -1,42 +1,31 @@
-// Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
+  apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
   projectId: "holiday-lawn-and-garden",
-  storageBucket: "holiday-lawn-and-garden.firebasestorage.app",
-  messagingSenderId: "135322230444",
-  appId: "1:135322230444:web:1a487b25a48aae07368909",
-  measurementId: "G-KD6TBWR4ZT"
+  storageBucket: "holiday-lawn-and-garden.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef1234567890",
+  measurementId: "G-XXXXXXXXXX"
 };
 
-// Initialize Firebase with error handling
-try {
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const analytics = firebase.analytics();
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+const analytics = firebase.analytics();
 
-  // Configure Firestore settings
-  db.settings({
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
-  });
+// Export Firebase services
+window.auth = auth;
+window.db = db;
+window.storage = storage;
+window.analytics = analytics;
 
-  // Export Firebase instances
-  window.firebaseApp = app;
-  window.firebaseAnalytics = analytics;
-  window.firebaseAuth = auth;
-  window.firebaseDb = db;
-
-  console.log('Firebase initialized successfully');
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-  // Show user-friendly error message
-  const errorMessage = document.createElement('div');
-  errorMessage.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #ff4444; color: white; padding: 10px; text-align: center; z-index: 9999;';
-  errorMessage.textContent = 'Unable to connect to services. Please try again later.';
-  document.body.appendChild(errorMessage);
-}
+// Configure Firestore settings
+db.settings({
+  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+});
 
 // Auth state observer with error handling
 firebase.auth().onAuthStateChanged((user) => {
