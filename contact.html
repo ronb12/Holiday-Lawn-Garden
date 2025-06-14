@@ -51,19 +51,25 @@
     <div class="container">
       <div class="contact-grid">
         <div class="contact-form-container">
-          <form class="contact-form" id="contactForm">
+          <h2>Contact Us</h2>
+          <p class="form-intro">We'd love to hear from you. Fill out the form below and we'll get back to you as soon as possible.</p>
+          
+          <form class="contact-form" id="contactForm" action="#" method="POST">
             <div class="form-group">
               <label for="name">Name</label>
-              <input type="text" id="name" name="name" required>
+              <input type="text" id="name" name="name" required placeholder="Your full name">
             </div>
+
             <div class="form-group">
               <label for="email">Email</label>
-              <input type="email" id="email" name="email" required>
+              <input type="email" id="email" name="email" required placeholder="your.email@example.com">
             </div>
+
             <div class="form-group">
               <label for="phone">Phone</label>
-              <input type="tel" id="phone" name="phone" required>
+              <input type="tel" id="phone" name="phone" required placeholder="(504) 555-0123">
             </div>
+
             <div class="form-group">
               <label for="service">Service Interested In</label>
               <select id="service" name="service" required>
@@ -75,11 +81,15 @@
                 <option value="other">Other</option>
               </select>
             </div>
+
             <div class="form-group">
               <label for="message">Message</label>
-              <textarea id="message" name="message" rows="5" required></textarea>
+              <textarea id="message" name="message" rows="5" required placeholder="Tell us about your project or inquiry..."></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Send Message</button>
+
+            <button type="submit" class="btn btn-primary btn-block">
+              <i class="fas fa-paper-plane"></i> Send Message
+            </button>
           </form>
         </div>
 
@@ -106,16 +116,16 @@
             <h3>Service Hours</h3>
             <div class="service-hours">
               <div class="hours-item">
-                <span>Monday - Friday</span>
-                <span>7:00 AM - 6:00 PM</span>
+                <span class="days">Monday - Friday</span>
+                <span class="time">7:00 AM - 6:00 PM</span>
               </div>
               <div class="hours-item">
-                <span>Saturday</span>
-                <span>8:00 AM - 4:00 PM</span>
+                <span class="days">Saturday</span>
+                <span class="time">8:00 AM - 4:00 PM</span>
               </div>
               <div class="hours-item">
-                <span>Sunday</span>
-                <span>Closed</span>
+                <span class="days">Sunday</span>
+                <span class="time">Closed</span>
               </div>
             </div>
           </div>
