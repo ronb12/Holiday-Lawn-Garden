@@ -267,21 +267,24 @@ nav {
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
+  font-weight: 600;
   color: var(--text-color);
-  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  display: block;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  background-color: white;
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  color: var(--text-color);
 }
 
 .form-group input:focus,
@@ -289,7 +292,13 @@ nav {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: var(--primary-color-light);
 }
 
 /* Card Styles */
@@ -1319,12 +1328,14 @@ nav {
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 0.875rem 1rem;
-  border: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--border-color);
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 1.1rem;
   transition: all 0.3s ease;
-  background-color: #f8f9fa;
+  background-color: white;
+  width: 100%;
+  color: var(--text-color);
 }
 
 .form-group input:focus,
@@ -1332,8 +1343,13 @@ nav {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-  background-color: white;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: var(--primary-color-light);
 }
 
 .form-group input::placeholder,
@@ -1345,24 +1361,37 @@ nav {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1rem;
-  padding-right: 2.5rem;
+  background-position: right 1.25rem center;
+  background-size: 1.25rem;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+.form-group select:hover {
+  background-color: #f8f9fa;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
 }
 
 .btn-block {
   width: 100%;
-  padding: 1rem;
-  font-size: 1.1rem;
+  padding: 1.25rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .btn-block i {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
 }
 
 .contact-info {
