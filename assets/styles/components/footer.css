@@ -1,6 +1,6 @@
 .footer {
   background-color: var(--color-primary-dark);
-  color: #000000;
+  color: #fff;
   padding: 2rem 0;
   margin-top: 3rem;
   border-top: 1px solid var(--color-border-dark);
@@ -28,7 +28,7 @@
 }
 
 .footer-section h3 {
-  color: #000000;
+  color: #fff;
   font-size: 1.1rem;
   font-weight: var(--font-weight-semibold);
   margin-bottom: 0.5rem;
@@ -42,7 +42,7 @@
 
 .footer-contact a,
 .footer-contact span {
-  color: #000000;
+  color: #fff;
   opacity: 0.9;
   text-decoration: none;
   display: inline-flex;
@@ -98,7 +98,7 @@
 }
 
 .footer-social a {
-  color: #000000;
+  color: #fff;
   opacity: 0.9;
   transition: opacity 0.3s ease;
 }
@@ -115,7 +115,7 @@
   text-align: center;
   padding-top: 1.5rem;
   border-top: 1px solid var(--color-border-dark);
-  color: #000000;
+  color: #fff;
   opacity: 0.9;
   font-size: 0.875rem;
 }

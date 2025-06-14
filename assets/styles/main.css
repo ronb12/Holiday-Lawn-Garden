@@ -702,7 +702,7 @@ nav {
 /* Footer Styles */
 footer {
   background-color: #1a1a1a;
-  color: #ffffff;
+  color: #fff;
   padding: 5rem 0 0;
   position: relative;
 }
@@ -731,7 +731,7 @@ footer::before {
 }
 
 .footer-section h3 {
-  color: #ffffff;
+  color: #fff;
   font-size: 1.3rem;
   margin-bottom: 1.5rem;
   position: relative;
