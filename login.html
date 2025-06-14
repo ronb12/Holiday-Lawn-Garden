@@ -225,7 +225,27 @@
         if (!window.auth) {
           throw new Error('Authentication service not initialized');
         }
+
+        // Show loading state
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Signing in...';
+
         const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+        
+        // Check if user exists in Firestore
+        const userDoc = await window.db.collection('users').doc(userCredential.user.uid).get();
+        
+        if (!userDoc.exists) {
+          // Create user document if it doesn't exist
+          await window.db.collection('users').doc(userCredential.user.uid).set({
+            email: userCredential.user.email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isAdmin: false
+          });
+        }
+
         showSuccess('Login successful! Redirecting...');
         setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
@@ -255,6 +275,11 @@
         }
         
         showError(errorMessage);
+      } finally {
+        // Reset button state
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        submitButton.disabled = false;
+        submitButton.textContent = 'Sign In';
       }
     });
 
@@ -264,8 +289,29 @@
         if (!window.auth) {
           throw new Error('Authentication service not initialized');
         }
+
+        // Show loading state
+        googleSignInBtn.disabled = true;
+        const originalText = googleSignInBtn.textContent;
+        googleSignInBtn.textContent = 'Signing in...';
+
         const provider = new firebase.auth.GoogleAuthProvider();
         const result = await window.auth.signInWithPopup(provider);
+        
+        // Check if user exists in Firestore
+        const userDoc = await window.db.collection('users').doc(result.user.uid).get();
+        
+        if (!userDoc.exists) {
+          // Create user document if it doesn't exist
+          await window.db.collection('users').doc(result.user.uid).set({
+            email: result.user.email,
+            displayName: result.user.displayName,
+            photoURL: result.user.photoURL,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            isAdmin: false
+          });
+        }
+
         showSuccess('Login successful! Redirecting...');
         setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
@@ -273,6 +319,10 @@
       } catch (error) {
         console.error('Google sign-in error:', error);
         showError(error.message || 'Failed to sign in with Google. Please try again.');
+      } finally {
+        // Reset button state
+        googleSignInBtn.disabled = false;
+        googleSignInBtn.textContent = 'Sign in with Google';
       }
     });
 
