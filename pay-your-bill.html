@@ -199,12 +199,13 @@
     </div>
   </footer>
 
-  <!-- PayPal SDK with test client ID -->
+  <!-- PayPal SDK with test client ID: must be before the button rendering code -->
   <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
 
   <!-- PayPal Button Container -->
   <div id="paypal-button-container" style="margin: 2rem 0;"></div>
 
+  <!-- PayPal Button Rendering Code -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       function renderPayPalButtons() {
