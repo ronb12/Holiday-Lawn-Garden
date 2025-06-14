@@ -101,69 +101,62 @@
     </div>
   </section>
 
+  <!-- PayPal SDK with test client ID: must be before the button rendering code -->
+  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
+
+  <!-- Payment Section -->
   <section class="payment-section">
-    <div class="container">
-      <div class="payment-grid">
-        <div class="payment-form-container">
-          <form class="payment-form" id="paymentForm">
-            <div class="form-group">
-              <label for="accountNumber">Account Number</label>
-              <input type="text" id="accountNumber" name="accountNumber" required>
-            </div>
-            <div class="form-group">
-              <label for="paymentAmount">Payment Amount ($)</label>
-              <input type="number" id="paymentAmount" name="paymentAmount" min="0" step="0.01" required>
-            </div>
-
-            <div class="payment-methods">
-              <h3>Choose Payment Method</h3>
-              <div class="payment-options">
-                <div class="payment-option">
-                  <input type="radio" id="paypal" name="paymentMethod" value="paypal" required checked>
-                  <label for="paypal">
-                    <i class="fab fa-paypal"></i>
-                    PayPal or Credit/Debit Card
-                  </label>
-                </div>
-              </div>
-              <p class="payment-note">
-                <i class="fas fa-info-circle"></i>
-                Don't have a PayPal account? No problem! You can still pay securely using your credit or debit card through our payment system.
-              </p>
-            </div>
-
-            <div id="paypal-button-container"></div>
-          </form>
-        </div>
-
-        <div class="payment-info">
-          <div class="info-card">
-            <h3>Payment Information</h3>
-            <div class="info-content">
-              <p><i class="fas fa-shield-alt"></i> Secure Payment Processing</p>
-              <p><i class="fas fa-lock"></i> Encrypted Data Transmission</p>
-              <p><i class="fas fa-clock"></i> Instant Payment Confirmation</p>
-              <p><i class="fas fa-credit-card"></i> No PayPal Account Required</p>
-            </div>
-          </div>
-
-          <div class="info-card">
-            <h3>Need Help?</h3>
-            <div class="contact-info">
-              <div class="contact-item">
-                <i class="fas fa-phone"></i>
-                <a href="tel:+15047171887">(504) 717-1887</a>
-              </div>
-              <div class="contact-item">
-                <i class="fas fa-envelope"></i>
-                <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a>
-              </div>
-            </div>
-          </div>
-        </div>
+    <h2>Pay Your Bill</h2>
+    <form id="payment-form" style="max-width: 400px; margin: 0 auto;">
+      <div class="form-group">
+        <label for="accountNumber">Account Number</label>
+        <input type="text" id="accountNumber" name="accountNumber" required>
       </div>
+      <div class="form-group">
+        <label for="paymentAmount">Payment Amount ($)</label>
+        <input type="number" id="paymentAmount" name="paymentAmount" min="1" step="0.01" required>
+      </div>
+    </form>
+    <!-- PayPal Button Container -->
+    <div id="paypal-button-container" style="margin: 2rem 0;"></div>
+    <div class="payment-note" style="background: #e8f5e9; color: #2e7d32; padding: 1rem; border-radius: 6px; max-width: 400px; margin: 0 auto 2rem auto;">
+      <i class="fab fa-paypal" style="margin-right: 0.5rem;"></i>
+      Don't have a PayPal account? No problem! You can pay securely using your credit or debit card as a guest.
     </div>
   </section>
+
+  <!-- PayPal Button Rendering Code -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      function renderPayPalButtons() {
+        if (window.paypal && window.paypal.Buttons) {
+          window.paypal.Buttons({
+            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+            createOrder: function(data, actions) {
+              return actions.order.create({
+                purchase_units: [{
+                  amount: {
+                    value: document.getElementById('paymentAmount') ? document.getElementById('paymentAmount').value : '10.00'
+                  }
+                }]
+              });
+            },
+            onApprove: function(data, actions) {
+              return actions.order.capture().then(function(details) {
+                alert('Payment completed by ' + details.payer.name.given_name + '!');
+              });
+            },
+            onError: function(err) {
+              alert('An error occurred during payment. Please try again.');
+            }
+          }).render('#paypal-button-container');
+        } else {
+          setTimeout(renderPayPalButtons, 100);
+        }
+      }
+      renderPayPalButtons();
+    });
+  </script>
 
   <footer class="footer" role="contentinfo" aria-label="Site footer">
     <div class="footer-content">
@@ -198,44 +191,5 @@
       </div>
     </div>
   </footer>
-
-  <!-- PayPal SDK with test client ID: must be before the button rendering code -->
-  <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility"></script>
-
-  <!-- PayPal Button Container -->
-  <div id="paypal-button-container" style="margin: 2rem 0;"></div>
-
-  <!-- PayPal Button Rendering Code -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      function renderPayPalButtons() {
-        if (window.paypal && window.paypal.Buttons) {
-          window.paypal.Buttons({
-            style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
-            createOrder: function(data, actions) {
-              return actions.order.create({
-                purchase_units: [{
-                  amount: {
-                    value: document.getElementById('paymentAmount') ? document.getElementById('paymentAmount').value : '10.00'
-                  }
-                }]
-              });
-            },
-            onApprove: function(data, actions) {
-              return actions.order.capture().then(function(details) {
-                alert('Payment completed by ' + details.payer.name.given_name + '!');
-              });
-            },
-            onError: function(err) {
-              alert('An error occurred during payment. Please try again.');
-            }
-          }).render('#paypal-button-container');
-        } else {
-          setTimeout(renderPayPalButtons, 100);
-        }
-      }
-      renderPayPalButtons();
-    });
-  </script>
 </body>
 </html>
