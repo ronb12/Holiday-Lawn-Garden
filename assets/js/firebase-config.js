@@ -18,7 +18,8 @@ const db = firebase.firestore(app);
 
 // Configure Firestore
 db.settings({
-  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+  cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+  merge: true
 });
 
 // Export services to window object
