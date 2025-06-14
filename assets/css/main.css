@@ -350,17 +350,17 @@ nav {
 
 /* Footer Styles */
 .footer {
-  background-color: var(--color-primary-dark);
-  color: var(--color-text-light);
-  padding: 3rem 0 1rem;
+  background-color: #2c5530;
+  color: #ffffff;
+  padding: 3rem 0;
   margin-top: 4rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #1a3d1e;
 }
 
 .footer-content {
-  max-width: var(--container-max-width);
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--container-padding);
+  padding: 0 1rem;
 }
 
 .footer-main {
@@ -371,93 +371,84 @@ nav {
 }
 
 .footer-section h3 {
-  color: var(--color-text-light);
+  color: #a8d5b5;
   font-size: 1.2rem;
   margin-bottom: 1rem;
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
 }
 
-.footer-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.footer-owner {
-  font-weight: var(--font-weight-semibold);
-  font-size: 1.1rem;
+.footer-contact p {
+  margin-bottom: 0.5rem;
+  color: #e8f5eb;
 }
 
 .footer-contact a {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--color-text-light);
+  color: #a8d5b5;
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .footer-contact a:hover {
-  opacity: 0.8;
+  color: #ffffff;
 }
 
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 0.5rem;
 }
 
 .footer-links a {
-  color: var(--color-text-light);
+  color: #a8d5b5;
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .footer-links a:hover {
-  opacity: 0.8;
+  color: #ffffff;
 }
 
 .footer-social {
   display: flex;
   gap: 1rem;
+  margin-top: 1rem;
 }
 
 .footer-social a {
-  color: var(--color-text-light);
+  color: #a8d5b5;
   font-size: 1.5rem;
-  transition: opacity 0.2s ease;
+  transition: color 0.3s ease;
 }
 
 .footer-social a:hover {
-  opacity: 0.8;
+  color: #ffffff;
 }
 
-.footer-copyright {
+.footer-bottom {
   text-align: center;
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.9rem;
-  opacity: 0.8;
+  border-top: 1px solid #1a3d1e;
+  color: #a8d5b5;
 }
 
 @media (max-width: 768px) {
   .footer {
-    padding: 2rem 0 1rem;
+    padding: 2rem 0;
   }
-
+  
   .footer-main {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-
+  
   .footer-section {
     text-align: center;
   }
-
-  .footer-contact {
-    align-items: center;
-  }
-
+  
   .footer-social {
     justify-content: center;
   }
