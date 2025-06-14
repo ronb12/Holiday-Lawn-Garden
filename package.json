@@ -1,37 +1,20 @@
 {
   "name": "holliday-lawn-garden",
   "version": "1.0.0",
-  "description": "Holliday Lawn & Garden website",
-  "main": "index.js",
+  "description": "Holliday's Lawn & Garden website",
   "scripts": {
-    "optimize-images": "node assets/js/image-optimizer.js",
-    "enhance-accessibility": "node assets/js/accessibility-enhancer.js",
-    "add-loading-states": "node assets/js/loading-states.js",
-    "enhance-headings": "node assets/js/heading-enhancer.js",
-    "minify": "node assets/js/minifier.js",
-    "audit": "node assets/js/final-audit.js",
-    "grade": "node grade-app.js",
-    "build": "npm run optimize-images && npm run enhance-accessibility && npm run add-loading-states && npm run enhance-headings && npm run minify",
-    "format": "prettier --write .",
+    "test": "jest",
     "lint": "eslint .",
-    "start": "live-server .",
-    "serve": "http-server ."
+    "format": "prettier --write .",
+    "build": "npm run lint && npm run test",
+    "start": "serve ."
   },
   "dependencies": {
-    "clean-css": "^5.3.1",
-    "firebase": "^10.8.0",
-    "firebase-tools": "^14.7.0",
-    "html-minifier": "^4.0.0",
-    "sharp": "^0.32.1",
-    "terser": "^5.14.2"
+    "serve": "^14.2.1"
   },
   "devDependencies": {
-    "eslint": "^9.28.0",
-    "http-server": "^14.1.1",
-    "live-server": "^1.2.2",
-    "nodemon": "^3.1.10",
-    "playwright": "^1.53.0",
-    "prettier": "^3.5.3",
-    "puppeteer": "^24.10.1"
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5"
   }
 }
