@@ -16,50 +16,41 @@ import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase
 // Service Worker Registration
 export async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
-    try {
-      // Clear all existing caches first
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map(cacheName => caches.delete(cacheName))
-      );
-      console.log('Cleared old caches');
+    window.addEventListener('load', async () => {
+      try {
+        // Clear all existing caches first
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => caches.delete(cacheName))
+        );
+        console.log('Cleared old caches');
 
-      // Unregister any existing service workers
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(
-        registrations.map(registration => registration.unregister())
-      );
-      console.log('Unregistered old service workers');
+        // Unregister any existing service workers
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(
+          registrations.map(registration => registration.unregister())
+        );
+        console.log('Unregistered old service workers');
 
-      // Register new service worker
-      const registration = await navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js');
-      console.log('✅ Service Worker registered:', registration.scope);
-
-      // Handle updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New content is available, show update banner
-            const updateBanner = document.getElementById('updateBanner');
-            if (updateBanner) {
-              updateBanner.style.display = 'block';
-              updateBanner.addEventListener('click', () => {
-                clearCacheAndReload();
-              });
-            }
-          }
+        // Register new service worker
+        const registration = await navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js', {
+          scope: '/Holliday-Lawn-Garden/'
         });
-      });
-
-      // Handle activation
-      registration.addEventListener('activate', event => {
-        console.log('Service Worker activated');
-      });
-
-    } catch (error) {
-      console.error('❌ Service Worker registration failed:', error);
-    }
+        console.log('✅ Service Worker registered:', registration.scope);
+        
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('New service worker installed');
+            }
+          });
+        });
+      } catch (error) {
+        console.error('❌ Service Worker registration failed:', error);
+      }
+    });
   }
 }
 
