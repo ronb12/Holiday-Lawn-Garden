@@ -3,78 +3,72 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Holliday's Lawn & Garden</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <title>Login - Holliday Lawn & Garden</title>
   <link rel="stylesheet" href="assets/css/main.css">
-  
-  <!-- Firebase App (the core Firebase SDK) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  
-  <!-- Add Firebase products that you want to use -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-analytics-compat.js"></script>
-  
-  <!-- Firebase Configuration -->
-  <script src="assets/js/firebase-config.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="assets/images/favicon/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/images/favicon/favicon-16x16.png" sizes="16x16">
+  <link rel="apple-touch-icon" href="assets/images/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2e7d32">
 </head>
 <body>
-  <header class="main-header">
-    <a href="index.html" class="logo">
-      <img src="assets/images/hollidays-logo.png" alt="Holliday's Lawn & Garden Logo">
-    </a>
+  <header>
     <nav>
+      <div class="logo">
+        <a href="index.html">
+          <img src="assets/images/logo.png" alt="Holliday Lawn & Garden Logo">
+        </a>
+      </div>
       <ul class="nav-links">
         <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
         <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">About</a></li>
         <li><a href="contact.html">Contact</a></li>
-        <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-        <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+        <li><a href="pay-your-bill.html" class="btn">Pay Your Bill</a></li>
       </ul>
     </nav>
   </header>
 
-  <section class="hero">
-    <div class="hero-overlay"></div>
-    <img src="assets/images/hero-garden-landscaping.jpg" alt="Beautiful garden landscaping">
-    <div class="hero-content">
-      <h1>Welcome Back</h1>
-      <p>Sign in to manage your lawn care services</p>
-    </div>
-  </section>
-
-  <section class="login-section">
-    <div class="container">
+  <main>
+    <section class="login-section">
       <div class="login-grid">
         <div class="login-form-container">
-          <div id="error-container" class="error-container"></div>
-          <form class="login-form" id="loginForm">
+          <h2>Welcome Back</h2>
+          <p>Sign in to access your account</p>
+          
+          <div class="error-container" id="errorContainer">
+            <div class="error-message">
+              <i class="fas fa-exclamation-circle"></i>
+              <span id="errorMessage"></span>
+            </div>
+          </div>
+
+          <div class="success-message" id="successMessage" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            <span>Login successful! Redirecting...</span>
+          </div>
+
+          <form id="loginForm" class="login-form">
             <div class="form-group">
-              <label for="email">Email Address</label>
-              <input type="email" id="email" name="email" required placeholder="Enter your email">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" required>
             </div>
             <div class="form-group">
               <label for="password">Password</label>
-              <input type="password" id="password" name="password" required placeholder="Enter your password">
+              <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              Sign In
+            </button>
           </form>
 
           <div class="login-divider">
             <span>or</span>
           </div>
 
-          <button class="google-signin-btn" id="googleSignIn">
-            <img src="assets/images/google-icon.png" alt="Google Icon">
+          <button id="googleSignIn" class="google-signin-btn">
+            <img src="assets/images/google-logo.png" alt="Google Logo">
             Sign in with Google
           </button>
 
@@ -87,12 +81,24 @@
 
         <div class="login-info">
           <div class="info-card">
-            <h3>Customer Benefits</h3>
+            <h3>Why Create an Account?</h3>
             <div class="info-content">
-              <p><i class="fas fa-calendar-check"></i> Schedule Services</p>
-              <p><i class="fas fa-file-invoice"></i> View Billing History</p>
-              <p><i class="fas fa-credit-card"></i> Manage Payments</p>
-              <p><i class="fas fa-comments"></i> Message Support</p>
+              <p>
+                <i class="fas fa-check-circle"></i>
+                Access your service history
+              </p>
+              <p>
+                <i class="fas fa-check-circle"></i>
+                Schedule and manage appointments
+              </p>
+              <p>
+                <i class="fas fa-check-circle"></i>
+                View and pay invoices online
+              </p>
+              <p>
+                <i class="fas fa-check-circle"></i>
+                Receive service updates and notifications
+              </p>
             </div>
           </div>
 
@@ -101,90 +107,90 @@
             <div class="contact-info">
               <div class="contact-item">
                 <i class="fas fa-phone"></i>
-                <a href="tel:+15047171887">(504) 717-1887</a>
+                <a href="tel:+1234567890">(123) 456-7890</a>
               </div>
               <div class="contact-item">
                 <i class="fas fa-envelope"></i>
-                <a href="mailto:7holliday@gmail.com">7holliday@gmail.com</a>
+                <a href="mailto:support@hollidaylawn.com">support@hollidaylawn.com</a>
+              </div>
+              <div class="contact-item">
+                <i class="fas fa-clock"></i>
+                <span>Mon-Fri: 8am-5pm</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
   <footer class="footer">
     <div class="footer-content">
       <div class="footer-main">
         <div class="footer-section">
-          <h2>Contact Us</h2>
+          <h3>Contact Us</h3>
           <div class="footer-contact">
-            <span class="footer-owner">Karl Holliday</span>
-            <a href="tel:+15047171887">
+            <a href="tel:+1234567890">
               <i class="fas fa-phone"></i>
-              <span>(504) 717-1887</span>
+              (123) 456-7890
             </a>
-            <a href="mailto:7holliday@gmail.com">
+            <a href="mailto:info@hollidaylawn.com">
               <i class="fas fa-envelope"></i>
-              <span>7holliday@gmail.com</span>
+              info@hollidaylawn.com
+            </a>
+            <a href="https://maps.google.com" target="_blank">
+              <i class="fas fa-map-marker-alt"></i>
+              123 Main Street, City, State 12345
             </a>
           </div>
         </div>
-
         <div class="footer-section">
-          <h2>Quick Links</h2>
+          <h3>Quick Links</h3>
           <div class="footer-links">
+            <a href="services.html">Our Services</a>
             <a href="about.html">About Us</a>
-            <a href="services.html">Services</a>
-            <a href="gallery.html">Gallery</a>
             <a href="contact.html">Contact</a>
-            <a href="faq.html">FAQ</a>
+            <a href="pay-your-bill.html">Pay Your Bill</a>
           </div>
         </div>
-
         <div class="footer-section">
-          <h3>Legal</h3>
-          <div class="footer-links">
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="terms.html">Terms of Service</a>
-            <a href="accessibility.html">Accessibility</a>
-          </div>
-        </div>
-
-        <div class="footer-section">
-          <h3>Connect With Us</h3>
+          <h3>Follow Us</h3>
           <div class="footer-social">
-            <a href="https://facebook.com" target="_blank" rel="noopener">
+            <a href="https://facebook.com" target="_blank">
               <i class="fab fa-facebook"></i>
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener">
+            <a href="https://twitter.com" target="_blank">
               <i class="fab fa-twitter"></i>
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener">
+            <a href="https://instagram.com" target="_blank">
               <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener">
-              <i class="fab fa-linkedin"></i>
             </a>
           </div>
         </div>
       </div>
-
       <div class="footer-copyright">
-        <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
+        <p>&copy; <span id="currentYear"></span> Holliday Lawn & Garden. All rights reserved.</p>
       </div>
     </div>
   </footer>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js"></script>
+
+  <!-- Firebase Config -->
+  <script src="assets/js/firebase-config.js"></script>
+
   <script>
     // Set current year in footer
-    document.getElementById('current-year').textContent = new Date().getFullYear();
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-    // Register Service Worker
+    // Register service worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/assets/js/service-worker.js')
+        navigator.serviceWorker.register('/service-worker.js')
           .then(registration => {
             console.log('ServiceWorker registration successful');
           })
@@ -194,149 +200,126 @@
       });
     }
 
-    // Get DOM elements
-    const loginForm = document.getElementById('loginForm');
-    const googleSignInBtn = document.getElementById('googleSignIn');
-    const errorContainer = document.getElementById('error-container');
-
     // Show error message
     function showError(message) {
-      if (errorContainer) {
-        errorContainer.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-circle"></i> ${message}</div>`;
-        errorContainer.style.display = 'block';
-      }
+      const errorContainer = document.getElementById('errorContainer');
+      const errorMessage = document.getElementById('errorMessage');
+      errorMessage.textContent = message;
+      errorContainer.style.display = 'block';
+      setTimeout(() => {
+        errorContainer.style.display = 'none';
+      }, 5000);
     }
 
     // Show success message
-    function showSuccess(message) {
-      if (errorContainer) {
-        errorContainer.innerHTML = `<div class="success-message"><i class="fas fa-check-circle"></i> ${message}</div>`;
-        errorContainer.style.display = 'block';
-      }
+    function showSuccess() {
+      const successMessage = document.getElementById('successMessage');
+      successMessage.style.display = 'flex';
     }
 
     // Handle form submission
-    loginForm.addEventListener('submit', async (e) => {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = document.getElementById('submitBtn');
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
       try {
-        if (!window.auth) {
-          throw new Error('Authentication service not initialized');
-        }
-
-        // Show loading state
-        const submitButton = loginForm.querySelector('button[type="submit"]');
-        const originalText = submitButton.textContent;
-        submitButton.disabled = true;
-        submitButton.textContent = 'Signing in...';
-
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing in...';
+        
         const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
+        const user = userCredential.user;
         
         // Check if user exists in Firestore
-        const userDoc = await window.db.collection('users').doc(userCredential.user.uid).get();
+        const userDoc = await window.db.collection('users').doc(user.uid).get();
         
         if (!userDoc.exists) {
           // Create user document if it doesn't exist
-          await window.db.collection('users').doc(userCredential.user.uid).set({
-            email: userCredential.user.email,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          await window.db.collection('users').doc(user.uid).set({
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
             isAdmin: false
           });
         }
 
-        showSuccess('Login successful! Redirecting...');
+        showSuccess();
         setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
-        }, 1000);
+        }, 1500);
       } catch (error) {
         console.error('Login error:', error);
-        let errorMessage = 'Failed to sign in. ';
+        let errorMessage = 'An error occurred during login. Please try again.';
         
         switch (error.code) {
           case 'auth/user-not-found':
-            errorMessage += 'No account found with this email.';
+            errorMessage = 'No account found with this email.';
             break;
           case 'auth/wrong-password':
-            errorMessage += 'Incorrect password.';
+            errorMessage = 'Incorrect password. Please try again.';
             break;
           case 'auth/invalid-email':
-            errorMessage += 'Invalid email format.';
+            errorMessage = 'Please enter a valid email address.';
             break;
           case 'auth/user-disabled':
-            errorMessage += 'This account has been disabled.';
+            errorMessage = 'This account has been disabled. Please contact support.';
             break;
-          case 'auth/too-many-requests':
-            errorMessage += 'Too many failed attempts. Please try again later.';
-            break;
-          default:
-            errorMessage += error.message;
         }
         
         showError(errorMessage);
       } finally {
-        // Reset button state
-        const submitButton = loginForm.querySelector('button[type="submit"]');
-        submitButton.disabled = false;
-        submitButton.textContent = 'Sign In';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
       }
     });
 
-    // Handle Google Sign In
-    googleSignInBtn.addEventListener('click', async () => {
+    // Handle Google Sign-in
+    document.getElementById('googleSignIn').addEventListener('click', async () => {
+      const googleBtn = document.getElementById('googleSignIn');
+      const provider = new window.firebase.auth.GoogleAuthProvider();
+      
       try {
-        if (!window.auth) {
-          throw new Error('Authentication service not initialized');
-        }
-
-        // Show loading state
-        googleSignInBtn.disabled = true;
-        const originalText = googleSignInBtn.textContent;
-        googleSignInBtn.textContent = 'Signing in...';
-
-        const provider = new firebase.auth.GoogleAuthProvider();
+        googleBtn.disabled = true;
+        googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+        
         const result = await window.auth.signInWithPopup(provider);
+        const user = result.user;
         
         // Check if user exists in Firestore
-        const userDoc = await window.db.collection('users').doc(result.user.uid).get();
+        const userDoc = await window.db.collection('users').doc(user.uid).get();
         
         if (!userDoc.exists) {
           // Create user document if it doesn't exist
-          await window.db.collection('users').doc(result.user.uid).set({
-            email: result.user.email,
-            displayName: result.user.displayName,
-            photoURL: result.user.photoURL,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          await window.db.collection('users').doc(user.uid).set({
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
             isAdmin: false
           });
         }
 
-        showSuccess('Login successful! Redirecting...');
+        showSuccess();
         setTimeout(() => {
           window.location.href = 'customer-dashboard.html';
-        }, 1000);
+        }, 1500);
       } catch (error) {
         console.error('Google sign-in error:', error);
-        showError(error.message || 'Failed to sign in with Google. Please try again.');
+        showError('Failed to sign in with Google. Please try again.');
       } finally {
-        // Reset button state
-        googleSignInBtn.disabled = false;
-        googleSignInBtn.textContent = 'Sign in with Google';
+        googleBtn.disabled = false;
+        googleBtn.innerHTML = '<img src="assets/images/google-logo.png" alt="Google Logo"> Sign in with Google';
       }
     });
 
     // Check if user is already logged in
-    if (window.auth) {
-      window.auth.onAuthStateChanged((user) => {
-        if (user) {
-          window.location.href = 'customer-dashboard.html';
-        }
-      });
-    } else {
-      console.error('Authentication service not initialized');
-      showError('Authentication service not available. Please refresh the page.');
-    }
+    window.auth.onAuthStateChanged((user) => {
+      if (user) {
+        window.location.href = 'customer-dashboard.html';
+      }
+    });
   </script>
 </body>
 </html> 
