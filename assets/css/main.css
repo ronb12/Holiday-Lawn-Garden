@@ -593,6 +593,7 @@ nav {
   flex-direction: column;
   align-items: center;
   height: 100%;
+  justify-content: space-between;
 }
 
 .service-card:hover {
@@ -608,15 +609,19 @@ nav {
 
 .service-card h3 {
   color: var(--primary-color);
-  margin: 0.5rem 0;
+  margin: 0 0 1rem;
   font-size: 1.5rem;
   font-weight: 600;
+  width: 100%;
+  text-align: center;
 }
 
 .service-card p {
   color: var(--text-color);
-  margin: 0.5rem 0 1rem;
-  line-height: 1.5;
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+  width: 100%;
+  text-align: center;
 }
 
 .service-card ul {
@@ -654,6 +659,8 @@ nav {
   font-weight: 600;
   transition: background-color 0.3s ease, transform 0.2s ease;
   border: 2px solid var(--primary-color);
+  text-align: center;
+  display: inline-block;
 }
 
 .service-card .btn:hover {
@@ -669,8 +676,11 @@ nav {
 
 .service-emoji {
   font-size: 4rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Why Choose Us Section */
