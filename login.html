@@ -347,21 +347,50 @@
     document.getElementById('googleSignIn').addEventListener('click', function() {
       if (window.firebase && firebase.auth && typeof firebase.auth.GoogleAuthProvider === 'function') {
         const provider = new firebase.auth.GoogleAuthProvider();
-        if (typeof firebase.auth().signInWithPopup === 'function') {
-          firebase.auth().signInWithPopup(provider)
-            .then(result => {
-              // Handle result
-            })
+        if (typeof firebase.auth().signInWithRedirect === 'function') {
+          firebase.auth().signInWithRedirect(provider)
             .catch(error => {
               console.error('Google sign-in error:', error);
             });
         } else {
-          console.error('signInWithPopup is not a function on firebase.auth()');
+          console.error('signInWithRedirect is not a function on firebase.auth()');
         }
       } else {
         console.error('Firebase Auth or GoogleAuthProvider is not initialized.');
       }
     });
+    // Handle redirect result
+    if (window.firebase && firebase.auth) {
+      firebase.auth().getRedirectResult()
+        .then((result) => {
+          if (result.user) {
+            // User successfully signed in
+            showSuccess();
+            setTimeout(() => {
+              window.location.href = 'customer-dashboard.html';
+            }, 1500);
+          }
+        })
+        .catch((error) => {
+          console.error('Redirect sign-in error:', error);
+          let errorMessage = 'An error occurred during sign-in. Please try again.';
+          switch (error.code) {
+            case 'auth/account-exists-with-different-credential':
+              errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
+              break;
+            case 'auth/popup-blocked':
+              errorMessage = 'The sign-in popup was blocked by the browser. Please try again.';
+              break;
+            case 'auth/popup-closed-by-user':
+              errorMessage = 'The sign-in popup was closed before completing the sign-in.';
+              break;
+            case 'auth/cancelled-popup-request':
+              errorMessage = 'The sign-in popup was cancelled. Please try again.';
+              break;
+          }
+          showError(errorMessage);
+        });
+    }
   </script>
   <script type="module" src="assets/js/main.min.js" defer></script>
   </body>
