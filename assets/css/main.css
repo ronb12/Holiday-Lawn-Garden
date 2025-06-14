@@ -1260,4 +1260,17 @@ nav {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+/* PayPal Button Styles */
+#paypal-button-container {
+  margin-top: 1.5rem;
+  min-height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#paypal-button-container .paypal-button {
+  min-width: 200px;
 } 
