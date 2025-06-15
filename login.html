@@ -364,16 +364,26 @@
         document.getElementById('googleSignIn').addEventListener('click', function() {
           if (window.firebase && firebase.auth && typeof firebase.auth.GoogleAuthProvider === 'function') {
             const provider = new firebase.auth.GoogleAuthProvider();
-            if (typeof firebase.auth().signInWithRedirect === 'function') {
-              firebase.auth().signInWithRedirect(provider)
+            // Add scopes if needed
+            provider.addScope('profile');
+            provider.addScope('email');
+            // Set custom parameters
+            provider.setCustomParameters({
+              prompt: 'select_account'
+            });
+            if (typeof firebase.auth().signInWithPopup === 'function') {
+              firebase.auth().signInWithPopup(provider)
                 .catch(error => {
                   console.error('Google sign-in error:', error);
+                  showError('Failed to start Google sign-in. Please try again.');
                 });
             } else {
-              console.error('signInWithRedirect is not a function on firebase.auth()');
+              console.error('signInWithPopup is not a function on firebase.auth()');
+              showError('Google sign-in is not available. Please try email/password login.');
             }
           } else {
             console.error('Firebase Auth or GoogleAuthProvider is not initialized.');
+            showError('Authentication service is not available. Please try again later.');
           }
         });
 
@@ -382,10 +392,31 @@
           .then((result) => {
             if (result.user) {
               // User successfully signed in
-              showSuccess();
-              setTimeout(() => {
-                window.location.href = 'customer-dashboard.html';
-              }, 1500);
+              console.log('Google sign-in successful:', result.user);
+              // Check if user exists in Firestore
+              window.db.collection('users').doc(result.user.uid).get()
+                .then((doc) => {
+                  if (!doc.exists) {
+                    // Create user document if it doesn't exist
+                    return window.db.collection('users').doc(result.user.uid).set({
+                      email: result.user.email,
+                      displayName: result.user.displayName || '',
+                      photoURL: result.user.photoURL || '',
+                      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
+                      isAdmin: false
+                    });
+                  }
+                })
+                .then(() => {
+                  showSuccess();
+                  setTimeout(() => {
+                    window.location.href = 'customer-dashboard.html';
+                  }, 1500);
+                })
+                .catch((error) => {
+                  console.error('Error creating user document:', error);
+                  showError('Error setting up your account. Please try again.');
+                });
             }
           })
           .catch((error) => {
@@ -403,6 +434,15 @@
                 break;
               case 'auth/cancelled-popup-request':
                 errorMessage = 'The sign-in popup was cancelled. Please try again.';
+                break;
+              case 'auth/network-request-failed':
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+                break;
+              case 'auth/operation-not-allowed':
+                errorMessage = 'Google sign-in is not enabled. Please contact support.';
+                break;
+              case 'auth/unauthorized-domain':
+                errorMessage = 'This domain is not authorized for Google sign-in. Please contact support.';
                 break;
             }
             showError(errorMessage);

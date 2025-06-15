@@ -71,35 +71,58 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-  // Mobile menu functionality
-  const hamburger = document.querySelector('.hamburger');
-    const nav = document.querySelector('nav');
-    
-    if (hamburger && nav) {
-      hamburger.addEventListener('click', function() {
+    // Robust Hamburger Menu Toggle
+    (function() {
+      const hamburger = document.querySelector('.hamburger');
+      const nav = document.querySelector('.main-header nav');
+      const navLinks = document.querySelectorAll('.nav-links a');
+      const body = document.body;
+
+      if (!hamburger || !nav) return;
+
+      // Toggle menu
+      hamburger.addEventListener('click', function(e) {
+        e.stopPropagation();
         hamburger.classList.toggle('active');
         nav.classList.toggle('active');
-      });
-
-      // Close menu when clicking outside
-      document.addEventListener('click', function(event) {
-        const isClickInside = hamburger.contains(event.target) || nav.contains(event.target);
-        
-        if (!isClickInside && nav.classList.contains('active')) {
-          hamburger.classList.remove('active');
-          nav.classList.remove('active');
+        if (nav.classList.contains('active')) {
+          body.style.overflow = 'hidden';
+        } else {
+          body.style.overflow = '';
         }
       });
 
-      // Close menu when clicking a link
-      const navItems = nav.querySelectorAll('a');
-      navItems.forEach(item => {
-        item.addEventListener('click', () => {
+      // Close menu when clicking a nav link
+      navLinks.forEach(link => {
+        link.addEventListener('click', function() {
           hamburger.classList.remove('active');
           nav.classList.remove('active');
+          body.style.overflow = '';
         });
       });
-    }
+
+      // Close menu when clicking outside
+      document.addEventListener('click', function(e) {
+        if (
+          nav.classList.contains('active') &&
+          !nav.contains(e.target) &&
+          !hamburger.contains(e.target)
+        ) {
+          hamburger.classList.remove('active');
+          nav.classList.remove('active');
+          body.style.overflow = '';
+        }
+      });
+
+      // Close menu on resize
+      window.addEventListener('resize', function() {
+        if (window.innerWidth > 900 && nav.classList.contains('active')) {
+          hamburger.classList.remove('active');
+          nav.classList.remove('active');
+          body.style.overflow = '';
+        }
+      });
+    })();
 
     // Header scroll effect
     const header = document.querySelector('.main-header');
