@@ -1,14 +1,15 @@
 // login.js
 // login.js
 
-import { setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+import { auth, googleProvider, initializeFirebase } from './firebase.js';
 
 // Wait until DOM is fully loaded
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     // Initialize Firebase
-    await window.initializeFirebase();
-    await setPersistence(firebase.auth(), browserLocalPersistence);
+    await initializeFirebase();
+    await setPersistence(auth, browserLocalPersistence);
     console.log('Firebase initialized successfully');
 
     const emailInput = document.getElementById('email');
@@ -79,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         try {
-          const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
           displaySuccess('Login successful! Redirecting...');
 
           // Store user data in localStorage
@@ -134,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         displayError('');
 
         try {
-          const result = await firebase.auth().signInWithPopup(window.googleProvider);
+          const result = await signInWithPopup(auth, googleProvider);
           displaySuccess('Login successful! Redirecting...');
 
           // Store user data in localStorage
