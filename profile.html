@@ -1,358 +1,585 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
-    <link rel="mask-icon" href="/assets/images/favicon/safari-pinned-tab.svg" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Professional landscaping and garden services in your area.">
-    <meta name="keywords" content="lawn care, garden services, landscaping, profile">
-    <meta name="author" content="Holliday Lawn & Garden">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="My Profile - Holliday Lawn & Garden">
-    <meta property="og:description" content="Update your personal information and service preferences.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://hollidaylawngarden.com/profile">
-    <meta property="og:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="My Profile - Holliday Lawn & Garden">
-    <meta name="twitter:description" content="Update your personal information and service preferences.">
-    <meta name="twitter:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
-    <link rel="canonical" href="https://hollidaylawngarden.com/profile">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Holliday Lawn & Garden</title>
-    <meta
-      name="description"
-      content="Manage your account settings and view your service history with Holliday's Lawn & Garden."
-    />
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="icons/favicon.png" />
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="css/variables.min.css" />
-    <link rel="stylesheet" href="css/main.css?v=1.0.1" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <!-- Web App Manifest -->
-    <link rel="manifest" href="assets/js/manifest.json" />
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#4CAF50" />
-    <!-- Content Security Policy -->
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com;
-        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
-        img-src 'self' data: https:;
-        font-src 'self' https://cdnjs.cloudflare.com;
-        connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;
-    "
-    />
-        <script type="application/ld+json">
-          {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  "name": "My Profile - Holliday Lawn & Garden Customer Portal",
-  "description": "Manage your Holliday Lawn & Garden customer profile and preferences.",
-  "url": "https://hollidaylawngarden.com/profile",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Holliday Lawn & Garden",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://hollidaylawngarden.com/assets/images/hollidays-logo.png"
+<head>
+  <meta charset="UTF-8">
+  <title>Profile - Holliday's Lawn & Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="assets/styles/variables.min.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" type="image/png" href="assets/icons/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/icons/favicon-16x16.png" sizes="16x16">
+  <link rel="shortcut icon" href="assets/icons/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/favicon/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon/android-chrome-512x512.png">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
     }
-  }
-}
-        </script>
+    .profile-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: #2e7d32;
+      color: #fff;
+      width: 240px;
+      min-width: 200px;
+      padding: 2rem 1rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+    }
+    .sidebar .logo {
+      margin-bottom: 2rem;
+    }
+    .sidebar .logo img {
+      max-width: 120px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .sidebar nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+    }
+    .sidebar nav ul li {
+      margin: 1rem 0;
+    }
+    .sidebar nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: color 0.2s;
+    }
+    .sidebar nav ul li a:hover {
+      color: #b2dfdb;
+    }
+    .sidebar .logout-btn {
+      margin-top: auto;
+      background: #fff;
+      color: #2e7d32;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar .logout-btn:hover {
+      background: #b2dfdb;
+      color: #222;
+    }
+    .profile-main {
+      flex: 1;
+      padding: 2rem 3vw;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      background: #f4f6f8;
+      align-items: center;
+    }
+    .profile-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      padding: 2rem;
+      max-width: 500px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e0e0e0;
+      margin-bottom: 1rem;
+    }
+    .profile-info {
+      width: 100%;
+      text-align: left;
+    }
+    .profile-info ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .profile-info li {
+      margin-bottom: 0.75rem;
+      font-size: 1.05rem;
+    }
+    .profile-info .verified {
+      color: #2e7d32;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .profile-info .unverified {
+      color: #f57c00;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .profile-actions {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      justify-content: center;
+    }
+    .profile-actions button {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .profile-actions button:hover {
+      background: #388e3c;
+    }
+    @media (max-width: 700px) {
+      .profile-main {
+        padding: 1rem 0.5rem;
+      }
+      .profile-card {
+        padding: 1rem;
+      }
+    }
+    /* Modal styles (reuse from dashboard) */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+    .modal-close:hover {
+      color: #333;
+    }
+    .modal h2 {
+      margin: 0 0 1.5rem 0;
+      color: #2e7d32;
+    }
+    .modal form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal form label {
+      font-weight: 500;
+      color: #333;
+    }
+    .modal form input {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .modal form input:focus {
+      border-color: #2e7d32;
+      outline: none;
+    }
+    .modal form button {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 1rem;
+    }
+    .modal form button:hover {
+      background: #388e3c;
+    }
+    .modal form .error {
+      color: #c62828;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    .modal form .success {
+      color: #2e7d32;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    .modal form .section-divider {
+      border-top: 1px solid #eee;
+      margin: 1.5rem 0;
+      padding-top: 1.5rem;
+    }
+    .modal form .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 1rem;
+    }
+    .modal form .verification-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .modal form .verification-status i {
+      font-size: 1.2rem;
+    }
+    .modal form .verification-status.verified {
+      color: #2e7d32;
+    }
+    .modal form .verification-status.unverified {
+      color: #f57c00;
+    }
+  </style>
 </head>
-  <body>
-    <div id="loading-overlay" class="loading-overlay" style="display: none">
-      <div class="spinner"></div>
-      <p id="loading-message">Loading...</p>
-    </div>
-    <div id="notification-container" class="notification-container">
-      <div id="notification" class="notification" style="display: none;">
-        <span class="notification-message"></span>
-        <button class="notification-close button-with-loading button-with-loading" aria-label="Button">&times;</button>
-      </div>
-    </div>
-    <div id="loading-spinner" class="loading-spinner" style="display: none;">
-      <div class="spinner"></div>
-    </div>
-    <header class="main-header">
+<body>
+  <div class="profile-wrapper">
+    <aside class="sidebar">
       <div class="logo">
         <a href="index.html">
-          <picture>
-            <source srcset="assets/images/hollidays-logo.optimized-1280.webp" type="image/webp">
-            <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
-          </picture>
+          <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
         </a>
       </div>
-      <button class="hamburger" aria-label="Toggle menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
       <nav>
-        <ul class="nav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-          <li><a href="education.html">Education</a></li>
-          <li class="auth-not-required"><a href="login.html">Login</a></li>
-          <li class="auth-required" style="display: none;"><a href="customer-dashboard.html">Dashboard</a></li>
-          <li id="adminLink" style="display: none;"><a href="admin-login.html">Admin</a></li>
+        <ul>
+          <li><a href="customer-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li><a href="pay-your-bill.html"><i class="fas fa-file-invoice-dollar"></i> Pay Your Bill</a></li>
+          <li><a href="services.html"><i class="fas fa-leaf"></i> Services</a></li>
+          <li><a href="profile.html" class="active"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
         </ul>
       </nav>
-    </header>
-    <main>
-    <section class="hero">
-    <h2>Professional Lawn Care Services</h2>
-      <div class="hero-content">
-        <h2>My Profile</h2>
-        <p>Manage your account and view your service history</p>
-      </div>
-    </section>
-    <section class="profile-section">
-      <div class="container">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2>Account Information</h2>
-            <form id="profileForm" class="profile-form form-with-loading form-with-loading form-with-loading" aria-label="profileForm form">
-              <div class="form-group">
-                <label for="name">Full Name</label>
-                <input type="text" id="name" name="name" required / aria-label="name text">
-              </div>
-              <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required / aria-label="email email">
-              </div>
-              <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" required / aria-label="phone tel">
-              </div>
-              <div class="form-group">
-                <label for="address">Service Address</label>
-                <textarea
-                  id="address"
-                  name="address"
-                  rows="3"
-                  required
-                 aria-label="Text area"></textarea>
-              </div>
-              <button type="submit" class="cta-button button-with-loading button-with-loading button-with-loading button-with-loading" aria-label="Button">Update Profile</button>
-            </form>
-          </div>
-          <div class="card">
-            <h2>Service History</h2>
-            <div class="service-history">
-              <div class="history-item">
-                <div class="history-header">
-                  <h3>Lawn Maintenance</h3>
-                  <span class="date">March 15, 2024</span>
-                </div>
-                <p>Regular lawn mowing and edging service</p>
-                <span class="status completed">Completed</span>
-              </div>
-              <div class="history-item">
-                <div class="history-header">
-                  <h3>Landscape Design</h3>
-                  <span class="date">February 28, 2024</span>
-                </div>
-                <p>Backyard renovation and new plant installation</p>
-                <span class="status completed">Completed</span>
-              </div>
-              <div class="history-item">
-                <div class="history-header">
-                  <h3>Pressure Washing</h3>
-                  <span class="date">February 10, 2024</span>
-                </div>
-                <p>Driveway and patio cleaning</p>
-                <span class="status completed">Completed</span>
-              </div>
-            </div>
-          </div>
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </aside>
+    <main class="profile-main">
+      <div class="profile-card">
+        <img src="assets/images/default-avatar.png" alt="Profile Picture" class="profile-avatar" id="profileAvatar">
+        <div class="profile-info">
+          <ul>
+            <li><strong>Name:</strong> <span id="profileName">Customer</span></li>
+            <li><strong>Email:</strong> <span id="profileEmail">customer@email.com</span> <span id="emailStatus" class="unverified">(Unverified)</span></li>
+            <li><strong>Phone:</strong> <span id="profilePhone">-</span></li>
+            <li><strong>Address:</strong> <span id="profileAddress">-</span></li>
+          </ul>
         </div>
-        <div class="card">
-          <h2>Upcoming Services</h2>
-          <div class="upcoming-services">
-            <div class="service-item">
-              <div class="service-info">
-                <h3>Lawn Maintenance</h3>
-                <p>Regular lawn mowing and edging service</p>
-                <span class="date">Scheduled for: April 1, 2024</span>
-              </div>
-              <div class="service-actions">
-                <button class="secondary-button button-with-loading button-with-loading" aria-label="Button">Reschedule</button>
-                <button class="danger-button button-with-loading button-with-loading" aria-label="Button">Cancel</button>
-              </div>
-            </div>
-          </div>
+        <div class="profile-actions">
+          <button id="editProfileBtn"><i class="fas fa-edit"></i> Edit Profile</button>
+          <button id="changePasswordBtn"><i class="fas fa-key"></i> Change Password</button>
         </div>
       </div>
-    </section>
-    <footer class="footer" role="contentinfo" aria-label="Site footer">
-      <div class="footer-content">
-        <div class="footer-main">
-          <div class="footer-section">
-            <h3>Contact Us</h3>
-            <div class="footer-contact">
-              <span class="footer-owner">Karl Holliday</span>
-              <a href="tel:+15047171887" aria-label="Link" class="link-with-loading link-with-loading">
-        <i class="fas fa-phone" aria-hidden="true"></i>
-        <span>(504) 717-1887</span>
-      </a>
-              <a href="mailto:7holliday@gmail.com" aria-label="Link" class="link-with-loading link-with-loading">
-        <i class="fas fa-envelope" aria-hidden="true"></i>
-        <span>7holliday@gmail.com</span>
-      </a>
-      </a>
-      </a>
-      </a>
-              </a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h3>Quick Links</h3>
-            <div class="footer-links">
-              <a href="/about.html" aria-label="Link" class="link-with-loading link-with-loading">About Us</a>
-              <a href="/services.html" aria-label="Link" class="link-with-loading link-with-loading">Services</a>
-              <a href="/gallery.html" aria-label="Link" class="link-with-loading link-with-loading">Gallery</a>
-              <a href="/contact.html" aria-label="Link" class="link-with-loading link-with-loading">Contact</a>
-              <a href="/faq.html" aria-label="Link" class="link-with-loading link-with-loading">FAQ</a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h3>Legal</h3>
-            <div class="footer-links">
-              <a href="/privacy.html" aria-label="Link" class="link-with-loading link-with-loading">Privacy Policy</a>
-              <a href="/terms.html" aria-label="Link" class="link-with-loading link-with-loading">Terms of Service</a>
-              <a href="/accessibility.html" aria-label="Link" class="link-with-loading link-with-loading">Accessibility</a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h3>Connect With Us</h3>
-            <div class="footer-social">
-              <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook" class="link-with-loading link-with-loading">
-                <i class="fab fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter" class="link-with-loading link-with-loading">
-                <i class="fab fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram" class="link-with-loading link-with-loading">
-                <i class="fab fa-instagram" aria-hidden="true"></i>
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn" class="link-with-loading link-with-loading">
-                <i class="fab fa-linkedin" aria-hidden="true"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-copyright">
-          <p>&copy; <span id="current-year"></span> Holliday Lawn & Garden. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
-    <script defer type="module">
-    import { AccessibilityEnhancer } from '/assets/js/modules/accessibility.js';
-    import {  } from '/assets/js/modules/config.js';
-    import {  } from '/assets/js/modules/config.min.js';
-    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.js';
-    import { initializeDashboard, loadUserData, setupRealtimeListeners, updateDashboardUI, updateServiceRequestUI, removeServiceRequestUI, initializeEventListeners, handleLogout, editProfile } from '/assets/js/modules/customer_dashboard.min.js';
-    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, for, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.js';
-    import { initializeDashboard, checkAuth, loadUserData, loadServiceRequests, loadUpcomingServices, loadRecentPayments, updateDashboardStats, showNewRequestForm, closeModal, submitServiceRequest, showPaymentForm, syncWithGoogleCalendar, logout, showLoading, hideLoading, showError, showSuccess, initializeChat, sendMessage, handleTyping, editMessage, deleteMessage, markMessagesAsRead, handleChatError, initializeNotifications, getNotificationIcon, formatTimestamp, markNotificationAsRead, markAllAsRead, toggleNotifications, handleFileSelect, removeFile } from '/assets/js/modules/dashboard.min.js';
-    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.js';
-    import { handleFileSelect, displayFile, removeFile, uploadFiles, formatFileSize, showNotification } from '/assets/js/modules/document_upload.min.js';
-    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.js';
-    import { showError, handleError, handleFirebaseError, ErrorHandler } from '/assets/js/modules/error_handler.min.js';
-    import { ErrorHandler } from '/assets/js/modules/error_handling.js';
-    import { ErrorHandler } from '/assets/js/modules/error_handling.min.js';
-    import { app, auth, db, storage, analytics } from '/assets/js/modules/firebase.js';
-    import { app, auth, db, analytics, googleProvider } from '/assets/js/modules/firebase_init.js';
-    import { FormValidator } from '/assets/js/modules/form_validation.js';
-    import { FormValidator } from '/assets/js/modules/form_validation.min.js';
-    import { HeadingEnhancer } from '/assets/js/modules/heading_enhancer.js';
-    import { ImageLoader } from '/assets/js/modules/image_loader.js';
-    import { ImageOptimizer } from '/assets/js/modules/image_optimization.js';
-    import { ImageOptimizer } from '/assets/js/modules/image_optimization.min.js';
-    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.js';
-    import { ImageOptimizer } from '/assets/js/modules/image_optimizer.min.js';
-    import {  } from '/assets/js/modules/login.js';
-    import {  } from '/assets/js/modules/login.min.js';
-    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.js';
-    import { initializeUI, setupEventListeners, registerServiceWorker, initializeFirebase, handleFormSubmit, handleNavigation } from '/assets/js/modules/main.min.js';
-    import { MetaEnhancer } from '/assets/js/modules/meta_enhancer.js';
-    import { Minifier } from '/assets/js/modules/minifier.js';
-    import { Minifier } from '/assets/js/modules/minifier.min.js';
-    import {  } from '/assets/js/modules/mobile_menu.js';
-    import {  } from '/assets/js/modules/mobile_menu.min.js';
-    import { ${this.getExports(content) } from '/assets/js/modules/modularizer.js';
-    import { ResourceOptimizer } from '/assets/js/modules/resource_optimizer.js';
-    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.js';
-    import { createTestResultsContainer, addTestResult, testGoogleSignIn, testEmailSignIn, testPasswordReset, testSignOut, runAuthTests, addTestButton } from '/assets/js/modules/test_auth.min.js';
-    import { runTests } from '/assets/js/modules/tests.js';
-    import { runTests } from '/assets/js/modules/tests.min.js';
-    import { ModuleUpdater } from '/assets/js/modules/update_modules.js';
-    import { ResourceUpdater } from '/assets/js/modules/update_resources.js';
-    import { ResourceUpdater } from '/assets/js/modules/update_resources.min.js';
-    import { UXEnhancer, class
-        if } from '/assets/js/modules/ux_enhancer.js';
-      // Mobile menu toggle
-      document
-        .querySelector(".hamburger")
-        .addEventListener("click", function () {
-          document.querySelector(".nav-links").classList.toggle("active");
-        });
-      // Profile form submission
-      document
-        .getElementById("profileForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          // Add your profile update logic here
-          alert(
-            "Profile update functionality will be implemented with Firebase.",
-          );
-        });
-      // Service cancellation
-      document.querySelectorAll(".danger-button").forEach((button) => {
-        button.addEventListener("click", function () {
-          if (confirm("Are you sure you want to cancel this service?")) {
-            // Add your cancellation logic here
-            alert("Service cancellation will be implemented with Firebase.");
-          }
-        });
-      });
-      // Service rescheduling
-      document.querySelectorAll(".secondary-button").forEach((button) => {
-        button.addEventListener("click", function () {
-          // Add your rescheduling logic here
-          alert("Service rescheduling will be implemented with Firebase.");
-        });
-      });
-    </script>
     </main>
-<script type="module" src="assets/js/firebase-config.js"></script>
-<script type="module" src="assets/js/main.min.js" defer></script>
-  </body>
+  </div>
+  <!-- Edit Profile Modal -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">&times;</button>
+      <h2>Edit Profile</h2>
+      <form id="profileForm">
+        <div class="section-title">Basic Information</div>
+        <div>
+          <label for="editName">Full Name</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div>
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" required>
+          <div class="verification-status" id="emailVerificationStatus">
+            <i class="fas fa-envelope"></i>
+            <span>Email not verified</span>
+          </div>
+          <button type="button" id="sendVerificationEmail" class="secondary-button">Send Verification Email</button>
+        </div>
+        <div>
+          <label for="editPhone">Phone Number</label>
+          <input type="tel" id="editPhone" pattern="[0-9]{10}" placeholder="1234567890">
+          <div class="error" id="phoneError" style="display: none;">Please enter a valid 10-digit phone number</div>
+        </div>
+        <div>
+          <label for="editAddress">Address</label>
+          <input type="text" id="editAddress">
+        </div>
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+  <!-- Change Password Modal -->
+  <div class="modal" id="passwordModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closePasswordModal">&times;</button>
+      <h2>Change Password</h2>
+      <form id="passwordForm">
+        <div>
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" required>
+        </div>
+        <div>
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" minlength="8" required>
+          <div class="error" id="passwordError" style="display: none;">Password must be at least 8 characters long</div>
+        </div>
+        <div>
+          <label for="confirmPassword">Confirm New Password</label>
+          <input type="password" id="confirmPassword" required>
+          <div class="error" id="confirmPasswordError" style="display: none;">Passwords do not match</div>
+        </div>
+        <button type="submit">Change Password</button>
+      </form>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      signOut, 
+      updateProfile, 
+      updateEmail,
+      updatePassword,
+      sendEmailVerification,
+      EmailAuthProvider,
+      reauthenticateWithCredential
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+      authDomain: "holliday-lawn-garden.firebaseapp.com",
+      projectId: "holliday-lawn-garden",
+      storageBucket: "holliday-lawn-garden.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:1234567890123456789012"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // UI Elements
+    const profileName = document.getElementById('profileName');
+    const profileEmail = document.getElementById('profileEmail');
+    const profilePhone = document.getElementById('profilePhone');
+    const profileAddress = document.getElementById('profileAddress');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const emailStatus = document.getElementById('emailStatus');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const logoutBtn = document.querySelector('.logout-btn');
+
+    // Modal Elements
+    const profileModal = document.getElementById('profileModal');
+    const closeModal = document.getElementById('closeModal');
+    const profileForm = document.getElementById('profileForm');
+    const phoneError = document.getElementById('phoneError');
+    const emailVerificationStatus = document.getElementById('emailVerificationStatus');
+    const sendVerificationEmailBtn = document.getElementById('sendVerificationEmail');
+    const passwordModal = document.getElementById('passwordModal');
+    const closePasswordModal = document.getElementById('closePasswordModal');
+    const passwordForm = document.getElementById('passwordForm');
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+
+    // Auth state
+    let currentUser = null;
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        // Load profile info
+        profileName.textContent = user.displayName || 'Customer';
+        profileEmail.textContent = user.email || '';
+        emailStatus.textContent = user.emailVerified ? '(Verified)' : '(Unverified)';
+        emailStatus.className = user.emailVerified ? 'verified' : 'unverified';
+        // Load additional info from Firestore
+        const userRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(userRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          profilePhone.textContent = data.phone || '-';
+          profileAddress.textContent = data.address || '-';
+          if (data.photoURL) {
+            profileAvatar.src = data.photoURL;
+          }
+        }
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Edit Profile
+    editProfileBtn.addEventListener('click', async () => {
+      if (!currentUser) return;
+      // Load current info
+      document.getElementById('editName').value = currentUser.displayName || '';
+      document.getElementById('editEmail').value = currentUser.email || '';
+      // Email verification status
+      updateEmailVerificationUI(currentUser);
+      // Load from Firestore
+      const userRef = doc(db, 'users', currentUser.uid);
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById('editPhone').value = data.phone || '';
+        document.getElementById('editAddress').value = data.address || '';
+      }
+      profileModal.classList.add('active');
+    });
+    closeModal.addEventListener('click', () => {
+      profileModal.classList.remove('active');
+    });
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) profileModal.classList.remove('active');
+    });
+    // Email verification
+    function updateEmailVerificationUI(user) {
+      if (user.emailVerified) {
+        emailVerificationStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Email verified</span>';
+        emailVerificationStatus.className = 'verification-status verified';
+        sendVerificationEmailBtn.style.display = 'none';
+      } else {
+        emailVerificationStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Email not verified</span>';
+        emailVerificationStatus.className = 'verification-status unverified';
+        sendVerificationEmailBtn.style.display = 'block';
+      }
+    }
+    sendVerificationEmailBtn.addEventListener('click', async () => {
+      if (!currentUser) return;
+      try {
+        await sendEmailVerification(currentUser);
+        alert('Verification email sent! Please check your inbox.');
+      } catch (error) {
+        alert('Error sending verification email. Please try again.');
+      }
+    });
+    // Profile form submit
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const name = document.getElementById('editName').value;
+      const email = document.getElementById('editEmail').value;
+      const phone = document.getElementById('editPhone').value;
+      const address = document.getElementById('editAddress').value;
+      try {
+        await updateProfile(currentUser, { displayName: name });
+        if (email !== currentUser.email) {
+          await updateEmail(currentUser, email);
+          updateEmailVerificationUI(currentUser);
+        }
+        const userRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userRef, {
+          displayName: name,
+          email: email,
+          phone: phone,
+          address: address,
+          updatedAt: serverTimestamp()
+        });
+        profileName.textContent = name;
+        profileEmail.textContent = email;
+        profilePhone.textContent = phone;
+        profileAddress.textContent = address;
+        profileModal.classList.remove('active');
+        alert('Profile updated successfully!');
+      } catch (error) {
+        alert('Error updating profile. Please try again.');
+      }
+    });
+    // Phone validation
+    document.getElementById('editPhone').addEventListener('input', (e) => {
+      const phone = e.target.value.replace(/\D/g, '');
+      if (phone.length !== 10) {
+        phoneError.style.display = 'block';
+      } else {
+        phoneError.style.display = 'none';
+      }
+    });
+    // Change Password
+    changePasswordBtn.addEventListener('click', () => {
+      passwordModal.classList.add('active');
+    });
+    closePasswordModal.addEventListener('click', () => {
+      passwordModal.classList.remove('active');
+    });
+    passwordModal.addEventListener('click', (e) => {
+      if (e.target === passwordModal) passwordModal.classList.remove('active');
+    });
+    passwordForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentUser) return;
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      if (newPassword.length < 8) {
+        passwordError.style.display = 'block';
+        return;
+      } else {
+        passwordError.style.display = 'none';
+      }
+      if (newPassword !== confirmPassword) {
+        confirmPasswordError.style.display = 'block';
+        return;
+      } else {
+        confirmPasswordError.style.display = 'none';
+      }
+      try {
+        const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+        await reauthenticateWithCredential(currentUser, credential);
+        await updatePassword(currentUser, newPassword);
+        passwordModal.classList.remove('active');
+        passwordForm.reset();
+        alert('Password updated successfully!');
+      } catch (error) {
+        alert('Error updating password. Please check your current password and try again.');
+      }
+    });
+    // Logout
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      } catch (error) {
+        alert('Error signing out. Please try again.');
+      }
+    });
+  </script>
+</body>
 </html>
+                                                                                                                                                                                                                                                                                     
