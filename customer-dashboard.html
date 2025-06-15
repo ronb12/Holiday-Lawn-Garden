@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Customer Dashboard - Holliday's Lawn & Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="icon" type="image/png" href="assets/images/favicon/favicon-32x32.png" sizes="32x32">
   <link rel="icon" type="image/png" href="assets/images/favicon/favicon-16x16.png" sizes="16x16">
@@ -11,99 +12,260 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/images/favicon/android-chrome-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon/android-chrome-512x512.png">
   <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    .logo img {
-      max-width: 180px;
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+    .dashboard-wrapper {
+      display: flex;
+      min-height: 100vh;
+    }
+    .sidebar {
+      background: #2e7d32;
+      color: #fff;
+      width: 240px;
+      min-width: 200px;
+      padding: 2rem 1rem 1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+    }
+    .sidebar .logo {
+      margin-bottom: 2rem;
+    }
+    .sidebar .logo img {
+      max-width: 120px;
       height: auto;
       display: block;
       margin: 0 auto;
     }
-    .dashboard-content {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2rem;
-      justify-content: space-between;
-      padding: 2rem;
-      background: #f8f8f8;
+    .sidebar nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
     }
-    .dashboard-section {
-      flex: 1 1 220px;
-      min-width: 220px;
+    .sidebar nav ul li {
+      margin: 1rem 0;
+    }
+    .sidebar nav ul li a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: color 0.2s;
+    }
+    .sidebar nav ul li a:hover {
+      color: #b2dfdb;
+    }
+    .sidebar .logout-btn {
+      margin-top: auto;
       background: #fff;
-      border-radius: 8px;
-      padding: 1.5rem 1rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      margin-bottom: 2rem;
+      color: #2e7d32;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .sidebar .logout-btn:hover {
+      background: #b2dfdb;
+      color: #222;
+    }
+    .dashboard-main {
+      flex: 1;
+      padding: 2rem 3vw;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      background: #f4f6f8;
+    }
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .dashboard-header .greeting {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .dashboard-header .notifications {
+      position: relative;
+      font-size: 1.3rem;
+      cursor: pointer;
+      color: #2e7d32;
+    }
+    .dashboard-sections {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+    }
+    .dashboard-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      padding: 1.5rem 1.25rem;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .dashboard-card h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.2rem;
+      color: #2e7d32;
+    }
+    .dashboard-card ul {
+      padding-left: 1.2rem;
+    }
+    .dashboard-card .empty {
+      color: #888;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    .dashboard-card form input,
+    .dashboard-card form select,
+    .dashboard-card form textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .dashboard-card form button {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .dashboard-card form button:hover {
+      background: #388e3c;
     }
     @media (max-width: 900px) {
-      .dashboard-content {
+      .dashboard-wrapper {
         flex-direction: column;
-        gap: 1rem;
+      }
+      .sidebar {
+        width: 100%;
+        min-width: unset;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
         padding: 1rem;
       }
-      .dashboard-section {
-        margin-bottom: 1rem;
+      .sidebar nav ul {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+      }
+      .dashboard-main {
+        padding: 1rem 2vw;
+      }
+      .dashboard-sections {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <header class="main-header">
-    <div class="logo">
-      <a href="index.html">
-        <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
-      </a>
-    </div>
-    <button class="hamburger" aria-label="Toggle menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-    <nav>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="education.html">Education</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-        <li><a href="login.html" class="btn btn-secondary">Login</a></li>
-      </ul>
-    </nav>
-  </header>
-  <main class="dashboard-content">
-    <div class="dashboard-section">
-      <h3>Contact Us</h3>
-      <p>Karl Holliday<br>(504) 717-1887<br>7holliday@gmail.com</p>
-    </div>
-    <div class="dashboard-section">
-      <h3>Quick Links</h3>
-      <ul>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="services.html">Services</a></li>
-        <li><a href="education.html">Education</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </div>
-    <div class="dashboard-section">
-      <h3>Customer Portal</h3>
-      <ul>
-        <li><a href="login.html">Login</a></li>
-        <li><a href="register.html">Register</a></li>
-        <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-        <li><a href="customer-dashboard.html">Dashboard</a></li>
-      </ul>
-    </div>
-    <div class="dashboard-section">
-      <h3>Legal</h3>
-      <ul>
-        <li><a href="privacy.html">Privacy Policy</a></li>
-        <li><a href="terms.html">Terms of Service</a></li>
-      </ul>
-    </div>
-  </main>
-  <footer class="footer" role="contentinfo" aria-label="Site footer">
+  <div class="dashboard-wrapper">
+    <aside class="sidebar">
+      <div class="logo">
+        <a href="index.html">
+          <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+        </a>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="customer-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+          <li><a href="pay-your-bill.html"><i class="fas fa-file-invoice-dollar"></i> Pay Your Bill</a></li>
+          <li><a href="services.html"><i class="fas fa-leaf"></i> Services</a></li>
+          <li><a href="profile.html"><i class="fas fa-user"></i> Profile</a></li>
+          <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+        </ul>
+      </nav>
+      <button class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </aside>
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <div class="greeting">Welcome, <span id="customerName">Customer</span>!</div>
+        <div class="notifications" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="badge" id="notificationCount" style="display:none;position:absolute;top:-8px;right:-8px;background:#e53935;color:#fff;border-radius:50%;padding:2px 7px;font-size:0.8rem;font-weight:700;">0</span>
+        </div>
+      </div>
+      <section class="dashboard-sections">
+        <div class="dashboard-card" id="serviceRequests">
+          <h3>Your Service Requests</h3>
+          <ul>
+            <li class="empty">No service requests yet.</li>
+          </ul>
+        </div>
+        <div class="dashboard-card" id="newRequest">
+          <h3>Submit New Service Request</h3>
+          <form id="requestForm">
+            <label for="serviceType">Service Type</label>
+            <select id="serviceType" required>
+              <option value="">Select...</option>
+              <option value="Lawn Mowing">Lawn Mowing</option>
+              <option value="Hedge Trimming">Hedge Trimming</option>
+              <option value="Leaf Cleanup">Leaf Cleanup</option>
+            </select>
+            <label for="preferredDate">Preferred Date</label>
+            <input type="date" id="preferredDate" required>
+            <label for="requestNotes">Notes</label>
+            <textarea id="requestNotes" placeholder="Any special instructions..."></textarea>
+            <button type="submit">Submit Request</button>
+          </form>
+        </div>
+        <div class="dashboard-card" id="upcomingAppointments">
+          <h3>Upcoming Appointments</h3>
+          <ul>
+            <li class="empty">No upcoming appointments.</li>
+          </ul>
+        </div>
+        <div class="dashboard-card" id="invoices">
+          <h3>Invoices & Payments</h3>
+          <ul>
+            <li class="empty">No invoices found.</li>
+          </ul>
+        </div>
+        <div class="dashboard-card" id="profile">
+          <h3>Profile</h3>
+          <ul>
+            <li>Name: <span id="profileName">Customer</span></li>
+            <li>Email: <span id="profileEmail">customer@email.com</span></li>
+            <li><a href="#" style="color:#2e7d32;">Edit Profile</a></li>
+          </ul>
+        </div>
+        <div class="dashboard-card" id="support">
+          <h3>Support / Contact</h3>
+          <form id="supportForm">
+            <label for="supportMessage">Message</label>
+            <textarea id="supportMessage" required placeholder="How can we help you?"></textarea>
+            <button type="submit">Send Message</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <footer class="footer" role="contentinfo" aria-label="Site footer" style="margin-top:2rem;">
     <div class="footer-content">
       <div class="footer-main">
         <div class="footer-section">
@@ -168,5 +330,80 @@
       </div>
     </div>
   </footer>
+
+  <!-- Firebase Auth & Firestore: Personalized greeting, logout, service requests -->
+  <script type="module">
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { app } from './assets/js/firebase-config.js';
+
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Personalized greeting
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('customerName').textContent = user.displayName || user.email || "Customer";
+        document.getElementById('profileName').textContent = user.displayName || "Customer";
+        document.getElementById('profileEmail').textContent = user.email || "";
+        loadServiceRequests(user);
+      } else {
+        // Not logged in, redirect to login page
+        window.location.href = "login.html";
+      }
+    });
+
+    // Logout button
+    document.querySelector('.logout-btn').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    });
+
+    // Load service requests for the logged-in user
+    function loadServiceRequests(user) {
+      const list = document.querySelector('#serviceRequests ul');
+      list.innerHTML = '<li class="empty">Loading...</li>';
+      const q = query(
+        collection(db, "service_requests"),
+        where("customerEmail", "==", user.email)
+      );
+      getDocs(q).then(snapshot => {
+        list.innerHTML = '';
+        if (snapshot.empty) {
+          list.innerHTML = '<li class="empty">No service requests yet.</li>';
+          return;
+        }
+        snapshot.forEach(doc => {
+          const r = doc.data();
+          list.innerHTML += `<li>
+            <strong>${r.serviceType}</strong> on ${r.preferredDate || "N/A"}
+            <br>Status: ${r.status || "Pending"}
+            <br>Notes: ${r.notes || "-"}
+          </li>`;
+        });
+      });
+    }
+
+    // Handle new request form
+    document.getElementById('requestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+      const type = document.getElementById('serviceType').value;
+      const date = document.getElementById('preferredDate').value;
+      const notes = document.getElementById('requestNotes').value;
+      await addDoc(collection(db, "service_requests"), {
+        customerEmail: user.email,
+        serviceType: type,
+        preferredDate: date,
+        notes: notes,
+        status: "Pending",
+        submittedAt: serverTimestamp()
+      });
+      e.target.reset();
+      loadServiceRequests(user);
+    });
+  </script>
 </body>
 </html>
