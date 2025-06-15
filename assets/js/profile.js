@@ -1,6 +1,9 @@
 // Profile Management JavaScript
 import { handleError, handleFirebaseError } from './error-handler.js';
-import { auth, db, showError } from './firebase.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getFirestore, collection, query, where, orderBy, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { showError } from './firebase.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   // Check authentication state
