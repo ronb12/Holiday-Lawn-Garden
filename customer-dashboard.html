@@ -1,92 +1,172 @@
-    <footer class="footer" role="contentinfo" aria-label="Site footer">
-      <div class="footer-content">
-        <div class="footer-main">
-          <div class="footer-section">
-            <h3>Contact Us</h3>
-            <div class="footer-contact">
-              <span class="footer-owner">Karl Holliday</span>
-              <a href="tel:+15047171887" aria-label="Call us">
-                <i class="fas fa-phone" aria-hidden="true"></i>
-                <span>(504) 717-1887</span>
-              </a>
-              <a href="mailto:7holliday@gmail.com" aria-label="Email us">
-                <i class="fas fa-envelope" aria-hidden="true"></i>
-                <span>7holliday@gmail.com</span>
-              </a>
-            </div>
-          </div>
-          <div class="footer-section">
-            <h3>Quick Links</h3>
-            <ul>
-              <li><a href="about.html">About Us</a></li>
-              <li><a href="services.html">Services</a></li>
-              <li><a href="education.html">Education</a></li>
-              <li><a href="contact.html">Contact</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h3>Customer Portal</h3>
-            <ul>
-              <li><a href="login.html">Login</a></li>
-              <li><a href="register.html">Register</a></li>
-              <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-              <li><a href="customer-dashboard.html">Dashboard</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h3>Legal</h3>
-            <ul>
-              <li><a href="privacy.html">Privacy Policy</a></li>
-              <li><a href="terms.html">Terms of Service</a></li>
-            </ul>
-          </div>
-          <div class="footer-section">
-            <h3>Connect With Us</h3>
-            <div class="footer-social">
-              <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
-                <i class="fab fa-facebook" aria-hidden="true"></i>
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">
-                <i class="fab fa-twitter" aria-hidden="true"></i>
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
-                <i class="fab fa-instagram" aria-hidden="true"></i>
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
-                <i class="fab fa-linkedin" aria-hidden="true"></i>
-              </a>
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Customer Dashboard - Holliday's Lawn & Garden</title>
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="icon" type="image/png" href="assets/images/favicon/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/images/favicon/favicon-16x16.png" sizes="16x16">
+  <link rel="shortcut icon" href="assets/images/favicon/favicon.ico">
+  <link rel="apple-touch-icon" href="assets/images/favicon/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/images/favicon/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon/android-chrome-512x512.png">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    .logo img {
+      max-width: 180px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .dashboard-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+      padding: 2rem;
+      background: #f8f8f8;
+    }
+    .dashboard-section {
+      flex: 1 1 220px;
+      min-width: 220px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .dashboard-content {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      .dashboard-section {
+        margin-bottom: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="logo">
+      <a href="index.html">
+        <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
+      </a>
+    </div>
+    <button class="hamburger" aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="education.html">Education</a></li>
+        <li><a href="faq.html">FAQ</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+        <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="dashboard-content">
+    <div class="dashboard-section">
+      <h3>Contact Us</h3>
+      <p>Karl Holliday<br>(504) 717-1887<br>7holliday@gmail.com</p>
+    </div>
+    <div class="dashboard-section">
+      <h3>Quick Links</h3>
+      <ul>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="education.html">Education</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="dashboard-section">
+      <h3>Customer Portal</h3>
+      <ul>
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+        <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+        <li><a href="customer-dashboard.html">Dashboard</a></li>
+      </ul>
+    </div>
+    <div class="dashboard-section">
+      <h3>Legal</h3>
+      <ul>
+        <li><a href="privacy.html">Privacy Policy</a></li>
+        <li><a href="terms.html">Terms of Service</a></li>
+      </ul>
+    </div>
+  </main>
+  <footer class="footer" role="contentinfo" aria-label="Site footer">
+    <div class="footer-content">
+      <div class="footer-main">
+        <div class="footer-section">
+          <h3>Contact Us</h3>
+          <div class="footer-contact">
+            <span class="footer-owner">Karl Holliday</span>
+            <a href="tel:+15047171887" aria-label="Call us">
+              <i class="fas fa-phone" aria-hidden="true"></i>
+              <span>(504) 717-1887</span>
+            </a>
+            <a href="mailto:7holliday@gmail.com" aria-label="Email us">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+              <span>7holliday@gmail.com</span>
+            </a>
           </div>
         </div>
-        <div class="footer-bottom">
-          <p>&copy; <span id="current-year"></span> Holliday's Lawn & Garden. All rights reserved.</p>
+        <div class="footer-section">
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="services.html">Services</a></li>
+            <li><a href="education.html">Education</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Customer Portal</h3>
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+            <li><a href="customer-dashboard.html">Dashboard</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Legal</h3>
+          <ul>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Connect With Us</h3>
+          <div class="footer-social">
+            <a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook">
+              <i class="fab fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter">
+              <i class="fab fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram">
+              <i class="fab fa-instagram" aria-hidden="true"></i>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn">
+              <i class="fab fa-linkedin" aria-hidden="true"></i>
+            </a>
+          </div>
         </div>
       </div>
-    </footer>
-    <header class="main-header">
-      <div class="logo">
-        <a href="index.html">
-          <picture>
-            <source srcset="assets/images/hollidays-logo.optimized-1280.webp" type="image/webp">
-            <img src="assets/images/hollidays-logo.optimized-1280.png" alt="Holliday's Lawn & Garden Logo" loading="lazy">
-          </picture>
-        </a>
+      <div class="footer-bottom">
+        <p>&copy; <span id="current-year"></span> Holliday's Lawn & Garden. All rights reserved.</p>
       </div>
-      <button class="hamburger" aria-label="Toggle menu">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <nav>
-        <ul class="nav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="education.html">Education</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="contact.html">Contact</a></li>
-          <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
-          <li><a href="login.html" class="btn btn-secondary">Login</a></li>
-        </ul>
-      </nav>
-    </header>
+    </div>
+  </footer>
+</body>
+</html>
