@@ -503,7 +503,8 @@
           <ul>
             <li>Name: <span id="profileName">Customer</span></li>
             <li>Email: <span id="profileEmail">customer@email.com</span></li>
-            <li><a href="#" id="editProfileBtn" style="color:#2e7d32;">Edit Profile</a></li>
+            <li><a href="profile.html" id="editProfileLink" style="color:#2e7d32;">Edit Profile</a></li>
+            <li><button id="quickEditProfileBtn" style="color:#2e7d32;background:none;border:none;cursor:pointer;text-decoration:underline;">Quick Edit</button></li>
           </ul>
         </div>
         <div class="dashboard-card" id="support">
@@ -588,60 +589,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- Profile Edit Modal -->
-  <div class="modal" id="profileModal">
-    <div class="modal-content">
-      <button class="modal-close" id="closeModal">&times;</button>
-      <h2>Edit Profile</h2>
-      <form id="profileForm">
-        <div class="section-title">Basic Information</div>
-        <div>
-          <label for="editName">Full Name</label>
-          <input type="text" id="editName" required>
-        </div>
-        <div>
-          <label for="editEmail">Email</label>
-          <input type="email" id="editEmail" required>
-          <div class="verification-status" id="emailVerificationStatus">
-            <i class="fas fa-envelope"></i>
-            <span>Email not verified</span>
-          </div>
-          <button type="button" id="sendVerificationEmail" class="secondary-button">Send Verification Email</button>
-        </div>
-        <div>
-          <label for="editPhone">Phone Number</label>
-          <input type="tel" id="editPhone" pattern="[0-9]{10}" placeholder="1234567890">
-          <div class="error" id="phoneError" style="display: none;">Please enter a valid 10-digit phone number</div>
-        </div>
-        <div>
-          <label for="editAddress">Address</label>
-          <input type="text" id="editAddress">
-        </div>
-
-        <div class="section-divider">
-          <div class="section-title">Change Password</div>
-          <div>
-            <label for="currentPassword">Current Password</label>
-            <input type="password" id="currentPassword">
-          </div>
-          <div>
-            <label for="newPassword">New Password</label>
-            <input type="password" id="newPassword" minlength="8">
-            <div class="error" id="passwordError" style="display: none;">Password must be at least 8 characters long</div>
-          </div>
-          <div>
-            <label for="confirmPassword">Confirm New Password</label>
-            <input type="password" id="confirmPassword">
-            <div class="error" id="confirmPasswordError" style="display: none;">Passwords do not match</div>
-          </div>
-          <button type="button" id="changePasswordBtn" class="secondary-button">Change Password</button>
-        </div>
-
-        <button type="submit">Save Changes</button>
-      </form>
-    </div>
-  </div>
 
   <!-- PayPal Smart Payment Buttons -->
   <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons"></script>
@@ -912,179 +859,63 @@
       }
     });
 
-    // Handle profile editing
-    const profileModal = document.getElementById('profileModal');
-    const editProfileBtn = document.getElementById('editProfileBtn');
-    const closeModal = document.getElementById('closeModal');
-    const profileForm = document.getElementById('profileForm');
-    const phoneError = document.getElementById('phoneError');
-    const passwordError = document.getElementById('passwordError');
-    const confirmPasswordError = document.getElementById('confirmPasswordError');
-    const emailVerificationStatus = document.getElementById('emailVerificationStatus');
-    const sendVerificationEmailBtn = document.getElementById('sendVerificationEmail');
-    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    // Quick Edit Profile
+    const quickEditProfileBtn = document.getElementById('quickEditProfileBtn');
+    const quickEditProfileModal = document.getElementById('quickEditProfileModal');
+    const closeQuickEditModal = document.getElementById('closeQuickEditModal');
+    const quickEditProfileForm = document.getElementById('quickEditProfileForm');
+    const quickEditPhoneError = document.getElementById('quickEditPhoneError');
 
-    // Update email verification status
-    function updateEmailVerificationUI(user) {
-      if (user.emailVerified) {
-        emailVerificationStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Email verified</span>';
-        emailVerificationStatus.className = 'verification-status verified';
-        sendVerificationEmailBtn.style.display = 'none';
-      } else {
-        emailVerificationStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Email not verified</span>';
-        emailVerificationStatus.className = 'verification-status unverified';
-        sendVerificationEmailBtn.style.display = 'block';
-      }
-    }
-
-    // Send verification email
-    sendVerificationEmailBtn.addEventListener('click', async () => {
+    quickEditProfileBtn.addEventListener('click', async () => {
       const user = auth.currentUser;
       if (!user) return;
-
-      try {
-        await sendEmailVerification(user);
-        alert('Verification email sent! Please check your inbox.');
-      } catch (error) {
-        console.error('Error sending verification email:', error);
-        alert('Error sending verification email. Please try again.');
-      }
-    });
-
-    // Handle password change
-    changePasswordBtn.addEventListener('click', async () => {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      const currentPassword = document.getElementById('currentPassword').value;
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-
-      // Validate passwords
-      if (newPassword.length < 8) {
-        passwordError.style.display = 'block';
-        return;
-      } else {
-        passwordError.style.display = 'none';
-      }
-
-      if (newPassword !== confirmPassword) {
-        confirmPasswordError.style.display = 'block';
-        return;
-      } else {
-        confirmPasswordError.style.display = 'none';
-      }
-
-      try {
-        // Reauthenticate user
-        const credential = EmailAuthProvider.credential(user.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
-
-        // Update password
-        await updatePassword(user, newPassword);
-
-        // Clear password fields
-        document.getElementById('currentPassword').value = '';
-        document.getElementById('newPassword').value = '';
-        document.getElementById('confirmPassword').value = '';
-
-        alert('Password updated successfully!');
-      } catch (error) {
-        console.error('Error updating password:', error);
-        if (error.code === 'auth/wrong-password') {
-          alert('Current password is incorrect.');
-        } else {
-          alert('Error updating password. Please try again.');
-        }
-      }
-    });
-
-    editProfileBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const user = auth.currentUser;
-      if (!user) return;
-
-      // Load current profile data
-      document.getElementById('editName').value = user.displayName || '';
-      document.getElementById('editEmail').value = user.email || '';
-      
-      // Update email verification status
-      updateEmailVerificationUI(user);
-      
-      // Load additional profile data from Firestore
+      document.getElementById('quickEditName').value = user.displayName || '';
+      // Load from Firestore
       const userRef = doc(db, 'users', user.uid);
-      getDoc(userRef).then((doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          document.getElementById('editPhone').value = data.phone || '';
-          document.getElementById('editAddress').value = data.address || '';
-        }
-      });
-
-      profileModal.classList.add('active');
-    });
-
-    // Close modal when clicking outside
-    profileModal.addEventListener('click', (e) => {
-      if (e.target === profileModal) {
-        profileModal.classList.remove('active');
+      const docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById('quickEditPhone').value = data.phone || '';
+        document.getElementById('quickEditAddress').value = data.address || '';
       }
+      quickEditProfileModal.classList.add('active');
     });
-
-    // Handle phone number validation
-    document.getElementById('editPhone').addEventListener('input', (e) => {
+    closeQuickEditModal.addEventListener('click', () => {
+      quickEditProfileModal.classList.remove('active');
+    });
+    quickEditProfileModal.addEventListener('click', (e) => {
+      if (e.target === quickEditProfileModal) quickEditProfileModal.classList.remove('active');
+    });
+    document.getElementById('quickEditPhone').addEventListener('input', (e) => {
       const phone = e.target.value.replace(/\D/g, '');
       if (phone.length !== 10) {
-        phoneError.style.display = 'block';
+        quickEditPhoneError.style.display = 'block';
       } else {
-        phoneError.style.display = 'none';
+        quickEditPhoneError.style.display = 'none';
       }
     });
-
-    // Handle profile form submission
-    profileForm.addEventListener('submit', async (e) => {
+    quickEditProfileForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
       if (!user) return;
-
-      const name = document.getElementById('editName').value;
-      const email = document.getElementById('editEmail').value;
-      const phone = document.getElementById('editPhone').value;
-      const address = document.getElementById('editAddress').value;
-
+      const name = document.getElementById('quickEditName').value;
+      const phone = document.getElementById('quickEditPhone').value;
+      const address = document.getElementById('quickEditAddress').value;
       try {
-        // Update user profile in Firebase Auth
-        await updateProfile(user, {
-          displayName: name
-        });
-
-        // Update email if changed
-        if (email !== user.email) {
-          await updateEmail(user, email);
-          // Reset email verification status
-          updateEmailVerificationUI(user);
-        }
-
-        // Update additional profile data in Firestore
+        await updateProfile(user, { displayName: name });
         const userRef = doc(db, 'users', user.uid);
         await updateDoc(userRef, {
           displayName: name,
-          email: email,
           phone: phone,
           address: address,
           updatedAt: serverTimestamp()
         });
-
-        // Update UI
         document.getElementById('profileName').textContent = name;
-        document.getElementById('profileEmail').textContent = email;
-        document.getElementById('customerName').textContent = name;
-
-        // Close modal
-        profileModal.classList.remove('active');
+        document.getElementById('profilePhone').textContent = phone;
+        document.getElementById('profileAddress').textContent = address;
+        quickEditProfileModal.classList.remove('active');
         alert('Profile updated successfully!');
       } catch (error) {
-        console.error('Error updating profile:', error);
         alert('Error updating profile. Please try again.');
       }
     });
