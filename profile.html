@@ -419,6 +419,14 @@
     const passwordError = document.getElementById('passwordError');
     const confirmPasswordError = document.getElementById('confirmPasswordError');
 
+    // Feedback helpers
+    function showSuccess(message) {
+      alert(message);
+    }
+    function showError(message) {
+      alert(message);
+    }
+
     // Auth state
     let currentUser = null;
     onAuthStateChanged(auth, async (user) => {
@@ -429,6 +437,8 @@
         profileEmail.textContent = user.email || '';
         emailStatus.textContent = user.emailVerified ? '(Verified)' : '(Unverified)';
         emailStatus.className = user.emailVerified ? 'verified' : 'unverified';
+        // Show/hide verification button
+        sendVerificationEmailBtn.style.display = user.emailVerified ? 'none' : 'block';
         // Load additional info from Firestore
         const userRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(userRef);
@@ -485,9 +495,9 @@
       if (!currentUser) return;
       try {
         await sendEmailVerification(currentUser);
-        alert('Verification email sent! Please check your inbox.');
+        showSuccess('Verification email sent! Please check your inbox.');
       } catch (error) {
-        alert('Error sending verification email. Please try again.');
+        showError('Error sending verification email. Please try again.');
       }
     });
     // Profile form submit
@@ -517,9 +527,9 @@
         profilePhone.textContent = phone;
         profileAddress.textContent = address;
         profileModal.classList.remove('active');
-        alert('Profile updated successfully!');
+        showSuccess('Profile updated successfully!');
       } catch (error) {
-        alert('Error updating profile. Please try again.');
+        showError('Error updating profile. Please try again.');
       }
     });
     // Phone validation
@@ -565,9 +575,9 @@
         await updatePassword(currentUser, newPassword);
         passwordModal.classList.remove('active');
         passwordForm.reset();
-        alert('Password updated successfully!');
+        showSuccess('Password updated successfully!');
       } catch (error) {
-        alert('Error updating password. Please check your current password and try again.');
+        showError('Error updating password. Please check your current password and try again.');
       }
     });
     // Logout
@@ -576,10 +586,9 @@
         await signOut(auth);
         window.location.href = 'login.html';
       } catch (error) {
-        alert('Error signing out. Please try again.');
+        showError('Error signing out. Please try again.');
       }
     });
   </script>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                     
