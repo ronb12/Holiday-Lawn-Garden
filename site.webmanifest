@@ -8,6 +8,11 @@
   "theme_color": "#4CAF50",
   "icons": [
     {
+      "src": "/Holliday-Lawn-Garden/assets/icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
       "src": "/Holliday-Lawn-Garden/assets/images/favicon/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
