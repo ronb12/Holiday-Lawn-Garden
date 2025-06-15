@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Holliday's Lawn & Garden</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+</head>
+<body>
+  <div class="dashboard-wrapper">
+    <aside class="sidebar">
+      <div class="logo">
+        <img src="assets/images/logo.png" alt="Holliday's Lawn & Garden" />
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#admin-dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+          <li><a href="#users"><i class="fas fa-users"></i> Users</a></li>
+          <li><a href="#services"><i class="fas fa-leaf"></i> Services</a></li>
+          <li><a href="#payments"><i class="fas fa-credit-card"></i> Payments</a></li>
+          <li><a href="#messages"><i class="fas fa-envelope"></i> Messages</a></li>
+          <li><a href="#documents"><i class="fas fa-file-alt"></i> Documents</a></li>
+        </ul>
+      </nav>
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </aside>
+    <main class="dashboard-main">
+      <div class="dashboard-header">
+        <h1 class="greeting">Welcome, Admin!</h1>
+      </div>
+      <section id="admin-dashboard" class="feature-section">
+        <h2>Overview</h2>
+        <div id="admin-overview"></div>
+      </section>
+      <section id="users" class="feature-section">
+        <h2>Users</h2>
+        <div id="users-container"></div>
+      </section>
+      <section id="services" class="feature-section">
+        <h2>Services</h2>
+        <div id="admin-services-container"></div>
+      </section>
+      <section id="payments" class="feature-section">
+        <h2>Payments</h2>
+        <div id="admin-payments-container"></div>
+      </section>
+      <section id="messages" class="feature-section">
+        <h2>Messages</h2>
+        <div id="admin-messages-container"></div>
+      </section>
+      <section id="documents" class="feature-section">
+        <h2>Documents</h2>
+        <div id="admin-documents-container"></div>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="assets/js/admin-dashboard.js"></script>
+</body>
+</html>

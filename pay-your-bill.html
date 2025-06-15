@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pay your lawn care and landscaping services bill securely online with PayPal or credit card."
+    />
+    <title>Pay Your Bill - Holliday's Lawn & Garden</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="assets/images/favicon/favicon-32x32.png"
+      sizes="32x32"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="assets/images/favicon/favicon-16x16.png"
+      sizes="16x16"
+    />
+    <link rel="apple-touch-icon" href="assets/images/favicon/apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <style>
+      .payment-section {
+        max-width: 800px;
+        margin: 120px auto 40px;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .payment-form {
+        display: grid;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      .form-group {
+        display: grid;
+        gap: 0.5rem;
+      }
+      .form-group label {
+        font-weight: 600;
+        color: #333;
+      }
+      .form-group input {
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
+      .payment-options {
+        margin: 2rem 0;
+        text-align: center;
+      }
+      .payment-options h2 {
+        margin-bottom: 1rem;
+        color: #333;
+        font-size: 1.5rem;
+      }
+      .paypal-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        align-items: center;
+        margin-top: 1rem;
+      }
+      .error-message {
+        color: #dc3545;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="logo">
+        <a href="index.html">
+          <picture>
+            <source srcset="assets/images/hollidays-logo.optimized-1280.webp" type="image/webp" />
+            <img
+              src="assets/images/hollidays-logo.optimized-1280.png"
+              alt="Holliday's Lawn & Garden Logo"
+              loading="lazy"
+            />
+          </picture>
+        </a>
+      </div>
+      <button class="hamburger" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="education.html">Education</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+          <li><a href="login.html" class="btn btn-secondary">Login</a></li>
+        </ul>
+      </nav>
+    </header>
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <img
+        src="assets/images/hero-garden-landscaping.jpg"
+        alt="Beautiful garden landscaping"
+        loading="eager"
+      />
+      <div class="hero-content">
+        <h1>Pay Your Bill</h1>
+        <p>Quick and secure online payment options for your lawn care and landscaping services.</p>
+      </div>
+    </section>
+    <!-- PayPal SDK with test client ID: must be before the button rendering code -->
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=USD&components=buttons,funding-eligibility&disable-funding=venmo,paylater"></script>
+    <!-- Payment Section -->
+    <section class="payment-section">
+      <h2>Pay Your Bill</h2>
+      <form id="payment-form" style="max-width: 400px; margin: 0 auto">
+        <div class="form-group">
+          <label for="accountNumber">Account Number</label>
+          <input type="text" id="accountNumber" name="accountNumber" required />
+        </div>
+        <div class="form-group">
+          <label for="paymentAmount">Payment Amount ($)</label>
+          <input
+            type="number"
+            id="paymentAmount"
+            name="paymentAmount"
+            min="1"
+            step="0.01"
+            required
+          />
+        </div>
+      </form>
+      <!-- PayPal Button Container -->
+      <div id="paypal-button-container" style="margin: 2rem 0"></div>
+      <div
+        class="payment-note"
+        style="
+          background: #e8f5e9;
+          color: #2e7d32;
+          padding: 1rem;
+          border-radius: 6px;
+          max-width: 400px;
+          margin: 0 auto 2rem auto;
+        "
+      >
+        <i class="fab fa-paypal" style="margin-right: 0.5rem"></i>
+        Don't have a PayPal account? No problem! You can pay securely using your credit or debit
+        card as a guest.
+      </div>
+    </section>
+    <!-- PayPal Button Rendering Code -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        function renderPayPalButtons() {
+          if (window.paypal && window.paypal.Buttons) {
+            window.paypal
+              .Buttons({
+                style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal' },
+                createOrder: function (data, actions) {
+                  return actions.order.create({
+                    purchase_units: [
+                      {
+                        amount: {
+                          value: document.getElementById('paymentAmount')
+                            ? document.getElementById('paymentAmount').value
+                            : '10.00',
+                        },
+                      },
+                    ],
+                  });
+                },
+                onApprove: function (data, actions) {
+                  return actions.order.capture().then(function (details) {
+                    alert('Payment completed by ' + details.payer.name.given_name + '!');
+                  });
+                },
+                onError: function (err) {
+                  alert('An error occurred during payment. Please try again.');
+                },
+              })
+              .render('#paypal-button-container');
+          } else {
+            setTimeout(renderPayPalButtons, 100);
+          }
+        }
+        renderPayPalButtons();
+      });
+    </script>
+    <script type="module" src="assets/js/firebase-config.js"></script>
+    <script type="module" src="assets/js/main.js"></script>
+    <footer class="footer" role="contentinfo" aria-label="Site footer">
+      <div class="footer-content">
+        <div class="footer-main">
+          <div class="footer-section footer-contact">
+            <h3>Contact Us</h3>
+            <p><strong>Karl Holliday</strong></p>
+            <p><a href="tel:5047171887" aria-label="Call Karl Holliday">(504) 717-1887</a></p>
+            <p>
+              <a href="mailto:7holliday@gmail.com" aria-label="Email Karl Holliday"
+                >7holliday@gmail.com</a
+              >
+            </p>
+          </div>
+          <div class="footer-section footer-links">
+            <h3>Quick Links</h3>
+            <ul>
+              <li><a href="about.html">About Us</a></li>
+              <li><a href="services.html">Services</a></li>
+              <li><a href="education.html">Education</a></li>
+              <li><a href="contact.html">Contact</a></li>
+            </ul>
+          </div>
+          <div class="footer-section footer-portal">
+            <h3>Customer Portal</h3>
+            <ul>
+              <li><a href="login.html">Login</a></li>
+              <li><a href="register.html">Register</a></li>
+              <li><a href="pay-your-bill.html">Pay Your Bill</a></li>
+              <li><a href="customer-dashboard.html">Dashboard</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>
+            &copy; <span id="current-year"></span> Holliday's Lawn &amp; Garden. All rights
+            reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script type="module" src="assets/js/main.min.js" defer></script>
+  </body>
+</html>

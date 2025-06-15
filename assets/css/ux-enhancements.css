@@ -1,0 +1,221 @@
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+}
+
+.toast-header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.toast-body {
+  padding: 1rem;
+}
+
+/* Breadcrumbs */
+.breadcrumb-container {
+  background: #f8f9fa;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 4px;
+}
+
+.breadcrumb {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: '›';
+  padding: 0 0.5rem;
+  color: #6c757d;
+}
+
+.breadcrumb-item a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.breadcrumb-item.active {
+  color: #6c757d;
+}
+
+/* Progress Indicators */
+.progress-indicator {
+  margin: 1rem 0;
+}
+
+.progress {
+  height: 0.5rem;
+  background-color: #e9ecef;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  margin-top: 0.5rem;
+  text-align: center;
+  color: #6c757d;
+}
+
+/* Form Feedback */
+.form-feedback {
+  margin: 1rem 0;
+}
+
+.form-feedback .alert {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.form-feedback i {
+  margin-right: 0.5rem;
+}
+
+/* Scroll to Top */
+.scroll-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+  z-index: 999;
+}
+
+.scroll-to-top:hover {
+  background: #0056b3;
+}
+
+.scroll-to-top.visible {
+  display: flex;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .toast-container {
+    left: 20px;
+    right: 20px;
+  }
+
+  .toast {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .breadcrumb-container {
+    padding: 0.5rem;
+  }
+
+  .scroll-to-top {
+    bottom: 10px;
+    right: 10px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast {
+  animation: slideIn 0.3s ease;
+}
+
+.form-feedback .alert {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Accessibility */
+.toast[role='alert'] {
+  outline: none;
+}
+
+.scroll-to-top:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .toast {
+    background: #343a40;
+    color: white;
+  }
+
+  .toast-header {
+    border-bottom-color: #495057;
+  }
+
+  .breadcrumb-container {
+    background: #343a40;
+  }
+
+  .breadcrumb-item a {
+    color: #6ea8fe;
+  }
+
+  .breadcrumb-item.active {
+    color: #adb5bd;
+  }
+
+  .progress {
+    background-color: #495057;
+  }
+
+  .form-feedback .alert {
+    background-color: #343a40;
+    color: white;
+  }
+}

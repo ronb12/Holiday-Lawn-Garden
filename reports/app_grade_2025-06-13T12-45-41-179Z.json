@@ -1,0 +1,73 @@
+{
+  "timestamp": "2025-06-13T12:45:40.411Z",
+  "overallScore": 80,
+  "grades": {
+    "performance": {
+      "score": 73,
+      "details": [
+        "Image optimization: 22/30",
+        "Code minification: 13/30",
+        "Resource loading: 38/40"
+      ]
+    },
+    "accessibility": {
+      "score": 75,
+      "details": ["ARIA attributes: 38/40", "Image alt text: 18/30", "Semantic HTML: 19/30"]
+    },
+    "bestPractices": {
+      "score": 67,
+      "details": ["Meta tags: 29/30", "Favicon: 20/20", "Responsive design: 18/50"]
+    },
+    "seo": {
+      "score": 80,
+      "details": ["Title tags: 39/40", "Heading structure: 20/40", "Sitemap: 20/20"]
+    },
+    "security": {
+      "score": 100,
+      "details": ["HTTPS: 40/40", "Security headers: 30/30", "Form validation: 30/30"]
+    },
+    "features": {
+      "score": 83,
+      "details": ["Customer features: 100/100", "Admin features: 66.66/100"]
+    },
+    "codeQuality": {
+      "score": 100,
+      "details": [
+        "File structure: 40/40",
+        "CSS organization: 30/30",
+        "JavaScript organization: 30/30"
+      ]
+    },
+    "userExperience": {
+      "score": 70,
+      "details": ["Navigation: 40/40", "User feedback: 0/30", "Responsive design: 30/30"]
+    }
+  },
+  "recommendations": [
+    {
+      "category": "performance",
+      "currentScore": 73,
+      "suggestions": ["Optimize images using WebP format", "Implement lazy loading for images"]
+    },
+    {
+      "category": "accessibility",
+      "currentScore": 75,
+      "suggestions": ["Add ARIA labels to interactive elements", "Ensure proper heading hierarchy"]
+    },
+    {
+      "category": "bestPractices",
+      "currentScore": 67,
+      "suggestions": ["Add meta description tags", "Implement favicon"]
+    },
+    {
+      "category": "seo",
+      "currentScore": 80,
+      "suggestions": ["Optimize title tags", "Improve heading structure"]
+    },
+    {
+      "category": "userExperience",
+      "currentScore": 70,
+      "suggestions": ["Improve navigation", "Add loading states"]
+    }
+  ]
+}

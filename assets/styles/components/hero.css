@@ -1,0 +1,218 @@
+.hero {
+  position: relative;
+  height: 80vh;
+  min-height: 500px;
+  background:
+    linear-gradient(135deg, rgba(56, 142, 60, 0.32) 0%, rgba(37, 96, 41, 0.32) 100%),
+    url('/assets/images/hero-garden-landscaping.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-text-light);
+  padding: var(--spacing-xl) var(--spacing-md);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1);
+  margin-top: var(--spacing-2xl);
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(56, 142, 60, 0.32) 0%, rgba(37, 96, 41, 0.32) 100%);
+  z-index: 0;
+  border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
+}
+
+.hero-content {
+  max-width: 800px;
+  z-index: 1;
+  background: rgba(56, 142, 60, 0.18);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  margin: 0 auto;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: heroFadeIn 1.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.2;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.13);
+  font-weight: 800;
+  color: var(--color-text-light);
+}
+
+.hero h2 {
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+  line-height: 1.3;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.13);
+  font-weight: 600;
+  color: var(--color-text-light);
+  opacity: 0.95;
+}
+
+.hero p {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-lg);
+  opacity: 0.97;
+  line-height: 1.6;
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cta-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--border-radius-full);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: var(--font-size-base);
+  transition: var(--transition);
+  box-shadow: var(--shadow-md);
+}
+
+.cta-button.primary {
+  background: var(--color-primary);
+  color: var(--color-text-light);
+  border: 2px solid var(--color-primary-dark);
+}
+
+.cta-button.secondary {
+  background: transparent;
+  color: var(--color-text-light);
+  border: 2px solid var(--color-text-light);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.08);
+}
+
+.cta-button.primary:hover {
+  background: var(--color-primary-dark);
+}
+
+.cta-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--color-text-light);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    height: 60vh;
+    min-height: 400px;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero h2 {
+    font-size: 1.5rem;
+  }
+
+  .hero-content {
+    padding: var(--spacing-lg) var(--spacing-md);
+    max-width: 90%;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero {
+    height: 50vh;
+    min-height: 300px;
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .hero-content {
+    padding: var(--spacing-md) var(--spacing-sm);
+    border-radius: var(--border-radius);
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero h2 {
+    font-size: 1.25rem;
+  }
+
+  .hero p {
+    font-size: var(--font-size-base);
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .cta-button {
+    width: 100%;
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+
+.hero-section {
+  background: linear-gradient(120deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+  color: var(--color-text-light);
+  padding: var(--spacing-2xl) var(--spacing-xl);
+  text-align: center;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-xl);
+}
+
+.hero-section h1 {
+  font-size: var(--font-size-2xl);
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-md);
+}
+
+.hero-section p {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+.hero-section .cta-btn {
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}

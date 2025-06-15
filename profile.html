@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Profile - Holliday's Lawn & Garden</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  </head>
+  <body>
+    <div class="dashboard-wrapper">
+      <aside class="sidebar">
+        <div class="logo">
+          <img src="assets/images/logo.png" alt="Holliday's Lawn & Garden" />
+        </div>
+        <nav>
+          <ul>
+            <li><a href="customer-dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+            <li><a href="profile.html" class="active"><i class="fas fa-user"></i> Profile</a></li>
+          </ul>
+        </nav>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </aside>
+      <main class="dashboard-main">
+        <div class="dashboard-header">
+          <h1 class="greeting">Your Profile</h1>
+        </div>
+        <section class="feature-section">
+          <h2>Account Information</h2>
+          <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+            <div class="form-group">
+              <label for="displayName">Name</label>
+              <input type="text" id="displayName" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" disabled />
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" id="phone" />
+            </div>
+            <button type="submit" class="action-button">Update Profile</button>
+          </form>
+        </section>
+        <section class="feature-section">
+          <h2>Service History</h2>
+          <div id="profile-services-container"></div>
+        </section>
+        <section class="feature-section">
+          <h2>Payment History</h2>
+          <div id="profile-payments-container"></div>
+        </section>
+      </main>
+    </div>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, collection, query, where, orderBy, getDocs, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { getAuth, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX",
+        authDomain: "holliday-lawn-garden.firebaseapp.com",
+        projectId: "holliday-lawn-garden",
+        storageBucket: "holliday-lawn-garden.appspot.com",
+        messagingSenderId: "123456789012",
+        appId: "1:123456789012:web:1234567890123456789012"
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+
+      let currentUser = null;
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = 'login.html';
+        } else {
+          currentUser = user;
+          document.getElementById('displayName').value = user.displayName || '';
+          document.getElementById('email').value = user.email;
+          document.getElementById('phone').value = user.phoneNumber || '';
+          loadServiceHistory();
+          loadPaymentHistory();
+        }
+      });
+
+      window.logout = function() {
+        auth.signOut().then(() => {
+          window.location.href = 'login.html';
+        });
+      };
+
+      window.handleProfileUpdate = async function(event) {
+        event.preventDefault();
+        const displayName = document.getElementById('displayName').value;
+        const phone = document.getElementById('phone').value;
+        if (!currentUser) return;
+        await updateProfile(currentUser, { displayName, phoneNumber: phone });
+        // Optionally update Firestore user doc if you store extra info
+        const userDoc = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDoc, { displayName, phone });
+        alert('Profile updated!');
+      };
+
+      async function loadServiceHistory() {
+        const q = query(collection(db, 'services'), where('userId', '==', currentUser.uid), orderBy('scheduledDate', 'desc'));
+        const snap = await getDocs(q);
+        const services = [];
+        snap.forEach(doc => services.push({ id: doc.id, ...doc.data() }));
+        document.getElementById('profile-services-container').innerHTML = services.length ? services.map(service => `
+          <div class="service-item">
+            <b>${service.type}</b> on ${service.scheduledDate?.toDate?.().toLocaleDateString?.() || ''}
+            <span class="status">${service.status}</span>
+          </div>
+        `).join('') : '<p class="empty">No service history</p>';
+      }
+
+      async function loadPaymentHistory() {
+        const q = query(collection(db, 'payments'), where('userId', '==', currentUser.uid), orderBy('date', 'desc'));
+        const snap = await getDocs(q);
+        const payments = [];
+        snap.forEach(doc => payments.push({ id: doc.id, ...doc.data() }));
+        document.getElementById('profile-payments-container').innerHTML = payments.length ? payments.map(payment => `
+          <div class="payment-item">
+            <b>$${payment.amount}</b> (${payment.method})
+            <span class="status">${payment.status}</span>
+          </div>
+        `).join('') : '<p class="empty">No payment history</p>';
+      }
+    </script>
+  </body>
+</html>

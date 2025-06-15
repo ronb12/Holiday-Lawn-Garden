@@ -1,0 +1,113 @@
+.services-hero {
+  background-color: var(--light-green);
+  color: var(--text-light);
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.services-hero h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.services-hero p {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+  background-color: var(--background-light);
+}
+
+.service-card {
+  background-color: white;
+  border: 1px solid var(--lighter-green);
+  border-radius: 8px;
+  padding: 2rem;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.service-card h2 {
+  color: var(--primary-green);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+.service-card ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-card li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--lighter-green);
+}
+
+.service-card li:last-child {
+  border-bottom: none;
+}
+
+.cta-section {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: #4caf50;
+  color: white;
+}
+
+.cta-section h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.cta-section p {
+  margin-bottom: 2rem;
+  font-size: 1.2rem;
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background-color: white;
+  color: #4caf50;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.cta-button:hover {
+  background-color: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .services-hero {
+    padding: 2rem 1rem;
+  }
+
+  .services-hero h1 {
+    font-size: 2rem;
+  }
+
+  .cta-section {
+    padding: 2rem 1rem;
+  }
+}
