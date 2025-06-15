@@ -128,11 +128,52 @@
     }
     .dashboard-card ul {
       padding-left: 1.2rem;
+      margin: 0;
     }
     .dashboard-card .empty {
       color: #888;
       font-size: 1rem;
       margin-top: 1rem;
+    }
+    .service-history-item, .payment-history-item {
+      border-bottom: 1px solid #eee;
+      padding: 0.75rem 0;
+    }
+    .service-history-item:last-child, .payment-history-item:last-child {
+      border-bottom: none;
+    }
+    .service-history-item .date, .payment-history-item .date {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .service-history-item .status, .payment-history-item .status {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .status.completed { background: #e8f5e9; color: #2e7d32; }
+    .status.pending { background: #fff3e0; color: #f57c00; }
+    .status.cancelled { background: #ffebee; color: #c62828; }
+    .payment-history-item .amount {
+      font-weight: 600;
+      color: #2e7d32;
+    }
+    .payment-history-item .invoice-number {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .view-all {
+      color: #2e7d32;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-block;
+      margin-top: 0.5rem;
+    }
+    .view-all:hover {
+      text-decoration: underline;
     }
     .dashboard-card form input,
     .dashboard-card form select,
@@ -180,6 +221,164 @@
       .dashboard-sections {
         grid-template-columns: 1fr;
       }
+    }
+    .invoice-item {
+      border-bottom: 1px solid #eee;
+      padding: 1rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .invoice-item:last-child {
+      border-bottom: none;
+    }
+    .invoice-info {
+      flex: 1;
+      min-width: 200px;
+    }
+    .invoice-info strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    .invoice-number {
+      color: #666;
+      font-size: 0.9rem;
+      margin-right: 1rem;
+    }
+    .invoice-details {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .amount {
+      font-weight: 600;
+      color: #2e7d32;
+      font-size: 1.1rem;
+    }
+    .paypal-button-container {
+      min-width: 200px;
+    }
+    @media (max-width: 600px) {
+      .invoice-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .invoice-details {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    /* Profile Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+    .modal-close:hover {
+      color: #333;
+    }
+    .modal h2 {
+      margin: 0 0 1.5rem 0;
+      color: #2e7d32;
+    }
+    .modal form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .modal form label {
+      font-weight: 500;
+      color: #333;
+    }
+    .modal form input {
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    .modal form input:focus {
+      border-color: #2e7d32;
+      outline: none;
+    }
+    .modal form button {
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 1rem;
+    }
+    .modal form button:hover {
+      background: #388e3c;
+    }
+    .modal form .error {
+      color: #c62828;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    .modal form .success {
+      color: #2e7d32;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    .modal form .section-divider {
+      border-top: 1px solid #eee;
+      margin: 1.5rem 0;
+      padding-top: 1.5rem;
+    }
+    .modal form .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 1rem;
+    }
+    .modal form .verification-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .modal form .verification-status i {
+      font-size: 1.2rem;
+    }
+    .modal form .verification-status.verified {
+      color: #2e7d32;
+    }
+    .modal form .verification-status.unverified {
+      color: #f57c00;
     }
   </style>
 </head>
@@ -251,18 +450,60 @@
             <li class="empty">No upcoming appointments.</li>
           </ul>
         </div>
-        <div class="dashboard-card" id="invoices">
-          <h3>Invoices & Payments</h3>
+        <div class="dashboard-card" id="serviceHistory">
+          <h3>Service History</h3>
           <ul>
-            <li class="empty">No invoices found.</li>
+            <li class="service-history-item">
+              <div class="service-info">
+                <strong>Lawn Mowing</strong>
+                <span class="date">March 15, 2024</span>
+              </div>
+              <span class="status completed">Completed</span>
+            </li>
+            <li class="service-history-item">
+              <div class="service-info">
+                <strong>Hedge Trimming</strong>
+                <span class="date">March 1, 2024</span>
+              </div>
+              <span class="status completed">Completed</span>
+            </li>
           </ul>
+          <a href="#" class="view-all">View All Services</a>
+        </div>
+        <div class="dashboard-card" id="paymentHistory">
+          <h3>Payment History</h3>
+          <ul>
+            <li class="payment-history-item">
+              <div class="payment-info">
+                <strong>Lawn Mowing Service</strong>
+                <span class="invoice-number">INV-2024-001</span>
+                <span class="date">March 15, 2024</span>
+              </div>
+              <div class="payment-details">
+                <span class="amount">$75.00</span>
+                <span class="status completed">Paid</span>
+              </div>
+            </li>
+            <li class="payment-history-item">
+              <div class="payment-info">
+                <strong>Hedge Trimming Service</strong>
+                <span class="invoice-number">INV-2024-002</span>
+                <span class="date">March 1, 2024</span>
+              </div>
+              <div class="payment-details">
+                <span class="amount">$120.00</span>
+                <span class="status completed">Paid</span>
+              </div>
+            </li>
+          </ul>
+          <a href="#" class="view-all">View All Payments</a>
         </div>
         <div class="dashboard-card" id="profile">
           <h3>Profile</h3>
           <ul>
             <li>Name: <span id="profileName">Customer</span></li>
             <li>Email: <span id="profileEmail">customer@email.com</span></li>
-            <li><a href="#" style="color:#2e7d32;">Edit Profile</a></li>
+            <li><a href="#" id="editProfileBtn" style="color:#2e7d32;">Edit Profile</a></li>
           </ul>
         </div>
         <div class="dashboard-card" id="support">
@@ -272,6 +513,12 @@
             <textarea id="supportMessage" required placeholder="How can we help you?"></textarea>
             <button type="submit">Send Message</button>
           </form>
+        </div>
+        <div class="dashboard-card" id="unpaidInvoices">
+          <h3>Unpaid Invoices</h3>
+          <ul>
+            <li class="empty">Loading invoices...</li>
+          </ul>
         </div>
       </section>
     </main>
@@ -342,169 +589,504 @@
     </div>
   </footer>
 
-  <!-- Firebase Auth, Firestore, and All Dashboard Features -->
-  <script type="module">
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { app } from './assets/js/firebase-config.js';
+  <!-- Profile Edit Modal -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content">
+      <button class="modal-close" id="closeModal">&times;</button>
+      <h2>Edit Profile</h2>
+      <form id="profileForm">
+        <div class="section-title">Basic Information</div>
+        <div>
+          <label for="editName">Full Name</label>
+          <input type="text" id="editName" required>
+        </div>
+        <div>
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" required>
+          <div class="verification-status" id="emailVerificationStatus">
+            <i class="fas fa-envelope"></i>
+            <span>Email not verified</span>
+          </div>
+          <button type="button" id="sendVerificationEmail" class="secondary-button">Send Verification Email</button>
+        </div>
+        <div>
+          <label for="editPhone">Phone Number</label>
+          <input type="tel" id="editPhone" pattern="[0-9]{10}" placeholder="1234567890">
+          <div class="error" id="phoneError" style="display: none;">Please enter a valid 10-digit phone number</div>
+        </div>
+        <div>
+          <label for="editAddress">Address</label>
+          <input type="text" id="editAddress">
+        </div>
 
+        <div class="section-divider">
+          <div class="section-title">Change Password</div>
+          <div>
+            <label for="currentPassword">Current Password</label>
+            <input type="password" id="currentPassword">
+          </div>
+          <div>
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" minlength="8">
+            <div class="error" id="passwordError" style="display: none;">Password must be at least 8 characters long</div>
+          </div>
+          <div>
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword">
+            <div class="error" id="confirmPasswordError" style="display: none;">Passwords do not match</div>
+          </div>
+          <button type="button" id="changePasswordBtn" class="secondary-button">Change Password</button>
+        </div>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- PayPal Smart Payment Buttons -->
+  <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getAuth, 
+      onAuthStateChanged, 
+      signOut, 
+      updateProfile, 
+      updateEmail,
+      updatePassword,
+      sendEmailVerification,
+      EmailAuthProvider,
+      reauthenticateWithCredential
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
+      authDomain: "holliday-lawn-garden.firebaseapp.com",
+      projectId: "holliday-lawn-garden",
+      storageBucket: "holliday-lawn-garden.appspot.com",
+      messagingSenderId: "123456789012",
+      appId: "1:123456789012:web:1234567890123456789012"
+    };
+
+    const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Personalized greeting and profile
+    // Check authentication state
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        document.getElementById('customerName').textContent = user.displayName || user.email || "Customer";
-        document.getElementById('profileName').textContent = user.displayName || "Customer";
-        document.getElementById('profileEmail').textContent = user.email || "";
-        loadServiceRequests(user);
-        loadUpcomingAppointments(user);
-        loadInvoices(user);
-        loadNotifications(user);
+        document.getElementById('customerName').textContent = user.displayName || 'Customer';
+        document.getElementById('profileName').textContent = user.displayName || 'Customer';
+        document.getElementById('profileEmail').textContent = user.email || 'customer@email.com';
+        loadServiceHistory(user.uid);
+        loadPaymentHistory(user.uid);
+        loadUnpaidInvoices(user.uid);
       } else {
-        window.location.href = "login.html";
+        window.location.href = 'login.html';
       }
     });
 
-    // Logout button
-    document.querySelector('.logout-btn').addEventListener('click', () => {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    });
+    // Load service history
+    async function loadServiceHistory(userId) {
+      const serviceHistoryRef = collection(db, 'serviceHistory');
+      const q = query(serviceHistoryRef, where('userId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      
+      const serviceHistoryList = document.querySelector('#serviceHistory ul');
+      serviceHistoryList.innerHTML = '';
+      
+      if (querySnapshot.empty) {
+        serviceHistoryList.innerHTML = '<li class="empty">No service history available.</li>';
+        return;
+      }
 
-    // Service Requests
-    function loadServiceRequests(user) {
-      const list = document.querySelector('#serviceRequests ul');
-      list.innerHTML = '<li class="empty">Loading...</li>';
-      const q = query(
-        collection(db, "service_requests"),
-        where("customerEmail", "==", user.email)
-      );
-      getDocs(q).then(snapshot => {
-        list.innerHTML = '';
-        if (snapshot.empty) {
-          list.innerHTML = '<li class="empty">No service requests yet.</li>';
-          return;
-        }
-        snapshot.forEach(doc => {
-          const r = doc.data();
-          list.innerHTML += `<li>
-            <strong>${r.serviceType}</strong> on ${r.preferredDate || "N/A"}
-            <br>Status: ${r.status || "Pending"}
-            <br>Notes: ${r.notes || "-"}
-          </li>`;
-        });
+      querySnapshot.forEach((doc) => {
+        const service = doc.data();
+        const li = document.createElement('li');
+        li.className = 'service-history-item';
+        li.innerHTML = `
+          <div class="service-info">
+            <strong>${service.serviceType}</strong>
+            <span class="date">${new Date(service.date.toDate()).toLocaleDateString()}</span>
+          </div>
+          <span class="status ${service.status.toLowerCase()}">${service.status}</span>
+        `;
+        serviceHistoryList.appendChild(li);
       });
     }
+
+    // Load payment history
+    async function loadPaymentHistory(userId) {
+      const paymentHistoryRef = collection(db, 'payments');
+      const q = query(paymentHistoryRef, where('userId', '==', userId));
+      const querySnapshot = await getDocs(q);
+      
+      const paymentHistoryList = document.querySelector('#paymentHistory ul');
+      paymentHistoryList.innerHTML = '';
+      
+      if (querySnapshot.empty) {
+        paymentHistoryList.innerHTML = '<li class="empty">No payment history available.</li>';
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const payment = doc.data();
+        const li = document.createElement('li');
+        li.className = 'payment-history-item';
+        li.innerHTML = `
+          <div class="payment-info">
+            <strong>${payment.serviceType}</strong>
+            <span class="invoice-number">${payment.invoiceNumber}</span>
+            <span class="date">${new Date(payment.date.toDate()).toLocaleDateString()}</span>
+          </div>
+          <div class="payment-details">
+            <span class="amount">$${payment.amount.toFixed(2)}</span>
+            <span class="status ${payment.status.toLowerCase()}">${payment.status}</span>
+          </div>
+        `;
+        paymentHistoryList.appendChild(li);
+      });
+    }
+
+    // Load unpaid invoices
+    async function loadUnpaidInvoices(userId) {
+      const invoicesRef = collection(db, 'invoices');
+      const q = query(invoicesRef, 
+        where('userId', '==', userId),
+        where('status', '==', 'unpaid')
+      );
+      const querySnapshot = await getDocs(q);
+      
+      const unpaidInvoicesList = document.querySelector('#unpaidInvoices ul');
+      unpaidInvoicesList.innerHTML = '';
+      
+      if (querySnapshot.empty) {
+        unpaidInvoicesList.innerHTML = '<li class="empty">No unpaid invoices.</li>';
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const invoice = doc.data();
+        const li = document.createElement('li');
+        li.className = 'invoice-item';
+        li.innerHTML = `
+          <div class="invoice-info">
+            <strong>${invoice.serviceType}</strong>
+            <span class="invoice-number">${invoice.invoiceNumber}</span>
+            <span class="date">Due: ${new Date(invoice.dueDate.toDate()).toLocaleDateString()}</span>
+          </div>
+          <div class="invoice-details">
+            <span class="amount">$${invoice.amount.toFixed(2)}</span>
+            <div id="paypal-button-container-${doc.id}" class="paypal-button-container"></div>
+          </div>
+        `;
+        unpaidInvoicesList.appendChild(li);
+
+        // Initialize PayPal button for this invoice
+        initializePayPalButton(doc.id, invoice);
+      });
+    }
+
+    // Initialize PayPal button for an invoice
+    function initializePayPalButton(invoiceId, invoice) {
+      paypal.Buttons({
+        style: {
+          layout: 'vertical',
+          color: 'blue',
+          shape: 'rect',
+          label: 'pay'
+        },
+        createOrder: function(data, actions) {
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: invoice.amount.toString(),
+                currency_code: 'USD'
+              },
+              description: `Invoice ${invoice.invoiceNumber} - ${invoice.serviceType}`,
+              custom_id: invoiceId
+            }]
+          });
+        },
+        onApprove: async function(data, actions) {
+          try {
+            const order = await actions.order.capture();
+            
+            // Update invoice status in Firestore
+            const invoiceRef = doc(db, 'invoices', invoiceId);
+            await updateDoc(invoiceRef, {
+              status: 'paid',
+              paymentDate: serverTimestamp(),
+              paymentMethod: 'PayPal',
+              transactionId: order.id
+            });
+
+            // Add to payment history
+            await addDoc(collection(db, 'payments'), {
+              userId: auth.currentUser.uid,
+              invoiceId: invoiceId,
+              amount: invoice.amount,
+              paymentMethod: 'PayPal',
+              transactionId: order.id,
+              status: 'completed',
+              date: serverTimestamp()
+            });
+
+            // Show success message
+            alert('Payment successful! Thank you for your payment.');
+            
+            // Reload unpaid invoices
+            loadUnpaidInvoices(auth.currentUser.uid);
+          } catch (error) {
+            console.error('Error processing payment:', error);
+            alert('Error processing payment. Please try again.');
+          }
+        },
+        onError: function(err) {
+          console.error('PayPal error:', err);
+          alert('Error processing payment. Please try again.');
+        }
+      }).render(`#paypal-button-container-${invoiceId}`);
+    }
+
+    // Handle service request form submission
     document.getElementById('requestForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
       if (!user) return;
-      const type = document.getElementById('serviceType').value;
-      const date = document.getElementById('preferredDate').value;
+
+      const serviceType = document.getElementById('serviceType').value;
+      const preferredDate = document.getElementById('preferredDate').value;
       const notes = document.getElementById('requestNotes').value;
-      await addDoc(collection(db, "service_requests"), {
-        customerEmail: user.email,
-        serviceType: type,
-        preferredDate: date,
-        notes: notes,
-        status: "Pending",
-        submittedAt: serverTimestamp()
-      });
-      e.target.reset();
-      loadServiceRequests(user);
+
+      try {
+        await addDoc(collection(db, 'serviceRequests'), {
+          userId: user.uid,
+          serviceType,
+          preferredDate,
+          notes,
+          status: 'Pending',
+          createdAt: serverTimestamp()
+        });
+
+        alert('Service request submitted successfully!');
+        e.target.reset();
+      } catch (error) {
+        console.error('Error submitting service request:', error);
+        alert('Error submitting service request. Please try again.');
+      }
     });
 
-    // Upcoming Appointments
-    function loadUpcomingAppointments(user) {
-      const list = document.querySelector('#upcomingAppointments ul');
-      list.innerHTML = '<li class="empty">Loading...</li>';
-      const q = query(
-        collection(db, "appointments"),
-        where("customerEmail", "==", user.email),
-        orderBy("date", "asc"),
-        limit(5)
-      );
-      getDocs(q).then(snapshot => {
-        list.innerHTML = '';
-        if (snapshot.empty) {
-          list.innerHTML = '<li class="empty">No upcoming appointments.</li>';
-          return;
-        }
-        snapshot.forEach(doc => {
-          const a = doc.data();
-          list.innerHTML += `<li>
-            <strong>${a.serviceType}</strong> on ${a.date ? new Date(a.date).toLocaleDateString() : "N/A"}
-            <br>Status: ${a.status || "Scheduled"}
-          </li>`;
-        });
-      });
-    }
-
-    // Invoices & Payments
-    function loadInvoices(user) {
-      const list = document.querySelector('#invoices ul');
-      list.innerHTML = '<li class="empty">Loading...</li>';
-      const q = query(
-        collection(db, "invoices"),
-        where("customerEmail", "==", user.email),
-        orderBy("dueDate", "desc"),
-        limit(5)
-      );
-      getDocs(q).then(snapshot => {
-        list.innerHTML = '';
-        if (snapshot.empty) {
-          list.innerHTML = '<li class="empty">No invoices found.</li>';
-          return;
-        }
-        snapshot.forEach(doc => {
-          const inv = doc.data();
-          list.innerHTML += `<li>
-            <strong>Amount:</strong> $${inv.amount} - <strong>Status:</strong> ${inv.status || "Unpaid"}
-            <br>Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "N/A"}
-          </li>`;
-        });
-      });
-    }
-
-    // Notifications
-    function loadNotifications(user) {
-      const badge = document.getElementById('notificationCount');
-      const q = query(
-        collection(db, "notifications"),
-        where("customerEmail", "==", user.email),
-        orderBy("createdAt", "desc"),
-        limit(10)
-      );
-      getDocs(q).then(snapshot => {
-        let count = 0;
-        snapshot.forEach(doc => {
-          const n = doc.data();
-          if (!n.read) count++;
-        });
-        if (count > 0) {
-          badge.textContent = count;
-          badge.style.display = 'inline-block';
-        } else {
-          badge.style.display = 'none';
-        }
-      });
-    }
-
-    // Support/Contact Form
+    // Handle support form submission
     document.getElementById('supportForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
+      if (!user) return;
+
       const message = document.getElementById('supportMessage').value;
-      if (!user || !message) return;
-      await addDoc(collection(db, "support_messages"), {
-        customerEmail: user.email,
-        message: message,
-        createdAt: serverTimestamp()
+
+      try {
+        await addDoc(collection(db, 'supportMessages'), {
+          userId: user.uid,
+          message,
+          status: 'New',
+          createdAt: serverTimestamp()
+        });
+
+        alert('Message sent successfully!');
+        e.target.reset();
+      } catch (error) {
+        console.error('Error sending message:', error);
+        alert('Error sending message. Please try again.');
+      }
+    });
+
+    // Handle logout
+    document.querySelector('.logout-btn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    });
+
+    // Handle profile editing
+    const profileModal = document.getElementById('profileModal');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+    const closeModal = document.getElementById('closeModal');
+    const profileForm = document.getElementById('profileForm');
+    const phoneError = document.getElementById('phoneError');
+    const passwordError = document.getElementById('passwordError');
+    const confirmPasswordError = document.getElementById('confirmPasswordError');
+    const emailVerificationStatus = document.getElementById('emailVerificationStatus');
+    const sendVerificationEmailBtn = document.getElementById('sendVerificationEmail');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+
+    // Update email verification status
+    function updateEmailVerificationUI(user) {
+      if (user.emailVerified) {
+        emailVerificationStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Email verified</span>';
+        emailVerificationStatus.className = 'verification-status verified';
+        sendVerificationEmailBtn.style.display = 'none';
+      } else {
+        emailVerificationStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Email not verified</span>';
+        emailVerificationStatus.className = 'verification-status unverified';
+        sendVerificationEmailBtn.style.display = 'block';
+      }
+    }
+
+    // Send verification email
+    sendVerificationEmailBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        await sendEmailVerification(user);
+        alert('Verification email sent! Please check your inbox.');
+      } catch (error) {
+        console.error('Error sending verification email:', error);
+        alert('Error sending verification email. Please try again.');
+      }
+    });
+
+    // Handle password change
+    changePasswordBtn.addEventListener('click', async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      // Validate passwords
+      if (newPassword.length < 8) {
+        passwordError.style.display = 'block';
+        return;
+      } else {
+        passwordError.style.display = 'none';
+      }
+
+      if (newPassword !== confirmPassword) {
+        confirmPasswordError.style.display = 'block';
+        return;
+      } else {
+        confirmPasswordError.style.display = 'none';
+      }
+
+      try {
+        // Reauthenticate user
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+
+        // Update password
+        await updatePassword(user, newPassword);
+
+        // Clear password fields
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+
+        alert('Password updated successfully!');
+      } catch (error) {
+        console.error('Error updating password:', error);
+        if (error.code === 'auth/wrong-password') {
+          alert('Current password is incorrect.');
+        } else {
+          alert('Error updating password. Please try again.');
+        }
+      }
+    });
+
+    editProfileBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      // Load current profile data
+      document.getElementById('editName').value = user.displayName || '';
+      document.getElementById('editEmail').value = user.email || '';
+      
+      // Update email verification status
+      updateEmailVerificationUI(user);
+      
+      // Load additional profile data from Firestore
+      const userRef = doc(db, 'users', user.uid);
+      getDoc(userRef).then((doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          document.getElementById('editPhone').value = data.phone || '';
+          document.getElementById('editAddress').value = data.address || '';
+        }
       });
-      e.target.reset();
-      alert('Your message has been sent!');
+
+      profileModal.classList.add('active');
+    });
+
+    // Close modal when clicking outside
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) {
+        profileModal.classList.remove('active');
+      }
+    });
+
+    // Handle phone number validation
+    document.getElementById('editPhone').addEventListener('input', (e) => {
+      const phone = e.target.value.replace(/\D/g, '');
+      if (phone.length !== 10) {
+        phoneError.style.display = 'block';
+      } else {
+        phoneError.style.display = 'none';
+      }
+    });
+
+    // Handle profile form submission
+    profileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const name = document.getElementById('editName').value;
+      const email = document.getElementById('editEmail').value;
+      const phone = document.getElementById('editPhone').value;
+      const address = document.getElementById('editAddress').value;
+
+      try {
+        // Update user profile in Firebase Auth
+        await updateProfile(user, {
+          displayName: name
+        });
+
+        // Update email if changed
+        if (email !== user.email) {
+          await updateEmail(user, email);
+          // Reset email verification status
+          updateEmailVerificationUI(user);
+        }
+
+        // Update additional profile data in Firestore
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          displayName: name,
+          email: email,
+          phone: phone,
+          address: address,
+          updatedAt: serverTimestamp()
+        });
+
+        // Update UI
+        document.getElementById('profileName').textContent = name;
+        document.getElementById('profileEmail').textContent = email;
+        document.getElementById('customerName').textContent = name;
+
+        // Close modal
+        profileModal.classList.remove('active');
+        alert('Profile updated successfully!');
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        alert('Error updating profile. Please try again.');
+      }
     });
   </script>
 </body>
