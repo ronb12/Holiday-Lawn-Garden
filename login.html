@@ -235,53 +235,14 @@
         </div>
       </div>
     </footer>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <!-- Firebase Config -->
+    <!-- Modular Firebase Auth and Firestore (no compat) -->
     <script type="module">
-      import { firebaseConfig } from './assets/js/firebase-config.js';
-      // Initialize Firebase
-      firebase.initializeApp(firebaseConfig);
-    </script>
-    <script>
-      // Wait for Firebase to be initialized
-      function waitForFirebase() {
-        return new Promise((resolve) => {
-          if (window.firebase && firebase.apps.length) {
-            resolve();
-          } else {
-            const checkInterval = setInterval(() => {
-              if (window.firebase && firebase.apps.length) {
-                clearInterval(checkInterval);
-                resolve();
-              }
-            }, 100);
-          }
-        });
-      }
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+      import { app } from './assets/js/firebase-config.js';
 
-      // Set current year in footer
-      document.addEventListener('DOMContentLoaded', () => {
-        const yearElement = document.getElementById('currentYear');
-        if (yearElement) {
-          yearElement.textContent = new Date().getFullYear();
-        }
-      });
-
-      // Register service worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js')
-            .then(registration => {
-              console.log('✅ Service Worker registered:', registration.scope);
-            })
-            .catch(error => {
-              console.error('❌ Service Worker registration failed:', error);
-            });
-        });
-      }
+      const auth = getAuth(app);
+      const db = getFirestore(app);
 
       // Show error message
       function showError(message) {
@@ -304,154 +265,113 @@
         }
       }
 
-      // Initialize all Firebase-dependent functionality
-      waitForFirebase().then(() => {
-        // Handle form submission
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const submitBtn = document.getElementById('submitBtn');
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
-          if (!email || !password || !submitBtn) return;
-          try {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Signing in...';
-            const userCredential = await window.auth.signInWithEmailAndPassword(email, password);
-            const user = userCredential.user;
-            // Check if user exists in Firestore
-            const userDoc = await window.db.collection('users').doc(user.uid).get();
-            if (!userDoc.exists) {
-              // Create user document if it doesn't exist
-              await window.db.collection('users').doc(user.uid).set({
-                email: user.email,
-                displayName: user.displayName || '',
-                photoURL: user.photoURL || '',
-                createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-                isAdmin: false
-              });
-            }
-            showSuccess();
-            setTimeout(() => {
-              window.location.href = 'customer-dashboard.html';
-            }, 1500);
-          } catch (error) {
-            console.error('Login error:', error);
-            let errorMessage = 'An error occurred during login. Please try again.';
-            switch (error.code) {
-              case 'auth/user-not-found':
-                errorMessage = 'No account found with this email.';
-                break;
-              case 'auth/wrong-password':
-                errorMessage = 'Incorrect password. Please try again.';
-                break;
-              case 'auth/invalid-email':
-                errorMessage = 'Please enter a valid email address.';
-                break;
-              case 'auth/user-disabled':
-                errorMessage = 'This account has been disabled. Please contact support.';
-                break;
-            }
-            showError(errorMessage);
-          } finally {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = 'Sign In';
-            }
-          }
-        });
-
-        // Handle Google Sign-in
-        document.getElementById('googleSignIn').addEventListener('click', function() {
-          if (window.firebase && firebase.auth && typeof firebase.auth.GoogleAuthProvider === 'function') {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            // Add scopes if needed
-            provider.addScope('profile');
-            provider.addScope('email');
-            // Set custom parameters
-            provider.setCustomParameters({
-              prompt: 'select_account'
+      // Handle form submission (email/password)
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('submitBtn');
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        if (!email || !password || !submitBtn) return;
+        try {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Signing in...';
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          // Check if user exists in Firestore
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (!userDoc.exists()) {
+            // Create user document if it doesn't exist
+            await setDoc(doc(db, 'users', user.uid), {
+              email: user.email,
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              createdAt: serverTimestamp(),
+              isAdmin: false
             });
-            if (typeof firebase.auth().signInWithPopup === 'function') {
-              firebase.auth().signInWithPopup(provider)
-                .catch(error => {
-                  console.error('Google sign-in error:', error);
-                  showError('Failed to start Google sign-in. Please try again.');
-                });
-            } else {
-              console.error('signInWithPopup is not a function on firebase.auth()');
-              showError('Google sign-in is not available. Please try email/password login.');
-            }
-          } else {
-            console.error('Firebase Auth or GoogleAuthProvider is not initialized.');
-            showError('Authentication service is not available. Please try again later.');
           }
-        });
+          showSuccess();
+          setTimeout(() => {
+            window.location.href = 'customer-dashboard.html';
+          }, 1500);
+        } catch (error) {
+          console.error('Login error:', error);
+          let errorMessage = 'An error occurred during login. Please try again.';
+          switch (error.code) {
+            case 'auth/user-not-found':
+              errorMessage = 'No account found with this email.';
+              break;
+            case 'auth/wrong-password':
+              errorMessage = 'Incorrect password. Please try again.';
+              break;
+            case 'auth/invalid-email':
+              errorMessage = 'Please enter a valid email address.';
+              break;
+            case 'auth/user-disabled':
+              errorMessage = 'This account has been disabled. Please contact support.';
+              break;
+          }
+          showError(errorMessage);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In';
+          }
+        }
+      });
 
-        // Handle redirect result
-        firebase.auth().getRedirectResult()
-          .then((result) => {
-            if (result.user) {
-              // User successfully signed in
-              console.log('Google sign-in successful:', result.user);
-              // Check if user exists in Firestore
-              window.db.collection('users').doc(result.user.uid).get()
-                .then((doc) => {
-                  if (!doc.exists) {
-                    // Create user document if it doesn't exist
-                    return window.db.collection('users').doc(result.user.uid).set({
-                      email: result.user.email,
-                      displayName: result.user.displayName || '',
-                      photoURL: result.user.photoURL || '',
-                      createdAt: window.firebase.firestore.FieldValue.serverTimestamp(),
-                      isAdmin: false
-                    });
-                  }
-                })
-                .then(() => {
-                  showSuccess();
-                  setTimeout(() => {
-                    window.location.href = 'customer-dashboard.html';
-                  }, 1500);
-                })
-                .catch((error) => {
-                  console.error('Error creating user document:', error);
-                  showError('Error setting up your account. Please try again.');
-                });
-            }
-          })
-          .catch((error) => {
-            console.error('Redirect sign-in error:', error);
-            let errorMessage = 'An error occurred during sign-in. Please try again.';
-            switch (error.code) {
-              case 'auth/account-exists-with-different-credential':
-                errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
-                break;
-              case 'auth/popup-blocked':
-                errorMessage = 'The sign-in popup was blocked by the browser. Please try again.';
-                break;
-              case 'auth/popup-closed-by-user':
-                errorMessage = 'The sign-in popup was closed before completing the sign-in.';
-                break;
-              case 'auth/cancelled-popup-request':
-                errorMessage = 'The sign-in popup was cancelled. Please try again.';
-                break;
-              case 'auth/network-request-failed':
-                errorMessage = 'Network error. Please check your internet connection and try again.';
-                break;
-              case 'auth/operation-not-allowed':
-                errorMessage = 'Google sign-in is not enabled. Please contact support.';
-                break;
-              case 'auth/unauthorized-domain':
-                errorMessage = 'This domain is not authorized for Google sign-in. Please contact support.';
-                break;
-            }
-            showError(errorMessage);
-          });
-
-        // Auth state observer
-        firebase.auth().onAuthStateChanged(function(user) {
-          // Your auth state logic here
-        });
+      // Handle Google Sign-in (modular)
+      document.getElementById('googleSignIn').addEventListener('click', async function() {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('profile');
+        provider.addScope('email');
+        provider.setCustomParameters({ prompt: 'select_account' });
+        try {
+          const result = await signInWithPopup(auth, provider);
+          const user = result.user;
+          // Check if user exists in Firestore
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (!userDoc.exists()) {
+            // Create user document if it doesn't exist
+            await setDoc(doc(db, 'users', user.uid), {
+              email: user.email,
+              displayName: user.displayName || '',
+              photoURL: user.photoURL || '',
+              createdAt: serverTimestamp(),
+              isAdmin: false
+            });
+          }
+          showSuccess();
+          setTimeout(() => {
+            window.location.href = 'customer-dashboard.html';
+          }, 1500);
+        } catch (error) {
+          console.error('Google sign-in error:', error);
+          let errorMessage = 'An error occurred during Google sign-in. Please try again.';
+          switch (error.code) {
+            case 'auth/account-exists-with-different-credential':
+              errorMessage = 'An account already exists with the same email address but different sign-in credentials.';
+              break;
+            case 'auth/popup-blocked':
+              errorMessage = 'The sign-in popup was blocked by the browser. Please try again.';
+              break;
+            case 'auth/popup-closed-by-user':
+              errorMessage = 'The sign-in popup was closed before completing the sign-in.';
+              break;
+            case 'auth/cancelled-popup-request':
+              errorMessage = 'The sign-in popup was cancelled. Please try again.';
+              break;
+            case 'auth/network-request-failed':
+              errorMessage = 'Network error. Please check your internet connection and try again.';
+              break;
+            case 'auth/operation-not-allowed':
+              errorMessage = 'Google sign-in is not enabled. Please contact support.';
+              break;
+            case 'auth/unauthorized-domain':
+              errorMessage = 'This domain is not authorized for Google sign-in. Please contact support.';
+              break;
+          }
+          showError(errorMessage);
+        }
       });
     </script>
     <script type="module" src="assets/js/main.min.js" defer></script>
