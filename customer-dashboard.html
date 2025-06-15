@@ -23,13 +23,13 @@
       rel="icon"
       type="image/png"
       sizes="192x192"
-      href="assets/images/favicon/android-chrome-192x192.png"
+      href="assets/images/favicon/icon-192.png"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="512x512"
-      href="assets/images/favicon/android-chrome-512x512.png"
+      href="assets/images/favicon/icon-512.png"
     />
     <link rel="manifest" href="manifest.json" />
     <link
@@ -418,6 +418,128 @@
       .modal form .verification-status.unverified {
         color: #f57c00;
       }
+      /* New styles for enhanced features */
+      .feature-section {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+      .feature-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      .feature-header h2 {
+        margin: 0;
+        color: #2e7d32;
+        font-size: 1.5rem;
+      }
+      .action-button {
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s;
+      }
+      .action-button:hover {
+        background: #1b5e20;
+      }
+      .service-item,
+      .payment-item,
+      .message-item,
+      .document-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+      .service-image {
+        max-width: 200px;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+      }
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem;
+        border-radius: 4px;
+        color: #fff;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+      }
+      .notification.success {
+        background: #2e7d32;
+      }
+      .notification.error {
+        background: #c62828;
+      }
+      .notification.info {
+        background: #1976d2;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+      .modal-content {
+        background: #fff;
+        width: 90%;
+        max-width: 500px;
+        margin: 50px auto;
+        padding: 2rem;
+        border-radius: 8px;
+        position: relative;
+      }
+      .close-modal {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #666;
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+      }
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+      .form-group textarea {
+        min-height: 100px;
+      }
     </style>
   </head>
   <body>
@@ -680,350 +802,123 @@
     </footer>
 
     <!-- PayPal Smart Payment Buttons -->
-    <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD&components=buttons"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=sb"></script>
     <script type="module">
-      import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-      import {
-        getAuth,
-        onAuthStateChanged,
-        signOut,
-        updateProfile,
-        updateEmail,
-        updatePassword,
-        sendEmailVerification,
-        EmailAuthProvider,
-        reauthenticateWithCredential,
-      } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-      import {
-        getFirestore,
-        collection,
-        query,
-        where,
-        getDocs,
-        addDoc,
-        serverTimestamp,
-        doc,
-        updateDoc,
-        getDoc,
-      } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+      import { auth, db } from './assets/js/firebase.js';
+      import { onAuthStateChanged, signOut } from 'firebase/auth';
+      import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 
-      const firebaseConfig = {
-        apiKey: 'AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx',
-        authDomain: 'holliday-lawn-garden.firebaseapp.com',
-        projectId: 'holliday-lawn-garden',
-        storageBucket: 'holliday-lawn-garden.appspot.com',
-        messagingSenderId: '123456789012',
-        appId: '1:123456789012:web:1234567890123456789012',
-      };
+      // Initialize event listeners when DOM is loaded
+      document.addEventListener('DOMContentLoaded', () => {
+        // Check authentication state
+        onAuthStateChanged(auth, user => {
+          if (!user) {
+            window.location.href = '/login.html';
+            return;
+          }
+          initializeDashboard(user);
+        });
 
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
-
-      // Check authentication state
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          document.getElementById('customerName').textContent = user.displayName || 'Customer';
-          document.getElementById('profileName').textContent = user.displayName || 'Customer';
-          document.getElementById('profileEmail').textContent = user.email || 'customer@email.com';
-          loadServiceHistory(user.uid);
-          loadPaymentHistory(user.uid);
-          loadUnpaidInvoices(user.uid);
-        } else {
-          window.location.href = 'login.html';
-        }
+        // Initialize event listeners
+        initializeEventListeners();
       });
 
-      // Load service history
-      async function loadServiceHistory(userId) {
-        const serviceHistoryRef = collection(db, 'serviceHistory');
-        const q = query(serviceHistoryRef, where('userId', '==', userId));
-        const querySnapshot = await getDocs(q);
-
-        const serviceHistoryList = document.querySelector('#serviceHistory ul');
-        serviceHistoryList.innerHTML = '';
-
-        if (querySnapshot.empty) {
-          serviceHistoryList.innerHTML = '<li class="empty">No service history available.</li>';
-          return;
+      function initializeEventListeners() {
+        // Add event listeners for dashboard interactions
+        const logoutButton = document.querySelector('.logout-btn');
+        if (logoutButton) {
+          logoutButton.addEventListener('click', handleLogout);
         }
 
-        querySnapshot.forEach(doc => {
-          const service = doc.data();
-          const li = document.createElement('li');
-          li.className = 'service-history-item';
-          li.innerHTML = `
-          <div class="service-info">
-            <strong>${service.serviceType}</strong>
-            <span class="date">${new Date(service.date.toDate()).toLocaleDateString()}</span>
-          </div>
-          <span class="status ${service.status.toLowerCase()}">${service.status}</span>
-        `;
-          serviceHistoryList.appendChild(li);
-        });
-      }
-
-      // Load payment history
-      async function loadPaymentHistory(userId) {
-        const paymentHistoryRef = collection(db, 'payments');
-        const q = query(paymentHistoryRef, where('userId', '==', userId));
-        const querySnapshot = await getDocs(q);
-
-        const paymentHistoryList = document.querySelector('#paymentHistory ul');
-        paymentHistoryList.innerHTML = '';
-
-        if (querySnapshot.empty) {
-          paymentHistoryList.innerHTML = '<li class="empty">No payment history available.</li>';
-          return;
+        const editProfileLink = document.getElementById('editProfileLink');
+        if (editProfileLink) {
+          editProfileLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = '/profile.html';
+          });
         }
 
-        querySnapshot.forEach(doc => {
-          const payment = doc.data();
-          const li = document.createElement('li');
-          li.className = 'payment-history-item';
-          li.innerHTML = `
-          <div class="payment-info">
-            <strong>${payment.serviceType}</strong>
-            <span class="invoice-number">${payment.invoiceNumber}</span>
-            <span class="date">${new Date(payment.date.toDate()).toLocaleDateString()}</span>
-          </div>
-          <div class="payment-details">
-            <span class="amount">$${payment.amount.toFixed(2)}</span>
-            <span class="status ${payment.status.toLowerCase()}">${payment.status}</span>
-          </div>
-        `;
-          paymentHistoryList.appendChild(li);
-        });
-      }
-
-      // Load unpaid invoices
-      async function loadUnpaidInvoices(userId) {
-        const invoicesRef = collection(db, 'invoices');
-        const q = query(
-          invoicesRef,
-          where('userId', '==', userId),
-          where('status', '==', 'unpaid')
-        );
-        const querySnapshot = await getDocs(q);
-
-        const unpaidInvoicesList = document.querySelector('#unpaidInvoices ul');
-        unpaidInvoicesList.innerHTML = '';
-
-        if (querySnapshot.empty) {
-          unpaidInvoicesList.innerHTML = '<li class="empty">No unpaid invoices.</li>';
-          return;
+        const quickEditProfileBtn = document.getElementById('quickEditProfileBtn');
+        if (quickEditProfileBtn) {
+          quickEditProfileBtn.addEventListener('click', () => {
+            window.location.href = '/profile.html';
+          });
         }
-
-        querySnapshot.forEach(doc => {
-          const invoice = doc.data();
-          const li = document.createElement('li');
-          li.className = 'invoice-item';
-          li.innerHTML = `
-          <div class="invoice-info">
-            <strong>${invoice.serviceType}</strong>
-            <span class="invoice-number">${invoice.invoiceNumber}</span>
-            <span class="date">Due: ${new Date(invoice.dueDate.toDate()).toLocaleDateString()}</span>
-          </div>
-          <div class="invoice-details">
-            <span class="amount">$${invoice.amount.toFixed(2)}</span>
-            <div id="paypal-button-container-${doc.id}" class="paypal-button-container"></div>
-          </div>
-        `;
-          unpaidInvoicesList.appendChild(li);
-
-          // Initialize PayPal button for this invoice
-          initializePayPalButton(doc.id, invoice);
-        });
       }
 
-      // Initialize PayPal button for an invoice
-      function initializePayPalButton(invoiceId, invoice) {
-        paypal
-          .Buttons({
-            style: {
-              layout: 'vertical',
-              color: 'blue',
-              shape: 'rect',
-              label: 'pay',
-            },
-            createOrder: function (data, actions) {
-              return actions.order.create({
-                purchase_units: [
-                  {
-                    amount: {
-                      value: invoice.amount.toString(),
-                      currency_code: 'USD',
-                    },
-                    description: `Invoice ${invoice.invoiceNumber} - ${invoice.serviceType}`,
-                    custom_id: invoiceId,
-                  },
-                ],
-              });
-            },
-            onApprove: async function (data, actions) {
-              try {
-                const order = await actions.order.capture();
+      async function initializeDashboard(user) {
+        // Update UI with user info
+        const profileName = document.getElementById('profileName');
+        const profileEmail = document.getElementById('profileEmail');
+        if (profileName) profileName.textContent = user.displayName || 'Customer';
+        if (profileEmail) profileEmail.textContent = user.email || '';
 
-                // Update invoice status in Firestore
-                const invoiceRef = doc(db, 'invoices', invoiceId);
-                await updateDoc(invoiceRef, {
-                  status: 'paid',
-                  paymentDate: serverTimestamp(),
-                  paymentMethod: 'PayPal',
-                  transactionId: order.id,
-                });
+        // Load user's data from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            updateDashboardUI(userData);
+          }
+        } catch (error) {
+          console.error('Error loading user data:', error);
+        }
+      }
 
-                // Add to payment history
-                await addDoc(collection(db, 'payments'), {
-                  userId: auth.currentUser.uid,
-                  invoiceId: invoiceId,
-                  amount: invoice.amount,
-                  paymentMethod: 'PayPal',
-                  transactionId: order.id,
-                  status: 'completed',
-                  date: serverTimestamp(),
-                });
-
-                // Show success message
-                alert('Payment successful! Thank you for your payment.');
-
-                // Reload unpaid invoices
-                loadUnpaidInvoices(auth.currentUser.uid);
-              } catch (error) {
-                console.error('Error processing payment:', error);
-                alert('Error processing payment. Please try again.');
-              }
-            },
-            onError: function (err) {
-              console.error('PayPal error:', err);
-              alert('Error processing payment. Please try again.');
-            },
+      function handleLogout() {
+        signOut(auth)
+          .then(() => {
+            sessionStorage.removeItem('user');
+            window.location.href = '/login.html';
           })
-          .render(`#paypal-button-container-${invoiceId}`);
+          .catch(error => {
+            console.error('Error signing out:', error);
+          });
       }
 
-      // Handle service request form submission
-      document.getElementById('requestForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) return;
+      // PayPal Button Render
+      function renderPayPalButton(amount) {
+        if (!window.paypal) return;
+        paypal.Buttons({
+          createOrder: function(data, actions) {
+            return actions.order.create({
+              purchase_units: [{ amount: { value: amount } }]
+            });
+          },
+          onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+              // Call backend or Firestore update here
+              window.paymentManager.handlePayPalSuccess(details);
+              showNotification('PayPal payment successful!', 'success');
+            });
+          }
+        }).render('#paypal-button-container');
+      }
 
-        const serviceType = document.getElementById('serviceType').value;
-        const preferredDate = document.getElementById('preferredDate').value;
-        const notes = document.getElementById('requestNotes').value;
+      // Show PayPal button when payment modal opens
+      function showPaymentModal() {
+        document.getElementById('paymentModal').style.display = 'block';
+        setTimeout(() => {
+          const amount = document.getElementById('paymentAmount').value || '10.00';
+          renderPayPalButton(amount);
+        }, 500);
+      }
 
-        try {
-          await addDoc(collection(db, 'serviceRequests'), {
-            userId: user.uid,
-            serviceType,
-            preferredDate,
-            notes,
-            status: 'Pending',
-            createdAt: serverTimestamp(),
-          });
+      // Emergency Request
+      function handleEmergencyRequest() {
+        window.communicationSystem.sendEmergencyRequest();
+        showNotification('Emergency request sent!', 'info');
+      }
 
-          alert('Service request submitted successfully!');
-          e.target.reset();
-        } catch (error) {
-          console.error('Error submitting service request:', error);
-          alert('Error submitting service request. Please try again.');
-        }
-      });
-
-      // Handle support form submission
-      document.getElementById('supportForm').addEventListener('submit', async e => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) return;
-
-        const message = document.getElementById('supportMessage').value;
-
-        try {
-          await addDoc(collection(db, 'supportMessages'), {
-            userId: user.uid,
-            message,
-            status: 'New',
-            createdAt: serverTimestamp(),
-          });
-
-          alert('Message sent successfully!');
-          e.target.reset();
-        } catch (error) {
-          console.error('Error sending message:', error);
-          alert('Error sending message. Please try again.');
-        }
-      });
-
-      // Handle logout
-      document.querySelector('.logout-btn').addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-          window.location.href = 'login.html';
-        } catch (error) {
-          console.error('Error signing out:', error);
-        }
-      });
-
-      // Quick Edit Profile
-      const quickEditProfileBtn = document.getElementById('quickEditProfileBtn');
-      const quickEditProfileModal = document.getElementById('quickEditProfileModal');
-      const closeQuickEditModal = document.getElementById('closeQuickEditModal');
-      const quickEditProfileForm = document.getElementById('quickEditProfileForm');
-      const quickEditPhoneError = document.getElementById('quickEditPhoneError');
-
-      quickEditProfileBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) return;
-        document.getElementById('quickEditName').value = user.displayName || '';
-        // Load from Firestore
-        const userRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(userRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          document.getElementById('quickEditPhone').value = data.phone || '';
-          document.getElementById('quickEditAddress').value = data.address || '';
-        }
-        quickEditProfileModal.classList.add('active');
-      });
-      closeQuickEditModal.addEventListener('click', () => {
-        quickEditProfileModal.classList.remove('active');
-      });
-      quickEditProfileModal.addEventListener('click', e => {
-        if (e.target === quickEditProfileModal) quickEditProfileModal.classList.remove('active');
-      });
-      document.getElementById('quickEditPhone').addEventListener('input', e => {
-        const phone = e.target.value.replace(/\D/g, '');
-        if (phone.length !== 10) {
-          quickEditPhoneError.style.display = 'block';
-        } else {
-          quickEditPhoneError.style.display = 'none';
-        }
-      });
-      quickEditProfileForm.addEventListener('submit', async e => {
-        e.preventDefault();
-        const user = auth.currentUser;
-        if (!user) return;
-        const name = document.getElementById('quickEditName').value;
-        const phone = document.getElementById('quickEditPhone').value;
-        const address = document.getElementById('quickEditAddress').value;
-        try {
-          await updateProfile(user, { displayName: name });
-          const userRef = doc(db, 'users', user.uid);
-          await updateDoc(userRef, {
-            displayName: name,
-            phone: phone,
-            address: address,
-            updatedAt: serverTimestamp(),
-          });
-          document.getElementById('profileName').textContent = name;
-          document.getElementById('profilePhone').textContent = phone;
-          document.getElementById('profileAddress').textContent = address;
-          quickEditProfileModal.classList.remove('active');
-          alert('Profile updated successfully!');
-        } catch (error) {
-          alert('Error updating profile. Please try again.');
-        }
-      });
+      // Feedback Submit
+      async function handleFeedbackSubmit(event) {
+        event.preventDefault();
+        const feedback = document.getElementById('feedbackText').value;
+        const rating = document.getElementById('serviceRating').value;
+        await window.communicationSystem.submitFeedback({ feedback, rating });
+        showNotification('Feedback submitted!', 'success');
+        document.getElementById('feedbackForm').reset();
+      }
     </script>
   </body>
 </html>

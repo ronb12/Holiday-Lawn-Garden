@@ -95,8 +95,16 @@ function updateDashboardUI(userData) {
       <p><strong>Name:</strong> ${userData.displayName || 'Not set'}</p>
       <p><strong>Email:</strong> ${userData.email}</p>
       <p><strong>Phone:</strong> ${userData.phone || 'Not set'}</p>
-      <button onclick="editProfile()" class="btn btn-primary">Edit Profile</button>
+      <button id="edit-profile-btn" class="btn btn-primary">Edit Profile</button>
     `;
+    
+    // Add event listener to the edit profile button
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    if (editProfileBtn) {
+      editProfileBtn.addEventListener('click', () => {
+        window.location.href = '/profile.html';
+      });
+    }
   }
 
   // Update service history
@@ -156,6 +164,22 @@ function initializeEventListeners() {
       window.location.href = '/service-request.html';
     });
   }
+
+  // Add event listeners for profile editing
+  const editProfileLink = document.getElementById('editProfileLink');
+  if (editProfileLink) {
+    editProfileLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.location.href = '/profile.html';
+    });
+  }
+
+  const quickEditProfileBtn = document.getElementById('quickEditProfileBtn');
+  if (quickEditProfileBtn) {
+    quickEditProfileBtn.addEventListener('click', () => {
+      window.location.href = '/profile.html';
+    });
+  }
 }
 
 function handleLogout() {
@@ -169,14 +193,6 @@ function handleLogout() {
       handleFirebaseError(error);
     });
 }
-
-function editProfile() {
-  window.location.href = '/profile.html';
-}
-
-// Export functions for use in other files
-window.handleLogout = handleLogout;
-window.editProfile = editProfile;
 
 // Initialize Firebase services
 const initializeServices = () => {
