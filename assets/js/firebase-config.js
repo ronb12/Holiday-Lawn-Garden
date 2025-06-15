@@ -5,7 +5,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth
 import { getFirestore, collection, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // Your web app's Firebase configuration
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
   authDomain: "holiday-lawn-and-garden.firebaseapp.com",
   projectId: "holiday-lawn-and-garden",
@@ -16,8 +16,8 @@ export const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+export const app = initializeApp(firebaseConfig);
+export const analytics = getAnalytics(app);
 
 // Initialize services
 const auth = getAuth(app);
