@@ -380,3 +380,38 @@ window.paymentManager = paymentManager;
 window.communicationSystem = communicationSystem;
 window.documentManager = documentManager;
 window.showNotification = showNotification;
+
+// Unpaid Invoices Loader
+export async function loadUnpaidInvoices(userId) {
+  const q = query(
+    collection(db, "invoices"),
+    where("userId", "==", userId),
+    where("status", "==", "unpaid")
+  );
+  const snap = await getDocs(q);
+  const container = document.querySelector("#unpaidInvoices ul");
+  if (!container) return;
+  if (snap.empty) {
+    container.innerHTML = '<li class="empty">No unpaid invoices</li>';
+    return;
+  }
+  container.innerHTML = "";
+  snap.forEach(doc => {
+    const invoice = doc.data();
+    container.innerHTML += `
+      <li>
+        <span class="invoice-number">${invoice.invoiceNumber}</span>
+        <span class="amount">$${invoice.amount?.toFixed(2) ?? '0.00'}</span>
+        <span class="status">${invoice.status}</span>
+      </li>
+    `;
+  });
+}
+
+// After user login, call loadUnpaidInvoices(currentUser.uid)
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    // ... existing code ...
+    loadUnpaidInvoices(user.uid);
+  }
+});
