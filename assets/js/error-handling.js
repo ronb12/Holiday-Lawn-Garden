@@ -13,11 +13,11 @@ class ErrorHandler {
   }
 
   setupGlobalErrorHandling() {
-    window.addEventListener('error', (event) => {
+    window.addEventListener('error', event => {
       this.handleError(event.error || new Error(event.message));
     });
 
-    window.addEventListener('unhandledrejection', (event) => {
+    window.addEventListener('unhandledrejection', event => {
       this.handleError(event.reason);
     });
   }
@@ -68,7 +68,7 @@ class ErrorHandler {
       success: 'fas fa-check-circle',
       error: 'fas fa-exclamation-circle',
       warning: 'fas fa-exclamation-triangle',
-      info: 'fas fa-info-circle'
+      info: 'fas fa-info-circle',
     };
     return icons[type] || icons.info;
   }
@@ -198,4 +198,4 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Initialize error handler
-const errorHandler = new ErrorHandler(); 
+const errorHandler = new ErrorHandler();

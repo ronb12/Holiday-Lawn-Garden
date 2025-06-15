@@ -1,4 +1,3 @@
-
 // meta_enhancer.js
 const fs = require('fs');
 const path = require('path');
@@ -15,13 +14,13 @@ class MetaEnhancer {
     for (const file of htmlFiles) {
       try {
         let content = fs.readFileSync(file, 'utf8');
-        
+
         // Add meta tags
         content = this.addMetaTags(content, file);
-        
+
         // Add favicon
         content = this.addFavicon(content);
-        
+
         fs.writeFileSync(file, content);
         console.log(`✓ Enhanced ${file}`);
       } catch (error) {
@@ -53,10 +52,7 @@ class MetaEnhancer {
     <meta name="twitter:image" content="https://hollidaylawngarden.com/assets/images/og-image.jpg">
     <link rel="canonical" href="https://hollidaylawngarden.com/${fileName}">`;
 
-    return content.replace(
-      /<head>/,
-      `<head>${metaTags}`
-    );
+    return content.replace(/<head>/, `<head>${metaTags}`);
   }
 
   addFavicon(content) {
@@ -69,71 +65,76 @@ class MetaEnhancer {
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">`;
 
-    return content.replace(
-      /<head>/,
-      `<head>${faviconTags}`
-    );
+    return content.replace(/<head>/, `<head>${faviconTags}`);
   }
 
   getTitle(fileName) {
     const titles = {
-      'index': 'Holliday Lawn & Garden - Professional Lawn Care Services',
-      'about': 'About Us - Holliday Lawn & Garden',
-      'services': 'Our Services - Holliday Lawn & Garden',
-      'contact': 'Contact Us - Holliday Lawn & Garden',
-      'gallery': 'Our Work - Holliday Lawn & Garden Gallery',
-      'login': 'Login - Holliday Lawn & Garden',
-      'register': 'Register - Holliday Lawn & Garden',
-      'dashboard': 'Dashboard - Holliday Lawn & Garden',
-      'profile': 'My Profile - Holliday Lawn & Garden',
-      'privacy': 'Privacy Policy - Holliday Lawn & Garden',
-      'terms': 'Terms of Service - Holliday Lawn & Garden'
+      index: 'Holliday Lawn & Garden - Professional Lawn Care Services',
+      about: 'About Us - Holliday Lawn & Garden',
+      services: 'Our Services - Holliday Lawn & Garden',
+      contact: 'Contact Us - Holliday Lawn & Garden',
+      gallery: 'Our Work - Holliday Lawn & Garden Gallery',
+      login: 'Login - Holliday Lawn & Garden',
+      register: 'Register - Holliday Lawn & Garden',
+      dashboard: 'Dashboard - Holliday Lawn & Garden',
+      profile: 'My Profile - Holliday Lawn & Garden',
+      privacy: 'Privacy Policy - Holliday Lawn & Garden',
+      terms: 'Terms of Service - Holliday Lawn & Garden',
     };
 
-    return titles[fileName] || `Holliday Lawn & Garden - ${fileName.charAt(0).toUpperCase() + fileName.slice(1)}`;
+    return (
+      titles[fileName] ||
+      `Holliday Lawn & Garden - ${fileName.charAt(0).toUpperCase() + fileName.slice(1)}`
+    );
   }
 
   getDescription(fileName) {
     const descriptions = {
-      'index': 'Professional lawn care and garden services in your area. Quality landscaping, maintenance, and design services for your home or business.',
-      'about': 'Learn about Holliday Lawn & Garden\'s commitment to excellence in lawn care and landscaping services.',
-      'services': 'Explore our comprehensive range of lawn care and landscaping services tailored to your needs.',
-      'contact': 'Get in touch with Holliday Lawn & Garden for all your lawn care and landscaping needs.',
-      'gallery': 'View our portfolio of successful lawn care and landscaping projects.',
-      'login': 'Access your Holliday Lawn & Garden account to manage your services.',
-      'register': 'Create your Holliday Lawn & Garden account to access our services.',
-      'dashboard': 'Manage your lawn care services and account settings.',
-      'profile': 'Update your personal information and service preferences.',
-      'privacy': 'Read our privacy policy to understand how we protect your information.',
-      'terms': 'Review our terms of service for using Holliday Lawn & Garden services.'
+      index:
+        'Professional lawn care and garden services in your area. Quality landscaping, maintenance, and design services for your home or business.',
+      about:
+        "Learn about Holliday Lawn & Garden's commitment to excellence in lawn care and landscaping services.",
+      services:
+        'Explore our comprehensive range of lawn care and landscaping services tailored to your needs.',
+      contact:
+        'Get in touch with Holliday Lawn & Garden for all your lawn care and landscaping needs.',
+      gallery: 'View our portfolio of successful lawn care and landscaping projects.',
+      login: 'Access your Holliday Lawn & Garden account to manage your services.',
+      register: 'Create your Holliday Lawn & Garden account to access our services.',
+      dashboard: 'Manage your lawn care services and account settings.',
+      profile: 'Update your personal information and service preferences.',
+      privacy: 'Read our privacy policy to understand how we protect your information.',
+      terms: 'Review our terms of service for using Holliday Lawn & Garden services.',
     };
 
-    return descriptions[fileName] || 'Professional lawn care and garden services by Holliday Lawn & Garden.';
+    return (
+      descriptions[fileName] ||
+      'Professional lawn care and garden services by Holliday Lawn & Garden.'
+    );
   }
 
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the enhancer
 const enhancer = new MetaEnhancer();
-enhancer.enhanceMeta(); 
+enhancer.enhanceMeta();
 
-export {
-  MetaEnhancer
-};
+export { MetaEnhancer };

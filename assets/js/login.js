@@ -3,6 +3,24 @@
 import { setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signInWithPopup } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
 import { auth, googleProvider, initializeFirebase } from './firebase.js';
 
+// Inactivity logout logic
+let inactivityTimeout;
+const INACTIVITY_LIMIT = 10 * 60 * 1000; // 10 minutes
+const resetInactivityTimer = () => {
+  clearTimeout(inactivityTimeout);
+  inactivityTimeout = setTimeout(() => {
+    if (auth.currentUser) {
+      auth.signOut().then(() => {
+        window.location.href = '/login.html';
+      });
+    }
+  }, INACTIVITY_LIMIT);
+};
+['mousemove', 'keydown', 'mousedown', 'touchstart'].forEach(event => {
+  window.addEventListener(event, resetInactivityTimer);
+});
+resetInactivityTimer();
+
 // Wait until DOM is fully loaded
 document.addEventListener('DOMContentLoaded', async () => {
   try {

@@ -25,14 +25,8 @@ class ImageOptimizer {
 
         // Generate responsive sizes
         for (const size of this.sizes) {
-          const sizePath = path.join(
-            path.dirname(file),
-            `${fileNameWithoutExt}-${size}${fileExt}`
-          );
-          const webpSizePath = path.join(
-            path.dirname(file),
-            `${fileNameWithoutExt}-${size}.webp`
-          );
+          const sizePath = path.join(path.dirname(file), `${fileNameWithoutExt}-${size}${fileExt}`);
+          const webpSizePath = path.join(path.dirname(file), `${fileNameWithoutExt}-${size}.webp`);
 
           await this.generateResponsiveImage(file, sizePath, size);
           await this.generateResponsiveImage(webpPath, webpSizePath, size);
@@ -46,16 +40,14 @@ class ImageOptimizer {
   }
 
   async generateWebP(inputPath, outputPath) {
-    await sharp(inputPath)
-      .webp({ quality: this.quality })
-      .toFile(outputPath);
+    await sharp(inputPath).webp({ quality: this.quality }).toFile(outputPath);
   }
 
   async generateResponsiveImage(inputPath, outputPath, size) {
     await sharp(inputPath)
       .resize(size, null, {
         withoutEnlargement: true,
-        fit: 'inside'
+        fit: 'inside',
       })
       .toFile(outputPath);
   }
@@ -63,22 +55,22 @@ class ImageOptimizer {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.toLowerCase().endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the optimizer
 const optimizer = new ImageOptimizer();
-optimizer.optimize(); 
+optimizer.optimize();

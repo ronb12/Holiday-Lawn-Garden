@@ -4,7 +4,7 @@ const path = require('path');
 const correctContactInfo = {
   owner: 'Karl Holliday',
   phone: '(504) 717-1887',
-  email: '7holliday@gmail.com'
+  email: '7holliday@gmail.com',
 };
 
 function updateContactInfo(filePath) {
@@ -43,12 +43,11 @@ function updateContactInfo(filePath) {
 }
 
 // Get all HTML files in the root directory
-const htmlFiles = fs.readdirSync('.')
-  .filter(file => file.endsWith('.html'));
+const htmlFiles = fs.readdirSync('.').filter(file => file.endsWith('.html'));
 
 // Update contact info in each HTML file
 htmlFiles.forEach(file => {
   updateContactInfo(file);
 });
 
-console.log('Contact information update complete!'); 
+console.log('Contact information update complete!');

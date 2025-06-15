@@ -12,7 +12,7 @@
   background: var(--color-surface-dark);
 }
 
-.document-upload input[type="file"] {
+.document-upload input[type='file'] {
   display: none;
 }
 
@@ -159,7 +159,7 @@
   .document-upload {
     padding: 1.5rem;
   }
-  
+
   .document-upload-icon {
     font-size: 2rem;
   }

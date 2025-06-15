@@ -1,12 +1,12 @@
 import { auth, showError } from './firebase.js';
 
 // Test script for authentication methods
-console.log("Starting authentication tests...");
+console.log('Starting authentication tests...');
 
 // Create test results container
 function createTestResultsContainer() {
-  const container = document.createElement("div");
-  container.id = "test-results";
+  const container = document.createElement('div');
+  container.id = 'test-results';
   container.style.cssText = `
         position: fixed;
         top: 20px;
@@ -25,17 +25,17 @@ function createTestResultsContainer() {
 
 // Add test result to container
 function addTestResult(container, testName, passed, message) {
-  const result = document.createElement("div");
+  const result = document.createElement('div');
   result.style.cssText = `
         margin: 10px 0;
         padding: 10px;
         border-radius: 4px;
-        background: ${passed ? "#e6ffe6" : "#ffe6e6"};
-        border: 1px solid ${passed ? "#00cc00" : "#cc0000"};
+        background: ${passed ? '#e6ffe6' : '#ffe6e6'};
+        border: 1px solid ${passed ? '#00cc00' : '#cc0000'};
     `;
   result.innerHTML = `
         <strong>${testName}:</strong> 
-        <span style="color: ${passed ? "green" : "red"}">${passed ? "✅ PASSED" : "❌ FAILED"}</span>
+        <span style="color: ${passed ? 'green' : 'red'}">${passed ? '✅ PASSED' : '❌ FAILED'}</span>
         <br>
         <small>${message}</small>
     `;
@@ -44,20 +44,20 @@ function addTestResult(container, testName, passed, message) {
 
 // Test Google Sign-In
 async function testGoogleSignIn() {
-  console.log("Testing Google Sign-In...");
+  console.log('Testing Google Sign-In...');
   try {
     const provider = new auth.GoogleAuthProvider();
-    provider.addScope("profile");
-    provider.addScope("email");
+    provider.addScope('profile');
+    provider.addScope('email');
 
     const result = await auth.signInWithPopup(provider);
-    console.log("✅ Google Sign-In successful:", result.user.uid);
+    console.log('✅ Google Sign-In successful:', result.user.uid);
     return {
       passed: true,
       message: `Successfully signed in as ${result.user.email}`,
     };
   } catch (error) {
-    console.error("❌ Google Sign-In failed:", error.code, error.message);
+    console.error('❌ Google Sign-In failed:', error.code, error.message);
     return {
       passed: false,
       message: `Error: ${error.code} - ${error.message}`,
@@ -67,21 +67,16 @@ async function testGoogleSignIn() {
 
 // Test Email/Password Sign-In
 async function testEmailSignIn(email, password) {
-  console.log("Testing Email/Password Sign-In...");
+  console.log('Testing Email/Password Sign-In...');
   try {
-    const result = await auth
-      .signInWithEmailAndPassword(email, password);
-    console.log("✅ Email/Password Sign-In successful:", result.user.uid);
+    const result = await auth.signInWithEmailAndPassword(email, password);
+    console.log('✅ Email/Password Sign-In successful:', result.user.uid);
     return {
       passed: true,
       message: `Successfully signed in as ${result.user.email}`,
     };
   } catch (error) {
-    console.error(
-      "❌ Email/Password Sign-In failed:",
-      error.code,
-      error.message,
-    );
+    console.error('❌ Email/Password Sign-In failed:', error.code, error.message);
     return {
       passed: false,
       message: `Error: ${error.code} - ${error.message}`,
@@ -91,13 +86,13 @@ async function testEmailSignIn(email, password) {
 
 // Test Password Reset
 async function testPasswordReset(email) {
-  console.log("Testing Password Reset...");
+  console.log('Testing Password Reset...');
   try {
     await auth.sendPasswordResetEmail(email);
-    console.log("✅ Password Reset email sent successfully");
-    return { passed: true, message: "Password reset email sent successfully" };
+    console.log('✅ Password Reset email sent successfully');
+    return { passed: true, message: 'Password reset email sent successfully' };
   } catch (error) {
-    console.error("❌ Password Reset failed:", error.code, error.message);
+    console.error('❌ Password Reset failed:', error.code, error.message);
     return {
       passed: false,
       message: `Error: ${error.code} - ${error.message}`,
@@ -107,13 +102,13 @@ async function testPasswordReset(email) {
 
 // Test Sign Out
 async function testSignOut() {
-  console.log("Testing Sign Out...");
+  console.log('Testing Sign Out...');
   try {
     await auth.signOut();
-    console.log("✅ Sign Out successful");
-    return { passed: true, message: "Successfully signed out" };
+    console.log('✅ Sign Out successful');
+    return { passed: true, message: 'Successfully signed out' };
   } catch (error) {
-    console.error("❌ Sign Out failed:", error.code, error.message);
+    console.error('❌ Sign Out failed:', error.code, error.message);
     return {
       passed: false,
       message: `Error: ${error.code} - ${error.message}`,
@@ -123,55 +118,35 @@ async function testSignOut() {
 
 // Run all tests
 async function runAuthTests() {
-  console.log("=== Starting Authentication Tests ===");
+  console.log('=== Starting Authentication Tests ===');
 
   // Create test results container
   const container = createTestResultsContainer();
-  container.innerHTML = "<h3>Authentication Tests</h3>";
+  container.innerHTML = '<h3>Authentication Tests</h3>';
 
   // Test Google Sign-In
   const googleResult = await testGoogleSignIn();
-  addTestResult(
-    container,
-    "Google Sign-In",
-    googleResult.passed,
-    googleResult.message,
-  );
+  addTestResult(container, 'Google Sign-In', googleResult.passed, googleResult.message);
 
   // Test Email/Password Sign-In
-  const emailResult = await testEmailSignIn("test@example.com", "password123");
-  addTestResult(
-    container,
-    "Email/Password Sign-In",
-    emailResult.passed,
-    emailResult.message,
-  );
+  const emailResult = await testEmailSignIn('test@example.com', 'password123');
+  addTestResult(container, 'Email/Password Sign-In', emailResult.passed, emailResult.message);
 
   // Test Password Reset
-  const resetResult = await testPasswordReset("test@example.com");
-  addTestResult(
-    container,
-    "Password Reset",
-    resetResult.passed,
-    resetResult.message,
-  );
+  const resetResult = await testPasswordReset('test@example.com');
+  addTestResult(container, 'Password Reset', resetResult.passed, resetResult.message);
 
   // Test Sign Out
   const signOutResult = await testSignOut();
-  addTestResult(
-    container,
-    "Sign Out",
-    signOutResult.passed,
-    signOutResult.message,
-  );
+  addTestResult(container, 'Sign Out', signOutResult.passed, signOutResult.message);
 
-  console.log("=== Authentication Tests Complete ===");
+  console.log('=== Authentication Tests Complete ===');
 }
 
 // Add test button to page
 function addTestButton() {
-  const button = document.createElement("button");
-  button.textContent = "Run Auth Tests";
+  const button = document.createElement('button');
+  button.textContent = 'Run Auth Tests';
   button.style.cssText = `
         position: fixed;
         bottom: 20px;
@@ -189,11 +164,11 @@ function addTestButton() {
 }
 
 // Initialize when the page loads
-window.addEventListener("load", () => {
+window.addEventListener('load', () => {
   // Wait for Firebase to initialize
   if (auth.apps.length) {
     addTestButton();
   } else {
-    console.error("Firebase not initialized");
+    console.error('Firebase not initialized');
   }
 });

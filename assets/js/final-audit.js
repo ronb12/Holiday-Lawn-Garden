@@ -13,19 +13,19 @@ class FinalAudit {
     for (const file of htmlFiles) {
       try {
         let content = fs.readFileSync(file, 'utf8');
-        
+
         // Fix images
         content = this.fixImages(content);
-        
+
         // Fix meta tags
         content = this.fixMetaTags(content, file);
-        
+
         // Fix headings
         content = this.fixHeadings(content);
-        
+
         // Fix floating buttons
         content = this.fixFloatingButtons(content);
-        
+
         fs.writeFileSync(file, content);
         console.log(`✓ Audited ${file}`);
       } catch (error) {
@@ -56,15 +56,9 @@ class FinalAudit {
 
     // Add or update title
     if (!content.includes('<title>')) {
-      content = content.replace(
-        /<head>/,
-        `<head>\n    <title>${title}</title>`
-      );
+      content = content.replace(/<head>/, `<head>\n    <title>${title}</title>`);
     } else {
-      content = content.replace(
-        /<title>.*?<\/title>/,
-        `<title>${title}</title>`
-      );
+      content = content.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
     }
 
     // Add or update meta description
@@ -90,7 +84,7 @@ class FinalAudit {
 
     // Find all headings
     const headings = content.match(/<h[1-6][^>]*>.*?<\/h[1-6]>/g) || [];
-    
+
     for (const heading of headings) {
       const level = parseInt(heading.match(/<h([1-6])/)[1]);
       headingOrder.push(level);
@@ -109,7 +103,8 @@ class FinalAudit {
         const newLevel = headingOrder[i - 1] + 1;
         content = content.replace(
           new RegExp(`<h${headingOrder[i]}([^>]*)>.*?<\/h${headingOrder[i]}>`),
-          (match, attrs) => `<h${newLevel}${attrs}>${match.match(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/)[1]}</h${newLevel}>`
+          (match, attrs) =>
+            `<h${newLevel}${attrs}>${match.match(/<h[1-6][^>]*>(.*?)<\/h[1-6]>/)[1]}</h${newLevel}>`
         );
       }
     }
@@ -127,30 +122,34 @@ class FinalAudit {
 
   getPageTitle(fileName) {
     const titles = {
-      'index': 'Holliday Lawn & Garden - Professional Landscaping Services',
-      'about': 'About Us - Holliday Lawn & Garden',
-      'services': 'Our Services - Holliday Lawn & Garden',
-      'contact': 'Contact Us - Holliday Lawn & Garden',
-      'gallery': 'Our Work - Holliday Lawn & Garden',
-      'faq': 'Frequently Asked Questions - Holliday Lawn & Garden',
-      'privacy': 'Privacy Policy - Holliday Lawn & Garden',
-      'terms': 'Terms of Service - Holliday Lawn & Garden',
-      'accessibility': 'Accessibility Statement - Holliday Lawn & Garden'
+      index: 'Holliday Lawn & Garden - Professional Landscaping Services',
+      about: 'About Us - Holliday Lawn & Garden',
+      services: 'Our Services - Holliday Lawn & Garden',
+      contact: 'Contact Us - Holliday Lawn & Garden',
+      gallery: 'Our Work - Holliday Lawn & Garden',
+      faq: 'Frequently Asked Questions - Holliday Lawn & Garden',
+      privacy: 'Privacy Policy - Holliday Lawn & Garden',
+      terms: 'Terms of Service - Holliday Lawn & Garden',
+      accessibility: 'Accessibility Statement - Holliday Lawn & Garden',
     };
     return titles[fileName] || 'Holliday Lawn & Garden';
   }
 
   getPageDescription(fileName) {
     const descriptions = {
-      'index': 'Professional landscaping and garden services in your area. Quality work, competitive prices, and exceptional customer service.',
-      'about': 'Learn about Holliday Lawn & Garden\'s commitment to excellence in landscaping and garden services.',
-      'services': 'Explore our comprehensive range of landscaping and garden services tailored to your needs.',
-      'contact': 'Get in touch with Holliday Lawn & Garden for all your landscaping and garden service needs.',
-      'gallery': 'View our portfolio of landscaping and garden projects showcasing our quality work.',
-      'faq': 'Find answers to common questions about our landscaping and garden services.',
-      'privacy': 'Read our privacy policy to understand how we protect your personal information.',
-      'terms': 'Review our terms of service for landscaping and garden maintenance.',
-      'accessibility': 'Learn about our commitment to web accessibility and inclusive design.'
+      index:
+        'Professional landscaping and garden services in your area. Quality work, competitive prices, and exceptional customer service.',
+      about:
+        "Learn about Holliday Lawn & Garden's commitment to excellence in landscaping and garden services.",
+      services:
+        'Explore our comprehensive range of landscaping and garden services tailored to your needs.',
+      contact:
+        'Get in touch with Holliday Lawn & Garden for all your landscaping and garden service needs.',
+      gallery: 'View our portfolio of landscaping and garden projects showcasing our quality work.',
+      faq: 'Find answers to common questions about our landscaping and garden services.',
+      privacy: 'Read our privacy policy to understand how we protect your personal information.',
+      terms: 'Review our terms of service for landscaping and garden maintenance.',
+      accessibility: 'Learn about our commitment to web accessibility and inclusive design.',
     };
     return descriptions[fileName] || 'Professional landscaping and garden services in your area.';
   }
@@ -158,22 +157,22 @@ class FinalAudit {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the audit
 const auditor = new FinalAudit();
-auditor.audit(); 
+auditor.audit();

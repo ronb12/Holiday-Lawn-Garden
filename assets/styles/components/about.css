@@ -153,7 +153,9 @@
   border-radius: var(--border-radius-lg);
   text-align: center;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .value-card:hover {
@@ -212,7 +214,7 @@
   .hero-stats {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .values-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -249,7 +251,7 @@
   .about-subtitle {
     font-size: var(--font-size-lg);
   }
-  
+
   .hero-stats {
     grid-template-columns: 1fr;
   }
@@ -258,7 +260,9 @@
 /* About Hero Simple */
 .about-hero-simple {
   padding: 5rem 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../../images/hero-garden-landscaping.jpg');
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+    url('../../images/hero-garden-landscaping.jpg');
   background-size: cover;
   background-position: center;
   color: white;
@@ -401,7 +405,9 @@
   padding: 2rem;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .value-card:hover {
@@ -488,7 +494,9 @@
 
 .about-cta {
   padding: 5rem 0;
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../../images/hero-garden-landscaping.jpg');
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url('../../images/hero-garden-landscaping.jpg');
   background-size: cover;
   background-position: center;
   color: white;
@@ -545,11 +553,11 @@
   .about-hero-simple h1 {
     font-size: 2.5rem;
   }
-  
+
   .about-hero-simple .hero-subtitle {
     font-size: 1.2rem;
   }
-  
+
   .about-content h2,
   .mission-content h2,
   .about-values h2,
@@ -557,16 +565,16 @@
   .cta-content h2 {
     font-size: 2rem;
   }
-  
+
   .story-highlights,
   .mission-stats {
     gap: 1rem;
   }
-  
+
   .cta-buttons {
     flex-direction: column;
   }
-  
+
   .cta-button {
     width: 100%;
   }
@@ -650,15 +658,15 @@
 
 .btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
   .action-buttons {
     flex-direction: column;
   }
-  
+
   .btn {
     width: 100%;
   }
-} 
+}

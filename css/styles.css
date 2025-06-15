@@ -1,13 +1,13 @@
 :root {
-  --primary-green: #2E7D32;
-  --light-green: #4CAF50;
-  --lighter-green: #81C784;
-  --dark-green: #1B5E20;
-  --accent-green: #8BC34A;
-  --background-light: #FFFFFF;
+  --primary-green: #2e7d32;
+  --light-green: #4caf50;
+  --lighter-green: #81c784;
+  --dark-green: #1b5e20;
+  --accent-green: #8bc34a;
+  --background-light: #ffffff;
   --text-dark: #000000;
-  --text-light: #FFFFFF;
-  --border-color: #E0E0E0;
+  --text-light: #ffffff;
+  --border-color: #e0e0e0;
   --border-radius: 8px;
 }
 
@@ -24,7 +24,7 @@ header {
   background-color: var(--primary-green);
   color: var(--text-light);
   padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .navbar {
@@ -70,7 +70,9 @@ main {
 }
 
 .hero {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../images/hero-garden-landscaping.jpg');
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('../images/hero-garden-landscaping.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -193,7 +195,7 @@ main {
   background-color: var(--background-light);
   padding: 2rem;
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .contact-form-container h1 {
@@ -281,7 +283,7 @@ footer {
   text-align: center;
   margin-top: 2rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Mobile Navigation */
@@ -480,12 +482,12 @@ footer {
 
 /* Fix for iOS input zoom */
 @supports (-webkit-touch-callout: none) {
-  input[type="text"],
-  input[type="tel"],
-  input[type="email"],
-  input[type="number"],
+  input[type='text'],
+  input[type='tel'],
+  input[type='email'],
+  input[type='number'],
   select,
   textarea {
     font-size: 16px;
   }
-} 
+}

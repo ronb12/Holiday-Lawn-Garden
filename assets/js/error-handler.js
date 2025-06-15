@@ -6,70 +6,67 @@ export class ErrorHandler {
 
   init() {
     // Set up error listeners
-    window.addEventListener("error", this.handleError.bind(this));
-    window.addEventListener(
-      "unhandledrejection",
-      this.handlePromiseError.bind(this),
-    );
+    window.addEventListener('error', this.handleError.bind(this));
+    window.addEventListener('unhandledrejection', this.handlePromiseError.bind(this));
 
     // Set up network listeners
-    window.addEventListener("online", () => this.handleOnline());
-    window.addEventListener("offline", () => this.handleOffline());
+    window.addEventListener('online', () => this.handleOnline());
+    window.addEventListener('offline', () => this.handleOffline());
 
-    console.log("Error handler initialized");
+    console.log('Error handler initialized');
   }
 
   handleError(error) {
-    console.error("Error caught:", error);
+    console.error('Error caught:', error);
     this.attemptFix(error);
   }
 
   handlePromiseError(event) {
-    console.error("Promise error:", event.reason);
+    console.error('Promise error:', event.reason);
     this.attemptFix(event.reason);
   }
 
   handleOnline() {
-    console.log("Back online - syncing data");
+    console.log('Back online - syncing data');
     this.syncData();
   }
 
   handleOffline() {
-    console.log("Offline mode - enabling local features");
+    console.log('Offline mode - enabling local features');
     this.enableOfflineMode();
   }
 
   attemptFix(error) {
     // Handle specific error types
-    if (error.message.includes("loadServiceRequests")) {
+    if (error.message.includes('loadServiceRequests')) {
       this.fixLoadServiceRequests();
-    } else if (error.message.includes("CSP")) {
+    } else if (error.message.includes('CSP')) {
       this.fixCSPError();
-    } else if (error.message.includes("Firebase")) {
+    } else if (error.message.includes('Firebase')) {
       this.fixFirebaseError(error);
     }
   }
 
   fixLoadServiceRequests() {
-    if (typeof window.loadServiceRequests !== "function") {
+    if (typeof window.loadServiceRequests !== 'function') {
       window.loadServiceRequests = async function () {
         try {
           const db = firebase.firestore();
           const user = firebase.auth().currentUser;
 
           if (!user) {
-            throw new Error("User not authenticated");
+            throw new Error('User not authenticated');
           }
 
-          const requestsRef = collection(db, "serviceRequests");
+          const requestsRef = collection(db, 'serviceRequests');
           const q = query(
             requestsRef,
-            where("customerId", "==", user.uid),
-            orderBy("createdAt", "desc"),
+            where('customerId', '==', user.uid),
+            orderBy('createdAt', 'desc')
           );
 
           const snapshot = await getDocs(q);
-          const container = document.getElementById("service-requests");
+          const container = document.getElementById('service-requests');
 
           if (snapshot.empty) {
             container.innerHTML = `
@@ -84,8 +81,8 @@ export class ErrorHandler {
             return;
           }
 
-          let html = "";
-          snapshot.forEach((doc) => {
+          let html = '';
+          snapshot.forEach(doc => {
             const request = doc.data();
             html += `
               <div class="request-card ${request.status.toLowerCase()}">
@@ -104,8 +101,8 @@ export class ErrorHandler {
 
           container.innerHTML = html;
         } catch (error) {
-          console.error("Error loading requests:", error);
-          this.showError("Failed to load service requests");
+          console.error('Error loading requests:', error);
+          this.showError('Failed to load service requests');
         }
       };
     }
@@ -114,9 +111,9 @@ export class ErrorHandler {
   fixCSPError() {
     // Add missing domains to CSP
     const domains = {
-      "google-analytics.com": "connect-src",
-      "fonts.gstatic.com": "font-src",
-      "googletagmanager.com": "script-src",
+      'google-analytics.com': 'connect-src',
+      'fonts.gstatic.com': 'font-src',
+      'googletagmanager.com': 'script-src',
     };
 
     // Update CSP headers
@@ -124,23 +121,20 @@ export class ErrorHandler {
   }
 
   fixFirebaseError(error) {
-    if (error.code === "app/no-app") {
+    if (error.code === 'app/no-app') {
       this.reinitializeFirebase();
-    } else if (error.code === "permission-denied") {
+    } else if (error.code === 'permission-denied') {
       this.handlePermissionError();
     }
   }
 
   reinitializeFirebase() {
-    if (
-      typeof firebase !== "undefined" &&
-      typeof firebaseConfig !== "undefined"
-    ) {
+    if (typeof firebase !== 'undefined' && typeof firebaseConfig !== 'undefined') {
       try {
         firebase.initializeApp(firebaseConfig);
-        console.log("Firebase reinitialized");
+        console.log('Firebase reinitialized');
       } catch (error) {
-        console.error("Firebase reinit failed:", error);
+        console.error('Firebase reinit failed:', error);
       }
     }
   }
@@ -148,23 +142,23 @@ export class ErrorHandler {
   handlePermissionError() {
     const user = firebase.auth().currentUser;
     if (!user) {
-      window.location.href = "/login.html";
+      window.location.href = '/login.html';
     }
   }
 
   updateCSPHeaders(domains) {
     // Log CSP updates
-    console.log("Updating CSP with domains:", domains);
+    console.log('Updating CSP with domains:', domains);
   }
 
   syncData() {
     // Implement data sync logic
-    console.log("Syncing data...");
+    console.log('Syncing data...');
   }
 
   enableOfflineMode() {
     // Implement offline mode
-    console.log("Enabling offline features...");
+    console.log('Enabling offline features...');
   }
 
   showError(message, isFatal = false) {
@@ -189,8 +183,8 @@ export class ErrorHandler {
 
 // Error handling utilities
 export function showError(message, duration = 5000) {
-  const errorDiv = document.createElement("div");
-  errorDiv.className = "error-message";
+  const errorDiv = document.createElement('div');
+  errorDiv.className = 'error-message';
   errorDiv.textContent = message;
   document.body.appendChild(errorDiv);
   setTimeout(() => errorDiv.remove(), duration);
@@ -203,7 +197,7 @@ export function handleError(error, context = '') {
 
 export function handleFirebaseError(error) {
   let message = 'An error occurred with Firebase. ';
-  
+
   switch (error.code) {
     case 'auth/user-not-found':
       message += 'User not found.';
@@ -226,6 +220,6 @@ export function handleFirebaseError(error) {
     default:
       message += 'Please try again.';
   }
-  
+
   showError(message);
 }

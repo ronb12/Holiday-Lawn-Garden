@@ -13,22 +13,22 @@ class UXEnhancer {
     for (const file of htmlFiles) {
       try {
         let content = fs.readFileSync(file, 'utf8');
-        
+
         // Add toast notifications
         content = this.addToastNotifications(content);
-        
+
         // Add breadcrumbs
         content = this.addBreadcrumbs(content, file);
-        
+
         // Add progress indicators
         content = this.addProgressIndicators(content);
-        
+
         // Add form feedback
         content = this.addFormFeedback(content);
-        
+
         // Add scroll to top button
         content = this.addScrollToTop(content);
-        
+
         fs.writeFileSync(file, content);
         console.log(`✓ Enhanced ${file}`);
       } catch (error) {
@@ -58,16 +58,20 @@ class UXEnhancer {
   addBreadcrumbs(content, file) {
     const fileName = path.basename(file, '.html');
     const breadcrumbs = this.generateBreadcrumbs(fileName);
-    
+
     if (!content.includes('breadcrumb') && !content.includes('404.html')) {
       const breadcrumbHtml = `
         <nav aria-label="breadcrumb" class="breadcrumb-container">
           <ol class="breadcrumb">
-            ${breadcrumbs.map(crumb => `
+            ${breadcrumbs
+              .map(
+                crumb => `
               <li class="breadcrumb-item ${crumb.active ? 'active' : ''}">
                 ${crumb.active ? crumb.text : `<a href="${crumb.href}">${crumb.text}</a>`}
               </li>
-            `).join('')}
+            `
+              )
+              .join('')}
           </ol>
         </nav>
       `;
@@ -119,35 +123,33 @@ class UXEnhancer {
   }
 
   generateBreadcrumbs(fileName) {
-    const breadcrumbs = [
-      { text: 'Home', href: 'index.html', active: fileName === 'index' }
-    ];
+    const breadcrumbs = [{ text: 'Home', href: 'index.html', active: fileName === 'index' }];
 
     const pageMap = {
-      'about': 'About Us',
-      'services': 'Services',
-      'contact': 'Contact',
-      'gallery': 'Gallery',
-      'testimonials': 'Testimonials',
-      'faq': 'FAQ',
-      'privacy': 'Privacy Policy',
-      'terms': 'Terms of Service',
-      'login': 'Login',
-      'register': 'Register',
-      'profile': 'My Profile',
-      'dashboard': 'Dashboard',
-      'admin': 'Admin',
-      'pay': 'Pay Bill',
-      'receipt': 'Receipt',
-      'education': 'Education',
-      'sitemap': 'Sitemap'
+      about: 'About Us',
+      services: 'Services',
+      contact: 'Contact',
+      gallery: 'Gallery',
+      testimonials: 'Testimonials',
+      faq: 'FAQ',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+      login: 'Login',
+      register: 'Register',
+      profile: 'My Profile',
+      dashboard: 'Dashboard',
+      admin: 'Admin',
+      pay: 'Pay Bill',
+      receipt: 'Receipt',
+      education: 'Education',
+      sitemap: 'Sitemap',
     };
 
     if (pageMap[fileName]) {
       breadcrumbs.push({
         text: pageMap[fileName],
         href: `${fileName}.html`,
-        active: true
+        active: true,
       });
     }
 
@@ -157,22 +159,22 @@ class UXEnhancer {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the enhancer
 const enhancer = new UXEnhancer();
-enhancer.enhance(); 
+enhancer.enhance();

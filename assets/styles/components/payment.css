@@ -137,11 +137,11 @@
   .payment-card {
     padding: var(--spacing-lg);
   }
-  
+
   .payment-card h2 {
     font-size: var(--font-size-xl);
   }
-  
+
   .amount-wrapper input {
     font-size: var(--font-size-base);
   }
@@ -155,12 +155,14 @@
   padding: 2rem;
 }
 
-.payment-form input, .payment-form select {
+.payment-form input,
+.payment-form select {
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius);
 }
 
-.payment-form button, .payment-btn {
+.payment-form button,
+.payment-btn {
   background: var(--color-primary);
   color: var(--color-text-light);
   border: none;
@@ -170,6 +172,7 @@
   transition: background 0.2s;
 }
 
-.payment-form button:hover, .payment-btn:hover {
+.payment-form button:hover,
+.payment-btn:hover {
   background: var(--color-primary-dark);
-} 
+}

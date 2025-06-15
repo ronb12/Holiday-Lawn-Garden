@@ -13,13 +13,13 @@ class AppGrader {
       security: { score: 0, max: 100, details: [] },
       features: { score: 0, max: 100, details: [] },
       codeQuality: { score: 0, max: 100, details: [] },
-      userExperience: { score: 0, max: 100, details: [] }
+      userExperience: { score: 0, max: 100, details: [] },
     };
     this.report = {
       timestamp: new Date().toISOString(),
       overallScore: 0,
       grades: {},
-      recommendations: []
+      recommendations: [],
     };
   }
 
@@ -38,29 +38,29 @@ class AppGrader {
 
     // Calculate overall score
     this.calculateOverallScore();
-    
+
     // Generate recommendations
     this.generateRecommendations();
-    
+
     // Save report
     this.saveReport();
   }
 
   async checkPerformance() {
     console.log('Checking performance...');
-    
+
     // Check image optimization
     const images = this.findFiles('assets/images', ['.jpg', '.png', '.webp']);
     const optimizedImages = images.filter(img => {
       const stats = fs.statSync(img);
       return stats.size < 500000; // 500KB threshold
     });
-    
+
     // Check CSS/JS minification
     const cssFiles = this.findFiles('assets/styles', ['.css']);
     const jsFiles = this.findFiles('assets/js', ['.js']);
-    const minifiedFiles = [...cssFiles, ...jsFiles].filter(file => 
-      file.includes('.min.') || file.includes('minified')
+    const minifiedFiles = [...cssFiles, ...jsFiles].filter(
+      file => file.includes('.min.') || file.includes('minified')
     );
 
     // Check resource loading
@@ -79,13 +79,13 @@ class AppGrader {
     this.scores.performance.details = [
       `Image optimization: ${Math.round(imageScore)}/30`,
       `Code minification: ${Math.round(minificationScore)}/30`,
-      `Resource loading: ${Math.round(loadingScore)}/40`
+      `Resource loading: ${Math.round(loadingScore)}/40`,
     ];
   }
 
   async checkAccessibility() {
     console.log('Checking accessibility...');
-    
+
     // Check ARIA attributes
     const htmlFiles = this.findFiles('.', ['.html']);
     const ariaElements = htmlFiles.filter(file => {
@@ -102,8 +102,12 @@ class AppGrader {
     // Check semantic HTML
     const semanticElements = htmlFiles.filter(file => {
       const content = fs.readFileSync(file, 'utf8');
-      return content.includes('<nav') || content.includes('<main') || 
-             content.includes('<article') || content.includes('<section');
+      return (
+        content.includes('<nav') ||
+        content.includes('<main') ||
+        content.includes('<article') ||
+        content.includes('<section')
+      );
     });
 
     // Calculate score
@@ -115,26 +119,26 @@ class AppGrader {
     this.scores.accessibility.details = [
       `ARIA attributes: ${Math.round(ariaScore)}/40`,
       `Image alt text: ${Math.round(altScore)}/30`,
-      `Semantic HTML: ${Math.round(semanticScore)}/30`
+      `Semantic HTML: ${Math.round(semanticScore)}/30`,
     ];
   }
 
   async checkBestPractices() {
     console.log('Checking best practices...');
-    
+
     // Check meta tags
     const htmlFiles = this.findFiles('.', ['.html']);
     const metaTags = htmlFiles.filter(file => {
       const content = fs.readFileSync(file, 'utf8');
-      return content.includes('<meta name="description"') && 
-             content.includes('<meta name="viewport"');
+      return (
+        content.includes('<meta name="description"') && content.includes('<meta name="viewport"')
+      );
     });
 
     // Check favicon
     const hasFavicon = htmlFiles.filter(file => {
       const content = fs.readFileSync(file, 'utf8');
-      return content.includes('<link rel="icon"') || 
-             content.includes('<link rel="shortcut icon"');
+      return content.includes('<link rel="icon"') || content.includes('<link rel="shortcut icon"');
     });
 
     // Check responsive design
@@ -152,13 +156,13 @@ class AppGrader {
     this.scores.bestPractices.details = [
       `Meta tags: ${Math.round(metaScore)}/30`,
       `Favicon: ${Math.round(faviconScore)}/20`,
-      `Responsive design: ${Math.round(responsiveScore)}/50`
+      `Responsive design: ${Math.round(responsiveScore)}/50`,
     ];
   }
 
   async checkSEO() {
     console.log('Checking SEO...');
-    
+
     // Check title tags
     const htmlFiles = this.findFiles('.', ['.html']);
     const titleTags = htmlFiles.filter(file => {
@@ -184,13 +188,13 @@ class AppGrader {
     this.scores.seo.details = [
       `Title tags: ${Math.round(titleScore)}/40`,
       `Heading structure: ${Math.round(headingScore)}/40`,
-      `Sitemap: ${sitemapScore}/20`
+      `Sitemap: ${sitemapScore}/20`,
     ];
   }
 
   async checkSecurity() {
     console.log('Checking security...');
-    
+
     // Check HTTPS
     const hasHttps = true; // Assuming HTTPS is configured
 
@@ -209,27 +213,27 @@ class AppGrader {
     this.scores.security.details = [
       `HTTPS: ${httpsScore}/40`,
       `Security headers: ${headersScore}/30`,
-      `Form validation: ${validationScore}/30`
+      `Form validation: ${validationScore}/30`,
     ];
   }
 
   async checkFeatures() {
     console.log('Checking features...');
-    
+
     // Check customer features
     const customerFeatures = {
       account: fs.existsSync('create-account.html'),
       login: fs.existsSync('login.html'),
       dashboard: fs.existsSync('customer-dashboard.html'),
       payment: fs.existsSync('pay-your-bill.html'),
-      profile: fs.existsSync('profile.html')
+      profile: fs.existsSync('profile.html'),
     };
 
     // Check admin features
     const adminFeatures = {
       login: fs.existsSync('admin-login.html'),
       dashboard: fs.existsSync('admin.html'),
-      management: fs.existsSync('assets/js/admin-management.js')
+      management: fs.existsSync('assets/js/admin-management.js'),
     };
 
     // Calculate scores
@@ -239,17 +243,18 @@ class AppGrader {
     this.scores.features.score = Math.min(100, (customerScore + adminScore) / 2);
     this.scores.features.details = [
       `Customer features: ${customerScore}/100`,
-      `Admin features: ${adminScore}/100`
+      `Admin features: ${adminScore}/100`,
     ];
   }
 
   async checkCodeQuality() {
     console.log('Checking code quality...');
-    
+
     // Check file organization
-    const hasOrganizedStructure = fs.existsSync('assets/styles') && 
-                                 fs.existsSync('assets/js') && 
-                                 fs.existsSync('assets/images');
+    const hasOrganizedStructure =
+      fs.existsSync('assets/styles') &&
+      fs.existsSync('assets/js') &&
+      fs.existsSync('assets/images');
 
     // Check CSS organization
     const cssFiles = this.findFiles('assets/styles', ['.css']);
@@ -268,26 +273,26 @@ class AppGrader {
     this.scores.codeQuality.details = [
       `File structure: ${structureScore}/40`,
       `CSS organization: ${cssScore}/30`,
-      `JavaScript organization: ${jsScore}/30`
+      `JavaScript organization: ${jsScore}/30`,
     ];
   }
 
   async checkUserExperience() {
     console.log('Checking user experience...');
-    
+
     // Check navigation
     const hasNavigation = fs.existsSync('assets/styles/components/header.css');
 
     // Check feedback
-    const hasFeedback = fs.existsSync('assets/styles/components/loading.css') && 
-                       fs.existsSync('assets/styles/components/notifications.css');
+    const hasFeedback =
+      fs.existsSync('assets/styles/components/loading.css') &&
+      fs.existsSync('assets/styles/components/notifications.css');
 
     // Check responsive design
-    const hasResponsive = this.findFiles('assets/styles', ['.css'])
-      .some(file => {
-        const content = fs.readFileSync(file, 'utf8');
-        return content.includes('@media');
-      });
+    const hasResponsive = this.findFiles('assets/styles', ['.css']).some(file => {
+      const content = fs.readFileSync(file, 'utf8');
+      return content.includes('@media');
+    });
 
     // Calculate score
     const navigationScore = hasNavigation ? 40 : 0;
@@ -298,7 +303,7 @@ class AppGrader {
     this.scores.userExperience.details = [
       `Navigation: ${navigationScore}/40`,
       `User feedback: ${feedbackScore}/30`,
-      `Responsive design: ${responsiveScore}/30`
+      `Responsive design: ${responsiveScore}/30`,
     ];
   }
 
@@ -307,11 +312,11 @@ class AppGrader {
       performance: 0.15,
       accessibility: 0.15,
       bestPractices: 0.15,
-      seo: 0.10,
+      seo: 0.1,
       security: 0.15,
-      features: 0.10,
-      codeQuality: 0.10,
-      userExperience: 0.10
+      features: 0.1,
+      codeQuality: 0.1,
+      userExperience: 0.1,
     };
 
     let totalScore = 0;
@@ -328,7 +333,7 @@ class AppGrader {
         this.report.recommendations.push({
           category,
           currentScore: Math.round(score.score),
-          suggestions: this.getRecommendationsForCategory(category, score)
+          suggestions: this.getRecommendationsForCategory(category, score),
         });
       }
     }
@@ -340,50 +345,50 @@ class AppGrader {
         'Optimize images using WebP format',
         'Implement lazy loading for images',
         'Minify CSS and JavaScript files',
-        'Use resource hints (preload, prefetch)'
+        'Use resource hints (preload, prefetch)',
       ],
       accessibility: [
         'Add ARIA labels to interactive elements',
         'Ensure proper heading hierarchy',
         'Add alt text to all images',
-        'Improve keyboard navigation'
+        'Improve keyboard navigation',
       ],
       bestPractices: [
         'Add meta description tags',
         'Implement favicon',
         'Add viewport meta tag',
-        'Improve responsive design'
+        'Improve responsive design',
       ],
       seo: [
         'Optimize title tags',
         'Improve heading structure',
         'Create sitemap.xml',
-        'Add meta robots tag'
+        'Add meta robots tag',
       ],
       security: [
         'Implement security headers',
         'Add form validation',
         'Enable HTTPS',
-        'Implement CSRF protection'
+        'Implement CSRF protection',
       ],
       features: [
         'Complete customer dashboard',
         'Enhance admin features',
         'Add payment processing',
-        'Implement user profiles'
+        'Implement user profiles',
       ],
       codeQuality: [
         'Organize file structure',
         'Implement component-based CSS',
         'Modularize JavaScript',
-        'Add code documentation'
+        'Add code documentation',
       ],
       userExperience: [
         'Improve navigation',
         'Add loading states',
         'Enhance feedback mechanisms',
-        'Optimize mobile experience'
-      ]
+        'Optimize mobile experience',
+      ],
     };
 
     return recommendations[category].slice(0, 2);
@@ -398,11 +403,11 @@ class AppGrader {
           category,
           {
             score: Math.round(data.score),
-            details: data.details
-          }
+            details: data.details,
+          },
         ])
       ),
-      recommendations: this.report.recommendations
+      recommendations: this.report.recommendations,
     };
 
     const reportDir = 'reports';
@@ -412,10 +417,10 @@ class AppGrader {
 
     const filename = `app_grade_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
     fs.writeFileSync(path.join(reportDir, filename), JSON.stringify(report, null, 2));
-    
+
     console.log(`\nGrading complete! Report saved to ${filename}`);
     console.log(`Overall Score: ${report.overallScore}/100`);
-    
+
     // Print detailed scores
     console.log('\nDetailed Scores:');
     for (const [category, data] of Object.entries(report.grades)) {
@@ -436,22 +441,22 @@ class AppGrader {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the grader
 const grader = new AppGrader();
-grader.runAllChecks(); 
+grader.runAllChecks();

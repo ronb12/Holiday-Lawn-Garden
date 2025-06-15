@@ -12,42 +12,23 @@
     },
     "accessibility": {
       "score": 62,
-      "details": [
-        "ARIA attributes: 25/40",
-        "Image alt text: 18/30",
-        "Semantic HTML: 19/30"
-      ]
+      "details": ["ARIA attributes: 25/40", "Image alt text: 18/30", "Semantic HTML: 19/30"]
     },
     "bestPractices": {
       "score": 37,
-      "details": [
-        "Meta tags: 10/30",
-        "Favicon: 9/20",
-        "Responsive design: 18/50"
-      ]
+      "details": ["Meta tags: 10/30", "Favicon: 9/20", "Responsive design: 18/50"]
     },
     "seo": {
       "score": 51,
-      "details": [
-        "Title tags: 23/40",
-        "Heading structure: 8/40",
-        "Sitemap: 20/20"
-      ]
+      "details": ["Title tags: 23/40", "Heading structure: 8/40", "Sitemap: 20/20"]
     },
     "security": {
       "score": 100,
-      "details": [
-        "HTTPS: 40/40",
-        "Security headers: 30/30",
-        "Form validation: 30/30"
-      ]
+      "details": ["HTTPS: 40/40", "Security headers: 30/30", "Form validation: 30/30"]
     },
     "features": {
       "score": 83,
-      "details": [
-        "Customer features: 100/100",
-        "Admin features: 66.66/100"
-      ]
+      "details": ["Customer features: 100/100", "Admin features: 66.66/100"]
     },
     "codeQuality": {
       "score": 70,
@@ -59,61 +40,39 @@
     },
     "userExperience": {
       "score": 70,
-      "details": [
-        "Navigation: 40/40",
-        "User feedback: 0/30",
-        "Responsive design: 30/30"
-      ]
+      "details": ["Navigation: 40/40", "User feedback: 0/30", "Responsive design: 30/30"]
     }
   },
   "recommendations": [
     {
       "category": "performance",
       "currentScore": 55,
-      "suggestions": [
-        "Optimize images using WebP format",
-        "Implement lazy loading for images"
-      ]
+      "suggestions": ["Optimize images using WebP format", "Implement lazy loading for images"]
     },
     {
       "category": "accessibility",
       "currentScore": 62,
-      "suggestions": [
-        "Add ARIA labels to interactive elements",
-        "Ensure proper heading hierarchy"
-      ]
+      "suggestions": ["Add ARIA labels to interactive elements", "Ensure proper heading hierarchy"]
     },
     {
       "category": "bestPractices",
       "currentScore": 37,
-      "suggestions": [
-        "Add meta description tags",
-        "Implement favicon"
-      ]
+      "suggestions": ["Add meta description tags", "Implement favicon"]
     },
     {
       "category": "seo",
       "currentScore": 51,
-      "suggestions": [
-        "Optimize title tags",
-        "Improve heading structure"
-      ]
+      "suggestions": ["Optimize title tags", "Improve heading structure"]
     },
     {
       "category": "codeQuality",
       "currentScore": 70,
-      "suggestions": [
-        "Organize file structure",
-        "Implement component-based CSS"
-      ]
+      "suggestions": ["Organize file structure", "Implement component-based CSS"]
     },
     {
       "category": "userExperience",
       "currentScore": 70,
-      "suggestions": [
-        "Improve navigation",
-        "Add loading states"
-      ]
+      "suggestions": ["Improve navigation", "Add loading states"]
     }
   ]
 }

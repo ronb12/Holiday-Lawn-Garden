@@ -1,4 +1,3 @@
-
 // minifier.js
 const fs = require('fs');
 const path = require('path');
@@ -25,7 +24,7 @@ class Minifier {
         const css = fs.readFileSync(file, 'utf8');
         const minified = new CleanCSS({
           level: 2,
-          format: 'keep-breaks'
+          format: 'keep-breaks',
         }).minify(css);
 
         const minPath = this.getMinPath(file);
@@ -48,8 +47,8 @@ class Minifier {
           compress: true,
           mangle: true,
           format: {
-            comments: false
-          }
+            comments: false,
+          },
         });
 
         const minPath = this.getMinPath(file);
@@ -71,26 +70,24 @@ class Minifier {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext)) && !file.includes('.min.')) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the minifier
 const minifier = new Minifier();
-minifier.minifyAll(); 
+minifier.minifyAll();
 
-export {
-  Minifier
-};
+export { Minifier };

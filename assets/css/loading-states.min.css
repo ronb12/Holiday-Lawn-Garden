@@ -1,14 +1,83 @@
-.loading-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:9999;color:#fff}
-.spinner{width:50px;height:50px;border:5px solid #f3f3f3;border-top:5px solid #3498db;border-radius:50%;animation:1s linear infinite spin;margin-bottom:1rem}
-@keyframes spin{
-0%{transform:rotate(0)}
-100%{transform:rotate(360deg)}
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  color: #fff;
 }
-.button-with-loading{position:relative;transition:.3s}
-.button-with-loading.loading{pointer-events:none;opacity:.7}
-.button-with-loading.loading::after{content:'';position:absolute;width:20px;height:20px;top:50%;left:50%;margin:-10px 0 0 -10px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:1s linear infinite spin}
-.form-with-loading.loading,.form-with-loading.loading button[type=submit]{pointer-events:none;opacity:.7}
-.link-with-loading{position:relative;transition:.3s}
-.link-with-loading.loading{pointer-events:none;opacity:.7}
-.link-with-loading.loading::after{content:'';position:absolute;width:16px;height:16px;top:50%;left:50%;margin:-8px 0 0 -8px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:1s linear infinite spin}
-#loading-message{font-size:1.2rem;margin-top:1rem;text-align:center}
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: 1s linear infinite spin;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.button-with-loading {
+  position: relative;
+  transition: 0.3s;
+}
+.button-with-loading.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.button-with-loading.loading::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: 1s linear infinite spin;
+}
+.form-with-loading.loading,
+.form-with-loading.loading button[type='submit'] {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.link-with-loading {
+  position: relative;
+  transition: 0.3s;
+}
+.link-with-loading.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.link-with-loading.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin: -8px 0 0 -8px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: 1s linear infinite spin;
+}
+#loading-message {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  text-align: center;
+}

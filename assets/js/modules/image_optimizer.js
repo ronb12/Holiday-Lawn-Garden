@@ -1,4 +1,3 @@
-
 // image_optimizer.js
 const sharp = require('sharp');
 const fs = require('fs');
@@ -39,7 +38,7 @@ class ImageOptimizer {
     if (metadata.width > this.maxWidth) {
       image.resize(this.maxWidth, null, {
         fit: 'inside',
-        withoutEnlargement: true
+        withoutEnlargement: true,
       });
     }
 
@@ -57,9 +56,7 @@ class ImageOptimizer {
 
   async createWebP(imagePath) {
     const webpPath = this.getWebPPath(imagePath);
-    await sharp(imagePath)
-      .webp({ quality: this.quality })
-      .toFile(webpPath);
+    await sharp(imagePath).webp({ quality: this.quality }).toFile(webpPath);
   }
 
   getOptimizedPath(imagePath) {
@@ -78,26 +75,24 @@ class ImageOptimizer {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.toLowerCase().endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the optimizer
 const optimizer = new ImageOptimizer();
-optimizer.optimizeImages(); 
+optimizer.optimizeImages();
 
-export {
-  ImageOptimizer
-};
+export { ImageOptimizer };

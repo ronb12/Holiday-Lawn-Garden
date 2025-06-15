@@ -51,7 +51,7 @@
 }
 
 .content-text ul li:before {
-  content: "•";
+  content: '•';
   color: var(--primary-color);
   position: absolute;
   left: 0;
@@ -166,4 +166,4 @@
   .card-grid {
     grid-template-columns: 1fr;
   }
-} 
+}

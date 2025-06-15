@@ -7,12 +7,14 @@ const LIVE_BASE = 'https://ronb12.github.io/Holliday-Lawn-Garden/';
 const htmlFiles = fs.readdirSync('.').filter(f => f.endsWith('.html'));
 
 function checkUrl(url) {
-  return new Promise((resolve) => {
-    https.get(url, (res) => {
-      resolve({ url, status: res.statusCode });
-    }).on('error', () => {
-      resolve({ url, status: 'ERROR' });
-    });
+  return new Promise(resolve => {
+    https
+      .get(url, res => {
+        resolve({ url, status: res.statusCode });
+      })
+      .on('error', () => {
+        resolve({ url, status: 'ERROR' });
+      });
   });
 }
 
@@ -27,4 +29,4 @@ function checkUrl(url) {
       console.log(`❌ ${file} is MISSING or ERROR (Status: ${result.status}) (${url})`);
     }
   }
-})(); 
+})();

@@ -1,5 +1,5 @@
 // Tab functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabPanes = document.querySelectorAll('.tab-pane');
 
@@ -17,4 +17,4 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById(tabId).classList.add('active');
     });
   });
-}); 
+});

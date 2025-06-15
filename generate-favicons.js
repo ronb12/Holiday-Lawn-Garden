@@ -7,7 +7,7 @@ const sizes = {
   'favicon-32x32.png': 32,
   'apple-touch-icon.png': 180,
   'android-chrome-192x192.png': 192,
-  'android-chrome-512x512.png': 512
+  'android-chrome-512x512.png': 512,
 };
 
 const sourceLogo = 'assets/images/hollidays-logo.optimized-1280.png';
@@ -25,4 +25,4 @@ Object.entries(sizes).forEach(([filename, size]) => {
     .toFile(path.join(outputDir, filename))
     .then(() => console.log(`Generated ${filename}`))
     .catch(err => console.error(`Error generating ${filename}:`, err));
-}); 
+});

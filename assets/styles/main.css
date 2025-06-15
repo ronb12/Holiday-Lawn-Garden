@@ -1,5 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
-@import url("variables.css");
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('variables.css');
 
 /* Base Styles */
 :root {
@@ -9,7 +9,7 @@
   --color-accent: #81c784;
   --color-text: #222;
   --color-text-light: #666;
-  --color-white: #FFFFFF;
+  --color-white: #ffffff;
   --color-background: #f5fff7;
   --color-border: #e0e0e0;
   --color-error: #d32f2f;
@@ -49,14 +49,14 @@
   --z-index-modal: 2000;
   --z-index-tooltip: 3000;
   --z-index-fixed: 4000;
-  --primary-green: #2E7D32;
-  --light-green: #4CAF50;
-  --lighter-green: #81C784;
-  --dark-green: #1B5E20;
-  --accent-green: #8BC34A;
-  --background-light: #F1F8E9;
-  --text-dark: #1B1B1B;
-  --text-light: #FFFFFF;
+  --primary-green: #2e7d32;
+  --light-green: #4caf50;
+  --lighter-green: #81c784;
+  --dark-green: #1b5e20;
+  --accent-green: #8bc34a;
+  --background-light: #f1f8e9;
+  --text-dark: #1b1b1b;
+  --text-light: #ffffff;
 }
 
 * {
@@ -78,12 +78,16 @@ body {
   overflow-x: hidden;
 }
 
-button, .cta-button, .submit-button {
+button,
+.cta-button,
+.submit-button {
   font-family: 'Montserrat', 'Inter', Arial, sans-serif !important;
   border-radius: 8px !important;
 }
 
-.service-card, .testimonial-card, .value-card {
+.service-card,
+.testimonial-card,
+.value-card {
   border-radius: 8px !important;
   font-family: var(--font-family), sans-serif;
 }
@@ -209,7 +213,7 @@ nav {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
   z-index: 2;
 }
 
@@ -226,19 +230,19 @@ nav {
 .hero-content h1 {
   font-size: 3rem;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-content h2 {
   font-size: 2rem;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .hero-content p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .hero-buttons {
@@ -282,7 +286,7 @@ nav {
   padding: 1.5rem;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Services Grid */
@@ -298,7 +302,9 @@ nav {
   border-radius: var(--border-radius-lg);
   padding: 2rem;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   text-align: left;
 }
 
@@ -431,7 +437,9 @@ nav {
   border-radius: var(--border-radius-lg);
   padding: 2rem;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .testimonial-card:hover {
@@ -634,7 +642,7 @@ nav {
   cursor: pointer;
 }
 
-.checkbox-container input[type="checkbox"] {
+.checkbox-container input[type='checkbox'] {
   width: 18px;
   height: 18px;
   cursor: pointer;
@@ -943,19 +951,19 @@ footer::before {
 }
 
 .phone-button {
-  background: #25D366;
+  background: #25d366;
 }
 
 .phone-button:hover {
-  background: #128C7E;
+  background: #128c7e;
 }
 
 .email-button {
-  background: #EA4335;
+  background: #ea4335;
 }
 
 .email-button:hover {
-  background: #C5221F;
+  background: #c5221f;
 }
 
 .cache-button {
@@ -983,7 +991,7 @@ footer::before {
   .nav-links {
     gap: 1rem;
   }
-  
+
   .nav-links a {
     font-size: 0.9rem;
     padding: 0.4rem 0.6rem;
@@ -1182,7 +1190,7 @@ footer::before {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
@@ -1611,7 +1619,9 @@ footer::before {
   border-radius: var(--border-radius-lg);
   text-align: center;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .value-card:hover {
@@ -1740,9 +1750,12 @@ footer::before {
     white-space: nowrap;
     color: var(--text-dark);
     background: none;
-    transition: background 0.2s, color 0.2s;
+    transition:
+      background 0.2s,
+      color 0.2s;
   }
-  .nav-links a.active, .nav-links a:focus {
+  .nav-links a.active,
+  .nav-links a:focus {
     background: var(--light-green);
     color: var(--text-light);
   }
@@ -1792,9 +1805,9 @@ footer::before {
     margin-bottom: 1rem;
   }
 
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
   textarea {
     width: 100%;
     font-size: 16px; /* Prevent zoom on iOS */
@@ -1843,9 +1856,9 @@ footer::before {
     font-size: 0.9rem;
   }
 
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
   textarea {
     font-size: 16px;
   }
@@ -1860,13 +1873,13 @@ footer::before {
 }
 
 /* Fix for iOS input zoom */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
   select,
   textarea,
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"] {
+  input[type='text'],
+  input[type='email'],
+  input[type='tel'],
+  input[type='number'] {
     font-size: 16px;
   }
 }

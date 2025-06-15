@@ -1,4 +1,3 @@
-
 // main.js
 // Use window.firebase (from the script tag in HTML) instead.
 // Add null checks before all addEventListener calls, e.g.:
@@ -10,7 +9,7 @@ import { CONFIG } from './config.js';
 import { ErrorHandler, handleError } from './error-handler.js';
 
 // Main JavaScript for Holliday Lawn & Garden website
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   try {
     // Initialize UI components
     initializeUI();
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.querySelector('.mobile-menu-close');
     const navLinks = document.querySelector('.nav-links');
     if (closeBtn && navLinks) {
-      closeBtn.addEventListener('click', function() {
+      closeBtn.addEventListener('click', function () {
         navLinks.classList.remove('active');
         document.body.classList.remove('menu-open');
       });
@@ -76,7 +75,7 @@ function initializeUI() {
         tabHeaders.forEach(h => {
           const tabContent = h.parentElement.querySelector('.nav-tab-content');
           const tabIcon = h.querySelector('.fa-chevron-down');
-          
+
           h.classList.remove('active');
           h.setAttribute('aria-selected', 'false');
           h.setAttribute('aria-expanded', 'false');
@@ -101,7 +100,7 @@ function initializeUI() {
       });
 
       // Add keyboard support
-      header.addEventListener('keydown', (e) => {
+      header.addEventListener('keydown', e => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           header.click();
@@ -116,7 +115,7 @@ function initializeUI() {
         tabHeaders.forEach(header => {
           const content = header.parentElement.querySelector('.nav-tab-content');
           const icon = header.querySelector('.fa-chevron-down');
-          
+
           header.classList.remove('active');
           header.setAttribute('aria-selected', 'false');
           header.setAttribute('aria-expanded', 'false');
@@ -130,13 +129,13 @@ function initializeUI() {
     });
 
     // Handle escape key
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         // Close all tabs
         tabHeaders.forEach(header => {
           const content = header.parentElement.querySelector('.nav-tab-content');
           const icon = header.querySelector('.fa-chevron-down');
-          
+
           header.classList.remove('active');
           header.setAttribute('aria-selected', 'false');
           header.setAttribute('aria-expanded', 'false');
@@ -150,13 +149,13 @@ function initializeUI() {
     });
 
     // Handle outside clicks
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (!navLinks.contains(e.target)) {
         // Close all tabs
         tabHeaders.forEach(header => {
           const content = header.parentElement.querySelector('.nav-tab-content');
           const icon = header.querySelector('.fa-chevron-down');
-          
+
           header.classList.remove('active');
           header.setAttribute('aria-selected', 'false');
           header.setAttribute('aria-expanded', 'false');
@@ -172,13 +171,13 @@ function initializeUI() {
 
   // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function(e) {
+    anchor.addEventListener('click', function (e) {
       e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
+      const target = document.querySelector(this.getAttribute('href'));
       if (target) {
         target.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
+          behavior: 'smooth',
+          block: 'start',
         });
       }
     });
@@ -221,13 +220,13 @@ function initializeFirebase() {
     if (typeof firebase !== 'undefined') {
       const auth = firebase.auth();
       const db = firebase.firestore();
-      
+
       // Log page view if analytics is available
       if (firebase.analytics) {
         firebase.analytics().logEvent('page_view', {
           page_title: document.title,
           page_location: window.location.href,
-          page_path: window.location.pathname
+          page_path: window.location.pathname,
         });
       }
     }
@@ -238,12 +237,12 @@ function initializeFirebase() {
 
 function handleFormSubmit(event) {
   event.preventDefault();
-  
+
   try {
     const form = event.target;
     const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
-    
+
     // Handle form submission based on form type
     switch (form.id) {
       case 'contact-form':
@@ -266,10 +265,10 @@ function handleFormSubmit(event) {
 function handleNavigation(event) {
   const link = event.currentTarget;
   const href = link.getAttribute('href');
-  
+
   // Add loading state
   document.body.classList.add('loading');
-  
+
   // Handle navigation
   if (href && href.startsWith('/')) {
     event.preventDefault();
@@ -285,11 +284,11 @@ function initTabs() {
   tabButtons.forEach(button => {
     button.addEventListener('click', () => {
       const tabId = button.getAttribute('data-tab');
-      
+
       // Update active states
       tabButtons.forEach(btn => btn.classList.remove('active'));
       tabContents.forEach(content => content.classList.remove('active'));
-      
+
       button.classList.add('active');
       document.getElementById(tabId).classList.add('active');
     });
@@ -307,7 +306,7 @@ function initializeComponents() {
   if (typeof AOS !== 'undefined') {
     AOS.init();
   }
-  
+
   // Initialize any custom components
   initializeCustomComponents();
 }
@@ -323,9 +322,8 @@ export {
   registerServiceWorker,
   initializeFirebase,
   handleFormSubmit,
-  handleNavigation
+  handleNavigation,
 };
-
 
 export {
   initializeUI,
@@ -336,5 +334,5 @@ export {
   handleNavigation,
   initTabs,
   initializeComponents,
-  initializeCustomComponents
+  initializeCustomComponents,
 };

@@ -1,12 +1,12 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw",
-  authDomain: "holiday-lawn-and-garden.firebaseapp.com",
-  projectId: "holiday-lawn-and-garden",
-  storageBucket: "holiday-lawn-and-garden.firebasestorage.app",
-  messagingSenderId: "135322230444",
-  appId: "1:135322230444:web:1a487b25a48aae07368909",
-  measurementId: "G-KD6TBWR4ZT"
+  apiKey: 'AIzaSyACm0j7I8RX4ExIQRoejfk1HZMOQRGigBw',
+  authDomain: 'holiday-lawn-and-garden.firebaseapp.com',
+  projectId: 'holiday-lawn-and-garden',
+  storageBucket: 'holiday-lawn-and-garden.firebasestorage.app',
+  messagingSenderId: '135322230444',
+  appId: '1:135322230444:web:1a487b25a48aae07368909',
+  measurementId: 'G-KD6TBWR4ZT',
 };
 
 // Initialize Firebase
@@ -16,7 +16,7 @@ if (!firebase.apps.length) {
     // Initialize analytics
     firebase.analytics();
   } catch (error) {
-    console.error("Firebase initialization error:", error);
+    console.error('Firebase initialization error:', error);
   }
 }
 
@@ -32,7 +32,7 @@ window.db = db;
 window.auth = auth;
 
 // Initialize Firebase DB
-window.initializeFirebaseDB = function() {
+window.initializeFirebaseDB = function () {
   return new Promise((resolve, reject) => {
     try {
       if (window.firebaseConfig) {
@@ -44,4 +44,4 @@ window.initializeFirebaseDB = function() {
       reject(error);
     }
   });
-}; 
+};

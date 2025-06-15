@@ -45,10 +45,7 @@
       "type": "image/png"
     }
   ],
-  "categories": [
-    "business",
-    "lifestyle"
-  ],
+  "categories": ["business", "lifestyle"],
   "prefer_related_applications": false,
   "shortcuts": [
     {

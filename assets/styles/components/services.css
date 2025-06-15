@@ -28,10 +28,13 @@
   max-width: 300px;
   margin: 1em 0;
   text-align: center;
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition:
+    transform var(--transition),
+    box-shadow var(--transition);
 }
 
-.service-card:hover, .service-card:focus {
+.service-card:hover,
+.service-card:focus {
   transform: translateY(-6px) scale(1.03);
   box-shadow: 0 6px 24px var(--color-shadow);
   background: var(--color-primary);
@@ -82,4 +85,4 @@
   .services-grid {
     grid-template-columns: 1fr;
   }
-} 
+}

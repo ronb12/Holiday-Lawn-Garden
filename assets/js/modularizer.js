@@ -24,11 +24,11 @@ class Modularizer {
 
         const content = fs.readFileSync(file, 'utf8');
         const moduleName = this.getModuleName(file);
-        
+
         // Create module file
         const moduleContent = this.createModuleContent(content, moduleName);
         const modulePath = path.join(this.modulesDir, `${moduleName}.js`);
-        
+
         fs.writeFileSync(modulePath, moduleContent);
         console.log(`✓ Created module ${moduleName}`);
       } catch (error) {
@@ -60,11 +60,11 @@ export {
     // Find all function and class declarations
     const functions = content.match(/function\s+(\w+)/g) || [];
     const classes = content.match(/class\s+(\w+)/g) || [];
-    
+
     // Clean up matches
     const exports = [
       ...functions.map(f => f.replace('function ', '')),
-      ...classes.map(c => c.replace('class ', ''))
+      ...classes.map(c => c.replace('class ', '')),
     ];
 
     return exports.join(',\n  ');
@@ -73,22 +73,22 @@ export {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the modularizer
 const modularizer = new Modularizer();
-modularizer.modularize(); 
+modularizer.modularize();

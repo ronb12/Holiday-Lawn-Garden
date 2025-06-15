@@ -1,6 +1,6 @@
 /* Main Styles */
 :root {
-  --primary-color: #4CAF50;
+  --primary-color: #4caf50;
   --primary-color-dark: #45a049;
   --primary-color-light: #81c784;
   --secondary-color: #222;
@@ -10,7 +10,7 @@
   --white: #ffffff;
   --light-bg: #f0f0f0;
   --error-color: #ff4444;
-  --success-color: #4CAF50;
+  --success-color: #4caf50;
   --warning-color: #ff9800;
   --border-color: #ddd;
   --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -209,7 +209,7 @@ nav {
   .logo {
     max-width: 150px;
   }
-  
+
   .logo img {
     max-height: 50px;
   }
@@ -274,9 +274,9 @@ nav {
   font-size: 16px;
 }
 
-.form-group input[type="text"],
-.form-group input[type="email"],
-.form-group input[type="tel"] {
+.form-group input[type='text'],
+.form-group input[type='email'],
+.form-group input[type='tel'] {
   width: 100%;
   min-height: 44px;
   padding: 12px 15px;
@@ -287,12 +287,14 @@ nav {
   color: #222;
   box-shadow: 0 2px 8px rgba(56, 142, 60, 0.04);
   margin-bottom: 18px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
-.form-group input[type="text"]:focus,
-.form-group input[type="email"]:focus,
-.form-group input[type="tel"]:focus {
+.form-group input[type='text']:focus,
+.form-group input[type='email']:focus,
+.form-group input[type='tel']:focus {
   border-color: #43a047;
   box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.18);
   outline: none;
@@ -301,7 +303,7 @@ nav {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-  border-color: #4CAF50;
+  border-color: #4caf50;
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
   outline: none;
 }
@@ -309,7 +311,7 @@ nav {
 .form-group input:hover,
 .form-group select:hover,
 .form-group textarea:hover {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .form-group input::placeholder,
@@ -343,7 +345,7 @@ nav {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 8px;
@@ -512,16 +514,16 @@ nav {
   .footer {
     padding: 2rem 0;
   }
-  
+
   .footer-main {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .footer-section {
     text-align: center;
   }
-  
+
   .footer-social {
     justify-content: center;
   }
@@ -776,11 +778,11 @@ nav {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #4CAF50;
+  background: #4caf50;
   color: white;
   padding: 1rem;
   border-radius: 5px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -789,7 +791,7 @@ nav {
 
 .update-notification button {
   background: white;
-  color: #4CAF50;
+  color: #4caf50;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 3px;
@@ -957,8 +959,10 @@ nav {
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -968,7 +972,7 @@ nav {
 
 .service-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .service-card img {
@@ -1010,7 +1014,7 @@ nav {
 }
 
 .service-card ul li:before {
-  content: "•";
+  content: '•';
   color: var(--primary-color);
   position: absolute;
   left: 0;
@@ -1027,7 +1031,9 @@ nav {
   border-radius: 5px;
   text-decoration: none;
   font-weight: 600;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
   border: 2px solid var(--primary-color);
   text-align: center;
   display: inline-block;
@@ -1036,7 +1042,7 @@ nav {
 .service-card .btn:hover {
   background-color: var(--primary-color-dark);
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .service-card .btn:active {
@@ -1146,11 +1152,11 @@ nav {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .service-card {
     padding: 1.5rem;
   }
-  
+
   .service-emoji {
     font-size: 3rem;
   }
@@ -1180,8 +1186,10 @@ nav {
   border-radius: 8px;
   padding: 2rem;
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1191,7 +1199,7 @@ nav {
 
 .education-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .education-emoji {
@@ -1237,7 +1245,7 @@ nav {
 }
 
 .education-card ul li:before {
-  content: "•";
+  content: '•';
   color: var(--primary-color);
   position: absolute;
   left: 0;
@@ -1254,7 +1262,9 @@ nav {
   border-radius: 5px;
   text-decoration: none;
   font-weight: 600;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease;
   border: 2px solid var(--primary-color);
   text-align: center;
   display: inline-block;
@@ -1263,7 +1273,7 @@ nav {
 .education-card .btn:hover {
   background-color: var(--primary-color-dark);
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .education-card .btn:active {
@@ -1325,11 +1335,11 @@ nav {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
+
   .faq-item {
     padding: 1.5rem;
   }
-  
+
   .cta-section {
     padding: 2rem 1rem;
   }
@@ -1576,7 +1586,7 @@ nav {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .payment-form {
@@ -1612,11 +1622,11 @@ nav {
 }
 
 .payment-option:hover {
-  border-color: #4CAF50;
+  border-color: #4caf50;
   background: rgba(76, 175, 80, 0.05);
 }
 
-.payment-option input[type="radio"] {
+.payment-option input[type='radio'] {
   margin: 0;
 }
 
@@ -1629,7 +1639,7 @@ nav {
 }
 
 .payment-option i {
-  color: #4CAF50;
+  color: #4caf50;
   font-size: 1.25rem;
 }
 
@@ -1660,7 +1670,7 @@ nav {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .info-card h3 {
@@ -1683,7 +1693,7 @@ nav {
 }
 
 .info-content i {
-  color: #4CAF50;
+  color: #4caf50;
   font-size: 1.25rem;
   width: 24px;
   text-align: center;
@@ -1693,15 +1703,15 @@ nav {
   .payment-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .payment-info {
     order: -1;
   }
-  
+
   .info-card {
     padding: 1.5rem;
   }
-  
+
   .form-row {
     grid-template-columns: 1fr;
   }
@@ -2146,4 +2156,4 @@ nav {
     width: 100%;
     max-width: 300px;
   }
-} 
+}

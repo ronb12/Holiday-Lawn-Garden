@@ -8,7 +8,8 @@
   box-shadow: 0 2px 8px var(--color-primary-dark);
 }
 
-.error-boundary h1, .error-boundary h2 {
+.error-boundary h1,
+.error-boundary h2 {
   color: var(--color-primary-dark);
 }
 
@@ -96,4 +97,4 @@
   .error-details pre {
     font-size: 0.75rem;
   }
-} 
+}

@@ -7,7 +7,7 @@ class FormValidator {
   }
 
   setupValidation() {
-    this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+    this.form.addEventListener('submit', e => this.handleSubmit(e));
     this.form.querySelectorAll('input, textarea, select').forEach(field => {
       field.addEventListener('blur', () => this.validateField(field));
       field.addEventListener('input', () => this.validateField(field));
@@ -50,7 +50,7 @@ class FormValidator {
 
   updateFieldState(field, isValid, errorMessage) {
     const errorElement = field.parentElement.querySelector('.error-message');
-    
+
     if (!isValid) {
       field.classList.add('error');
       if (!errorElement) {
@@ -73,11 +73,11 @@ class FormValidator {
 
   async handleSubmit(e) {
     e.preventDefault();
-    
+
     // Validate all fields
     const fields = this.form.querySelectorAll('input, textarea, select');
     let isValid = true;
-    
+
     fields.forEach(field => {
       if (!this.validateField(field)) {
         isValid = false;
@@ -92,15 +92,15 @@ class FormValidator {
     try {
       // Show loading state
       this.setLoadingState(true);
-      
+
       // Submit form data
       const formData = new FormData(this.form);
       const response = await fetch(this.form.action, {
         method: this.form.method,
         body: formData,
         headers: {
-          'Accept': 'application/json'
-        }
+          Accept: 'application/json',
+        },
       });
 
       if (!response.ok) {
@@ -108,11 +108,10 @@ class FormValidator {
       }
 
       const result = await response.json();
-      
+
       // Show success message
       this.showSuccessMessage('Thank you for your submission!');
       this.form.reset();
-      
     } catch (error) {
       console.error('Form submission error:', error);
       this.showFormError('An error occurred. Please try again later.');
@@ -125,18 +124,17 @@ class FormValidator {
     const submitButton = this.form.querySelector('button[type="submit"]');
     if (submitButton) {
       submitButton.disabled = isLoading;
-      submitButton.innerHTML = isLoading ? 
-        '<span class="spinner"></span> Submitting...' : 
-        submitButton.dataset.originalText || 'Submit';
+      submitButton.innerHTML = isLoading
+        ? '<span class="spinner"></span> Submitting...'
+        : submitButton.dataset.originalText || 'Submit';
     }
   }
 
   showFormError(message) {
-    const errorContainer = this.form.querySelector('.form-error') || 
-      document.createElement('div');
+    const errorContainer = this.form.querySelector('.form-error') || document.createElement('div');
     errorContainer.className = 'form-error';
     errorContainer.textContent = message;
-    
+
     if (!this.form.querySelector('.form-error')) {
       this.form.insertBefore(errorContainer, this.form.firstChild);
     }
@@ -146,9 +144,9 @@ class FormValidator {
     const successContainer = document.createElement('div');
     successContainer.className = 'form-success';
     successContainer.textContent = message;
-    
+
     this.form.insertBefore(successContainer, this.form.firstChild);
-    
+
     // Remove success message after 5 seconds
     setTimeout(() => {
       successContainer.remove();
@@ -161,4 +159,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('form').forEach(form => {
     new FormValidator(form);
   });
-}); 
+});

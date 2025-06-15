@@ -55,7 +55,9 @@
   color: var(--color-text-dark);
   padding: 0.5em 0.75em;
   border-radius: var(--border-radius);
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   white-space: nowrap;
   text-decoration: none;
   font-size: 0.95rem;
@@ -175,4 +177,4 @@ body {
   body {
     padding-top: 60px;
   }
-} 
+}

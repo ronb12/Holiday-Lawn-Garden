@@ -1,4 +1,3 @@
-
 // config.js
 // Global configuration
 export const CONFIG = {
@@ -9,13 +8,11 @@ export const CONFIG = {
     SERVICE_WORKER: 'Service Worker registration failed. Some features may not work offline.',
     FIREBASE_INIT: 'Failed to initialize Firebase. Please refresh the page.',
     NETWORK_ERROR: 'Network error. Please check your connection.',
-    AUTH_ERROR: 'Authentication error. Please try again.'
-  }
+    AUTH_ERROR: 'Authentication error. Please try again.',
+  },
 };
 
 // Also make it available globally for non-module scripts
-window.CONFIG = CONFIG; 
+window.CONFIG = CONFIG;
 
-export {
-  
-};
+export {};

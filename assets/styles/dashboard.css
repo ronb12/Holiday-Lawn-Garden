@@ -18,7 +18,7 @@
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
   color: var(--text-color);
   background-color: var(--light-gray);
   line-height: 1.6;
@@ -793,7 +793,7 @@ body {
 
 /* Message editing styles */
 .message-content.edited::after {
-  content: "(edited)";
+  content: '(edited)';
   font-size: 0.75rem;
   opacity: 0.7;
   margin-left: 8px;
@@ -809,7 +809,7 @@ body {
   border-top: 1px solid var(--border-color);
 }
 
-.file-upload-container input[type="file"] {
+.file-upload-container input[type='file'] {
   display: none;
 }
 

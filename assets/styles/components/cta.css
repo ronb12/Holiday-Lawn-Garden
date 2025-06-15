@@ -51,11 +51,14 @@
   font-size: 1.1em;
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition), color var(--transition);
+  transition:
+    background var(--transition),
+    color var(--transition);
   box-shadow: 0 2px 8px var(--color-shadow);
 }
 
-.cta-section .cta-btn:hover, .cta-section .cta-btn:focus {
+.cta-section .cta-btn:hover,
+.cta-section .cta-btn:focus {
   background: var(--color-primary-dark);
   color: var(--color-text-light);
 }
@@ -146,4 +149,4 @@
     width: 100%;
     justify-content: center;
   }
-} 
+}

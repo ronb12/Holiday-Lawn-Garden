@@ -2,8 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 const GREEN_COLORS = [
-  '#388e3c', '#4caf50', '#256029', '#81c784',
-  'var(--color-primary)', 'var(--color-primary-dark)', 'var(--color-primary-light)', 'var(--color-accent)'
+  '#388e3c',
+  '#4caf50',
+  '#256029',
+  '#81c784',
+  'var(--color-primary)',
+  'var(--color-primary-dark)',
+  'var(--color-primary-light)',
+  'var(--color-accent)',
 ];
 
 function scanFileForGreenTheme(filePath) {
@@ -54,4 +60,4 @@ if (cssAllGreen && htmlAllGreen) {
   console.log('\n✅ All files use the professional green theme!');
 } else {
   console.log('\n❌ Some files do not use the green theme. Please review the above results.');
-} 
+}

@@ -1,5 +1,5 @@
 // Tab functionality
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const tabButtons = document.querySelectorAll('.tab-btn');
   const tabPanes = document.querySelectorAll('.tab-pane');
 
@@ -32,13 +32,13 @@ function clearCacheAndReload() {
 
 // Handle PWA installation
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
+window.addEventListener('beforeinstallprompt', e => {
   // Prevent Chrome 67 and earlier from automatically showing the prompt
   e.preventDefault();
   // Stash the event so it can be triggered later
   deferredPrompt = e;
   console.log('✅ PWA install prompt ready');
-  
+
   // Create and show the install button
   const installBtn = document.createElement('button');
   installBtn.id = 'installBtn';
@@ -46,27 +46,27 @@ window.addEventListener('beforeinstallprompt', (e) => {
   installBtn.innerHTML = '<i class="fas fa-download"></i>';
   installBtn.title = 'Install App';
   installBtn.style.display = 'none';
-  
+
   // Add the button to the floating buttons container
   const floatingButtons = document.querySelector('.floating-buttons');
   if (floatingButtons) {
     floatingButtons.appendChild(installBtn);
     installBtn.style.display = 'block';
-    
+
     // Handle install button click
     installBtn.addEventListener('click', async () => {
       if (!deferredPrompt) return;
-      
+
       // Show the install prompt
       deferredPrompt.prompt();
-      
+
       // Wait for the user to respond to the prompt
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`User ${outcome === 'accepted' ? '✅ Installed' : '❌ Dismissed'} the app`);
-      
+
       // Hide the button
       installBtn.style.display = 'none';
-      
+
       // Clear the deferredPrompt
       deferredPrompt = null;
     });
@@ -76,10 +76,11 @@ window.addEventListener('beforeinstallprompt', (e) => {
 // Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js')
+    navigator.serviceWorker
+      .register('/Holliday-Lawn-Garden/service-worker.js')
       .then(registration => {
         console.log('✅ Service Worker registered:', registration.scope);
-        
+
         // Check for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -123,19 +124,19 @@ function initializeFirebaseDB() {
 document.addEventListener('DOMContentLoaded', () => {
   const contactForm = document.getElementById('contactForm');
   if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
+    contactForm.addEventListener('submit', async e => {
       e.preventDefault();
-      
+
       try {
         const formData = new FormData(contactForm);
         const data = Object.fromEntries(formData.entries());
-        
+
         // Add timestamp
         data.timestamp = new Date().toISOString();
-        
+
         // Save to Firestore
         await window.db.collection('contact-submissions').add(data);
-        
+
         // Show success message
         alert('Thank you for your message! We will get back to you soon.');
         contactForm.reset();
@@ -145,4 +146,4 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-}); 
+});

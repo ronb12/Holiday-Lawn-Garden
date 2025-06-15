@@ -1,12 +1,12 @@
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx",
-  authDomain: "holliday-lawn-garden.firebaseapp.com",
-  projectId: "holliday-lawn-garden",
-  storageBucket: "holliday-lawn-garden.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: 'AIzaSyDxXxXxXxXxXxXxXxXxXxXxXxXxXxXxXx',
+  authDomain: 'holliday-lawn-garden.firebaseapp.com',
+  projectId: 'holliday-lawn-garden',
+  storageBucket: 'holliday-lawn-garden.appspot.com',
+  messagingSenderId: '123456789012',
+  appId: '1:123456789012:web:abcdef1234567890',
+  measurementId: 'G-XXXXXXXXXX',
 };
 
 // Initialize Firebase
@@ -20,19 +20,19 @@ const db = firebase.firestore();
 const auth = firebase.auth();
 
 // Handle form submissions
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const quoteForm = document.getElementById('quoteForm');
   if (quoteForm) {
-    quoteForm.addEventListener('submit', async function(e) {
+    quoteForm.addEventListener('submit', async function (e) {
       e.preventDefault();
-      
+
       const formData = {
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         service: document.getElementById('service').value,
         message: document.getElementById('message').value,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       };
 
       try {
@@ -45,4 +45,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
-}); 
+});

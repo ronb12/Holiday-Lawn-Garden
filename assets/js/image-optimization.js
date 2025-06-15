@@ -8,13 +8,10 @@ class ImageOptimizer {
 
   init() {
     if ('IntersectionObserver' in window) {
-      this.imageObserver = new IntersectionObserver(
-        (entries) => this.handleIntersection(entries),
-        {
-          rootMargin: '50px 0px',
-          threshold: 0.01
-        }
-      );
+      this.imageObserver = new IntersectionObserver(entries => this.handleIntersection(entries), {
+        rootMargin: '50px 0px',
+        threshold: 0.01,
+      });
 
       this.images.forEach(image => {
         this.imageObserver.observe(image);
@@ -39,7 +36,7 @@ class ImageOptimizer {
 
     // Create a new image to preload
     const tempImage = new Image();
-    
+
     tempImage.onload = () => {
       image.src = src;
       image.classList.add('loaded');
@@ -101,4 +98,4 @@ style.textContent = `
     object-fit: cover;
   }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

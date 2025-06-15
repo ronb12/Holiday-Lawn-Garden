@@ -13,16 +13,16 @@ class Minifier {
 
   async minify() {
     console.log('Starting minification process...');
-    
+
     // Minify JavaScript files
     await this.minifyJavaScript();
-    
+
     // Minify CSS files
     await this.minifyCSS();
-    
+
     // Minify HTML files
     await this.minifyHTML();
-    
+
     console.log('Minification complete!');
   }
 
@@ -37,12 +37,12 @@ class Minifier {
           const minified = await Terser.minify(content, {
             compress: {
               drop_console: true,
-              drop_debugger: true
+              drop_debugger: true,
             },
             mangle: true,
             format: {
-              comments: false
-            }
+              comments: false,
+            },
           });
 
           const minifiedPath = file.replace('.js', '.min.js');
@@ -65,7 +65,7 @@ class Minifier {
           const content = fs.readFileSync(file, 'utf8');
           const minified = new CleanCSS({
             level: 2,
-            format: 'keep-breaks'
+            format: 'keep-breaks',
           }).minify(content);
 
           const minifiedPath = file.replace('.css', '.min.css');
@@ -93,7 +93,7 @@ class Minifier {
           removeStyleLinkTypeAttributes: true,
           minifyCSS: true,
           minifyJS: true,
-          minifyURLs: true
+          minifyURLs: true,
         });
 
         fs.writeFileSync(file, minified);
@@ -107,22 +107,22 @@ class Minifier {
   findFiles(dir, extensions) {
     let results = [];
     const files = fs.readdirSync(dir);
-    
+
     for (const file of files) {
       const filePath = path.join(dir, file);
       const stat = fs.statSync(filePath);
-      
+
       if (stat.isDirectory()) {
         results = results.concat(this.findFiles(filePath, extensions));
       } else if (extensions.some(ext => file.endsWith(ext))) {
         results.push(filePath);
       }
     }
-    
+
     return results;
   }
 }
 
 // Run the minifier
 const minifier = new Minifier();
-minifier.minify(); 
+minifier.minify();

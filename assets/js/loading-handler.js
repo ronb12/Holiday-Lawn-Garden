@@ -8,7 +8,7 @@ class LoadingHandler {
   initializeEventListeners() {
     // Handle form submissions
     document.querySelectorAll('.form-with-loading').forEach(form => {
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', e => {
         this.showLoading('Processing form...');
         form.classList.add('loading');
       });
@@ -16,7 +16,7 @@ class LoadingHandler {
 
     // Handle button clicks
     document.querySelectorAll('.button-with-loading').forEach(button => {
-      button.addEventListener('click', (e) => {
+      button.addEventListener('click', e => {
         if (!button.closest('form')) {
           this.showLoading('Processing...');
           button.classList.add('loading');
@@ -26,7 +26,7 @@ class LoadingHandler {
 
     // Handle link clicks
     document.querySelectorAll('.link-with-loading').forEach(link => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', e => {
         this.showLoading('Loading page...');
         link.classList.add('loading');
       });
@@ -71,4 +71,4 @@ class LoadingHandler {
 // Initialize loading handler
 document.addEventListener('DOMContentLoaded', () => {
   window.loadingHandler = new LoadingHandler();
-}); 
+});

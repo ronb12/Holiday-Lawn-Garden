@@ -14,24 +14,23 @@ export async function registerServiceWorker() {
       try {
         // Clear all existing caches first
         const cacheNames = await caches.keys();
-        await Promise.all(
-          cacheNames.map(cacheName => caches.delete(cacheName))
-        );
+        await Promise.all(cacheNames.map(cacheName => caches.delete(cacheName)));
         console.log('Cleared old caches');
 
         // Unregister any existing service workers
         const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(
-          registrations.map(registration => registration.unregister())
-        );
+        await Promise.all(registrations.map(registration => registration.unregister()));
         console.log('Unregistered old service workers');
 
         // Register new service worker
-        const registration = await navigator.serviceWorker.register('/Holliday-Lawn-Garden/service-worker.js', {
-          scope: '/Holliday-Lawn-Garden/'
-        });
+        const registration = await navigator.serviceWorker.register(
+          '/Holliday-Lawn-Garden/service-worker.js',
+          {
+            scope: '/Holliday-Lawn-Garden/',
+          }
+        );
         console.log('✅ Service Worker registered:', registration.scope);
-        
+
         // Check for updates
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -49,12 +48,12 @@ export async function registerServiceWorker() {
 }
 
 // Main JavaScript for Holliday Lawn & Garden website
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   try {
     // Initialize UI components
     initializeUI();
     setupEventListeners();
-    
+
     // Register service worker only once
     if (!window.serviceWorkerRegistered) {
       registerServiceWorker().then(() => {
@@ -72,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Robust Hamburger Menu Toggle
-    (function() {
+    (function () {
       const hamburger = document.querySelector('.hamburger');
       const nav = document.querySelector('.main-header nav');
       const navLinks = document.querySelectorAll('.nav-links a');
@@ -81,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!hamburger || !nav) return;
 
       // Toggle menu
-      hamburger.addEventListener('click', function(e) {
+      hamburger.addEventListener('click', function (e) {
         e.stopPropagation();
         hamburger.classList.toggle('active');
         nav.classList.toggle('active');
@@ -94,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // Close menu when clicking a nav link
       navLinks.forEach(link => {
-        link.addEventListener('click', function() {
+        link.addEventListener('click', function () {
           hamburger.classList.remove('active');
           nav.classList.remove('active');
           body.style.overflow = '';
@@ -102,7 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       // Close menu when clicking outside
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', function (e) {
         if (
           nav.classList.contains('active') &&
           !nav.contains(e.target) &&
@@ -115,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       // Close menu on resize
-      window.addEventListener('resize', function() {
+      window.addEventListener('resize', function () {
         if (window.innerWidth > 900 && nav.classList.contains('active')) {
           hamburger.classList.remove('active');
           nav.classList.remove('active');
@@ -130,12 +129,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     window.addEventListener('scroll', () => {
       const currentScroll = window.pageYOffset;
-      
+
       if (currentScroll <= 0) {
         header.classList.remove('scroll-up');
         return;
       }
-      
+
       if (currentScroll > lastScroll && !header.classList.contains('scroll-down')) {
         // Scroll Down
         header.classList.remove('scroll-up');
@@ -148,26 +147,25 @@ document.addEventListener('DOMContentLoaded', function() {
       lastScroll = currentScroll;
     });
 
-  // Smooth scroll for anchor links
-  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener("click", function(e) {
-      e.preventDefault();
-      const target = document.querySelector(this.getAttribute("href"));
-      if (target) {
-        target.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }
+      });
     });
-  });
 
     // Update copyright year
     const yearSpan = document.getElementById('current-year');
     if (yearSpan) {
       yearSpan.textContent = new Date().getFullYear();
     }
-
   } catch (error) {
     console.error('Initialization error:', error);
   }

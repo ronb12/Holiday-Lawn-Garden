@@ -22,7 +22,7 @@
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.6;
@@ -232,7 +232,7 @@ button:disabled {
   .login-card {
     padding: 1.5rem;
   }
-  
+
   .login-header h1 {
     font-size: 1.75rem;
   }
@@ -294,6 +294,6 @@ button:disabled {
   }
 }
 
-.btn-google img[alt="Loading"] {
+.btn-google img[alt='Loading'] {
   animation: spin 1s linear infinite;
 }

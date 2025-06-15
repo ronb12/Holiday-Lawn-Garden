@@ -1,9 +1,8 @@
-
 // tests.js
 // Test utilities and functions
 const runTests = () => {
   console.log('Running application tests...');
-  
+
   // Test service worker registration
   if ('serviceWorker' in navigator) {
     console.log('Service Worker is supported');
@@ -29,8 +28,6 @@ const runTests = () => {
 document.addEventListener('DOMContentLoaded', runTests);
 
 // Export for module usage
-export { runTests }; 
+export { runTests };
 
-export {
-  
-};
+export {};

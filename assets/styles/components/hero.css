@@ -2,8 +2,9 @@
   position: relative;
   height: 80vh;
   min-height: 500px;
-  background: linear-gradient(135deg, rgba(56, 142, 60, 0.32) 0%, rgba(37, 96, 41, 0.32) 100%),
-              url('/assets/images/hero-garden-landscaping.jpg') center/cover no-repeat;
+  background:
+    linear-gradient(135deg, rgba(56, 142, 60, 0.32) 0%, rgba(37, 96, 41, 0.32) 100%),
+    url('/assets/images/hero-garden-landscaping.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,7 +38,7 @@
   margin: 0 auto;
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  animation: heroFadeIn 1.1s cubic-bezier(.4, 0, .2, 1);
+  animation: heroFadeIn 1.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes heroFadeIn {
@@ -75,7 +76,7 @@
   margin-bottom: var(--spacing-lg);
   opacity: 0.97;
   line-height: 1.6;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.10);
+  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .cta-buttons {
@@ -214,4 +215,4 @@
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
-} 
+}
