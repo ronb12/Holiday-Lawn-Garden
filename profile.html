@@ -395,203 +395,206 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    await setPersistence(auth, browserLocalPersistence);
     const db = getFirestore(app);
 
-    // UI Elements
-    const profileName = document.getElementById('profileName');
-    const profileEmail = document.getElementById('profileEmail');
-    const profilePhone = document.getElementById('profilePhone');
-    const profileAddress = document.getElementById('profileAddress');
-    const profileAvatar = document.getElementById('profileAvatar');
-    const emailStatus = document.getElementById('emailStatus');
-    const editProfileBtn = document.getElementById('editProfileBtn');
-    const changePasswordBtn = document.getElementById('changePasswordBtn');
-    const logoutBtn = document.querySelector('.logout-btn');
+    (async () => {
+      await setPersistence(auth, browserLocalPersistence);
 
-    // Modal Elements
-    const profileModal = document.getElementById('profileModal');
-    const closeModal = document.getElementById('closeModal');
-    const profileForm = document.getElementById('profileForm');
-    const phoneError = document.getElementById('phoneError');
-    const emailVerificationStatus = document.getElementById('emailVerificationStatus');
-    const sendVerificationEmailBtn = document.getElementById('sendVerificationEmail');
-    const passwordModal = document.getElementById('passwordModal');
-    const closePasswordModal = document.getElementById('closePasswordModal');
-    const passwordForm = document.getElementById('passwordForm');
-    const passwordError = document.getElementById('passwordError');
-    const confirmPasswordError = document.getElementById('confirmPasswordError');
+      // UI Elements
+      const profileName = document.getElementById('profileName');
+      const profileEmail = document.getElementById('profileEmail');
+      const profilePhone = document.getElementById('profilePhone');
+      const profileAddress = document.getElementById('profileAddress');
+      const profileAvatar = document.getElementById('profileAvatar');
+      const emailStatus = document.getElementById('emailStatus');
+      const editProfileBtn = document.getElementById('editProfileBtn');
+      const changePasswordBtn = document.getElementById('changePasswordBtn');
+      const logoutBtn = document.querySelector('.logout-btn');
 
-    // Feedback helpers
-    function showSuccess(message) {
-      alert(message);
-    }
-    function showError(message) {
-      alert(message);
-    }
+      // Modal Elements
+      const profileModal = document.getElementById('profileModal');
+      const closeModal = document.getElementById('closeModal');
+      const profileForm = document.getElementById('profileForm');
+      const phoneError = document.getElementById('phoneError');
+      const emailVerificationStatus = document.getElementById('emailVerificationStatus');
+      const sendVerificationEmailBtn = document.getElementById('sendVerificationEmail');
+      const passwordModal = document.getElementById('passwordModal');
+      const closePasswordModal = document.getElementById('closePasswordModal');
+      const passwordForm = document.getElementById('passwordForm');
+      const passwordError = document.getElementById('passwordError');
+      const confirmPasswordError = document.getElementById('confirmPasswordError');
 
-    // Auth state
-    let currentUser = null;
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        // Load profile info
-        profileName.textContent = user.displayName || 'Customer';
-        profileEmail.textContent = user.email || '';
-        emailStatus.textContent = user.emailVerified ? '(Verified)' : '(Unverified)';
-        emailStatus.className = user.emailVerified ? 'verified' : 'unverified';
-        // Show/hide verification button
-        sendVerificationEmailBtn.style.display = user.emailVerified ? 'none' : 'block';
-        // Load additional info from Firestore
-        const userRef = doc(db, 'users', user.uid);
+      // Feedback helpers
+      function showSuccess(message) {
+        alert(message);
+      }
+      function showError(message) {
+        alert(message);
+      }
+
+      // Auth state
+      let currentUser = null;
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          currentUser = user;
+          // Load profile info
+          profileName.textContent = user.displayName || 'Customer';
+          profileEmail.textContent = user.email || '';
+          emailStatus.textContent = user.emailVerified ? '(Verified)' : '(Unverified)';
+          emailStatus.className = user.emailVerified ? 'verified' : 'unverified';
+          // Show/hide verification button
+          sendVerificationEmailBtn.style.display = user.emailVerified ? 'none' : 'block';
+          // Load additional info from Firestore
+          const userRef = doc(db, 'users', user.uid);
+          const docSnap = await getDoc(userRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            profilePhone.textContent = data.phone || '-';
+            profileAddress.textContent = data.address || '-';
+            if (data.photoURL) {
+              profileAvatar.src = data.photoURL;
+            }
+          }
+        } else {
+          window.location.href = 'login.html';
+        }
+      });
+
+      // Edit Profile
+      editProfileBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        // Load current info
+        document.getElementById('editName').value = currentUser.displayName || '';
+        document.getElementById('editEmail').value = currentUser.email || '';
+        // Email verification status
+        updateEmailVerificationUI(currentUser);
+        // Load from Firestore
+        const userRef = doc(db, 'users', currentUser.uid);
         const docSnap = await getDoc(userRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          profilePhone.textContent = data.phone || '-';
-          profileAddress.textContent = data.address || '-';
-          if (data.photoURL) {
-            profileAvatar.src = data.photoURL;
-          }
+          document.getElementById('editPhone').value = data.phone || '';
+          document.getElementById('editAddress').value = data.address || '';
         }
-      } else {
-        window.location.href = 'login.html';
-      }
-    });
-
-    // Edit Profile
-    editProfileBtn.addEventListener('click', async () => {
-      if (!currentUser) return;
-      // Load current info
-      document.getElementById('editName').value = currentUser.displayName || '';
-      document.getElementById('editEmail').value = currentUser.email || '';
-      // Email verification status
-      updateEmailVerificationUI(currentUser);
-      // Load from Firestore
-      const userRef = doc(db, 'users', currentUser.uid);
-      const docSnap = await getDoc(userRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        document.getElementById('editPhone').value = data.phone || '';
-        document.getElementById('editAddress').value = data.address || '';
-      }
-      profileModal.classList.add('active');
-    });
-    closeModal.addEventListener('click', () => {
-      profileModal.classList.remove('active');
-    });
-    profileModal.addEventListener('click', (e) => {
-      if (e.target === profileModal) profileModal.classList.remove('active');
-    });
-    // Email verification
-    function updateEmailVerificationUI(user) {
-      if (user.emailVerified) {
-        emailVerificationStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Email verified</span>';
-        emailVerificationStatus.className = 'verification-status verified';
-        sendVerificationEmailBtn.style.display = 'none';
-      } else {
-        emailVerificationStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Email not verified</span>';
-        emailVerificationStatus.className = 'verification-status unverified';
-        sendVerificationEmailBtn.style.display = 'block';
-      }
-    }
-    sendVerificationEmailBtn.addEventListener('click', async () => {
-      if (!currentUser) return;
-      try {
-        await sendEmailVerification(currentUser);
-        showSuccess('Verification email sent! Please check your inbox.');
-      } catch (error) {
-        showError('Error sending verification email. Please try again.');
-      }
-    });
-    // Profile form submit
-    profileForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) return;
-      const name = document.getElementById('editName').value;
-      const email = document.getElementById('editEmail').value;
-      const phone = document.getElementById('editPhone').value;
-      const address = document.getElementById('editAddress').value;
-      try {
-        await updateProfile(currentUser, { displayName: name });
-        if (email !== currentUser.email) {
-          await updateEmail(currentUser, email);
-          updateEmailVerificationUI(currentUser);
-        }
-        const userRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userRef, {
-          displayName: name,
-          email: email,
-          phone: phone,
-          address: address,
-          updatedAt: serverTimestamp()
-        });
-        profileName.textContent = name;
-        profileEmail.textContent = email;
-        profilePhone.textContent = phone;
-        profileAddress.textContent = address;
+        profileModal.classList.add('active');
+      });
+      closeModal.addEventListener('click', () => {
         profileModal.classList.remove('active');
-        showSuccess('Profile updated successfully!');
-      } catch (error) {
-        showError('Error updating profile. Please try again.');
+      });
+      profileModal.addEventListener('click', (e) => {
+        if (e.target === profileModal) profileModal.classList.remove('active');
+      });
+      // Email verification
+      function updateEmailVerificationUI(user) {
+        if (user.emailVerified) {
+          emailVerificationStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Email verified</span>';
+          emailVerificationStatus.className = 'verification-status verified';
+          sendVerificationEmailBtn.style.display = 'none';
+        } else {
+          emailVerificationStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Email not verified</span>';
+          emailVerificationStatus.className = 'verification-status unverified';
+          sendVerificationEmailBtn.style.display = 'block';
+        }
       }
-    });
-    // Phone validation
-    document.getElementById('editPhone').addEventListener('input', (e) => {
-      const phone = e.target.value.replace(/\D/g, '');
-      if (phone.length !== 10) {
-        phoneError.style.display = 'block';
-      } else {
-        phoneError.style.display = 'none';
-      }
-    });
-    // Change Password
-    changePasswordBtn.addEventListener('click', () => {
-      passwordModal.classList.add('active');
-    });
-    closePasswordModal.addEventListener('click', () => {
-      passwordModal.classList.remove('active');
-    });
-    passwordModal.addEventListener('click', (e) => {
-      if (e.target === passwordModal) passwordModal.classList.remove('active');
-    });
-    passwordForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser) return;
-      const currentPassword = document.getElementById('currentPassword').value;
-      const newPassword = document.getElementById('newPassword').value;
-      const confirmPassword = document.getElementById('confirmPassword').value;
-      if (newPassword.length < 8) {
-        passwordError.style.display = 'block';
-        return;
-      } else {
-        passwordError.style.display = 'none';
-      }
-      if (newPassword !== confirmPassword) {
-        confirmPasswordError.style.display = 'block';
-        return;
-      } else {
-        confirmPasswordError.style.display = 'none';
-      }
-      try {
-        const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
-        await reauthenticateWithCredential(currentUser, credential);
-        await updatePassword(currentUser, newPassword);
+      sendVerificationEmailBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        try {
+          await sendEmailVerification(currentUser);
+          showSuccess('Verification email sent! Please check your inbox.');
+        } catch (error) {
+          showError('Error sending verification email. Please try again.');
+        }
+      });
+      // Profile form submit
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        const name = document.getElementById('editName').value;
+        const email = document.getElementById('editEmail').value;
+        const phone = document.getElementById('editPhone').value;
+        const address = document.getElementById('editAddress').value;
+        try {
+          await updateProfile(currentUser, { displayName: name });
+          if (email !== currentUser.email) {
+            await updateEmail(currentUser, email);
+            updateEmailVerificationUI(currentUser);
+          }
+          const userRef = doc(db, 'users', currentUser.uid);
+          await updateDoc(userRef, {
+            displayName: name,
+            email: email,
+            phone: phone,
+            address: address,
+            updatedAt: serverTimestamp()
+          });
+          profileName.textContent = name;
+          profileEmail.textContent = email;
+          profilePhone.textContent = phone;
+          profileAddress.textContent = address;
+          profileModal.classList.remove('active');
+          showSuccess('Profile updated successfully!');
+        } catch (error) {
+          showError('Error updating profile. Please try again.');
+        }
+      });
+      // Phone validation
+      document.getElementById('editPhone').addEventListener('input', (e) => {
+        const phone = e.target.value.replace(/\D/g, '');
+        if (phone.length !== 10) {
+          phoneError.style.display = 'block';
+        } else {
+          phoneError.style.display = 'none';
+        }
+      });
+      // Change Password
+      changePasswordBtn.addEventListener('click', () => {
+        passwordModal.classList.add('active');
+      });
+      closePasswordModal.addEventListener('click', () => {
         passwordModal.classList.remove('active');
-        passwordForm.reset();
-        showSuccess('Password updated successfully!');
-      } catch (error) {
-        showError('Error updating password. Please check your current password and try again.');
-      }
-    });
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await signOut(auth);
-        window.location.href = 'login.html';
-      } catch (error) {
-        showError('Error signing out. Please try again.');
-      }
-    });
+      });
+      passwordModal.addEventListener('click', (e) => {
+        if (e.target === passwordModal) passwordModal.classList.remove('active');
+      });
+      passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (newPassword.length < 8) {
+          passwordError.style.display = 'block';
+          return;
+        } else {
+          passwordError.style.display = 'none';
+        }
+        if (newPassword !== confirmPassword) {
+          confirmPasswordError.style.display = 'block';
+          return;
+        } else {
+          confirmPasswordError.style.display = 'none';
+        }
+        try {
+          const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+          await reauthenticateWithCredential(currentUser, credential);
+          await updatePassword(currentUser, newPassword);
+          passwordModal.classList.remove('active');
+          passwordForm.reset();
+          showSuccess('Password updated successfully!');
+        } catch (error) {
+          showError('Error updating password. Please check your current password and try again.');
+        }
+      });
+      // Logout
+      logoutBtn.addEventListener('click', async () => {
+        try {
+          await signOut(auth);
+          window.location.href = 'login.html';
+        } catch (error) {
+          showError('Error signing out. Please try again.');
+        }
+      });
+    })();
   </script>
 </body>
 </html>
