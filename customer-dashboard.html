@@ -331,24 +331,26 @@
     </div>
   </footer>
 
-  <!-- Firebase Auth & Firestore: Personalized greeting, logout, service requests -->
+  <!-- Firebase Auth, Firestore, and All Dashboard Features -->
   <script type="module">
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
     import { app } from './assets/js/firebase-config.js';
 
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Personalized greeting
+    // Personalized greeting and profile
     onAuthStateChanged(auth, (user) => {
       if (user) {
         document.getElementById('customerName').textContent = user.displayName || user.email || "Customer";
         document.getElementById('profileName').textContent = user.displayName || "Customer";
         document.getElementById('profileEmail').textContent = user.email || "";
         loadServiceRequests(user);
+        loadUpcomingAppointments(user);
+        loadInvoices(user);
+        loadNotifications(user);
       } else {
-        // Not logged in, redirect to login page
         window.location.href = "login.html";
       }
     });
@@ -360,7 +362,7 @@
       });
     });
 
-    // Load service requests for the logged-in user
+    // Service Requests
     function loadServiceRequests(user) {
       const list = document.querySelector('#serviceRequests ul');
       list.innerHTML = '<li class="empty">Loading...</li>';
@@ -384,8 +386,6 @@
         });
       });
     }
-
-    // Handle new request form
     document.getElementById('requestForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const user = auth.currentUser;
@@ -403,6 +403,97 @@
       });
       e.target.reset();
       loadServiceRequests(user);
+    });
+
+    // Upcoming Appointments
+    function loadUpcomingAppointments(user) {
+      const list = document.querySelector('#upcomingAppointments ul');
+      list.innerHTML = '<li class="empty">Loading...</li>';
+      const q = query(
+        collection(db, "appointments"),
+        where("customerEmail", "==", user.email),
+        orderBy("date", "asc"),
+        limit(5)
+      );
+      getDocs(q).then(snapshot => {
+        list.innerHTML = '';
+        if (snapshot.empty) {
+          list.innerHTML = '<li class="empty">No upcoming appointments.</li>';
+          return;
+        }
+        snapshot.forEach(doc => {
+          const a = doc.data();
+          list.innerHTML += `<li>
+            <strong>${a.serviceType}</strong> on ${a.date ? new Date(a.date).toLocaleDateString() : "N/A"}
+            <br>Status: ${a.status || "Scheduled"}
+          </li>`;
+        });
+      });
+    }
+
+    // Invoices & Payments
+    function loadInvoices(user) {
+      const list = document.querySelector('#invoices ul');
+      list.innerHTML = '<li class="empty">Loading...</li>';
+      const q = query(
+        collection(db, "invoices"),
+        where("customerEmail", "==", user.email),
+        orderBy("dueDate", "desc"),
+        limit(5)
+      );
+      getDocs(q).then(snapshot => {
+        list.innerHTML = '';
+        if (snapshot.empty) {
+          list.innerHTML = '<li class="empty">No invoices found.</li>';
+          return;
+        }
+        snapshot.forEach(doc => {
+          const inv = doc.data();
+          list.innerHTML += `<li>
+            <strong>Amount:</strong> $${inv.amount} - <strong>Status:</strong> ${inv.status || "Unpaid"}
+            <br>Due: ${inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : "N/A"}
+          </li>`;
+        });
+      });
+    }
+
+    // Notifications
+    function loadNotifications(user) {
+      const badge = document.getElementById('notificationCount');
+      const q = query(
+        collection(db, "notifications"),
+        where("customerEmail", "==", user.email),
+        orderBy("createdAt", "desc"),
+        limit(10)
+      );
+      getDocs(q).then(snapshot => {
+        let count = 0;
+        snapshot.forEach(doc => {
+          const n = doc.data();
+          if (!n.read) count++;
+        });
+        if (count > 0) {
+          badge.textContent = count;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+    }
+
+    // Support/Contact Form
+    document.getElementById('supportForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const user = auth.currentUser;
+      const message = document.getElementById('supportMessage').value;
+      if (!user || !message) return;
+      await addDoc(collection(db, "support_messages"), {
+        customerEmail: user.email,
+        message: message,
+        createdAt: serverTimestamp()
+      });
+      e.target.reset();
+      alert('Your message has been sent!');
     });
   </script>
 </body>
